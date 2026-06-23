@@ -3,12 +3,46 @@ Sabah,Clean water access,2022,80.5,%,data.gov.my / OpenDOSM,state
 Sarawak,Clean water access,2022,83.7,%,data.gov.my / OpenDOSM,state
 Sabah,Unemployment rate,2025,5.7,%,data.gov.my / OpenDOSM,state
 Sarawak,Unemployment rate,2025,3.1,%,data.gov.my / OpenDOSM,state
+Sabah,GDP (real),2023,83196.915,RM mil,data.gov.my / OpenDOSM,state
+Sarawak,GDP (real),2023,142351.83,RM mil,data.gov.my / OpenDOSM,state
+Sabah,Hospital beds,2022,5053,beds,data.gov.my / OpenDOSM,state
+Sarawak,Hospital beds,2022,4119,beds,data.gov.my / OpenDOSM,state
+Sabah,School enrolment,2022,506864,students,data.gov.my / OpenDOSM,state
+Sarawak,School enrolment,2022,432479,students,data.gov.my / OpenDOSM,state
+Sabah,Crop production (paddy),2022,107565.0,tonnes,data.gov.my / OpenDOSM,state
+Sarawak,Crop production (paddy),2022,147272.0,tonnes,data.gov.my / OpenDOSM,state
+Sabah,Households,2024,806300,households,data.gov.my / OpenDOSM,state
+Sarawak,Households,2024,656300,households,data.gov.my / OpenDOSM,state
 Brunei,Clean water access,2024,100,%,World Bank,national
 Brunei,Unemployment rate,2025,5.277,%,World Bank,national
 Brunei,GDP growth,2024,4.05251709306727,%,World Bank,national
+Brunei,Hospital beds (per 1k),2023,3.58,/1k,World Bank,national
+Brunei,Forest cover,2023,72.1062618595825,% land,World Bank,national
+Malaysia,Poverty headcount <$2.15/day (SDG1),2021,0.0009,%,UN SDG API,national
+Indonesia,Poverty headcount <$2.15/day (SDG1),2025,4,%,UN SDG API,national
 Kalimantan Barat,Unemployment rate,2025,4.82,%,BPS Indonesia,province
 Kalimantan Tengah,Unemployment rate,2025,3.97,%,BPS Indonesia,province
 Kalimantan Selatan,Unemployment rate,2025,3.94,%,BPS Indonesia,province
 Kalimantan Timur,Unemployment rate,2024,5.14,%,BPS Indonesia,province
 Kalimantan Utara,Unemployment rate,2025,3.85,%,BPS Indonesia,province
+Sabah,Forest extent (2000),2000,6684138,ha,Global Forest Watch,satellite
+Sabah,Tree cover loss (cumulative),2001-2023,1803226,ha,Global Forest Watch,satellite
+Sarawak,Forest extent (2000),2000,11643005,ha,Global Forest Watch,satellite
+Sarawak,Tree cover loss (cumulative),2001-2023,3183066,ha,Global Forest Watch,satellite
+Brunei,Forest extent (2000),2000,529339,ha,Global Forest Watch,satellite
+Brunei,Tree cover loss (cumulative),2001-2023,30486,ha,Global Forest Watch,satellite
+Kalimantan Barat,Forest extent (2000),2000,13640415,ha,Global Forest Watch,satellite
+Kalimantan Barat,Tree cover loss (cumulative),2001-2023,3828473,ha,Global Forest Watch,satellite
+Kalimantan Selatan,Forest extent (2000),2000,2818022,ha,Global Forest Watch,satellite
+Kalimantan Selatan,Tree cover loss (cumulative),2001-2023,854252,ha,Global Forest Watch,satellite
+Kalimantan Tengah,Forest extent (2000),2000,14220872,ha,Global Forest Watch,satellite
+Kalimantan Tengah,Tree cover loss (cumulative),2001-2023,3596740,ha,Global Forest Watch,satellite
+Kalimantan Timur,Forest extent (2000),2000,18555914,ha,Global Forest Watch,satellite
+Kalimantan Timur,Tree cover loss (cumulative),2001-2023,3633432,ha,Global Forest Watch,satellite
+Kalimantan Utara,Forest extent (2000),2000,689817,ha,Global Forest Watch,satellite
+Kalimantan Utara,Tree cover loss (cumulative),2001-2023,146903,ha,Global Forest Watch,satellite
 Borneo (all),Active fire hotspots (1d),2026,20,count,NASA FIRMS (VIIRS),satellite
+Sabah,"Air quality (AQI, live)",2026,19,AQI,WAQI / aqicn,city
+Sarawak,"Air quality (AQI, live)",2026,28,AQI,WAQI / aqicn,city
+Brunei,"Air quality (AQI, live)",2026,6,AQI,WAQI / aqicn,city
+Kalimantan Barat,"Air quality (AQI, live)",2023,62,AQI,WAQI / aqicn,city

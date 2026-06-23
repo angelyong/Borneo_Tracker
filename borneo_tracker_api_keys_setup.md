@@ -24,7 +24,13 @@
 - **BPS firewall (WAF):** bare `curl` is blocked with a "Perimeter WAF Block" page. **Send a browser `User-Agent` header** on every BPS request, e.g. `Mozilla/5.0 ...`. With a normal UA it returns JSON fine.
 - **BPS var IDs are PER-DOMAIN, not global.** The same indicator has a different `var` id in each province (e.g. unemployment TPT = 59 in Kaltim, 51 in Kalbar, 37 in Kalsel). **Discover the var per domain by scanning its var list** (`model/var/domain/<dom>`) and matching the title — don't hard-code one id for all provinces. Titles also vary ("Menurut Kabupaten/Kota" vs "Kab/Kota" vs "Provinsi …"), so match loosely.
 - **BPS data endpoint needs `th` (year), max 2 years/call.** Year id = `year - 1900` (2024 → 124, 2025 → 125). `datacontent` keys are `vervar+var+turvar+tahun+turtahun` concatenated; the province total region is usually `vervar == domain+99` (e.g. Kaltim 6499).
-- **GFW:** newly created keys take a few minutes to activate (return "missing valid API key" at first). `latest` URLs 307-redirect to a versioned path — follow redirects (`curl -L`). Raster datasets (tree cover loss) require a geometry/admin filter in the query.
+- **GFW (several traps — see ingest_poc.py `pull_gfw`):**
+  - Newly created keys take a few minutes to activate ("missing valid API key" at first).
+  - The header is **case-sensitive**: must be lowercase `x-api-key` (urllib capitalizes to `X-api-key` → 403).
+  - `latest` 307-redirects to a versioned path; resolve the version via the metadata endpoint `GET /dataset/<ds>/latest` (`.data.version`, currently `v20240118`) then query that explicit version.
+  - GFW's **WAF 403s `urllib.request`** on longer queries — use stdlib **`http.client`** (or curl) instead; also send `Accept: */*` (an explicit `Accept: application/json` is rejected).
+  - Summary tables have one row per canopy threshold — **filter `umd_tree_cover_density_2000__threshold=30`** or sums inflate.
+  - Use **GADM adm1 summaries** for territories: MYS Sabah=13, Sarawak=14; IDN Kalimantan Barat=12, Selatan=13, Tengah=14, Timur=15, Utara=16; Brunei = whole ISO. Raster datasets (not these summaries) need a geometry.
 - **World Bank:** use `mrv=N` (most-recent values) — `mrnev` is flaky (intermittent 400/timeout).
 - **data.gov.my:** the catalogue URL 301-redirects to a trailing-slash path — follow redirects, and one dataset returns ALL states (filter `state` client-side).
 - **All keys are backend-only.** Never ship them in the React frontend (CORS + key exposure). Backend pulls on schedule → writes the standard table → frontend reads the DB.
