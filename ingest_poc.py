@@ -170,8 +170,15 @@ def pull_worldbank(rows):
         ("SH.H2O.BASW.ZS", "Clean water access", "%"),
         ("SL.UEM.TOTL.ZS", "Unemployment rate", "%"),
         ("NY.GDP.MKTP.KD.ZG", "GDP growth", "%"),
+        ("NY.GDP.MKTP.CD", "GDP (current US$)", "US$"),
         ("SH.MED.BEDS.ZS", "Hospital beds (per 1k)", "/1k"),
         ("AG.LND.FRST.ZS", "Forest cover", "% land"),
+        # Education via World Bank API (teammate's Brunei SDG doc) — fills the
+        # Brunei education gap without PDF/admin entry.
+        ("SE.PRM.ENRR", "School enrolment (primary, gross)", "%"),
+        ("SE.SEC.ENRR", "School enrolment (secondary, gross)", "%"),
+        ("SE.ADT.LITR.ZS", "Adult literacy", "%"),
+        ("SH.STA.BASS.ZS", "Basic sanitation access", "%"),
     ]
     for code, indicator, unit in pulls:
         # mrv=5 (most-recent values) is reliable; mrnev is flaky. Pick latest non-null.
@@ -212,31 +219,96 @@ def pull_un_sdg(rows):
 
 
 # ---------------------------------------------------------------- 4. BPS Indonesia
-def bps_find_var(domain, key, predicate):
-    """BPS var IDs are PER-DOMAIN, so discover the matching var id by scanning the
-    domain's variable list (paged). Returns the first var_id whose title matches."""
-    page = 1
+def bps_all_vars(domain, key):
+    """Fetch the full (var_id, title) list for a domain once (paged). BPS var IDs
+    are PER-DOMAIN, so this is cached per domain and matched locally."""
+    out, page = [], 1
     while True:
         url = (f"https://webapi.bps.go.id/v1/api/list/model/var/lang/ind"
                f"/domain/{domain}/page/{page}/key/{key}/")
         try:
             d = get_json(url, headers={"User-Agent": UA})
         except Exception:
-            return None
+            break
         if not isinstance(d, dict) or d.get("status") != "OK":
-            return None
+            break
         meta = d["data"][0]
-        for r in d["data"][1]:
-            if predicate(r.get("title", "")):
-                return r.get("var_id")
+        out += [(r.get("var_id"), r.get("title", "")) for r in d["data"][1]]
         if page >= meta.get("pages", page):
-            return None
+            break
         page += 1
+    return out
+
+
+def bps_value(domain, var, key, pname):
+    """Return (year, value) for the PROVINCE-TOTAL region of an annual variable.
+    The province-total region code is inconsistent (Kaltim=6499, Kalbar=6100),
+    so select it by matching the region LABEL to the province name."""
+    url = (f"https://webapi.bps.go.id/v1/api/list/model/data/domain/{domain}"
+           f"/var/{var}/th/124;125/key/{key}/")
+    try:
+        d = get_json(url, headers={"User-Agent": UA})
+    except Exception:
+        return None
+    if not isinstance(d, dict) or d.get("status") != "OK":
+        return None
+    vervars = {v["val"]: v["label"].strip() for v in d.get("vervar", [])}
+    p = pname.lower()
+    prov_val = next((v for v, lbl in vervars.items() if lbl.lower() == p), None)
+    if prov_val is None:  # e.g. "Provinsi Kalimantan Selatan"
+        prov_val = next((v for v, lbl in vervars.items() if p in lbl.lower()), None)
+    if prov_val is None:  # last resort: domain code, then domain+99
+        prov_val = domain if domain in vervars else (
+            domain + 99 if domain + 99 in vervars else None)
+    if prov_val is None:
+        return None
+    dc = d.get("datacontent", {})
+    for th in sorted((t["val"] for t in d.get("tahun", [])), reverse=True):
+        k = f"{prov_val}{var}0{th}0"
+        if k not in dc:
+            pref = f"{prov_val}{var}"
+            k = next((kk for kk in dc
+                      if kk.startswith(pref) and str(th) in kk[len(pref):]), k)
+        if k in dc:
+            return 1900 + th, dc[k]
+    return None
+
+
+# Each indicator: (name, unit, title predicate). Var ids differ per province, so
+# match by title. "menurut kabupaten/kota" vars expose a province-total region.
+def _has(t, *subs):
+    t = t.lower()
+    return all(s in t for s in subs)
+
+
+def _kabkota(t):
+    return "kabupaten/kota" in t.lower() or "kab/kota" in t.lower()
+
+
+BPS_INDICATORS = [
+    ("Unemployment rate", "%",
+     lambda t: _has(t, "tingkat pengangguran terbuka")
+     and not any(b in t.lower() for b in
+                 ("termasuk", "kelompok umur", "jenis kelamin", "usia kerja",
+                  "triwulan", "partisipasi", "2018="))),
+    ("Poverty rate (P0)", "%",
+     lambda t: _has(t, "persentase penduduk miskin") and _kabkota(t)
+     and "termasuk" not in t.lower()),
+    ("Clean water access", "%",
+     lambda t: _has(t, "air minum layak") and "termasuk" not in t.lower()),
+    ("Mean years schooling (RLS)", "years",
+     lambda t: _has(t, "rata-rata lama sekolah")
+     and not any(b in t.lower() for b in ("laki", "perempuan", "termasuk"))),
+    ("GDP growth (PDRB)", "%",
+     lambda t: _has(t, "laju pertumbuhan pdrb") and _kabkota(t)),
+    ("Hospital count", "units",
+     lambda t: _has(t, "rumah sakit") and _kabkota(t)),
+]
 
 
 def pull_bps(rows, key):
-    """Kalimantan 5 provinces — province level (key + User-Agent).
-    Unemployment rate (TPT). Var id discovered per-domain (they differ!)."""
+    """Kalimantan 5 provinces — province level (key + User-Agent). Multiple ESG
+    indicators; var ids discovered per-domain from a cached var list."""
     if not key:
         print("  [BPS] no BPS_API_KEY — skipped")
         return
@@ -245,51 +317,16 @@ def pull_bps(rows, key):
         6300: "Kalimantan Selatan", 6400: "Kalimantan Timur",
         6500: "Kalimantan Utara",
     }
-
-    def is_tpt(t):
-        t = t.lower()
-        if "tingkat pengangguran terbuka" not in t:
-            return False
-        bad = ["termasuk", "kelompok umur", "jenis kelamin", "usia kerja",
-               "triwulan", "partisipasi", "2018="]
-        return not any(b in t for b in bad)
-
     for domain, pname in provinces.items():
-        VAR = bps_find_var(domain, key, is_tpt)
-        if VAR is None:
-            print(f"  [BPS:{pname}] TPT variable not found")
-            continue
-        url = (f"https://webapi.bps.go.id/v1/api/list/model/data/domain/{domain}"
-               f"/var/{VAR}/th/124;125/key/{key}/")
-        try:
-            d = get_json(url, headers={"User-Agent": UA})
-        except Exception as e:
-            print(f"  [BPS:{pname}] FAILED: {e}")
-            continue
-        if not isinstance(d, dict) or d.get("status") != "OK":
-            print(f"  [BPS:{pname}] {d.get('message', d.get('status')) if isinstance(d, dict) else 'null'}")
-            continue
-        vervars = {v["val"]: v["label"] for v in d.get("vervar", [])}
-        prov_val = domain + 99
-        if prov_val not in vervars:
-            prov_val = next((v for v, lbl in vervars.items()
-                             if pname.lower() in lbl.lower()), None)
-        if prov_val is None and vervars:
-            prov_val = max(vervars)
-        years = sorted((t["val"] for t in d.get("tahun", [])), reverse=True)
-        dc = d.get("datacontent", {})
-        for th in years:
-            k = f"{prov_val}{VAR}0{th}0"
-            if k not in dc:
-                pref = f"{prov_val}{VAR}"
-                k = next((kk for kk in dc
-                          if kk.startswith(pref) and str(th) in kk[len(pref):]), k)
-            if k in dc:
-                add(rows, pname, "Unemployment rate", 1900 + th, dc[k], "%",
-                    "BPS Indonesia", "province")
-                break
-        else:
-            print(f"  [BPS:{pname}] no value found")
+        catalog = bps_all_vars(domain, key)
+        for name, unit, pred in BPS_INDICATORS:
+            var = next((vid for vid, title in catalog if pred(title)), None)
+            if var is None:
+                continue  # indicator not published for this province
+            res = bps_value(domain, var, key, pname)
+            if res is None:
+                continue
+            add(rows, pname, name, res[0], res[1], unit, "BPS Indonesia", "province")
 
 
 # ---------------------------------------------------------------- 5. GFW forest

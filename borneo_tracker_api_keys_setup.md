@@ -23,7 +23,9 @@
 ## Gotchas (important)
 - **BPS firewall (WAF):** bare `curl` is blocked with a "Perimeter WAF Block" page. **Send a browser `User-Agent` header** on every BPS request, e.g. `Mozilla/5.0 ...`. With a normal UA it returns JSON fine.
 - **BPS var IDs are PER-DOMAIN, not global.** The same indicator has a different `var` id in each province (e.g. unemployment TPT = 59 in Kaltim, 51 in Kalbar, 37 in Kalsel). **Discover the var per domain by scanning its var list** (`model/var/domain/<dom>`) and matching the title — don't hard-code one id for all provinces. Titles also vary ("Menurut Kabupaten/Kota" vs "Kab/Kota" vs "Provinsi …"), so match loosely.
-- **BPS data endpoint needs `th` (year), max 2 years/call.** Year id = `year - 1900` (2024 → 124, 2025 → 125). `datacontent` keys are `vervar+var+turvar+tahun+turtahun` concatenated; the province total region is usually `vervar == domain+99` (e.g. Kaltim 6499).
+- **BPS data endpoint needs `th` (year), max 2 years/call.** Year id = `year - 1900` (2024 → 124, 2025 → 125). `datacontent` keys are `vervar+var+turvar+tahun+turtahun` concatenated.
+- **BPS province-total region code is INCONSISTENT** — Kaltim uses `6499`, Kalbar uses `6100` (the domain itself). Do NOT assume `domain+99`. **Select the province-total region by matching the region LABEL to the province name** (e.g. label == "Kalimantan Barat"); falling back to a numeric code silently returns a regency value (wrong).
+- **BPS per-province coverage is patchy** — the same indicator is published/named differently across provinces, so title-based discovery fills some provinces and not others. For a reliable per-province aggregate, build a verified var-id map per province per indicator rather than relying on auto-discovery.
 - **GFW (several traps — see ingest_poc.py `pull_gfw`):**
   - Newly created keys take a few minutes to activate ("missing valid API key" at first).
   - The header is **case-sensitive**: must be lowercase `x-api-key` (urllib capitalizes to `X-api-key` → 403).

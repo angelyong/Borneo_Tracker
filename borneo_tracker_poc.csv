@@ -16,15 +16,31 @@ Sarawak,Households,2024,656300,households,data.gov.my / OpenDOSM,state
 Brunei,Clean water access,2024,100,%,World Bank,national
 Brunei,Unemployment rate,2025,5.277,%,World Bank,national
 Brunei,GDP growth,2024,4.05251709306727,%,World Bank,national
+Brunei,GDP (current US$),2024,15340808592.48,US$,World Bank,national
 Brunei,Hospital beds (per 1k),2023,3.58,/1k,World Bank,national
 Brunei,Forest cover,2023,72.1062618595825,% land,World Bank,national
+Brunei,"School enrolment (primary, gross)",2024,94.8207871800668,%,World Bank,national
+Brunei,"School enrolment (secondary, gross)",2023,91.8381544399811,%,World Bank,national
+Brunei,Adult literacy,2011,96.0899963378906,%,World Bank,national
+Brunei,Basic sanitation access,2024,100,%,World Bank,national
 Malaysia,Poverty headcount <$2.15/day (SDG1),2021,0.0009,%,UN SDG API,national
 Indonesia,Poverty headcount <$2.15/day (SDG1),2025,4,%,UN SDG API,national
 Kalimantan Barat,Unemployment rate,2025,4.82,%,BPS Indonesia,province
+Kalimantan Barat,Clean water access,2024,82.13,%,BPS Indonesia,province
+Kalimantan Barat,Mean years schooling (RLS),2025,8.07,years,BPS Indonesia,province
 Kalimantan Tengah,Unemployment rate,2025,3.97,%,BPS Indonesia,province
+Kalimantan Tengah,Poverty rate (P0),2025,5.19,%,BPS Indonesia,province
 Kalimantan Selatan,Unemployment rate,2025,3.94,%,BPS Indonesia,province
+Kalimantan Selatan,Poverty rate (P0),2025,3.84,%,BPS Indonesia,province
+Kalimantan Selatan,Mean years schooling (RLS),2025,8.81,years,BPS Indonesia,province
 Kalimantan Timur,Unemployment rate,2024,5.14,%,BPS Indonesia,province
+Kalimantan Timur,Poverty rate (P0),2025,5.17,%,BPS Indonesia,province
+Kalimantan Timur,Mean years schooling (RLS),2025,10.1,years,BPS Indonesia,province
+Kalimantan Timur,GDP growth (PDRB),2025,4.53,%,BPS Indonesia,province
 Kalimantan Utara,Unemployment rate,2025,3.85,%,BPS Indonesia,province
+Kalimantan Utara,Poverty rate (P0),2024,6.32,%,BPS Indonesia,province
+Kalimantan Utara,Clean water access,2024,89.42,%,BPS Indonesia,province
+Kalimantan Utara,Mean years schooling (RLS),2025,9.44,years,BPS Indonesia,province
 Sabah,Forest extent (2000),2000,6684138,ha,Global Forest Watch,satellite
 Sabah,Tree cover loss (cumulative),2001-2023,1803226,ha,Global Forest Watch,satellite
 Sarawak,Forest extent (2000),2000,11643005,ha,Global Forest Watch,satellite
@@ -42,7 +58,7 @@ Kalimantan Timur,Tree cover loss (cumulative),2001-2023,3633432,ha,Global Forest
 Kalimantan Utara,Forest extent (2000),2000,689817,ha,Global Forest Watch,satellite
 Kalimantan Utara,Tree cover loss (cumulative),2001-2023,146903,ha,Global Forest Watch,satellite
 Borneo (all),Active fire hotspots (1d),2026,20,count,NASA FIRMS (VIIRS),satellite
-Sabah,"Air quality (AQI, live)",2026,19,AQI,WAQI / aqicn,city
-Sarawak,"Air quality (AQI, live)",2026,28,AQI,WAQI / aqicn,city
+Sabah,"Air quality (AQI, live)",2026,21,AQI,WAQI / aqicn,city
+Sarawak,"Air quality (AQI, live)",2026,29,AQI,WAQI / aqicn,city
 Brunei,"Air quality (AQI, live)",2026,6,AQI,WAQI / aqicn,city
 Kalimantan Barat,"Air quality (AQI, live)",2023,62,AQI,WAQI / aqicn,city
