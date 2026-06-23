@@ -1,0 +1,14 @@
+territory,indicator,year,value,unit,source,data_level
+Sabah,Clean water access,2022,80.5,%,data.gov.my / OpenDOSM,state
+Sarawak,Clean water access,2022,83.7,%,data.gov.my / OpenDOSM,state
+Sabah,Unemployment rate,2025,5.7,%,data.gov.my / OpenDOSM,state
+Sarawak,Unemployment rate,2025,3.1,%,data.gov.my / OpenDOSM,state
+Brunei,Clean water access,2024,100,%,World Bank,national
+Brunei,Unemployment rate,2025,5.277,%,World Bank,national
+Brunei,GDP growth,2024,4.05251709306727,%,World Bank,national
+Kalimantan Barat,Unemployment rate,2025,4.82,%,BPS Indonesia,province
+Kalimantan Tengah,Unemployment rate,2025,3.97,%,BPS Indonesia,province
+Kalimantan Selatan,Unemployment rate,2025,3.94,%,BPS Indonesia,province
+Kalimantan Timur,Unemployment rate,2024,5.14,%,BPS Indonesia,province
+Kalimantan Utara,Unemployment rate,2025,3.85,%,BPS Indonesia,province
+Borneo (all),Active fire hotspots (1d),2026,20,count,NASA FIRMS (VIIRS),satellite
