@@ -13,6 +13,8 @@ Sabah,Crop production (paddy),2022,107565.0,tonnes,data.gov.my / OpenDOSM,state
 Sarawak,Crop production (paddy),2022,147272.0,tonnes,data.gov.my / OpenDOSM,state
 Sabah,Households,2024,806300,households,data.gov.my / OpenDOSM,state
 Sarawak,Households,2024,656300,households,data.gov.my / OpenDOSM,state
+Sabah,Poverty rate (absolute),2022,19.7,%,data.gov.my / OpenDOSM,state
+Sarawak,Poverty rate (absolute),2022,10.8,%,data.gov.my / OpenDOSM,state
 Brunei,Clean water access,2024,100,%,World Bank,national
 Brunei,Unemployment rate,2025,5.277,%,World Bank,national
 Brunei,GDP growth,2024,4.05251709306727,%,World Bank,national
@@ -23,6 +25,10 @@ Brunei,"School enrolment (primary, gross)",2024,94.8207871800668,%,World Bank,na
 Brunei,"School enrolment (secondary, gross)",2023,91.8381544399811,%,World Bank,national
 Brunei,Adult literacy,2011,96.0899963378906,%,World Bank,national
 Brunei,Basic sanitation access,2024,100,%,World Bank,national
+Sabah,Control of Corruption (WGI),2024,57.9,score/100,World Bank WGI,national
+Sarawak,Control of Corruption (WGI),2024,57.9,score/100,World Bank WGI,national
+Brunei,Control of Corruption (WGI),2024,71.9,score/100,World Bank WGI,national
+Kalimantan,Control of Corruption (WGI),2024,36.8,score/100,World Bank WGI,national
 Malaysia,Poverty headcount <$2.15/day (SDG1),2021,0.0009,%,UN SDG API,national
 Indonesia,Poverty headcount <$2.15/day (SDG1),2025,4,%,UN SDG API,national
 Kalimantan Barat,Unemployment rate,2025,4.82,%,BPS Indonesia,province
@@ -57,8 +63,7 @@ Kalimantan Timur,Forest extent (2000),2000,18555914,ha,Global Forest Watch,satel
 Kalimantan Timur,Tree cover loss (cumulative),2001-2023,3633432,ha,Global Forest Watch,satellite
 Kalimantan Utara,Forest extent (2000),2000,689817,ha,Global Forest Watch,satellite
 Kalimantan Utara,Tree cover loss (cumulative),2001-2023,146903,ha,Global Forest Watch,satellite
-Borneo (all),Active fire hotspots (1d),2026,20,count,NASA FIRMS (VIIRS),satellite
 Sabah,"Air quality (AQI, live)",2026,21,AQI,WAQI / aqicn,city
-Sarawak,"Air quality (AQI, live)",2026,29,AQI,WAQI / aqicn,city
+Sarawak,"Air quality (AQI, live)",2026,36,AQI,WAQI / aqicn,city
 Brunei,"Air quality (AQI, live)",2026,6,AQI,WAQI / aqicn,city
 Kalimantan Barat,"Air quality (AQI, live)",2023,62,AQI,WAQI / aqicn,city

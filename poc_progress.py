@@ -35,7 +35,7 @@ def m_health(i): return "hospital" in i.lower()
 def m_educ(i): return ("enrolment" in i.lower() or "schooling" in i.lower()
                        or "literacy" in i.lower())
 def m_poverty(i): return "poverty" in i.lower()
-def m_govern(i): return i.lower() == "__none__"  # CPI/WGI not pulled yet
+def m_govern(i): return "corruption" in i.lower() or "wgi" in i.lower() or "governance" in i.lower()
 
 
 ESG = [

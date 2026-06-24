@@ -146,6 +146,8 @@ def pull_datagovmy(rows):
          lambda r: latest(r, "production", lambda x: x.get("crop_type") == "paddy")),
         ("hh_profile_state", "Households", "households",      # Hexagon: Shelter
          lambda r: latest(r, "households")),
+        ("hh_poverty_state", "Poverty rate (absolute)", "%",
+         lambda r: latest(r, "poverty_absolute")),
     ]
     for ds, indicator, unit, sel in specs:
         try:
@@ -193,6 +195,29 @@ def pull_worldbank(rows):
             continue
         add(rows, "Brunei", indicator, rec["date"], rec["value"], unit,
             "World Bank", "national")
+
+
+# ---------------------------------------------------------------- 2b. Governance (WGI)
+def pull_governance(rows):
+    """Governance (G) — World Bank WGI Control of Corruption (0-100). No sub-national
+    score exists anywhere, so it is country-level: territories inherit their country's
+    value (Sabah/Sarawak=Malaysia, Kalimantan=Indonesia, Brunei=Brunei)."""
+    wgi = {}
+    for iso in ("MYS", "IDN", "BRN"):
+        url = (f"https://api.worldbank.org/v2/country/{iso}/indicator/"
+               f"GOV_WGI_CC.SC?format=json&mrv=5")
+        try:
+            payload = get_json(url)
+            series = [x for x in (payload[1] or []) if x.get("value") is not None]
+            wgi[iso] = max(series, key=lambda x: x["date"])
+        except Exception as e:
+            print(f"  [WGI:{iso}] FAILED: {e}")
+    for terr, iso in [("Sabah", "MYS"), ("Sarawak", "MYS"),
+                      ("Brunei", "BRN"), ("Kalimantan", "IDN")]:
+        if iso in wgi:
+            r = wgi[iso]
+            add(rows, terr, "Control of Corruption (WGI)", r["date"],
+                round(r["value"], 1), "score/100", "World Bank WGI", "national")
 
 
 # ---------------------------------------------------------------- 3. UN SDG API
@@ -302,7 +327,7 @@ BPS_INDICATORS = [
     ("GDP growth (PDRB)", "%",
      lambda t: _has(t, "laju pertumbuhan pdrb") and _kabkota(t)),
     ("Hospital count", "units",
-     lambda t: _has(t, "rumah sakit") and _kabkota(t)),
+     lambda t: _has(t, "rumah sakit") and "kabupaten" in t.lower()),
 ]
 
 
@@ -445,6 +470,8 @@ def main():
     pull_datagovmy(rows)
     print("2. World Bank (Brunei, national):")
     pull_worldbank(rows)
+    print("2b. Governance — World Bank WGI (national, inherited):")
+    pull_governance(rows)
     print("3. UN SDG API (country baseline, national):")
     pull_un_sdg(rows)
     print("4. BPS Indonesia (Kalimantan, province):")

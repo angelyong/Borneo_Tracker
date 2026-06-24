@@ -34,6 +34,8 @@
   - Summary tables have one row per canopy threshold — **filter `umd_tree_cover_density_2000__threshold=30`** or sums inflate.
   - Use **GADM adm1 summaries** for territories: MYS Sabah=13, Sarawak=14; IDN Kalimantan Barat=12, Selatan=13, Tengah=14, Timur=15, Utara=16; Brunei = whole ISO. Raster datasets (not these summaries) need a geometry.
 - **World Bank:** use `mrv=N` (most-recent values) — `mrnev` is flaky (intermittent 400/timeout).
+- **World Bank WGI (governance) codes were renamed** — the old `CC.EST` / `CC.PER.RNK` now 404. Use the new `GOV_WGI_*` codes, e.g. `GOV_WGI_CC.SC` = Control of Corruption (0-100 score). Governance has no sub-national value anywhere, so territories inherit their country's score.
+- **NASA FIRMS can be transiently unreachable** (WinError 10051 / http 000). The pipeline logs the failure and continues; re-run when it recovers — the fire row repopulates.
 - **data.gov.my:** the catalogue URL 301-redirects to a trailing-slash path — follow redirects, and one dataset returns ALL states (filter `state` client-side).
 - **All keys are backend-only.** Never ship them in the React frontend (CORS + key exposure). Backend pulls on schedule → writes the standard table → frontend reads the DB.
 
