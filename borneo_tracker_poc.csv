@@ -15,6 +15,8 @@ Sabah,Households,2024,806300,households,data.gov.my / OpenDOSM,state
 Sarawak,Households,2024,656300,households,data.gov.my / OpenDOSM,state
 Sabah,Poverty rate (absolute),2022,19.7,%,data.gov.my / OpenDOSM,state
 Sarawak,Poverty rate (absolute),2022,10.8,%,data.gov.my / OpenDOSM,state
+Sabah,Electricity access,2021,544186,households,data.gov.my / OpenDOSM,state
+Sarawak,Electricity access,2021,617255,households,data.gov.my / OpenDOSM,state
 Brunei,Clean water access,2024,100,%,World Bank,national
 Brunei,Unemployment rate,2025,5.277,%,World Bank,national
 Brunei,GDP growth,2024,4.05251709306727,%,World Bank,national
@@ -25,6 +27,9 @@ Brunei,"School enrolment (primary, gross)",2024,94.8207871800668,%,World Bank,na
 Brunei,"School enrolment (secondary, gross)",2023,91.8381544399811,%,World Bank,national
 Brunei,Adult literacy,2011,96.0899963378906,%,World Bank,national
 Brunei,Basic sanitation access,2024,100,%,World Bank,national
+Brunei,Electricity access,2023,100,%,World Bank,national
+Brunei,Tourist arrivals,2020,1071000,arrivals,World Bank,national
+Brunei,Agricultural land,2023,2.5426944971537,% land,World Bank,national
 Sabah,Control of Corruption (WGI),2024,57.9,score/100,World Bank WGI,national
 Sarawak,Control of Corruption (WGI),2024,57.9,score/100,World Bank WGI,national
 Brunei,Control of Corruption (WGI),2024,71.9,score/100,World Bank WGI,national
@@ -34,19 +39,40 @@ Indonesia,Poverty headcount <$2.15/day (SDG1),2025,4,%,UN SDG API,national
 Kalimantan Barat,Unemployment rate,2025,4.82,%,BPS Indonesia,province
 Kalimantan Barat,Clean water access,2024,82.13,%,BPS Indonesia,province
 Kalimantan Barat,Mean years schooling (RLS),2025,8.07,years,BPS Indonesia,province
+Kalimantan Barat,GDP growth (PDRB),2023,4.46,%,BPS Indonesia,province
+Kalimantan Barat,Crop production (paddy),2025,774908,tonnes,BPS Indonesia,province
+Kalimantan Barat,Tourist trips (domestic),2025,903765,trips,BPS Indonesia,province
+Kalimantan Barat,Life expectancy,2024,70.13,years,BPS Indonesia,province
 Kalimantan Tengah,Unemployment rate,2025,3.97,%,BPS Indonesia,province
 Kalimantan Tengah,Poverty rate (P0),2025,5.19,%,BPS Indonesia,province
+Kalimantan Tengah,Mean years schooling (RLS),2025,8.96,years,BPS Indonesia,province
+Kalimantan Tengah,Crop production (paddy),2025,333428.63,tonnes,BPS Indonesia,province
+Kalimantan Tengah,Households,2019,704473,households,BPS Indonesia,province
+Kalimantan Tengah,Tourist trips (domestic),2025,505991,trips,BPS Indonesia,province
+Kalimantan Tengah,Life expectancy,2025,74.01,years,BPS Indonesia,province
 Kalimantan Selatan,Unemployment rate,2025,3.94,%,BPS Indonesia,province
 Kalimantan Selatan,Poverty rate (P0),2025,3.84,%,BPS Indonesia,province
 Kalimantan Selatan,Mean years schooling (RLS),2025,8.81,years,BPS Indonesia,province
+Kalimantan Selatan,Crop production (paddy),2025,290332.45,tonnes,BPS Indonesia,province
+Kalimantan Selatan,Tourist trips (domestic),2025,1822941,trips,BPS Indonesia,province
+Kalimantan Selatan,Life expectancy,2024,69.65,years,BPS Indonesia,province
 Kalimantan Timur,Unemployment rate,2024,5.14,%,BPS Indonesia,province
 Kalimantan Timur,Poverty rate (P0),2025,5.17,%,BPS Indonesia,province
+Kalimantan Timur,Clean water access,2023,87.9,%,BPS Indonesia,province
 Kalimantan Timur,Mean years schooling (RLS),2025,10.1,years,BPS Indonesia,province
 Kalimantan Timur,GDP growth (PDRB),2025,4.53,%,BPS Indonesia,province
+Kalimantan Timur,Electrification ratio,2022,93.09,%,BPS Indonesia,province
+Kalimantan Timur,Crop production (paddy),2023,215290.58,tonnes,BPS Indonesia,province
+Kalimantan Timur,Households,2019,925303,households,BPS Indonesia,province
+Kalimantan Timur,Tourist trips (domestic),2025,1386611,trips,BPS Indonesia,province
+Kalimantan Timur,Life expectancy,2024,75.03,years,BPS Indonesia,province
 Kalimantan Utara,Unemployment rate,2025,3.85,%,BPS Indonesia,province
 Kalimantan Utara,Poverty rate (P0),2024,6.32,%,BPS Indonesia,province
 Kalimantan Utara,Clean water access,2024,89.42,%,BPS Indonesia,province
 Kalimantan Utara,Mean years schooling (RLS),2025,9.44,years,BPS Indonesia,province
+Kalimantan Utara,Crop production (paddy),2023,6632.07,tonnes,BPS Indonesia,province
+Kalimantan Utara,Tourist trips (domestic),2025,122028,trips,BPS Indonesia,province
+Kalimantan Utara,Life expectancy,2024,72.73,years,BPS Indonesia,province
 Sabah,Forest extent (2000),2000,6684138,ha,Global Forest Watch,satellite
 Sabah,Tree cover loss (cumulative),2001-2023,1803226,ha,Global Forest Watch,satellite
 Sarawak,Forest extent (2000),2000,11643005,ha,Global Forest Watch,satellite
@@ -63,7 +89,7 @@ Kalimantan Timur,Forest extent (2000),2000,18555914,ha,Global Forest Watch,satel
 Kalimantan Timur,Tree cover loss (cumulative),2001-2023,3633432,ha,Global Forest Watch,satellite
 Kalimantan Utara,Forest extent (2000),2000,689817,ha,Global Forest Watch,satellite
 Kalimantan Utara,Tree cover loss (cumulative),2001-2023,146903,ha,Global Forest Watch,satellite
-Sabah,"Air quality (AQI, live)",2026,21,AQI,WAQI / aqicn,city
-Sarawak,"Air quality (AQI, live)",2026,36,AQI,WAQI / aqicn,city
-Brunei,"Air quality (AQI, live)",2026,6,AQI,WAQI / aqicn,city
+Sabah,"Air quality (AQI, live)",2026,57,AQI,WAQI / aqicn,city
+Sarawak,"Air quality (AQI, live)",2026,45,AQI,WAQI / aqicn,city
+Brunei,"Air quality (AQI, live)",2026,4,AQI,WAQI / aqicn,city
 Kalimantan Barat,"Air quality (AQI, live)",2023,62,AQI,WAQI / aqicn,city

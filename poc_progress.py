@@ -31,9 +31,13 @@ def m_water_q(i): return i.lower() == "__none__"  # river water quality (gap)
 def m_clean_water(i): return "clean water" in i.lower()
 def m_employ(i): return "unemployment" in i.lower()
 def m_gdp(i): return "gdp" in i.lower()
-def m_health(i): return "hospital" in i.lower()
+def m_health(i): return "hospital" in i.lower() or "life expect" in i.lower()
 def m_educ(i): return ("enrolment" in i.lower() or "schooling" in i.lower()
                        or "literacy" in i.lower())
+def m_energy(i): return "electri" in i.lower()
+def m_food(i): return any(k in i.lower() for k in ("crop", "paddy", "agricultur"))
+def m_shelter(i): return "household" in i.lower()
+def m_entertain(i): return any(k in i.lower() for k in ("touris", "wisataw", "arrival"))
 def m_poverty(i): return "poverty" in i.lower()
 def m_govern(i): return "corruption" in i.lower() or "wgi" in i.lower() or "governance" in i.lower()
 
@@ -58,6 +62,14 @@ SDG = [
     ("SDG8  Work + GDP", lambda i: m_employ(i) or m_gdp(i)),
     ("SDG13 Climate", lambda i: m_fire(i) or m_air(i)),
     ("SDG15 Life on land", m_forest),
+]
+HEX = [
+    ("Food", m_food),
+    ("Energy", m_energy),
+    ("Education", m_educ),
+    ("Shelter", m_shelter),
+    ("Healthcare", m_health),
+    ("Entertainment", m_entertain),
 ]
 
 
@@ -95,6 +107,7 @@ def main():
     print(f"=== Borneo Tracker — coverage from {CSV.name} ({len(rows)} rows) ===\n")
     block("ESG", ESG, with_cat=True)
     block("SDG (fed by ESG data)", SDG)
+    block("HEXAGON (True Wealth pillars)", HEX)
 
 
 if __name__ == "__main__":

@@ -26,6 +26,10 @@
 - **BPS data endpoint needs `th` (year), max 2 years/call.** Year id = `year - 1900` (2024 → 124, 2025 → 125). `datacontent` keys are `vervar+var+turvar+tahun+turtahun` concatenated.
 - **BPS province-total region code is INCONSISTENT** — Kaltim uses `6499`, Kalbar uses `6100` (the domain itself). Do NOT assume `domain+99`. **Select the province-total region by matching the region LABEL to the province name** (e.g. label == "Kalimantan Barat"); falling back to a numeric code silently returns a regency value (wrong).
 - **BPS per-province coverage is patchy** — the same indicator is published/named differently across provinces, so title-based discovery fills some provinces and not others. For a reliable per-province aggregate, build a verified var-id map per province per indicator rather than relying on auto-discovery.
+- **BPS indicator recency varies** — latest year differs per indicator (unemployment 2025, electrification 2022, households 2019…), and BPS allows max 2 years/call, so `bps_value` tries year-pairs newest-first (125;124 → 123;122 → …) and takes the first with data.
+- **BPS is flaky under load** — a heavy run (many indicators × year-pairs × 5 provinces) hits transient timeouts that silently drop indicators (coverage looked patchy until fixed). `bps_get` retries 3× with backoff. Production should also cache the verified var-id map to cut request volume.
+- **BPS national domain (0000) holds the "by province" environmental indices** — IKLH (var 2531) and its components incl. water quality IKA (var 2532 / turvar 2176). This is how Kalimantan water quality is reachable by API (the project docs wrongly called it PDF-only).
+- **Pillar data added** — Energy (electrification %), Food (paddy), Shelter (households), Entertainment (domestic tourist trips), Healthcare (life expectancy, since BPS has no hospital-beds metric).
 - **GFW (several traps — see ingest_poc.py `pull_gfw`):**
   - Newly created keys take a few minutes to activate ("missing valid API key" at first).
   - The header is **case-sensitive**: must be lowercase `x-api-key` (urllib capitalizes to `X-api-key` → 403).

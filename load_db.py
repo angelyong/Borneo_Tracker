@@ -39,11 +39,12 @@ def sdg_goal(ind):
         (("forest", "tree cover"), "SDG15"),
         (("fire", "air quality"), "SDG13"),
         (("clean water", "sanitation"), "SDG6"),
-        (("unemployment", "gdp"), "SDG8"),
+        (("electri",), "SDG7"),
+        (("unemployment", "gdp", "tourist", "arrival"), "SDG8"),
         (("enrolment", "schooling", "literacy"), "SDG4"),
         (("poverty",), "SDG1"),
-        (("hospital", "beds"), "SDG3"),
-        (("crop",), "SDG2"),
+        (("hospital", "beds", "life expect"), "SDG3"),
+        (("crop", "paddy", "agricultur"), "SDG2"),
         (("households",), "SDG11"),
         (("corruption", "wgi"), "SDG16"),
     ]
@@ -56,12 +57,12 @@ def sdg_goal(ind):
 def hexagon_pillar(ind):
     i = low(ind)
     rules = [
-        (("crop",), "Food"),
-        (("electricity", "energy"), "Energy"),
+        (("crop", "paddy", "agricultur"), "Food"),
+        (("electri", "energy"), "Energy"),
         (("enrolment", "schooling", "literacy"), "Education"),
         (("households", "housing"), "Shelter"),
-        (("hospital", "beds"), "Healthcare"),
-        (("tourism", "arrivals"), "Entertainment"),
+        (("hospital", "beds", "life expect"), "Healthcare"),
+        (("tourist", "tourism", "arrival", "wisataw"), "Entertainment"),
     ]
     for keys, pillar in rules:
         if any(k in i for k in keys):
