@@ -264,22 +264,27 @@ def bps_get(url, retries=3):
 
 
 def bps_all_vars(domain, key):
-    """Fetch the full (var_id, title) list for a domain once (paged). BPS var IDs
-    are PER-DOMAIN, so this is cached per domain and matched locally."""
-    out, page = [], 1
+    """Fetch the full (var_id, title) list for a domain (paged). BPS var IDs are
+    PER-DOMAIN. A failed page is SKIPPED (not break) so one flaky page doesn't
+    silently truncate the whole catalog — that truncation was the real cause of
+    patchy coverage. (For production, prefer the hardcoded var-id map below.)"""
+    out, page, pages = [], 1, None
     while True:
         url = (f"https://webapi.bps.go.id/v1/api/list/model/var/lang/ind"
                f"/domain/{domain}/page/{page}/key/{key}/")
-        d = bps_get(url)
-        if d is None:
-            break
+        d = bps_get(url, retries=5)
         if not isinstance(d, dict) or d.get("status") != "OK":
+            if pages and page < pages:   # skip the bad page, keep going
+                page += 1
+                continue
             break
         meta = d["data"][0]
+        pages = meta.get("pages", pages)
         out += [(r.get("var_id"), r.get("title", "")) for r in d["data"][1]]
-        if page >= meta.get("pages", page):
+        if pages and page >= pages:
             break
         page += 1
+        time.sleep(0.25)  # ease BPS rate-limiting so pages don't fail -> truncate
     return out
 
 
@@ -361,31 +366,41 @@ BPS_INDICATORS = [
 ]
 
 
+# Verified BPS var-id map: province domain -> {indicator: var_id}. Discovered
+# 2026-06 against FULL (non-truncated) catalogs (307/436/143/698/437 vars). Using a
+# hardcoded map instead of scanning each domain's catalog every run is (a) robust —
+# the catalog-truncation that caused patchy coverage can't happen, and (b) ~30x
+# fewer requests. IMPORTANT (integrity): a cell absent here is genuinely NOT
+# published in that province's BPS regional portal (verified against the full
+# catalog), NOT dropped to fake a gap. Re-run discover_bps_map.py to refresh.
+BPS_VAR_MAP = {
+    6100: {'Unemployment rate': 51, 'Clean water access': 370, 'Mean years schooling (RLS)': 85, 'GDP growth (PDRB)': 44, 'Crop production (paddy)': 199, 'Tourist trips (domestic)': 441, 'Life expectancy': 30},
+    6200: {'Unemployment rate': 389, 'Poverty rate (P0)': 69, 'Mean years schooling (RLS)': 45, 'Crop production (paddy)': 991, 'Households': 449, 'Tourist trips (domestic)': 1018, 'Life expectancy': 958},
+    6300: {'Unemployment rate': 37, 'Poverty rate (P0)': 103, 'Mean years schooling (RLS)': 62, 'Crop production (paddy)': 344, 'Tourist trips (domestic)': 386, 'Life expectancy': 60},
+    6400: {'Unemployment rate': 59, 'Poverty rate (P0)': 111, 'Clean water access': 1003, 'Mean years schooling (RLS)': 65, 'GDP growth (PDRB)': 95, 'Electrification ratio': 399, 'Crop production (paddy)': 320, 'Households': 300, 'Tourist trips (domestic)': 1014, 'Life expectancy': 130},
+    6500: {'Unemployment rate': 115, 'Poverty rate (P0)': 71, 'Clean water access': 263, 'Mean years schooling (RLS)': 65, 'Crop production (paddy)': 312, 'Tourist trips (domestic)': 600, 'Life expectancy': 64},
+}
+BPS_PROV = {6100: "Kalimantan Barat", 6200: "Kalimantan Tengah",
+            6300: "Kalimantan Selatan", 6400: "Kalimantan Timur",
+            6500: "Kalimantan Utara"}
+BPS_UNIT = {name: unit for name, unit, _ in BPS_INDICATORS}
+
+
 def pull_bps(rows, key):
-    """Kalimantan 5 provinces — province level (key + User-Agent). Multiple ESG
-    indicators; var ids discovered per-domain from a cached var list."""
+    """Kalimantan 5 provinces — province level (key + User-Agent). Uses the verified
+    hardcoded BPS_VAR_MAP (no per-run catalog scan, so no truncation gaps)."""
     if not key:
         print("  [BPS] no BPS_API_KEY — skipped")
         return
-    provinces = {
-        6100: "Kalimantan Barat", 6200: "Kalimantan Tengah",
-        6300: "Kalimantan Selatan", 6400: "Kalimantan Timur",
-        6500: "Kalimantan Utara",
-    }
-    for domain, pname in provinces.items():
-        catalog = bps_all_vars(domain, key)
-        for name, unit, pred in BPS_INDICATORS:
-            # several vars may match a title predicate (different methods/years);
-            # try each until one returns a province value.
-            res = None
-            for vid, title in catalog:
-                if pred(title):
-                    res = bps_value(domain, vid, key, pname)
-                    if res is not None:
-                        break
+    for domain, pname in BPS_PROV.items():
+        for name, vid in BPS_VAR_MAP.get(domain, {}).items():
+            res = bps_value(domain, vid, key, pname)
             if res is None:
-                continue  # indicator not published for this province
-            add(rows, pname, name, res[0], res[1], unit, "BPS Indonesia", "province")
+                # value temporarily unfetchable; load_db keeps the last-good row.
+                print(f"  [BPS] {pname} | {name} (var {vid}) — no value this run")
+                continue
+            add(rows, pname, name, res[0], res[1],
+                BPS_UNIT.get(name, ""), "BPS Indonesia", "province")
 
 
 # ---------------------------------------------------------------- 5. GFW forest
@@ -525,6 +540,48 @@ def pull_waqi(rows, token):
 
 
 # ---------------------------------------------------------------- main
+# Units that aggregate by SUM (counts/areas); everything else (rates, indices,
+# years) aggregates by unweighted MEAN — which is an APPROXIMATION (not pop-weighted)
+# and is labelled as such in the source string so it's never mistaken for exact.
+_SUM_UNITS = {"tonnes", "households", "trips", "ha", "count", "arrivals", "people"}
+
+
+def aggregate_kalimantan(rows):
+    """Roll the 5 Kalimantan province rows up into a single 'Kalimantan' figure per
+    indicator, KEEPING the province rows too (per requirement). Counts -> sum (exact);
+    rates/indices -> unweighted mean (approx, labelled). City-level points (e.g. one
+    city's air quality) are NOT rolled up — a single city isn't a provincial value."""
+    from collections import defaultdict
+    groups = defaultdict(list)
+    for r in rows:
+        t = r["territory"]
+        if (t.startswith("Kalimantan ") and t != "Kalimantan"
+                and r["data_level"] in ("province", "satellite")):
+            groups[(r["indicator"], r["unit"])].append(r)
+    made = 0
+    for (indicator, unit), rs in groups.items():
+        vals = []
+        for r in rs:
+            try:
+                vals.append(float(r["value"]))
+            except (ValueError, TypeError):
+                pass
+        if not vals:
+            continue
+        n = len(vals)
+        year = max(r["year"] for r in rs)
+        src = rs[0]["source"]
+        if unit in _SUM_UNITS:
+            value = round(sum(vals), 2)
+            note = f"{src} (sum of {n}/5 provinces)"
+        else:
+            value = round(sum(vals) / n, 2)
+            note = f"{src} (unweighted mean of {n}/5 provinces, approx)"
+        add(rows, "Kalimantan", indicator, year, value, unit, note, "territory")
+        made += 1
+    print(f"  [aggregate] added {made} Kalimantan roll-up rows (province rows kept)")
+
+
 def main():
     env = load_env()
     rows = []
@@ -544,6 +601,8 @@ def main():
     pull_firms(rows, env.get("FIRMS_MAP_KEY"))
     print("7. WAQI / aqicn (4 cities, city):")
     pull_waqi(rows, env.get("WAQI_TOKEN"))
+    print("8. Kalimantan roll-up (province -> territory aggregate):")
+    aggregate_kalimantan(rows)
 
     fields = ["territory", "indicator", "year", "value", "unit", "source", "data_level"]
     out = OUT_CSV

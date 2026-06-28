@@ -12,6 +12,7 @@ Final DB schema (one table, tagged for all 3 views — ESG / SDG / Hexagon):
 """
 
 import csv
+import datetime
 import sqlite3
 from pathlib import Path
 
@@ -71,8 +72,10 @@ def hexagon_pillar(ind):
 
 
 def confidence(row):
-    # inherited country-level governance + city-level air quality = medium; else high
-    if "wgi" in low(row["source"]) or row["data_level"] == "city":
+    # medium for: inherited country-level governance, city-level air quality, and
+    # unweighted-mean Kalimantan aggregates (approximations). Exact sums stay high.
+    src = low(row["source"])
+    if "wgi" in src or row["data_level"] == "city" or "approx" in src:
         return "medium"
     return "high"
 
@@ -81,10 +84,18 @@ def main():
     rows = list(csv.DictReader(open(CSV, encoding="utf-8")))
     conn = sqlite3.connect(DB)
     c = conn.cursor()
-    c.execute("DROP TABLE IF EXISTS indicators")
+    # Keep-last-good: do NOT drop the table. Upsert on (territory, indicator) so a
+    # row whose source is down this run KEEPS its previous value (not wiped).
+    run_ts = datetime.date.today().isoformat()
+    # One-time migration: a table from before the keep-last-good schema (autoincrement
+    # `id` PK, no `last_updated`, no (territory,indicator) upsert key) can't be
+    # upserted into. Rebuild it once — the CSV is canonical, so nothing real is lost.
+    cols = [r[1] for r in c.execute("PRAGMA table_info(indicators)").fetchall()]
+    if cols and "last_updated" not in cols:
+        print("  migrating: rebuilding 'indicators' to keep-last-good schema")
+        c.execute("DROP TABLE indicators")
     c.execute("""
-        CREATE TABLE indicators (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+        CREATE TABLE IF NOT EXISTS indicators (
             territory   TEXT NOT NULL,
             indicator   TEXT NOT NULL,
             year        TEXT,
@@ -95,7 +106,9 @@ def main():
             esg_pillar  TEXT,
             sdg_goal    TEXT,
             hexagon_pillar TEXT,
-            confidence  TEXT
+            confidence  TEXT,
+            last_updated TEXT,
+            PRIMARY KEY (territory, indicator)
         )
     """)
     for r in rows:
@@ -105,15 +118,23 @@ def main():
             val = None
         c.execute(
             "INSERT INTO indicators (territory,indicator,year,value,unit,source,"
-            "data_level,esg_pillar,sdg_goal,hexagon_pillar,confidence) "
-            "VALUES (?,?,?,?,?,?,?,?,?,?,?)",
+            "data_level,esg_pillar,sdg_goal,hexagon_pillar,confidence,last_updated) "
+            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?) "
+            "ON CONFLICT(territory,indicator) DO UPDATE SET "
+            "year=excluded.year, value=excluded.value, unit=excluded.unit, "
+            "source=excluded.source, data_level=excluded.data_level, "
+            "esg_pillar=excluded.esg_pillar, sdg_goal=excluded.sdg_goal, "
+            "hexagon_pillar=excluded.hexagon_pillar, confidence=excluded.confidence, "
+            "last_updated=excluded.last_updated",
             (r["territory"], r["indicator"], r["year"], val, r["unit"], r["source"],
              r["data_level"], esg_pillar(r["indicator"]), sdg_goal(r["indicator"]),
-             hexagon_pillar(r["indicator"]), confidence(r)),
+             hexagon_pillar(r["indicator"]), confidence(r), run_ts),
         )
     conn.commit()
 
-    print(f"Loaded {len(rows)} rows -> {DB.name}")
+    total = c.execute("SELECT COUNT(*) FROM indicators").fetchone()[0]
+    kept = c.execute("SELECT COUNT(*) FROM indicators WHERE last_updated<>?", (run_ts,)).fetchone()[0]
+    print(f"Upserted {len(rows)} rows; table has {total} ({kept} kept from earlier runs) -> {DB.name}")
     for label, col in [("ESG pillar", "esg_pillar"), ("SDG goal", "sdg_goal"),
                        ("data_level", "data_level"), ("confidence", "confidence")]:
         got = c.execute(f"SELECT {col}, COUNT(*) FROM indicators "

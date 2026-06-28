@@ -89,8 +89,19 @@ Kalimantan Timur,Forest extent (2000),2000,18555914,ha,Global Forest Watch,satel
 Kalimantan Timur,Tree cover loss (cumulative),2001-2023,3633432,ha,Global Forest Watch,satellite
 Kalimantan Utara,Forest extent (2000),2000,689817,ha,Global Forest Watch,satellite
 Kalimantan Utara,Tree cover loss (cumulative),2001-2023,146903,ha,Global Forest Watch,satellite
-Borneo (all),Active fire hotspots (1d),2026,171,count,"NASA FIRMS (VIIRS, regional CSV)",satellite
 Sabah,"Air quality (AQI, live)",2026,39,AQI,WAQI / aqicn,city
 Sarawak,"Air quality (AQI, live)",2026,28,AQI,WAQI / aqicn,city
 Brunei,"Air quality (AQI, live)",2026,6,AQI,WAQI / aqicn,city
 Kalimantan Barat,"Air quality (AQI, live)",2023,62,AQI,WAQI / aqicn,city
+Kalimantan,Unemployment rate,2025,4.34,%,"BPS Indonesia (unweighted mean of 5/5 provinces, approx)",territory
+Kalimantan,Clean water access,2024,86.48,%,"BPS Indonesia (unweighted mean of 3/5 provinces, approx)",territory
+Kalimantan,Mean years schooling (RLS),2025,9.08,years,"BPS Indonesia (unweighted mean of 5/5 provinces, approx)",territory
+Kalimantan,GDP growth (PDRB),2025,4.5,%,"BPS Indonesia (unweighted mean of 2/5 provinces, approx)",territory
+Kalimantan,Crop production (paddy),2025,1620591.73,tonnes,BPS Indonesia (sum of 5/5 provinces),territory
+Kalimantan,Tourist trips (domestic),2025,4741336.0,trips,BPS Indonesia (sum of 5/5 provinces),territory
+Kalimantan,Life expectancy,2025,72.31,years,"BPS Indonesia (unweighted mean of 5/5 provinces, approx)",territory
+Kalimantan,Poverty rate (P0),2025,5.13,%,"BPS Indonesia (unweighted mean of 4/5 provinces, approx)",territory
+Kalimantan,Households,2019,1629776.0,households,BPS Indonesia (sum of 2/5 provinces),territory
+Kalimantan,Electrification ratio,2022,93.09,%,"BPS Indonesia (unweighted mean of 1/5 provinces, approx)",territory
+Kalimantan,Forest extent (2000),2000,49925040.0,ha,Global Forest Watch (sum of 5/5 provinces),territory
+Kalimantan,Tree cover loss (cumulative),2001-2023,12059800.0,ha,Global Forest Watch (sum of 5/5 provinces),territory
