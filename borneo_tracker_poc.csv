@@ -89,7 +89,8 @@ Kalimantan Timur,Forest extent (2000),2000,18555914,ha,Global Forest Watch,satel
 Kalimantan Timur,Tree cover loss (cumulative),2001-2023,3633432,ha,Global Forest Watch,satellite
 Kalimantan Utara,Forest extent (2000),2000,689817,ha,Global Forest Watch,satellite
 Kalimantan Utara,Tree cover loss (cumulative),2001-2023,146903,ha,Global Forest Watch,satellite
-Sabah,"Air quality (AQI, live)",2026,57,AQI,WAQI / aqicn,city
-Sarawak,"Air quality (AQI, live)",2026,45,AQI,WAQI / aqicn,city
-Brunei,"Air quality (AQI, live)",2026,4,AQI,WAQI / aqicn,city
+Borneo (all),Active fire hotspots (1d),2026,171,count,"NASA FIRMS (VIIRS, regional CSV)",satellite
+Sabah,"Air quality (AQI, live)",2026,39,AQI,WAQI / aqicn,city
+Sarawak,"Air quality (AQI, live)",2026,28,AQI,WAQI / aqicn,city
+Brunei,"Air quality (AQI, live)",2026,6,AQI,WAQI / aqicn,city
 Kalimantan Barat,"Air quality (AQI, live)",2023,62,AQI,WAQI / aqicn,city

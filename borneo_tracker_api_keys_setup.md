@@ -62,3 +62,35 @@ curl "https://api.waqi.info/feed/kuching/?token=$WAQI_TOKEN"
 
 ## Kalimantan BPS domain codes (for reference)
 Kalbar 6100 · Kalteng 6200 · Kalsel 6300 · Kaltim 6400 · Kaltara 6500
+
+## Verified sources for previously-"gap" items (real, cited — not fabricated)
+
+**Fire hotspots (FIRMS) — backup when the API is down.** Primary = area API
+(`/api/area/csv/{KEY}/VIIRS_NOAA20_NRT/108,-4,119,7/1`). When it 403s/hangs,
+`pull_firms` falls back to NASA's **static regional 24h CSV** (no key):
+`https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_SouthEast_Asia_24h.csv`
+filtered to the Borneo bbox. Same VIIRS NOAA-20 product. Verified working (returned
+171 Borneo hotspots when the API was down). DB also keeps the last-good value.
+
+**Brunei river water quality — data DOES exist (corrects "no data").** Not a public
+API/dataset, but valid published sources:
+- Monitoring authority: **JASTRe** (Dept. of Environment, Parks & Recreation, Ministry
+  of Development) samples Sungai Brunei at ~10 stations, twice monthly.
+- Peer-reviewed: *"Assessment of Pollution Status in Brunei River Using Water Quality
+  Indices, Brunei Darussalam"*, Water 2024, 16(17):2439 (MDPI),
+  https://www.mdpi.com/2073-4441/16/17/2439 — Brunei River = **"slightly polluted"
+  (Malaysia DOE WQI)** / "moderately polluted" (NSF WQI), 8 stations, 16 parameters.
+- Peer-reviewed: *"Importance of baseline assessments: monitoring of Brunei River's
+  water quality"*, H2Open Journal 6(4):518, 2023 (IWA), https://iwaponline.com/h2open/article/6/4/518/98216
+- Handling: exact numeric WQI must be read from the paper PDF → **admin back-office**
+  (publishers block automated fetch). The *class* ("slightly polluted") is citable now.
+
+**Flood risk — valid official sources (event/risk-based, treat as risk flag).**
+- Indonesia (Kalimantan): **BNPB** — DIBI event database https://dibi.bnpb.go.id/ ·
+  InaRISK flood **hazard/risk index per district** https://inarisk.bnpb.go.id/ ·
+  Satu Data portal https://data.bnpb.go.id/ (downloadable).
+- Malaysia (Sabah/Sarawak): **JPS Public InfoBanjir** https://publicinfobanjir.water.gov.my/
+  (~200 hydrological stations, real-time) + NADMA.
+- Brunei: National Disaster Management Centre (NDMC).
+- No clean annual cross-territory index exists, so use as a risk flag; the most
+  systematic metric is BNPB InaRISK's per-district flood hazard index for Kalimantan.

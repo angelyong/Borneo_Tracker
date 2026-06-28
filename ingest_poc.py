@@ -445,25 +445,53 @@ def pull_gfw(rows, key):
 
 
 # ---------------------------------------------------------------- 6. NASA FIRMS
-def pull_firms(rows, key):
-    """Whole Borneo — satellite (key). Active fire hotspot count, last 1 day."""
-    if not key:
-        print("  [FIRMS] no FIRMS_MAP_KEY — skipped")
-        return
-    url = (f"https://firms.modaps.eosdis.nasa.gov/api/area/csv/{key}"
-           f"/VIIRS_NOAA20_NRT/108,-4,119,7/1")
+def _firms_parse(text):
+    return list(csv.DictReader([ln for ln in text.splitlines() if ln.strip()]))
+
+
+def _in_borneo(r):
     try:
-        text = get_text(url)
-    except Exception as e:
-        print(f"  [FIRMS] FAILED: {e}")
-        return
-    reader = list(csv.DictReader([ln for ln in text.splitlines() if ln.strip()]))
+        return 108 <= float(r["longitude"]) <= 119 and -4 <= float(r["latitude"]) <= 7
+    except (KeyError, ValueError, TypeError):
+        return False
+
+
+def pull_firms(rows, key):
+    """Whole Borneo — satellite. Active fire hotspot count, last 1 day.
+    Primary: the FIRMS area API (needs key). Fallback: NASA's static regional
+    24h CSV (same VIIRS NOAA-20 product, no key) filtered to the Borneo bbox —
+    used when the API service is down (it 403s/hangs intermittently)."""
+    reader, source = None, "NASA FIRMS (VIIRS)"
+    # 1. primary — area API (precise bbox + day)
+    if key:
+        api = (f"https://firms.modaps.eosdis.nasa.gov/api/area/csv/{key}"
+               f"/VIIRS_NOAA20_NRT/108,-4,119,7/1")
+        try:
+            reader = _firms_parse(get_text(api, timeout=30))
+        except Exception as e:
+            print(f"  [FIRMS] API down ({e}); trying static CSV fallback")
+    # 2. fallback — static regional CSV, filtered to Borneo (retry: NASA is flaky)
+    if not reader:
+        static = ("https://firms.modaps.eosdis.nasa.gov/data/active_fire/"
+                  "noaa-20-viirs-c2/csv/J1_VIIRS_C2_SouthEast_Asia_24h.csv")
+        for attempt in range(3):
+            try:
+                reader = [r for r in _firms_parse(get_text(static, timeout=120))
+                          if _in_borneo(r)]
+                source = "NASA FIRMS (VIIRS, regional CSV)"
+                break
+            except Exception as e:
+                if attempt < 2:
+                    time.sleep(2 * (attempt + 1))
+                else:
+                    print(f"  [FIRMS] both API and static CSV failed: {e} "
+                          "(NASA outage — DB keeps last good value)")
+                    return
     if not reader:
         print("  [FIRMS] empty response")
         return
     add(rows, "Borneo (all)", "Active fire hotspots (1d)",
-        reader[0]["acq_date"][:4], len(reader), "count",
-        "NASA FIRMS (VIIRS)", "satellite")
+        reader[0]["acq_date"][:4], len(reader), "count", source, "satellite")
 
 
 # ---------------------------------------------------------------- 7. WAQI
