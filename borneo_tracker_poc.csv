@@ -101,9 +101,8 @@ Kalimantan Barat,"Fire alerts (VIIRS, annual)",2025,21611,count,Global Forest Wa
 Kalimantan Selatan,"Fire alerts (VIIRS, annual)",2025,1987,count,Global Forest Watch (VIIRS),satellite
 Kalimantan Tengah,"Fire alerts (VIIRS, annual)",2025,3895,count,Global Forest Watch (VIIRS),satellite
 Kalimantan Utara,"Fire alerts (VIIRS, annual)",2025,159,count,Global Forest Watch (VIIRS),satellite
-Borneo (all),Active fire hotspots (1d),2026,202,count,"NASA FIRMS (VIIRS, regional CSV)",satellite
-Sabah,"Air quality (AQI, live)",2026,40,AQI,WAQI / aqicn,city
-Sarawak,"Air quality (AQI, live)",2026,35,AQI,WAQI / aqicn,city
+Sabah,"Air quality (AQI, live)",2026,41,AQI,WAQI / aqicn,city
+Sarawak,"Air quality (AQI, live)",2026,36,AQI,WAQI / aqicn,city
 Brunei,"Air quality (AQI, live)",2026,6,AQI,WAQI / aqicn,city
 Kalimantan Barat,"Air quality (AQI, live)",2023,62,AQI,WAQI / aqicn,city
 Brunei,Households,2021,87137,households,DEPS Brunei Population & Housing Census 2021,national

@@ -70,6 +70,45 @@ curl "https://api.waqi.info/feed/kuching/?token=$WAQI_TOKEN"
 ## Kalimantan BPS domain codes (for reference)
 Kalbar 6100 · Kalteng 6200 · Kalsel 6300 · Kaltim 6400 · Kaltara 6500
 
+## Cross-territory metric consistency (important for the dashboard)
+
+The 4 dashboard territories come from different statistics agencies that publish the
+SAME concept with DIFFERENT metrics/units. For a comparison view, indicators were
+standardised onto one metric per concept:
+
+| Concept | Standard metric | How each territory is filled |
+|---|---|---|
+| Healthcare | Life expectancy (years) | Sabah/Sarawak DOSM (manual), Brunei World Bank, Kalimantan BPS |
+| Education | Mean years of schooling | Sabah/Sarawak/Brunei Global Data Lab SHDI (manual), Kalimantan BPS RLS |
+| Food | Paddy production (tonnes) | Sabah/Sarawak data.gov.my, Brunei FAO (manual), Kalimantan BPS |
+| GDP | Growth % (YoY) | Sabah/Sarawak data.gov.my `growth_yoy`, Brunei WB, Kalimantan BPS PDRB |
+| Tourism | Visitor arrivals | Sabah/Sarawak/Brunei (manual, 2024), Kalimantan BPS domestic trips |
+| Fire | VIIRS alert count | GFW per-territory |
+
+**Honest caveats (not fully consistent, documented not hidden):**
+- **Energy/electrification:** Sarawak 99.4%, Brunei 100%, Kalimantan (Kaltim only) 93% are %.
+  **Sabah has NO published statewide electrification %** (only a 2030 goal + rural-gap
+  reports), so Sabah still shows household-count. Not fabricated — left as the real gap.
+- **Tourism type differs:** Sabah/Sarawak = total visitor arrivals; Brunei = international
+  arrivals; Kalimantan = domestic trips. Comparable in scale, not identical in definition.
+- **Kalimantan fire = 4/5 provinces.** The GFW VIIRS alert table uses a GADM version whose
+  adm1 numbering differs from the tree-cover table; Kalimantan Timur's code there is empty
+  and can't be confirmed by name via the API (GFW data-api exposes no adm1 names; the
+  boundaries dataset is adm0-only). Kaltim is excluded rather than guessed.
+
+## Manual / reference layer (`manual_overrides.csv`)
+
+Figures that exist ONLY in agency reports/dashboards/PDFs (no machine API) live in
+`manual_overrides.csv`, each row carrying its own provenance: `source_doc, source_url,
+retrieved_date, note`. `load_db.py` upserts them into the same `indicators` table but
+flags them `data_level='report'`, `confidence='manual'` so the frontend can show them as
+"cited from report, not live API". This is the no-fake way to incorporate PDF/report data:
+a human records the figure WITH its citation; the number is never machine-guessed from a
+dense PDF. Current contents: Sabah/Sarawak life expectancy (DOSM 2024); Sabah/Sarawak/
+Brunei mean years schooling (Global Data Lab SHDI 2023); Sarawak electrification 99.4%
+(Sarawak Energy 2023); Brunei paddy ~3,700 t (FAO/Dept of Agriculture 2023);
+Sabah/Sarawak/Brunei 2024 visitor arrivals (state tourism boards / Brunei TDD report).
+
 ## Verified sources for previously-"gap" items (real, cited — not fabricated)
 
 **Fire hotspots (FIRMS) — backup when the API is down.** Primary = area API
