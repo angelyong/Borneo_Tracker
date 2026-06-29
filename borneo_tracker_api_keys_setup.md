@@ -118,6 +118,14 @@ Sabah/Sarawak/Brunei 2024 visitor arrivals (state tourism boards / Brunei TDD re
 filtered to the Borneo bbox. Same VIIRS NOAA-20 product. Verified working (returned
 171 Borneo hotspots when the API was down). DB also keeps the last-good value.
 
+**River water quality — DROPPED from the tracked indicator set (2026-06-29).** No
+comparable cross-territory data exists: Kalimantan has an API (BPS IKA), Malaysia is
+DOE PDF-only, and Brunei has only a *classification* ("slightly polluted"), no number.
+SDG6 is already fully covered (4/4) by **Clean water access**, which the coverage matrix
+named as the intended fallback. Kept the sourcing notes below for reference only; the
+indicator is no longer counted as a gap. Reinstate later only if a numeric Brunei WQI
+and a uniform method appear.
+
 **Brunei river water quality — data DOES exist (corrects "no data").** Not a public
 API/dataset, but valid published sources:
 - Monitoring authority: **JASTRe** (Dept. of Environment, Parks & Recreation, Ministry

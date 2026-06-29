@@ -46,7 +46,9 @@ ESG = [
     ("E", "Forest cover / loss", m_forest),
     ("E", "Fire hotspots", m_fire),
     ("E", "Air quality", m_air),
-    ("E", "River water quality", m_water_q),
+    # River water quality DROPPED: no comparable cross-territory data (Kalimantan API,
+    # Malaysia DOE PDF, Brunei only a classification). SDG6 is already covered by
+    # "Clean water access" (4/4), which the original plan named as the fallback metric.
     ("S", "Clean water access", m_clean_water),
     ("S", "Employment", m_employ),
     ("S", "GDP", m_gdp),
