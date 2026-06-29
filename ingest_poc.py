@@ -183,6 +183,7 @@ def pull_worldbank(rows):
         ("NY.GDP.MKTP.KD.ZG", "GDP growth", "%"),
         ("NY.GDP.MKTP.CD", "GDP (current US$)", "US$"),
         ("SH.MED.BEDS.ZS", "Hospital beds (per 1k)", "/1k"),
+        ("SP.DYN.LE00.IN", "Life expectancy", "years"),  # consistent healthcare metric
         ("AG.LND.FRST.ZS", "Forest cover", "% land"),
         # Education via World Bank API (teammate's Brunei SDG doc) — fills the
         # Brunei education gap without PDF/admin entry.

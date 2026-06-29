@@ -18,6 +18,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent
 CSV = ROOT / "borneo_tracker_poc.csv"
+MANUAL = ROOT / "manual_overrides.csv"
 DB = ROOT / "borneo_tracker.db"
 
 
@@ -130,6 +131,35 @@ def main():
              r["data_level"], esg_pillar(r["indicator"]), sdg_goal(r["indicator"]),
              hexagon_pillar(r["indicator"]), confidence(r), run_ts),
         )
+    # Manual/reference layer: figures that exist only in DOSM/UNDP/agency reports
+    # (no machine API), each carrying its own provenance (source_doc/url/note). These
+    # make Healthcare/Education/Energy/Food consistent across all 4 territories. They
+    # upsert into the SAME table but are flagged data_level='report', confidence='manual'
+    # so the dashboard can show them as cited-from-report, not live API.
+    n_manual = 0
+    if MANUAL.exists():
+        for r in csv.DictReader(open(MANUAL, encoding="utf-8")):
+            try:
+                val = float(r["value"])
+            except (ValueError, TypeError):
+                val = None
+            src = r["source_doc"] + (f" — {r['note']}" if r.get("note") else "")
+            c.execute(
+                "INSERT INTO indicators (territory,indicator,year,value,unit,source,"
+                "data_level,esg_pillar,sdg_goal,hexagon_pillar,confidence,last_updated) "
+                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?) "
+                "ON CONFLICT(territory,indicator) DO UPDATE SET "
+                "year=excluded.year, value=excluded.value, unit=excluded.unit, "
+                "source=excluded.source, data_level=excluded.data_level, "
+                "esg_pillar=excluded.esg_pillar, sdg_goal=excluded.sdg_goal, "
+                "hexagon_pillar=excluded.hexagon_pillar, confidence=excluded.confidence, "
+                "last_updated=excluded.last_updated",
+                (r["territory"], r["indicator"], r["year"], val, r["unit"], src,
+                 "report", esg_pillar(r["indicator"]), sdg_goal(r["indicator"]),
+                 hexagon_pillar(r["indicator"]), "manual", r.get("retrieved_date") or run_ts),
+            )
+            n_manual += 1
+        print(f"  + manual layer: upserted {n_manual} cited report figures from {MANUAL.name}")
     conn.commit()
 
     total = c.execute("SELECT COUNT(*) FROM indicators").fetchone()[0]
