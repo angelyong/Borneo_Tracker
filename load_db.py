@@ -28,7 +28,8 @@ def low(s):
 
 def esg_pillar(ind):
     i = low(ind)
-    if any(k in i for k in ("forest", "tree cover", "fire", "air quality")):
+    if any(k in i for k in ("forest", "tree cover", "fire", "air quality",
+                            "renewable", "national park")):
         return "E"
     if "corruption" in i or "wgi" in i or "governance" in i:
         return "G"
@@ -38,8 +39,9 @@ def esg_pillar(ind):
 def sdg_goal(ind):
     i = low(ind)
     rules = [
-        (("forest", "tree cover"), "SDG15"),
+        (("forest", "tree cover", "national park"), "SDG15"),
         (("fire", "air quality"), "SDG13"),
+        (("world heritage", "unesco"), "SDG11"),
         (("clean water", "sanitation"), "SDG6"),
         (("electri",), "SDG7"),
         (("unemployment", "gdp", "tourist", "arrival"), "SDG8"),
@@ -64,7 +66,8 @@ def hexagon_pillar(ind):
         (("enrolment", "schooling", "literacy"), "Education"),
         (("households", "housing"), "Shelter"),
         (("hospital", "beds", "life expect"), "Healthcare"),
-        (("tourist", "tourism", "arrival", "wisataw"), "Entertainment"),
+        (("tourist", "tourism", "arrival", "wisataw", "national park",
+          "world heritage", "unesco"), "Entertainment"),
     ]
     for keys, pillar in rules:
         if any(k in i for k in keys):

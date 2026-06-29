@@ -234,6 +234,28 @@ def pull_governance(rows):
                 round(r["value"], 1), "score/100", "World Bank WGI", "national")
 
 
+def pull_renewable(rows):
+    """Renewable electricity output (% of total, WB EG.ELC.RNEW.ZS). No clean,
+    comparable sub-national series exists (state figures are different years/
+    definitions), so use the country value inherited to its territories — same
+    pattern as governance. Energy-pillar support indicator (SDG7)."""
+    val = {}
+    for iso in ("MYS", "IDN", "BRN"):
+        url = (f"https://api.worldbank.org/v2/country/{iso}/indicator/"
+               f"EG.ELC.RNEW.ZS?format=json&mrv=5")
+        try:
+            series = [x for x in (get_json(url)[1] or []) if x.get("value") is not None]
+            val[iso] = max(series, key=lambda x: x["date"])
+        except Exception as e:
+            print(f"  [Renewable:{iso}] FAILED: {e}")
+    for terr, iso in [("Sabah", "MYS"), ("Sarawak", "MYS"),
+                      ("Brunei", "BRN"), ("Kalimantan", "IDN")]:
+        if iso in val:
+            r = val[iso]
+            add(rows, terr, "Renewable electricity (% output)", r["date"],
+                round(r["value"], 2), "%", "World Bank", "national")
+
+
 # ---------------------------------------------------------------- 3. UN SDG API
 def pull_un_sdg(rows):
     """MY / IDN / BRN — national SDG baseline (keyless). Extreme poverty (SDG 1)."""
@@ -700,6 +722,8 @@ def main():
     pull_worldbank(rows)
     print("2b. Governance — World Bank WGI (national, inherited):")
     pull_governance(rows)
+    print("2c. Renewable electricity — World Bank (national, inherited):")
+    pull_renewable(rows)
     print("3. UN SDG API (country baseline, national):")
     pull_un_sdg(rows)
     print("4. BPS Indonesia (Kalimantan, province):")

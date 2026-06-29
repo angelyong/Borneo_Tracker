@@ -32,10 +32,15 @@ Brunei,Adult literacy,2011,96.0899963378906,%,World Bank,national
 Brunei,Basic sanitation access,2024,100,%,World Bank,national
 Brunei,Electricity access,2023,100,%,World Bank,national
 Brunei,Tourist arrivals,2020,1071000,arrivals,World Bank,national
+Brunei,Agricultural land,2023,2.5426944971537,% land,World Bank,national
 Sabah,Control of Corruption (WGI),2024,57.9,score/100,World Bank WGI,national
 Sarawak,Control of Corruption (WGI),2024,57.9,score/100,World Bank WGI,national
 Brunei,Control of Corruption (WGI),2024,71.9,score/100,World Bank WGI,national
 Kalimantan,Control of Corruption (WGI),2024,36.8,score/100,World Bank WGI,national
+Sabah,Renewable electricity (% output),2021,17.0,%,World Bank,national
+Sarawak,Renewable electricity (% output),2021,17.0,%,World Bank,national
+Brunei,Renewable electricity (% output),2021,0.02,%,World Bank,national
+Kalimantan,Renewable electricity (% output),2021,15.53,%,World Bank,national
 Malaysia,Poverty headcount <$2.15/day (SDG1),2021,0.0009,%,UN SDG API,national
 Indonesia,Poverty headcount <$2.15/day (SDG1),2025,4,%,UN SDG API,national
 Kalimantan Barat,Unemployment rate,2025,4.82,%,BPS Indonesia,province
