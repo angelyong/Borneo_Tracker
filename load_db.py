@@ -109,9 +109,13 @@ def main():
             hexagon_pillar TEXT,
             confidence  TEXT,
             last_updated TEXT,
+            canonical   INTEGER DEFAULT 0,
             PRIMARY KEY (territory, indicator)
         )
     """)
+    # add canonical column to a pre-existing table (no-op if already present)
+    if "canonical" not in [r[1] for r in c.execute("PRAGMA table_info(indicators)").fetchall()]:
+        c.execute("ALTER TABLE indicators ADD COLUMN canonical INTEGER DEFAULT 0")
     for r in rows:
         try:
             val = float(r["value"])
@@ -160,6 +164,25 @@ def main():
             )
             n_manual += 1
         print(f"  + manual layer: upserted {n_manual} cited report figures from {MANUAL.name}")
+
+    # Canonical marking: flag the ONE unified metric per concept so the dashboard can
+    # show a single consistent indicator per territory (legacy/extra indicators stay in
+    # the table for reference but canonical=0). The frontend reads WHERE canonical=1.
+    c.execute("UPDATE indicators SET canonical=0")
+    canon = [
+        "Forest extent (2000)", "Fire alerts (VIIRS, annual)", "Air quality (AQI, live)",
+        "Clean water access", "Unemployment rate", "GDP growth", "GDP growth (PDRB)",
+        "Life expectancy", "Mean years schooling (RLS)", "Poverty rate (absolute)",
+        "Poverty rate (P0)", "Control of Corruption (WGI)", "Crop production (paddy)",
+        "Households", "Tourist arrivals", "Tourist trips (domestic)",
+    ]
+    c.executemany("UPDATE indicators SET canonical=1 WHERE indicator=?", [(x,) for x in canon])
+    # Energy: only the %-based rows are canonical (Sabah's household-count row is NOT —
+    # no statewide % is published, so Sabah energy stays a deliberate blank).
+    c.execute("UPDATE indicators SET canonical=1 WHERE indicator IN "
+              "('Electrification ratio','Electricity access') AND unit='%'")
+    n_canon = c.execute("SELECT COUNT(*) FROM indicators WHERE canonical=1").fetchone()[0]
+    print(f"  + canonical: flagged {n_canon} unified-metric rows")
     conn.commit()
 
     total = c.execute("SELECT COUNT(*) FROM indicators").fetchone()[0]

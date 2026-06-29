@@ -607,15 +607,23 @@ WAQI_CITIES = [
     ("kota kinabalu", "Sabah"),
     ("kuching", "Sarawak"),
     ("bandar seri begawan", "Brunei"),
+    # Kalimantan: several provincial capitals so the territory-level figure isn't a
+    # single city. Each maps to its province; a "Kalimantan" mean is added after.
     ("pontianak", "Kalimantan Barat"),
+    ("banjarmasin", "Kalimantan Selatan"),
+    ("samarinda", "Kalimantan Timur"),
+    ("palangkaraya", "Kalimantan Tengah"),
 ]
 
 
 def pull_waqi(rows, token):
-    """Air quality — city level (token). Live AQI for the 4 Borneo capitals."""
+    """Air quality — city level (token). Live AQI for Borneo capitals. For the other
+    3 territories one capital IS the territory proxy; Kalimantan gets a mean of its
+    available provincial-capital AQIs so it has a comparable territory-level value."""
     if not token:
         print("  [WAQI] no WAQI_TOKEN — skipped")
         return
+    kal_aqi, kal_year = [], "live"
     for slug, terr in WAQI_CITIES:
         url = f"https://api.waqi.info/feed/{quote(slug)}/?token={token}"
         try:
@@ -628,8 +636,16 @@ def pull_waqi(rows, token):
             continue
         data = d["data"]
         year = str(data.get("time", {}).get("s", ""))[:4] or "live"
-        add(rows, terr, "Air quality (AQI, live)", year, data.get("aqi"),
+        aqi = data.get("aqi")
+        add(rows, terr, "Air quality (AQI, live)", year, aqi,
             "AQI", "WAQI / aqicn", "city")
+        if terr.startswith("Kalimantan") and isinstance(aqi, (int, float)):
+            kal_aqi.append(aqi)
+            kal_year = year
+    if kal_aqi:
+        add(rows, "Kalimantan", "Air quality (AQI, live)", kal_year,
+            round(sum(kal_aqi) / len(kal_aqi)), "AQI",
+            f"WAQI / aqicn (mean of {len(kal_aqi)} Kalimantan cities)", "city")
 
 
 # ---------------------------------------------------------------- main

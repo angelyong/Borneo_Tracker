@@ -32,7 +32,6 @@ Brunei,Adult literacy,2011,96.0899963378906,%,World Bank,national
 Brunei,Basic sanitation access,2024,100,%,World Bank,national
 Brunei,Electricity access,2023,100,%,World Bank,national
 Brunei,Tourist arrivals,2020,1071000,arrivals,World Bank,national
-Brunei,Agricultural land,2023,2.5426944971537,% land,World Bank,national
 Sabah,Control of Corruption (WGI),2024,57.9,score/100,World Bank WGI,national
 Sarawak,Control of Corruption (WGI),2024,57.9,score/100,World Bank WGI,national
 Brunei,Control of Corruption (WGI),2024,71.9,score/100,World Bank WGI,national
@@ -101,10 +100,13 @@ Kalimantan Barat,"Fire alerts (VIIRS, annual)",2025,21611,count,Global Forest Wa
 Kalimantan Selatan,"Fire alerts (VIIRS, annual)",2025,1987,count,Global Forest Watch (VIIRS),satellite
 Kalimantan Tengah,"Fire alerts (VIIRS, annual)",2025,3895,count,Global Forest Watch (VIIRS),satellite
 Kalimantan Utara,"Fire alerts (VIIRS, annual)",2025,159,count,Global Forest Watch (VIIRS),satellite
-Sabah,"Air quality (AQI, live)",2026,41,AQI,WAQI / aqicn,city
-Sarawak,"Air quality (AQI, live)",2026,36,AQI,WAQI / aqicn,city
-Brunei,"Air quality (AQI, live)",2026,6,AQI,WAQI / aqicn,city
+Sabah,"Air quality (AQI, live)",2026,38,AQI,WAQI / aqicn,city
+Sarawak,"Air quality (AQI, live)",2026,39,AQI,WAQI / aqicn,city
+Brunei,"Air quality (AQI, live)",2026,7,AQI,WAQI / aqicn,city
 Kalimantan Barat,"Air quality (AQI, live)",2023,62,AQI,WAQI / aqicn,city
+Kalimantan Timur,"Air quality (AQI, live)",2026,56,AQI,WAQI / aqicn,city
+Kalimantan Tengah,"Air quality (AQI, live)",2026,51,AQI,WAQI / aqicn,city
+Kalimantan,"Air quality (AQI, live)",2026,56,AQI,WAQI / aqicn (mean of 3 Kalimantan cities),city
 Brunei,Households,2021,87137,households,DEPS Brunei Population & Housing Census 2021,national
 Kalimantan,Unemployment rate,2025,4.34,%,"BPS Indonesia (unweighted mean of 5/5 provinces, approx)",territory
 Kalimantan,Mean years schooling (RLS),2025,9.08,years,"BPS Indonesia (unweighted mean of 5/5 provinces, approx)",territory
