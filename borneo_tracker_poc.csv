@@ -5,6 +5,8 @@ Sabah,Unemployment rate,2025,5.7,%,data.gov.my / OpenDOSM,state
 Sarawak,Unemployment rate,2025,3.1,%,data.gov.my / OpenDOSM,state
 Sabah,GDP (real),2023,83196.915,RM mil,data.gov.my / OpenDOSM,state
 Sarawak,GDP (real),2023,142351.83,RM mil,data.gov.my / OpenDOSM,state
+Sabah,GDP growth,2023,1.328,%,data.gov.my / OpenDOSM,state
+Sarawak,GDP growth,2023,1.175,%,data.gov.my / OpenDOSM,state
 Sabah,Hospital beds,2022,5053,beds,data.gov.my / OpenDOSM,state
 Sarawak,Hospital beds,2022,4119,beds,data.gov.my / OpenDOSM,state
 Sabah,School enrolment,2022,506864,students,data.gov.my / OpenDOSM,state
@@ -37,7 +39,6 @@ Kalimantan,Control of Corruption (WGI),2024,36.8,score/100,World Bank WGI,nation
 Malaysia,Poverty headcount <$2.15/day (SDG1),2021,0.0009,%,UN SDG API,national
 Indonesia,Poverty headcount <$2.15/day (SDG1),2025,4,%,UN SDG API,national
 Kalimantan Barat,Unemployment rate,2025,4.82,%,BPS Indonesia,province
-Kalimantan Barat,Clean water access,2024,82.13,%,BPS Indonesia,province
 Kalimantan Barat,Mean years schooling (RLS),2025,8.07,years,BPS Indonesia,province
 Kalimantan Barat,GDP growth (PDRB),2023,4.46,%,BPS Indonesia,province
 Kalimantan Barat,Crop production (paddy),2025,774908,tonnes,BPS Indonesia,province
@@ -58,7 +59,6 @@ Kalimantan Selatan,Tourist trips (domestic),2025,1822941,trips,BPS Indonesia,pro
 Kalimantan Selatan,Life expectancy,2024,69.65,years,BPS Indonesia,province
 Kalimantan Timur,Unemployment rate,2024,5.14,%,BPS Indonesia,province
 Kalimantan Timur,Poverty rate (P0),2025,5.17,%,BPS Indonesia,province
-Kalimantan Timur,Clean water access,2023,87.9,%,BPS Indonesia,province
 Kalimantan Timur,Mean years schooling (RLS),2025,10.1,years,BPS Indonesia,province
 Kalimantan Timur,GDP growth (PDRB),2025,4.53,%,BPS Indonesia,province
 Kalimantan Timur,Electrification ratio,2022,93.09,%,BPS Indonesia,province
@@ -68,11 +68,15 @@ Kalimantan Timur,Tourist trips (domestic),2025,1386611,trips,BPS Indonesia,provi
 Kalimantan Timur,Life expectancy,2024,75.03,years,BPS Indonesia,province
 Kalimantan Utara,Unemployment rate,2025,3.85,%,BPS Indonesia,province
 Kalimantan Utara,Poverty rate (P0),2024,6.32,%,BPS Indonesia,province
-Kalimantan Utara,Clean water access,2024,89.42,%,BPS Indonesia,province
 Kalimantan Utara,Mean years schooling (RLS),2025,9.44,years,BPS Indonesia,province
 Kalimantan Utara,Crop production (paddy),2023,6632.07,tonnes,BPS Indonesia,province
 Kalimantan Utara,Tourist trips (domestic),2025,122028,trips,BPS Indonesia,province
 Kalimantan Utara,Life expectancy,2024,72.73,years,BPS Indonesia,province
+Kalimantan Barat,Clean water access,2025,79.47,%,BPS Indonesia (national by-province),province
+Kalimantan Tengah,Clean water access,2025,92.14,%,BPS Indonesia (national by-province),province
+Kalimantan Selatan,Clean water access,2025,89.64,%,BPS Indonesia (national by-province),province
+Kalimantan Timur,Clean water access,2025,94.23,%,BPS Indonesia (national by-province),province
+Kalimantan Utara,Clean water access,2025,91.59,%,BPS Indonesia (national by-province),province
 Sabah,Forest extent (2000),2000,6684138,ha,Global Forest Watch,satellite
 Sabah,Tree cover loss (cumulative),2001-2023,1803226,ha,Global Forest Watch,satellite
 Sarawak,Forest extent (2000),2000,11643005,ha,Global Forest Watch,satellite
@@ -89,12 +93,19 @@ Kalimantan Timur,Forest extent (2000),2000,18555914,ha,Global Forest Watch,satel
 Kalimantan Timur,Tree cover loss (cumulative),2001-2023,3633432,ha,Global Forest Watch,satellite
 Kalimantan Utara,Forest extent (2000),2000,689817,ha,Global Forest Watch,satellite
 Kalimantan Utara,Tree cover loss (cumulative),2001-2023,146903,ha,Global Forest Watch,satellite
-Sabah,"Air quality (AQI, live)",2026,39,AQI,WAQI / aqicn,city
-Sarawak,"Air quality (AQI, live)",2026,28,AQI,WAQI / aqicn,city
+Sabah,"Fire alerts (VIIRS, annual)",2025,697,count,Global Forest Watch (VIIRS),satellite
+Sarawak,"Fire alerts (VIIRS, annual)",2025,3326,count,Global Forest Watch (VIIRS),satellite
+Brunei,"Fire alerts (VIIRS, annual)",2025,128,count,Global Forest Watch (VIIRS),satellite
+Kalimantan Barat,"Fire alerts (VIIRS, annual)",2025,21611,count,Global Forest Watch (VIIRS),satellite
+Kalimantan Selatan,"Fire alerts (VIIRS, annual)",2025,1987,count,Global Forest Watch (VIIRS),satellite
+Kalimantan Tengah,"Fire alerts (VIIRS, annual)",2025,3895,count,Global Forest Watch (VIIRS),satellite
+Kalimantan Utara,"Fire alerts (VIIRS, annual)",2025,159,count,Global Forest Watch (VIIRS),satellite
+Sabah,"Air quality (AQI, live)",2026,40,AQI,WAQI / aqicn,city
+Sarawak,"Air quality (AQI, live)",2026,34,AQI,WAQI / aqicn,city
 Brunei,"Air quality (AQI, live)",2026,6,AQI,WAQI / aqicn,city
 Kalimantan Barat,"Air quality (AQI, live)",2023,62,AQI,WAQI / aqicn,city
+Brunei,Households,2021,87137,households,DEPS Brunei Population & Housing Census 2021,national
 Kalimantan,Unemployment rate,2025,4.34,%,"BPS Indonesia (unweighted mean of 5/5 provinces, approx)",territory
-Kalimantan,Clean water access,2024,86.48,%,"BPS Indonesia (unweighted mean of 3/5 provinces, approx)",territory
 Kalimantan,Mean years schooling (RLS),2025,9.08,years,"BPS Indonesia (unweighted mean of 5/5 provinces, approx)",territory
 Kalimantan,GDP growth (PDRB),2025,4.5,%,"BPS Indonesia (unweighted mean of 2/5 provinces, approx)",territory
 Kalimantan,Crop production (paddy),2025,1620591.73,tonnes,BPS Indonesia (sum of 5/5 provinces),territory
@@ -103,5 +114,7 @@ Kalimantan,Life expectancy,2025,72.31,years,"BPS Indonesia (unweighted mean of 5
 Kalimantan,Poverty rate (P0),2025,5.13,%,"BPS Indonesia (unweighted mean of 4/5 provinces, approx)",territory
 Kalimantan,Households,2019,1629776.0,households,BPS Indonesia (sum of 2/5 provinces),territory
 Kalimantan,Electrification ratio,2022,93.09,%,"BPS Indonesia (unweighted mean of 1/5 provinces, approx)",territory
+Kalimantan,Clean water access,2025,89.41,%,"BPS Indonesia (national by-province) (unweighted mean of 5/5 provinces, approx)",territory
 Kalimantan,Forest extent (2000),2000,49925040.0,ha,Global Forest Watch (sum of 5/5 provinces),territory
 Kalimantan,Tree cover loss (cumulative),2001-2023,12059800.0,ha,Global Forest Watch (sum of 5/5 provinces),territory
+Kalimantan,"Fire alerts (VIIRS, annual)",2025,27652.0,count,Global Forest Watch (VIIRS) (sum of 4/5 provinces),territory

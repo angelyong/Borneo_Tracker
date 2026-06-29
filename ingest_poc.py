@@ -137,6 +137,12 @@ def pull_datagovmy(rows):
         ("gdp_state_real_supply", "GDP (real)", "RM mil",
          lambda r: latest(r, "value",
                           lambda x: x.get("sector") == "p0" and x.get("series") == "abs")),
+        # GDP GROWTH % — consistent metric across all 4 territories (Brunei + Kalimantan
+        # are growth %, so Malaysia must be growth % too, not absolute RM). Series
+        # 'growth_yoy' is published directly, no need to compute.
+        ("gdp_state_real_supply", "GDP growth", "%",
+         lambda r: latest(r, "value",
+                          lambda x: x.get("sector") == "p0" and x.get("series") == "growth_yoy")),
         ("hospital_beds", "Hospital beds", "beds",
          lambda r: latest(r, "beds",
                           lambda x: x.get("type") == "all" and x.get("district") == "All Districts")),
@@ -373,12 +379,16 @@ BPS_INDICATORS = [
 # fewer requests. IMPORTANT (integrity): a cell absent here is genuinely NOT
 # published in that province's BPS regional portal (verified against the full
 # catalog), NOT dropped to fake a gap. Re-run discover_bps_map.py to refresh.
+# NOTE: 'Clean water access' is intentionally NOT in this per-province map. The
+# province portals only published it for 3/5 provinces; pull_bps_water_national()
+# instead pulls all 5 from the BPS national by-province table (var 854) — one source,
+# one vintage, 5/5.
 BPS_VAR_MAP = {
-    6100: {'Unemployment rate': 51, 'Clean water access': 370, 'Mean years schooling (RLS)': 85, 'GDP growth (PDRB)': 44, 'Crop production (paddy)': 199, 'Tourist trips (domestic)': 441, 'Life expectancy': 30},
+    6100: {'Unemployment rate': 51, 'Mean years schooling (RLS)': 85, 'GDP growth (PDRB)': 44, 'Crop production (paddy)': 199, 'Tourist trips (domestic)': 441, 'Life expectancy': 30},
     6200: {'Unemployment rate': 389, 'Poverty rate (P0)': 69, 'Mean years schooling (RLS)': 45, 'Crop production (paddy)': 991, 'Households': 449, 'Tourist trips (domestic)': 1018, 'Life expectancy': 958},
     6300: {'Unemployment rate': 37, 'Poverty rate (P0)': 103, 'Mean years schooling (RLS)': 62, 'Crop production (paddy)': 344, 'Tourist trips (domestic)': 386, 'Life expectancy': 60},
-    6400: {'Unemployment rate': 59, 'Poverty rate (P0)': 111, 'Clean water access': 1003, 'Mean years schooling (RLS)': 65, 'GDP growth (PDRB)': 95, 'Electrification ratio': 399, 'Crop production (paddy)': 320, 'Households': 300, 'Tourist trips (domestic)': 1014, 'Life expectancy': 130},
-    6500: {'Unemployment rate': 115, 'Poverty rate (P0)': 71, 'Clean water access': 263, 'Mean years schooling (RLS)': 65, 'Crop production (paddy)': 312, 'Tourist trips (domestic)': 600, 'Life expectancy': 64},
+    6400: {'Unemployment rate': 59, 'Poverty rate (P0)': 111, 'Mean years schooling (RLS)': 65, 'GDP growth (PDRB)': 95, 'Electrification ratio': 399, 'Crop production (paddy)': 320, 'Households': 300, 'Tourist trips (domestic)': 1014, 'Life expectancy': 130},
+    6500: {'Unemployment rate': 115, 'Poverty rate (P0)': 71, 'Mean years schooling (RLS)': 65, 'Crop production (paddy)': 312, 'Tourist trips (domestic)': 600, 'Life expectancy': 64},
 }
 BPS_PROV = {6100: "Kalimantan Barat", 6200: "Kalimantan Tengah",
             6300: "Kalimantan Selatan", 6400: "Kalimantan Timur",
@@ -401,6 +411,40 @@ def pull_bps(rows, key):
                 continue
             add(rows, pname, name, res[0], res[1],
                 BPS_UNIT.get(name, ""), "BPS Indonesia", "province")
+
+
+def pull_bps_water_national(rows, key):
+    """Clean water (% households with access to a proper drinking-water source) for
+    ALL 5 Kalimantan provinces from the BPS NATIONAL by-province table (domain 0000,
+    var 854). The 5 provincial portals only carried this for 3/5; the national table
+    gives all 5 from one consistent source and vintage."""
+    if not key:
+        return
+    var = 854
+    for thpair in ("125;124", "123;122", "121;120"):
+        url = (f"https://webapi.bps.go.id/v1/api/list/model/data/domain/0000"
+               f"/var/{var}/th/{thpair}/key/{key}/")
+        d = bps_get(url)
+        if not isinstance(d, dict) or d.get("status") != "OK" or not d.get("tahun"):
+            continue
+        vervar = {v["val"]: v["label"].strip() for v in d.get("vervar", [])}
+        dc = d.get("datacontent", {})
+        years = sorted((t["val"] for t in d["tahun"]), reverse=True)
+        n = 0
+        for vv, lbl in vervar.items():
+            if "kalimantan" not in lbl.lower():
+                continue
+            name = " ".join(w.capitalize() for w in lbl.split())  # KALIMANTAN BARAT -> Kalimantan Barat
+            for th in years:
+                pref = f"{vv}{var}"
+                k = next((kk for kk in dc if kk.startswith(pref) and str(th) in kk[len(pref):]), None)
+                if k:
+                    add(rows, name, "Clean water access", 1900 + th, dc[k], "%",
+                        "BPS Indonesia (national by-province)", "province")
+                    n += 1
+                    break
+        if n:
+            return
 
 
 # ---------------------------------------------------------------- 5. GFW forest
@@ -457,6 +501,54 @@ def pull_gfw(rows, key):
             "Global Forest Watch", "satellite")
         add(rows, terr, "Tree cover loss (cumulative)", "2001-2023",
             round(r["loss"]), "ha", "Global Forest Watch", "satellite")
+
+
+# ------------------------------------------------ 5b. GFW fire alerts (per terr)
+def pull_gfw_fire(rows, key):
+    """Fire — VIIRS active-fire ALERTS per territory via GFW (uses our GFW key, so
+    it works even when NASA FIRMS is down). Alert counts are partitioned by canopy-
+    density bucket, so SUM over all thresholds = the true total (no double-count,
+    unlike the cumulative tree-cover tables). Reports the latest COMPLETE year so a
+    half-finished current year doesn't look artificially low."""
+    if not key:
+        print("  [GFW-fire] no GFW_API_KEY — skipped")
+        return
+    hdr = {"x-api-key": key, "Accept": "*/*"}
+    dsa = "gadm__viirs__adm1_weekly_alerts"
+    dsi = "gadm__viirs__iso_weekly_alerts"
+    try:
+        va = get_json(f"https://data-api.globalforestwatch.org/dataset/{dsa}/latest", headers=hdr)["data"]["version"]
+        vi = get_json(f"https://data-api.globalforestwatch.org/dataset/{dsi}/latest", headers=hdr)["data"]["version"]
+    except Exception as e:
+        print(f"  [GFW-fire] version lookup failed: {e}")
+        return
+    # NOTE on GADM codes: the VIIRS alert tables use a different GADM version than the
+    # tree-cover summary. Verified by area+location (GFW geostore): MYS 13=Sabah,
+    # 14=Sarawak; IDN 12=Kalbar, 13=Kalsel, 14=Kalteng, 16=Kaltara all map correctly.
+    # IDN 15 (Kaltim in the forest table) is EMPTY here — Kaltim sits under a different
+    # adm1 code in this version that can't be confirmed by name via the API, so it is
+    # deliberately left out rather than guessed (would risk misattributing a value).
+    # Result: Kalimantan fire rolls up 4/5 provinces (honestly labelled by aggregate).
+    for terr, iso, adm1, lvl in GFW_TERR:
+        if adm1 is None:
+            ds, ver, where = dsi, vi, f"iso='{iso}'"
+        else:
+            ds, ver, where = dsa, va, f"iso='{iso}' AND adm1={adm1}"
+        got = None
+        for yr in (2025, 2024, 2023):
+            sql = f"SELECT SUM(alert__count) AS n FROM data WHERE {where} AND alert__year={yr}"
+            url = f"https://data-api.globalforestwatch.org/dataset/{ds}/{ver}/query/json?sql={quote(sql)}"
+            try:
+                n = get_json_raw(url, headers=hdr)["data"][0]["n"]
+            except Exception as e:
+                print(f"  [GFW-fire:{terr}] {e}")
+                n = None
+            if n:
+                got = (yr, int(n))
+                break
+        if got:
+            add(rows, terr, "Fire alerts (VIIRS, annual)", got[0], got[1], "count",
+                "Global Forest Watch (VIIRS)", "satellite")
 
 
 # ---------------------------------------------------------------- 6. NASA FIRMS
@@ -595,12 +687,21 @@ def main():
     pull_un_sdg(rows)
     print("4. BPS Indonesia (Kalimantan, province):")
     pull_bps(rows, env.get("BPS_API_KEY"))
+    print("4b. BPS national by-province (clean water, 5/5):")
+    pull_bps_water_national(rows, env.get("BPS_API_KEY"))
     print("5. Global Forest Watch (per-territory, satellite):")
     pull_gfw(rows, env.get("GFW_API_KEY"))
+    print("5b. GFW VIIRS fire alerts (per-territory, satellite):")
+    pull_gfw_fire(rows, env.get("GFW_API_KEY"))
     print("6. NASA FIRMS (Borneo, satellite):")
     pull_firms(rows, env.get("FIRMS_MAP_KEY"))
     print("7. WAQI / aqicn (4 cities, city):")
     pull_waqi(rows, env.get("WAQI_TOKEN"))
+    # Reference figure (official census, not an API): Brunei household count. DEPS
+    # publishes it only in the census report, so it's cited here, not auto-pulled.
+    print("7b. Reference data (cited, non-API):")
+    add(rows, "Brunei", "Households", 2021, 87137, "households",
+        "DEPS Brunei Population & Housing Census 2021", "national")
     print("8. Kalimantan roll-up (province -> territory aggregate):")
     aggregate_kalimantan(rows)
 
