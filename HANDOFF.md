@@ -140,6 +140,18 @@ Suggested pattern: one small data module (e.g. `src/data/useIndicators.js`) that
 
 **Always show the `confidence` tag** next to a value (high/medium/manual). It's a core project requirement (the "Ethics" pillar) — the dashboard must show how trustworthy each number is.
 
+### Exact mock variables to replace (verified against the current code)
+- `esg_indicator.jsx` → the `esgData` object (lines ~14–203). Some values are invented — replace entirely.
+- `Regional_Detail.jsx` → `resilienceScores`, `regionScores`, `pillarData`, `cropProduction`, `agriculturalLand`, `years`, `currentScore`, `trend` (the "Sample data" block, lines ~18–45). These feed the line, radar, and bar charts.
+- `OverviewDashboard.jsx` → the `layers` toggles exist but drive nothing; wire them to color/overlay territories from real data.
+- `App.jsx` routes: `/`, `/regions`, `/esg` are real pages; `/sdg`, `/environmental`, `/social`, `/data-sources`, `/about` are still "Coming Soon" placeholders (5 routes). `sidebar.jsx` already links all 8.
+
+### 🐞 Known bug to fix first — filename case mismatch
+The file is `src/components/sidebar.jsx` (lowercase **s**), but all three pages import `'../../components/Sidebar'` (capital **S**). This works on Windows (case-insensitive) but **will fail the build on Linux/macOS / most deploy hosts** (Vercel, Netlify, CI). Fix one way:
+- rename the file to `Sidebar.jsx`, **or**
+- change the 3 imports to `'../../components/sidebar'`.
+(Pick one and be consistent.)
+
 ---
 
 ## 6. Snapshot vs. trends — one decision to make with me
