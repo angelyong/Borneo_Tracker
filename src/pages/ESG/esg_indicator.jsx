@@ -1,227 +1,30 @@
-import React, { useState } from 'react';
-import Sidebar from '../../components/Sidebar';
+import { useMemo, useState } from 'react';
+import Sidebar from '../../components/sidebar';
+import {
+  CATEGORY_TO_PILLAR,
+  TERRITORIES,
+  formatValue,
+  getRowsForPillar,
+  summarizeRows,
+  titleCaseConfidence,
+  useIndicators,
+} from '../../data/useIndicators';
 
 const ESGIndicator = () => {
-  // ---- Sidebar state ----
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-
-  // ---- Page state ----
   const [selectedRegion, setSelectedRegion] = useState('Sarawak');
   const [selectedCategory, setSelectedCategory] = useState('Environment');
+  const { data, loading, error } = useIndicators();
 
-  // ---- Mock ESG Data ----
-  const esgData = {
-    Sarawak: {
-      Environment: {
-        score: 68,
-        status: 'Moderate',
-        trend: '+2.4%',
-        bestIndicator: 'Water Quality',
-        riskIndicator: 'Active Fire Hotspots',
-        metrics: [
-          { label: 'Forest Cover', value: '57.3%' },
-          { label: 'Air Quality', value: '42' },
-          { label: 'Active Fire Hotspots', value: '42' },
-          { label: 'Poverty Rate', value: '13.2%' },
-          { label: 'Deforestation Rate', value: '12,450' },
-          { label: 'Water Quality', value: '78' },
-        ],
-      },
-      Social: {
-        score: 74,
-        status: 'Good',
-        trend: '+1.8%',
-        bestIndicator: 'Education Access',
-        riskIndicator: 'Healthcare Availability',
-        metrics: [
-          { label: 'Literacy Rate', value: '95.2%' },
-          { label: 'Life Expectancy', value: '74.5 yrs' },
-          { label: 'Healthcare Access', value: '68%' },
-          { label: 'Unemployment Rate', value: '4.2%' },
-          { label: 'Poverty Rate', value: '13.2%' },
-          { label: 'Education Index', value: '0.78' },
-        ],
-      },
-      Governance: {
-        score: 61,
-        status: 'Moderate',
-        trend: '-0.5%',
-        bestIndicator: 'Public Participation',
-        riskIndicator: 'Corruption Perception',
-        metrics: [
-          { label: 'Rule of Law Index', value: '0.52' },
-          { label: 'Corruption Perception', value: '48' },
-          { label: 'Government Effectiveness', value: '0.61' },
-          { label: 'Regulatory Quality', value: '0.55' },
-          { label: 'Public Participation', value: '72%' },
-          { label: 'Transparency Score', value: '58' },
-        ],
-      },
-    },
-    Sabah: {
-      Environment: {
-        score: 72,
-        status: 'Good',
-        trend: '+1.8%',
-        bestIndicator: 'Air Quality',
-        riskIndicator: 'Deforestation',
-        metrics: [
-          { label: 'Forest Cover', value: '62.1%' },
-          { label: 'Air Quality', value: '35' },
-          { label: 'Active Fire Hotspots', value: '28' },
-          { label: 'Poverty Rate', value: '19.5%' },
-          { label: 'Deforestation Rate', value: '15,400' },
-          { label: 'Water Quality', value: '82' },
-        ],
-      },
-      Social: {
-        score: 66,
-        status: 'Moderate',
-        trend: '+0.9%',
-        bestIndicator: 'Community Health',
-        riskIndicator: 'Education Gap',
-        metrics: [
-          { label: 'Literacy Rate', value: '88.4%' },
-          { label: 'Life Expectancy', value: '70.2 yrs' },
-          { label: 'Healthcare Access', value: '55%' },
-          { label: 'Unemployment Rate', value: '6.8%' },
-          { label: 'Poverty Rate', value: '19.5%' },
-          { label: 'Education Index', value: '0.65' },
-        ],
-      },
-      Governance: {
-        score: 58,
-        status: 'Moderate',
-        trend: '-1.2%',
-        bestIndicator: 'Local Governance',
-        riskIndicator: 'Budget Transparency',
-        metrics: [
-          { label: 'Rule of Law Index', value: '0.48' },
-          { label: 'Corruption Perception', value: '45' },
-          { label: 'Government Effectiveness', value: '0.55' },
-          { label: 'Regulatory Quality', value: '0.48' },
-          { label: 'Public Participation', value: '61%' },
-          { label: 'Transparency Score', value: '52' },
-        ],
-      },
-    },
-    Brunei: {
-      Environment: {
-        score: 85,
-        status: 'Good',
-        trend: '+3.1%',
-        bestIndicator: 'Forest Cover',
-        riskIndicator: 'Air Quality',
-        metrics: [
-          { label: 'Forest Cover', value: '82.4%' },
-          { label: 'Air Quality', value: '28' },
-          { label: 'Active Fire Hotspots', value: '5' },
-          { label: 'Poverty Rate', value: '5.1%' },
-          { label: 'Deforestation Rate', value: '1,200' },
-          { label: 'Water Quality', value: '92' },
-        ],
-      },
-      Social: {
-        score: 88,
-        status: 'Good',
-        trend: '+2.2%',
-        bestIndicator: 'Healthcare Access',
-        riskIndicator: 'Workforce Diversity',
-        metrics: [
-          { label: 'Literacy Rate', value: '97.6%' },
-          { label: 'Life Expectancy', value: '78.2 yrs' },
-          { label: 'Healthcare Access', value: '92%' },
-          { label: 'Unemployment Rate', value: '2.5%' },
-          { label: 'Poverty Rate', value: '5.1%' },
-          { label: 'Education Index', value: '0.89' },
-        ],
-      },
-      Governance: {
-        score: 79,
-        status: 'Good',
-        trend: '+1.5%',
-        bestIndicator: 'Regulatory Quality',
-        riskIndicator: 'Public Participation',
-        metrics: [
-          { label: 'Rule of Law Index', value: '0.68' },
-          { label: 'Corruption Perception', value: '62' },
-          { label: 'Government Effectiveness', value: '0.75' },
-          { label: 'Regulatory Quality', value: '0.72' },
-          { label: 'Public Participation', value: '55%' },
-          { label: 'Transparency Score', value: '71' },
-        ],
-      },
-    },
-    Kalimantan: {
-      Environment: {
-        score: 55,
-        status: 'Poor',
-        trend: '-1.2%',
-        bestIndicator: 'Water Quality',
-        riskIndicator: 'Active Fire Hotspots',
-        metrics: [
-          { label: 'Forest Cover', value: '45.8%' },
-          { label: 'Air Quality', value: '58' },
-          { label: 'Active Fire Hotspots', value: '105' },
-          { label: 'Poverty Rate', value: '25.3%' },
-          { label: 'Deforestation Rate', value: '22,400' },
-          { label: 'Water Quality', value: '65' },
-        ],
-      },
-      Social: {
-        score: 52,
-        status: 'Poor',
-        trend: '-0.8%',
-        bestIndicator: 'Community Resilience',
-        riskIndicator: 'Healthcare Access',
-        metrics: [
-          { label: 'Literacy Rate', value: '82.1%' },
-          { label: 'Life Expectancy', value: '65.8 yrs' },
-          { label: 'Healthcare Access', value: '42%' },
-          { label: 'Unemployment Rate', value: '8.5%' },
-          { label: 'Poverty Rate', value: '25.3%' },
-          { label: 'Education Index', value: '0.52' },
-        ],
-      },
-      Governance: {
-        score: 48,
-        status: 'Poor',
-        trend: '-2.1%',
-        bestIndicator: 'Community Participation',
-        riskIndicator: 'Corruption Perception',
-        metrics: [
-          { label: 'Rule of Law Index', value: '0.38' },
-          { label: 'Corruption Perception', value: '38' },
-          { label: 'Government Effectiveness', value: '0.42' },
-          { label: 'Regulatory Quality', value: '0.39' },
-          { label: 'Public Participation', value: '48%' },
-          { label: 'Transparency Score', value: '41' },
-        ],
-      },
-    },
-  };
-
-  // ---- Get current data based on selection ----
-  const currentData = esgData[selectedRegion]?.[selectedCategory] || esgData.Sarawak.Environment;
-
-  // ---- Helper: Status color ----
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'Good':
-        return '#22c55e';
-      case 'Moderate':
-        return '#eab308';
-      case 'Poor':
-        return '#ef4444';
-      default:
-        return '#6b7280';
-    }
-  };
+  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
+  const rows = useMemo(() => {
+    if (!data?.rows) return [];
+    return getRowsForPillar(data.rows, selectedRegion, CATEGORY_TO_PILLAR[selectedCategory]);
+  }, [data, selectedCategory, selectedRegion]);
+  const summary = summarizeRows(rows);
 
   return (
     <div style={styles.container}>
-      {/* ---- Sidebar ---- */}
       <div
         style={{
           ...styles.sidebarWrapper,
@@ -232,34 +35,31 @@ const ESGIndicator = () => {
         <Sidebar />
       </div>
 
-      {/* ---- Main content ---- */}
       <div style={styles.content}>
-        {/* Floating toggle button */}
         <button onClick={toggleSidebar} style={styles.floatingBtn} className="floating-btn">
           ☰
         </button>
 
-        {/* ---- Header: Title + Region Dropdown ---- */}
         <div style={styles.header}>
           <div style={styles.headerLeft}>
             <h1 style={styles.pageTitle}>ESG Indicators</h1>
-            <p style={styles.pageSubtitle}>Environmental, Social & Governance performance</p>
+            <p style={styles.pageSubtitle}>Real snapshot data grouped by pillar with visible confidence tags</p>
           </div>
           <div style={styles.headerRight}>
             <select
               value={selectedRegion}
-              onChange={(e) => setSelectedRegion(e.target.value)}
+              onChange={(event) => setSelectedRegion(event.target.value)}
               style={styles.dropdown}
             >
-              <option value="Sarawak">Sarawak</option>
-              <option value="Sabah">Sabah</option>
-              <option value="Brunei">Brunei</option>
-              <option value="Kalimantan">Kalimantan</option>
+              {TERRITORIES.map((territory) => (
+                <option key={territory} value={territory}>
+                  {territory}
+                </option>
+              ))}
             </select>
           </div>
         </div>
 
-        {/* ---- Category Tabs ---- */}
         <div style={styles.tabs}>
           {['Environment', 'Social', 'Governance'].map((category) => (
             <button
@@ -275,65 +75,67 @@ const ESGIndicator = () => {
           ))}
         </div>
 
-        {/* ---- Dashboard Content ---- */}
-        <div style={styles.dashboardGrid}>
-          {/* Left: Score Card */}
-          <div style={styles.card}>
-            <div style={styles.scoreCard}>
-              <div style={styles.scoreHeader}>
-                <div style={styles.scoreLabel}>Environmental Score</div>
-                <div
-                  style={{
-                    ...styles.statusBadge,
-                    backgroundColor: getStatusColor(currentData.status) + '20',
-                    color: getStatusColor(currentData.status),
-                  }}
-                >
-                  {currentData.status}
+        {loading ? <div style={styles.messageCard}>Loading real indicator data…</div> : null}
+        {error ? <div style={styles.errorCard}>{error}</div> : null}
+
+        {!loading && !error ? (
+          <div style={styles.dashboardGrid}>
+            <div style={styles.card}>
+              <div style={styles.scoreCard}>
+                <div style={styles.scoreHeader}>
+                  <div style={styles.scoreLabel}>{selectedCategory} Snapshot</div>
+                  <div style={styles.statusBadge}>Snapshot Only</div>
                 </div>
-              </div>
 
-              <div style={styles.scoreNumber}>{currentData.score}/100</div>
+                <div style={styles.scoreNumber}>{summary.count}</div>
+                <div style={styles.scoreCaption}>canonical indicators available</div>
 
-              <div style={styles.trendContainer}>
-                <span style={styles.trendLabel}>Compared with last year</span>
-                <span
-                  style={{
-                    ...styles.trendValue,
-                    color: currentData.trend.startsWith('+') ? '#22c55e' : '#ef4444',
-                  }}
-                >
-                  {currentData.trend}
-                </span>
-              </div>
-
-              <div style={styles.bestRiskGrid}>
-                <div style={styles.bestRiskItem}>
-                  <div style={styles.bestRiskLabel}>Best Indicator</div>
-                  <div style={styles.bestRiskValue}>{currentData.bestIndicator}</div>
+                <div style={styles.trendContainer}>
+                  <span style={styles.trendLabel}>Latest data year</span>
+                  <span style={styles.trendValue}>{summary.latestYear || 'Unknown'}</span>
                 </div>
-                <div style={styles.bestRiskItem}>
-                  <div style={styles.bestRiskLabel}>Risk Indicator</div>
-                  <div style={{ ...styles.bestRiskValue, color: '#ef4444' }}>
-                    {currentData.riskIndicator}
+
+                <div style={styles.bestRiskGrid}>
+                  <div style={styles.bestRiskItem}>
+                    <div style={styles.bestRiskLabel}>Confidence mix</div>
+                    <div style={styles.bestRiskValue}>
+                      {Object.keys(summary.confidenceCounts).length
+                        ? Object.entries(summary.confidenceCounts)
+                            .map(([label, count]) => `${titleCaseConfidence(label)} ${count}`)
+                            .join(' · ')
+                        : 'No data'}
+                    </div>
+                  </div>
+                  <div style={styles.bestRiskItem}>
+                    <div style={styles.bestRiskLabel}>Trend status</div>
+                    <div style={styles.bestRiskValue}>Historical series not enabled yet</div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Right: Metrics List */}
-          <div style={styles.card}>
-            <div style={styles.metricsList}>
-              {currentData.metrics.map((metric, idx) => (
-                <div key={idx} style={styles.metricItem}>
-                  <span style={styles.metricLabel}>{metric.label}</span>
-                  <span style={styles.metricValue}>{metric.value}</span>
-                </div>
-              ))}
+            <div style={styles.card}>
+              <div style={styles.metricsList}>
+                {rows.length ? (
+                  rows.map((row) => (
+                    <div key={`${row.territory}-${row.indicator}`} style={styles.metricCard}>
+                      <div style={styles.metricHeader}>
+                        <span style={styles.metricLabel}>{row.indicator}</span>
+                        <span style={styles.confidenceBadge}>{titleCaseConfidence(row.confidence)}</span>
+                      </div>
+                      <span style={styles.metricValue}>{formatValue(row)}</span>
+                      <span style={styles.metricMeta}>
+                        {row.year} · {row.source}
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <div style={styles.emptyState}>No canonical indicators are available for this pillar yet.</div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        ) : null}
       </div>
     </div>
   );
@@ -480,6 +282,11 @@ const styles = {
     color: '#1f2937',
     lineHeight: 1.2,
   },
+  scoreCaption: {
+    fontSize: '13px',
+    color: '#6b7280',
+    marginTop: '-8px',
+  },
   trendContainer: {
     display: 'flex',
     alignItems: 'center',
@@ -495,6 +302,7 @@ const styles = {
   trendValue: {
     fontSize: '16px',
     fontWeight: '600',
+    color: '#1f2937',
   },
   bestRiskGrid: {
     display: 'grid',
@@ -525,12 +333,17 @@ const styles = {
     flexDirection: 'column',
     gap: '12px',
   },
-  metricItem: {
+  metricCard: {
+    border: '1px solid #e5e7eb',
+    borderRadius: '10px',
+    padding: '14px 16px',
+    backgroundColor: '#f9fafb',
+  },
+  metricHeader: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '8px 0',
-    borderBottom: '1px solid #f3f4f6',
+    gap: '12px',
+    alignItems: 'flex-start',
   },
   metricLabel: {
     fontSize: '15px',
@@ -541,6 +354,43 @@ const styles = {
     fontSize: '16px',
     fontWeight: '600',
     color: '#1f2937',
+    display: 'block',
+    marginTop: '8px',
+  },
+  metricMeta: {
+    display: 'block',
+    marginTop: '8px',
+    fontSize: '12px',
+    color: '#6b7280',
+    lineHeight: 1.5,
+  },
+  confidenceBadge: {
+    fontSize: '12px',
+    fontWeight: '600',
+    color: '#065f46',
+    backgroundColor: '#d1fae5',
+    borderRadius: '999px',
+    padding: '4px 8px',
+    whiteSpace: 'nowrap',
+  },
+  messageCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: '12px',
+    padding: '24px',
+    border: '1px solid #e5e7eb',
+    color: '#374151',
+  },
+  errorCard: {
+    backgroundColor: '#fef2f2',
+    borderRadius: '12px',
+    padding: '24px',
+    border: '1px solid #fecaca',
+    color: '#b91c1c',
+  },
+  emptyState: {
+    fontSize: '14px',
+    color: '#6b7280',
+    padding: '12px 0',
   },
 };
 

@@ -16,15 +16,18 @@ Schedule it (data updates yearly/quarterly, so weekly is plenty):
 """
 
 import sys
+import export_json
 import ingest_poc
 import load_db
 
 
 def main():
-    print(">>> [1/2] Pulling sources -> CSV")
+    print(">>> [1/3] Pulling sources -> CSV")
     ingest_poc.main()
-    print("\n>>> [2/2] Loading CSV -> SQLite")
+    print("\n>>> [2/3] Loading CSV -> SQLite")
     load_db.main()
+    print("\n>>> [3/3] Exporting dashboard JSON")
+    export_json.main()
     print("\n>>> Pipeline complete.")
 
 

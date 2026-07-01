@@ -1,13 +1,26 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import * as echarts from 'echarts';
-import Sidebar from '../../components/Sidebar';
+import Sidebar from '../../components/sidebar';
+import {
+  TERRITORIES,
+  formatValue,
+  getAvailableConcepts,
+  getCanonicalRows,
+  getComparisonRows,
+  getConfidenceCoverage,
+  getEsgCoverage,
+  getHexagonCoverage,
+  summarizeRows,
+  titleCaseConfidence,
+  useIndicators,
+} from '../../data/useIndicators';
 
 const RegionalDetails = () => {
-  // ---- Sidebar state ----
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [selectedTerritory, setSelectedTerritory] = useState('Sarawak');
+  const { data, loading, error } = useIndicators();
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
-  // ---- Chart refs ----
   const lineChartRef = useRef(null);
   const radarChartRef = useRef(null);
   const barChartRef = useRef(null);
@@ -15,36 +28,29 @@ const RegionalDetails = () => {
   const radarChartInstance = useRef(null);
   const barChartInstance = useRef(null);
 
-  // ---- Sample data ----
-  const years = ['2022', '2023', '2024', '2025', '2026'];
-  const resilienceScores = [35.3, 50, 47, 60, 64.7];
-  const currentScore = 64.7;
-  const trend = '+4.3';
+  const canonicalRows = useMemo(() => (data?.rows ? getCanonicalRows(data.rows, selectedTerritory) : []), [data, selectedTerritory]);
+  const availableConcepts = useMemo(
+    () => (data?.rows ? getAvailableConcepts(data.rows, selectedTerritory) : []),
+    [data, selectedTerritory]
+  );
+  const [selectedConcept, setSelectedConcept] = useState('forest_cover');
+  const activeConcept =
+    availableConcepts.find((item) => item.concept === selectedConcept)?.concept || availableConcepts[0]?.concept || '';
 
-  const regionScores = [
-    { name: 'Brunei', score: 23.3 },
-    { name: 'Kalimantan', score: 14.3 },
-    { name: 'Sabah', score: 27.9 },
-    { name: 'Sarawak', score: 34.6 },
-  ];
+  const comparisonRows = useMemo(
+    () => (data?.rows ? getComparisonRows(data.rows, activeConcept) : []),
+    [activeConcept, data]
+  );
+  const hexagonCoverage = useMemo(() => getHexagonCoverage(data?.rows || [], selectedTerritory), [data, selectedTerritory]);
+  const esgCoverage = useMemo(() => getEsgCoverage(data?.rows || [], selectedTerritory), [data, selectedTerritory]);
+  const confidenceCoverage = useMemo(
+    () => getConfidenceCoverage(data?.rows || [], selectedTerritory),
+    [data, selectedTerritory]
+  );
+  const summary = summarizeRows(canonicalRows);
+  const selectedConceptLabel =
+    availableConcepts.find((item) => item.concept === activeConcept)?.label || 'Selected indicator';
 
-  // ---- True Wealth Hexagon data ----
-  const pillarData = {
-    Food: 61,
-    Shelter: 66,
-    Healthcare: 66,
-    Entertainment: 71,
-    Education: 58,
-  };
-  const pillarNames = Object.keys(pillarData);
-  const pillarValues = Object.values(pillarData);
-
-  // ---- Bar chart data (Food: Crop Production & Agricultural Land) ----
-  const barYears = ['2022', '2023', '2024', '2025', '2026'];
-  const cropProduction = [2.28, 2.44, 2.35, 2.64, 2.57]; // in millions
-  const agriculturalLand = [0.758, 0.590, 0.756, 0.717, 0.714]; // in millions
-
-  // ---- Light theme colors ----
   const theme = {
     primary: '#22c55e',
     borderLight: '#e5e7eb',
@@ -56,18 +62,16 @@ const RegionalDetails = () => {
     pink: '#ec4899',
   };
 
-  // ---- Initialize Line Chart ----
   useEffect(() => {
     if (!lineChartRef.current) return;
     lineChartInstance.current = echarts.init(lineChartRef.current);
 
     const option = {
       tooltip: {
-        trigger: 'axis',
-        axisPointer: { type: 'line', lineStyle: { color: theme.borderLight } },
+        trigger: 'item',
         formatter: function (params) {
-          const p = params[0];
-          return `<strong>${p.axisValue}</strong><br/>Resilience: ${p.value}%`;
+          const row = comparisonRows[params.dataIndex]?.row;
+          return `<strong>${params.name}</strong><br/>${row ? formatValue(row) : 'No data'}`;
         },
       },
       grid: {
@@ -79,47 +83,32 @@ const RegionalDetails = () => {
       },
       xAxis: {
         type: 'category',
-        data: years,
-        boundaryGap: false,
+        data: comparisonRows.map((entry) => entry.territory),
         axisLine: { lineStyle: { color: theme.borderLight } },
         axisTick: { show: false },
         axisLabel: { color: theme.textMuted, fontSize: 11 },
       },
       yAxis: {
         type: 'value',
-        min: 0,
-        max: 100,
         splitLine: {
           lineStyle: { color: theme.borderLight, type: 'dashed' },
         },
         axisLabel: {
           color: theme.textMuted,
           fontSize: 10,
-          formatter: '{value}%',
         },
         axisLine: { show: false },
         axisTick: { show: false },
       },
       series: [
         {
-          name: 'Resilience Score',
-          type: 'line',
-          smooth: true,
-          symbol: 'circle',
-          symbolSize: 8,
-          showSymbol: true,
-          data: resilienceScores,
-          lineStyle: { color: theme.primary, width: 2.5 },
+          name: selectedConceptLabel,
+          type: 'bar',
+          barWidth: '40%',
+          data: comparisonRows.map((entry) => entry.row?.value ?? null),
           itemStyle: {
-            color: theme.primary,
-            borderColor: theme.bgSurface,
-            borderWidth: 2,
-          },
-          areaStyle: {
-            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: theme.primary + '44' },
-              { offset: 1, color: theme.primary + '00' },
-            ]),
+            color: theme.azure,
+            borderRadius: [6, 6, 0, 0],
           },
         },
       ],
@@ -136,9 +125,8 @@ const RegionalDetails = () => {
       window.removeEventListener('resize', handleResize);
       lineChartInstance.current?.dispose();
     };
-  }, []);
+  }, [comparisonRows, selectedConceptLabel, theme.azure, theme.borderLight, theme.textMuted]);
 
-  // ---- Initialize Radar Chart (True Wealth Hexagon) ----
   useEffect(() => {
     if (!radarChartRef.current) return;
     radarChartInstance.current = echarts.init(radarChartRef.current);
@@ -151,7 +139,7 @@ const RegionalDetails = () => {
         },
       },
       radar: {
-        indicator: pillarNames.map((name) => ({ name, max: 100 })),
+        indicator: Object.keys(hexagonCoverage).map((name) => ({ name, max: 4 })),
         center: ['50%', '50%'],
         radius: '70%',
         axisName: {
@@ -180,8 +168,8 @@ const RegionalDetails = () => {
           type: 'radar',
           data: [
             {
-              value: pillarValues,
-              name: 'True Wealth',
+              value: Object.values(hexagonCoverage),
+              name: 'Coverage',
               areaStyle: {
                 color: 'rgba(34, 197, 94, 0.3)',
               },
@@ -209,9 +197,8 @@ const RegionalDetails = () => {
       window.removeEventListener('resize', handleResize);
       radarChartInstance.current?.dispose();
     };
-  }, []);
+  }, [hexagonCoverage]);
 
-  // ---- Initialize Bar Chart (Food: Crop Production & Agricultural Land) ----
   useEffect(() => {
     if (!barChartRef.current) return;
     barChartInstance.current = echarts.init(barChartRef.current);
@@ -223,7 +210,7 @@ const RegionalDetails = () => {
         formatter: function (params) {
           let html = `<strong>${params[0].axisValue}</strong><br/>`;
           params.forEach((p) => {
-            html += `${p.marker} ${p.seriesName}: ${p.value}M<br/>`;
+            html += `${p.marker} ${p.seriesName}: ${p.value}<br/>`;
           });
           return html;
         },
@@ -237,7 +224,7 @@ const RegionalDetails = () => {
       },
       xAxis: {
         type: 'category',
-        data: barYears,
+        data: ['Environment', 'Social', 'Governance'],
         axisLine: { lineStyle: { color: theme.borderLight } },
         axisTick: { show: false },
         axisLabel: { color: theme.textMuted, fontSize: 11 },
@@ -250,13 +237,12 @@ const RegionalDetails = () => {
         axisLabel: {
           color: theme.textMuted,
           fontSize: 10,
-          formatter: '{value}M',
         },
         axisLine: { show: false },
         axisTick: { show: false },
       },
       legend: {
-        data: ['Crop production (paddy)', 'Agricultural land'],
+        data: ['Indicators'],
         bottom: 0,
         left: 'center',
         icon: 'circle',
@@ -269,10 +255,10 @@ const RegionalDetails = () => {
       },
       series: [
         {
-          name: 'Crop production (paddy)',
+          name: 'Indicators',
           type: 'bar',
           barWidth: '28%',
-          data: cropProduction,
+          data: Object.values(esgCoverage),
           itemStyle: {
             color: '#22c55e',
             borderRadius: [4, 4, 0, 0],
@@ -280,24 +266,7 @@ const RegionalDetails = () => {
           label: {
             show: true,
             position: 'top',
-            formatter: '{c}M',
-            fontSize: 10,
-            color: '#6b7280',
-          },
-        },
-        {
-          name: 'Agricultural land',
-          type: 'bar',
-          barWidth: '28%',
-          data: agriculturalLand,
-          itemStyle: {
-            color: '#3b82f6',
-            borderRadius: [4, 4, 0, 0],
-          },
-          label: {
-            show: true,
-            position: 'top',
-            formatter: '{c}M',
+            formatter: '{c}',
             fontSize: 10,
             color: '#6b7280',
           },
@@ -316,11 +285,10 @@ const RegionalDetails = () => {
       window.removeEventListener('resize', handleResize);
       barChartInstance.current?.dispose();
     };
-  }, []);
+  }, [confidenceCoverage, esgCoverage, theme.borderLight, theme.textMuted]);
 
   return (
     <div style={styles.container}>
-      {/* ---- Sidebar ---- */}
       <div
         style={{
           ...styles.sidebarWrapper,
@@ -331,41 +299,82 @@ const RegionalDetails = () => {
         <Sidebar />
       </div>
 
-      {/* ---- Main content ---- */}
       <div style={styles.content}>
-        {/* Floating toggle button */}
         <button onClick={toggleSidebar} style={styles.floatingBtn} className="floating-btn">
           ☰
         </button>
 
-        {/* ---- Row 1: Two-column (Line + Radar) ---- */}
+        <div style={styles.topToolbar}>
+          <div style={styles.toolbarGroup}>
+            <label style={styles.toolbarLabel}>Territory</label>
+            <select
+              value={selectedTerritory}
+              onChange={(event) => setSelectedTerritory(event.target.value)}
+              style={styles.toolbarSelect}
+            >
+              {TERRITORIES.map((territory) => (
+                <option key={territory} value={territory}>
+                  {territory}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div style={styles.toolbarGroup}>
+            <label style={styles.toolbarLabel}>Comparison Indicator</label>
+            <select
+              value={activeConcept}
+              onChange={(event) => setSelectedConcept(event.target.value)}
+              style={styles.toolbarSelect}
+            >
+              {availableConcepts.map((item) => (
+                <option key={item.concept} value={item.concept}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {loading ? <div style={styles.noticeCard}>Loading snapshot data…</div> : null}
+        {error ? <div style={styles.errorCard}>{error}</div> : null}
+        {!loading && !error ? (
+          <div style={styles.summaryStrip}>
+            <div style={styles.summaryChip}>
+              <span style={styles.summaryChipLabel}>Canonical indicators</span>
+              <strong>{summary.count}</strong>
+            </div>
+            <div style={styles.summaryChip}>
+              <span style={styles.summaryChipLabel}>Latest year</span>
+              <strong>{summary.latestYear || 'Unknown'}</strong>
+            </div>
+            <div style={styles.summaryChip}>
+              <span style={styles.summaryChipLabel}>Trend status</span>
+              <strong>Snapshot only</strong>
+            </div>
+          </div>
+        ) : null}
+
         <div style={styles.chartRow}>
-          {/* Left: Line Chart */}
           <div style={styles.card}>
             <div style={styles.chartHeader}>
               <div style={styles.chartHeaderLeft}>
-                <div style={styles.cardTitle}>Overall Resilience Trend</div>
-                <div style={styles.chartStat}>
-                  {currentScore}%{' '}
-                  <span style={{ fontSize: '13px', fontWeight: 500, color: '#22c55e' }}>
-                    ↑ {trend}%
-                  </span>
-                </div>
+                <div style={styles.cardTitle}>Cross-territory snapshot</div>
+                <div style={styles.chartStat}>{selectedConceptLabel}</div>
                 <div style={{ fontSize: '11.5px', color: '#6b7280' }}>
-                  Current resilience score (Borneo)
+                  Latest available canonical value for each territory
                 </div>
               </div>
               <div style={styles.chartTabs}>
-                <button style={{ ...styles.chartTab, ...styles.chartTabActive }}>5 years</button>
+                <button style={{ ...styles.chartTab, ...styles.chartTabActive }}>Snapshot</button>
               </div>
             </div>
             <div style={styles.chartArea}>
               <div ref={lineChartRef} style={{ width: '100%', height: '100%' }} />
             </div>
             <div style={styles.cardFooter}>
-              <span style={styles.footerLabel}>Regional scores:</span>
-              {regionScores.map((r) => (
-                <span key={r.name} style={styles.footerItem}>
+              <span style={styles.footerLabel}>Confidence by territory:</span>
+              {comparisonRows.map((entry) => (
+                <span key={entry.territory} style={styles.footerItem}>
                   <span
                     style={{
                       width: '8px',
@@ -375,19 +384,19 @@ const RegionalDetails = () => {
                       display: 'inline-block',
                     }}
                   />
-                  {r.name}: <strong>{r.score}%</strong>
+                  {entry.territory}:{' '}
+                  <strong>{entry.row ? titleCaseConfidence(entry.row.confidence) : 'No data'}</strong>
                 </span>
               ))}
             </div>
           </div>
 
-          {/* Right: Radar Chart */}
           <div style={styles.card}>
             <div style={styles.chartHeader}>
               <div style={styles.chartHeaderLeft}>
-                <div style={styles.cardTitle}>True Wealth Hexagon</div>
+                <div style={styles.cardTitle}>True Wealth Hexagon Coverage</div>
                 <div style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>
-                  Pillar Performance
+                  Count of canonical indicators available per pillar
                 </div>
               </div>
               <div style={styles.chartTabs}>
@@ -398,7 +407,7 @@ const RegionalDetails = () => {
               <div ref={radarChartRef} style={{ width: '100%', height: '100%' }} />
             </div>
             <div style={styles.cardFooter}>
-              {pillarNames.map((name, idx) => (
+              {Object.entries(hexagonCoverage).map(([name, value], idx) => (
                 <span key={name} style={styles.footerItem}>
                   <span
                     style={{
@@ -409,29 +418,46 @@ const RegionalDetails = () => {
                       display: 'inline-block',
                     }}
                   />
-                  {name}: <strong>{pillarValues[idx]}</strong>
+                  {name}: <strong>{value}</strong>
                 </span>
               ))}
             </div>
           </div>
         </div>
 
-        {/* ---- Row 2: Full-width Bar Chart (Food) ---- */}
         <div style={styles.barRow}>
           <div style={{ ...styles.card, width: '100%' }}>
             <div style={styles.chartHeader}>
               <div style={styles.chartHeaderLeft}>
-                <div style={styles.cardTitle}>Food</div>
+                <div style={styles.cardTitle}>Coverage by ESG pillar</div>
                 <div style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>
-                  Crop production &amp; Agricultural land (millions)
+                  Trend charts are held back until the schema stores true yearly series
                 </div>
               </div>
               <div style={styles.chartTabs}>
-                <button style={{ ...styles.chartTab, ...styles.chartTabActive }}>5 years</button>
+                <button style={{ ...styles.chartTab, ...styles.chartTabActive }}>Current</button>
               </div>
             </div>
             <div style={{ ...styles.chartArea, height: '280px' }}>
               <div ref={barChartRef} style={{ width: '100%', height: '100%' }} />
+            </div>
+            <div style={styles.confidenceSummary}>
+              {Object.entries(confidenceCoverage).map(([label, value]) => (
+                <span key={label} style={styles.confidenceSummaryItem}>
+                  {label}: <strong>{value}</strong>
+                </span>
+              ))}
+            </div>
+            <div style={styles.metricsGrid}>
+              {canonicalRows.map((row) => (
+                <div key={`${row.territory}-${row.indicator}`} style={styles.metricCard}>
+                  <div style={styles.metricTitle}>{row.indicator}</div>
+                  <div style={styles.metricValue}>{formatValue(row)}</div>
+                  <div style={styles.metricMeta}>
+                    {row.year} · {titleCaseConfidence(row.confidence)}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -486,7 +512,7 @@ const styles = {
   },
   barRow: {
     marginTop: '20px',
-    width: '97%',
+    width: '100%',
   },
   card: {
     flex: 1,
@@ -568,6 +594,112 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: '6px',
+  },
+  topToolbar: {
+    display: 'flex',
+    gap: '16px',
+    flexWrap: 'wrap',
+    marginTop: '50px',
+    marginBottom: '20px',
+  },
+  toolbarGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+  },
+  toolbarLabel: {
+    fontSize: '12px',
+    fontWeight: '600',
+    color: '#64748b',
+    textTransform: 'uppercase',
+    letterSpacing: '0.04em',
+  },
+  toolbarSelect: {
+    minWidth: '220px',
+    border: '1px solid #d1d5db',
+    borderRadius: '10px',
+    padding: '10px 12px',
+    backgroundColor: '#ffffff',
+    fontSize: '14px',
+    color: '#0f172a',
+  },
+  noticeCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: '12px',
+    padding: '18px 20px',
+    border: '1px solid #e5e7eb',
+    color: '#334155',
+  },
+  errorCard: {
+    backgroundColor: '#fef2f2',
+    borderRadius: '12px',
+    padding: '18px 20px',
+    border: '1px solid #fecaca',
+    color: '#b91c1c',
+  },
+  summaryStrip: {
+    display: 'flex',
+    gap: '12px',
+    flexWrap: 'wrap',
+    marginBottom: '12px',
+  },
+  summaryChip: {
+    backgroundColor: '#ffffff',
+    border: '1px solid #e5e7eb',
+    borderRadius: '999px',
+    padding: '10px 14px',
+    display: 'flex',
+    gap: '8px',
+    alignItems: 'center',
+    color: '#0f172a',
+  },
+  summaryChipLabel: {
+    fontSize: '12px',
+    color: '#64748b',
+    textTransform: 'uppercase',
+    letterSpacing: '0.04em',
+  },
+  metricsGrid: {
+    marginTop: '16px',
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+    gap: '12px',
+  },
+  metricCard: {
+    borderRadius: '10px',
+    border: '1px solid #e5e7eb',
+    padding: '12px',
+    backgroundColor: '#f8fafc',
+  },
+  metricTitle: {
+    fontSize: '13px',
+    fontWeight: '600',
+    color: '#334155',
+  },
+  metricValue: {
+    fontSize: '18px',
+    fontWeight: '700',
+    color: '#0f172a',
+    marginTop: '8px',
+  },
+  metricMeta: {
+    marginTop: '6px',
+    fontSize: '12px',
+    color: '#64748b',
+  },
+  confidenceSummary: {
+    display: 'flex',
+    gap: '12px',
+    flexWrap: 'wrap',
+    marginTop: '12px',
+    color: '#475569',
+    fontSize: '13px',
+  },
+  confidenceSummaryItem: {
+    backgroundColor: '#f8fafc',
+    border: '1px solid #e2e8f0',
+    borderRadius: '999px',
+    padding: '6px 10px',
   },
 };
 

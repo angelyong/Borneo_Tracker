@@ -1,5 +1,3 @@
-// App.jsx
-import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import OverviewDashboard from './pages/dashboard/OverviewDashboard';
 import RegionalDetails from './pages/dashboard/Regional_Detail';

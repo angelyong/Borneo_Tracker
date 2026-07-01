@@ -1,208 +1,171 @@
-"""
-Borneo Tracker — load the standard CSV into SQLite (Phase 3.4).
-
-Reads borneo_tracker_poc.csv, enriches each row with the tag columns the app's
-three views need (ESG pillar / SDG goal / Hexagon pillar / confidence), and writes
-one table the frontend reads. This is the "CSV -> DB" step that turns the POC into
-a real data layer. Re-runnable: it rebuilds the table each time (idempotent).
-
-Final DB schema (one table, tagged for all 3 views — ESG / SDG / Hexagon):
-    territory | indicator | year | value | unit | source | data_level
-    | esg_pillar | sdg_goal | hexagon_pillar | confidence
-"""
-
-import csv
 import datetime
+import shutil
 import sqlite3
+import tempfile
 from pathlib import Path
 
+from data_model import assign_canonical, load_indicator_rows
+
 ROOT = Path(__file__).parent
-CSV = ROOT / "borneo_tracker_poc.csv"
-MANUAL = ROOT / "manual_overrides.csv"
 DB = ROOT / "borneo_tracker.db"
+FALLBACK_DB = ROOT / "borneo_tracker.snapshot.db"
+RUNTIME_DB = Path(tempfile.gettempdir()) / "borneo_tracker.runtime.db"
 
 
-def low(s):
-    return s.lower()
+def build_db(path, rows):
+    conn = sqlite3.connect(path)
+    cursor = conn.cursor()
+    cursor.execute("DROP TABLE IF EXISTS indicators")
+    cursor.execute(
+        """
+        CREATE TABLE indicators (
+            territory TEXT NOT NULL,
+            source_territory TEXT,
+            indicator TEXT NOT NULL,
+            dashboard_concept TEXT,
+            year TEXT,
+            value REAL,
+            unit TEXT,
+            source TEXT,
+            data_level TEXT,
+            esg_pillar TEXT,
+            sdg_goal TEXT,
+            hexagon_pillar TEXT,
+            confidence TEXT,
+            last_updated TEXT,
+            canonical INTEGER NOT NULL DEFAULT 0,
+            is_derived INTEGER NOT NULL DEFAULT 0,
+            derived_from TEXT,
+            source_count INTEGER NOT NULL DEFAULT 1,
+            PRIMARY KEY (territory, indicator)
+        )
+        """
+    )
+    cursor.executemany(
+        """
+        INSERT OR REPLACE INTO indicators (
+            territory, source_territory, indicator, dashboard_concept, year, value, unit,
+            source, data_level, esg_pillar, sdg_goal, hexagon_pillar, confidence,
+            last_updated, canonical, is_derived, derived_from, source_count
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        [
+            (
+                row["territory"],
+                row["source_territory"],
+                row["indicator"],
+                row["dashboard_concept"],
+                row["year"],
+                row["value"],
+                row["unit"],
+                row["source"],
+                row["data_level"],
+                row["esg_pillar"],
+                row["sdg_goal"],
+                row["hexagon_pillar"],
+                row["confidence"],
+                row["last_updated"],
+                row["canonical"],
+                row["is_derived"],
+                row["derived_from"],
+                row["source_count"],
+            )
+            for row in rows
+        ],
+    )
+    conn.commit()
+    conn.close()
+    return rows
 
 
-def esg_pillar(ind):
-    i = low(ind)
-    if any(k in i for k in ("forest", "tree cover", "fire", "air quality",
-                            "renewable", "national park")):
-        return "E"
-    if "corruption" in i or "wgi" in i or "governance" in i:
-        return "G"
-    return "S"  # social/economic default
+def load_existing_rows(path):
+    if not path.exists():
+        return []
+    try:
+        conn = sqlite3.connect(path)
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute(
+            """
+            SELECT territory, source_territory, indicator, dashboard_concept, year, value, unit,
+                   source, data_level, esg_pillar, sdg_goal, hexagon_pillar, confidence,
+                   last_updated, canonical, is_derived, derived_from, source_count
+            FROM indicators
+            """
+        ).fetchall()
+        conn.close()
+        return [dict(row) for row in rows]
+    except sqlite3.Error:
+        return []
 
 
-def sdg_goal(ind):
-    i = low(ind)
-    rules = [
-        (("forest", "tree cover", "national park"), "SDG15"),
-        (("fire", "air quality"), "SDG13"),
-        (("world heritage", "unesco"), "SDG11"),
-        (("clean water", "sanitation"), "SDG6"),
-        (("electri",), "SDG7"),
-        (("unemployment", "gdp", "tourist", "arrival"), "SDG8"),
-        (("enrolment", "schooling", "literacy"), "SDG4"),
-        (("poverty",), "SDG1"),
-        (("hospital", "beds", "life expect"), "SDG3"),
-        (("crop", "paddy", "agricultur"), "SDG2"),
-        (("households",), "SDG11"),
-        (("corruption", "wgi"), "SDG16"),
-    ]
-    for keys, goal in rules:
-        if any(k in i for k in keys):
-            return goal
-    return ""
+def merge_rows(new_rows):
+    existing_rows = load_existing_rows(DB) or load_existing_rows(FALLBACK_DB)
+    merged = {(row["territory"], row["indicator"]): dict(row) for row in existing_rows}
+    for row in new_rows:
+        merged[(row["territory"], row["indicator"])] = dict(row)
+    merged_rows = list(merged.values())
+    for row in merged_rows:
+        row["canonical"] = 0
+    assign_canonical(merged_rows)
+    return merged_rows
 
 
-def hexagon_pillar(ind):
-    i = low(ind)
-    rules = [
-        (("crop", "paddy", "agricultur"), "Food"),
-        (("electri", "energy"), "Energy"),
-        (("enrolment", "schooling", "literacy"), "Education"),
-        (("households", "housing"), "Shelter"),
-        (("hospital", "beds", "life expect"), "Healthcare"),
-        (("tourist", "tourism", "arrival", "wisataw", "national park",
-          "world heritage", "unesco"), "Entertainment"),
-    ]
-    for keys, pillar in rules:
-        if any(k in i for k in keys):
-            return pillar
-    return ""
-
-
-def confidence(row):
-    # medium for: inherited country-level governance, city-level air quality, and
-    # unweighted-mean Kalimantan aggregates (approximations). Exact sums stay high.
-    src = low(row["source"])
-    if "wgi" in src or row["data_level"] == "city" or "approx" in src:
-        return "medium"
-    return "high"
+def replace_file_atomically(source_path, target_path):
+    temp_target = target_path.with_name(f"{target_path.stem}.next{target_path.suffix}")
+    shutil.copyfile(source_path, temp_target)
+    temp_target.replace(target_path)
+    journal = target_path.parent / f"{target_path.name}-journal"
+    journal.unlink(missing_ok=True)
 
 
 def main():
-    rows = list(csv.DictReader(open(CSV, encoding="utf-8")))
-    conn = sqlite3.connect(DB)
-    c = conn.cursor()
-    # Keep-last-good: do NOT drop the table. Upsert on (territory, indicator) so a
-    # row whose source is down this run KEEPS its previous value (not wiped).
     run_ts = datetime.date.today().isoformat()
-    # One-time migration: a table from before the keep-last-good schema (autoincrement
-    # `id` PK, no `last_updated`, no (territory,indicator) upsert key) can't be
-    # upserted into. Rebuild it once — the CSV is canonical, so nothing real is lost.
-    cols = [r[1] for r in c.execute("PRAGMA table_info(indicators)").fetchall()]
-    if cols and "last_updated" not in cols:
-        print("  migrating: rebuilding 'indicators' to keep-last-good schema")
-        c.execute("DROP TABLE indicators")
-    c.execute("""
-        CREATE TABLE IF NOT EXISTS indicators (
-            territory   TEXT NOT NULL,
-            indicator   TEXT NOT NULL,
-            year        TEXT,
-            value       REAL,
-            unit        TEXT,
-            source      TEXT,
-            data_level  TEXT,
-            esg_pillar  TEXT,
-            sdg_goal    TEXT,
-            hexagon_pillar TEXT,
-            confidence  TEXT,
-            last_updated TEXT,
-            canonical   INTEGER DEFAULT 0,
-            PRIMARY KEY (territory, indicator)
+    RUNTIME_DB.unlink(missing_ok=True)
+    rows = merge_rows(load_indicator_rows())
+    build_db(RUNTIME_DB, rows)
+    target_name = RUNTIME_DB.name
+    workspace_db_ok = False
+    snapshot_ok = False
+    try:
+        replace_file_atomically(RUNTIME_DB, DB)
+        workspace_db_ok = True
+        target_name = DB.name
+    except (PermissionError, OSError):
+        print(
+            f"Warning: {DB.name} could not be replaced safely, so the latest runtime database remains at "
+            f"{RUNTIME_DB.name}."
         )
-    """)
-    # add canonical column to a pre-existing table (no-op if already present)
-    if "canonical" not in [r[1] for r in c.execute("PRAGMA table_info(indicators)").fetchall()]:
-        c.execute("ALTER TABLE indicators ADD COLUMN canonical INTEGER DEFAULT 0")
-    for r in rows:
-        try:
-            val = float(r["value"])
-        except (ValueError, TypeError):
-            val = None
-        c.execute(
-            "INSERT INTO indicators (territory,indicator,year,value,unit,source,"
-            "data_level,esg_pillar,sdg_goal,hexagon_pillar,confidence,last_updated) "
-            "VALUES (?,?,?,?,?,?,?,?,?,?,?,?) "
-            "ON CONFLICT(territory,indicator) DO UPDATE SET "
-            "year=excluded.year, value=excluded.value, unit=excluded.unit, "
-            "source=excluded.source, data_level=excluded.data_level, "
-            "esg_pillar=excluded.esg_pillar, sdg_goal=excluded.sdg_goal, "
-            "hexagon_pillar=excluded.hexagon_pillar, confidence=excluded.confidence, "
-            "last_updated=excluded.last_updated",
-            (r["territory"], r["indicator"], r["year"], val, r["unit"], r["source"],
-             r["data_level"], esg_pillar(r["indicator"]), sdg_goal(r["indicator"]),
-             hexagon_pillar(r["indicator"]), confidence(r), run_ts),
+    try:
+        source_for_snapshot = DB if workspace_db_ok else RUNTIME_DB
+        replace_file_atomically(source_for_snapshot, FALLBACK_DB)
+        snapshot_ok = True
+        if not workspace_db_ok:
+            target_name = FALLBACK_DB.name
+    except (PermissionError, OSError):
+        print(f"Warning: {FALLBACK_DB.name} could not be refreshed; keeping {RUNTIME_DB.name} as the latest copy.")
+
+    total = len(rows)
+    kept = sum(1 for row in rows if row["last_updated"] != run_ts)
+    manual = sum(1 for row in rows if row["confidence"] == "manual")
+    canonical = sum(1 for row in rows if row["canonical"] == 1)
+    print(f"Loaded {total} rows ({canonical} canonical, {manual} manual; {kept} older timestamps) -> {target_name}")
+    for label, key in (
+        ("ESG pillar", "esg_pillar"),
+        ("SDG goal", "sdg_goal"),
+        ("data_level", "data_level"),
+        ("confidence", "confidence"),
+    ):
+        counts = {}
+        for row in rows:
+            counts[row[key] or "-"] = counts.get(row[key] or "-", 0) + 1
+        summary = ", ".join(
+            f"{value}={count}" for value, count in sorted(counts.items(), key=lambda item: item[1], reverse=True)
         )
-    # Manual/reference layer: figures that exist only in DOSM/UNDP/agency reports
-    # (no machine API), each carrying its own provenance (source_doc/url/note). These
-    # make Healthcare/Education/Energy/Food consistent across all 4 territories. They
-    # upsert into the SAME table but are flagged data_level='report', confidence='manual'
-    # so the dashboard can show them as cited-from-report, not live API.
-    n_manual = 0
-    if MANUAL.exists():
-        for r in csv.DictReader(open(MANUAL, encoding="utf-8")):
-            try:
-                val = float(r["value"])
-            except (ValueError, TypeError):
-                val = None
-            src = r["source_doc"] + (f" — {r['note']}" if r.get("note") else "")
-            c.execute(
-                "INSERT INTO indicators (territory,indicator,year,value,unit,source,"
-                "data_level,esg_pillar,sdg_goal,hexagon_pillar,confidence,last_updated) "
-                "VALUES (?,?,?,?,?,?,?,?,?,?,?,?) "
-                "ON CONFLICT(territory,indicator) DO UPDATE SET "
-                "year=excluded.year, value=excluded.value, unit=excluded.unit, "
-                "source=excluded.source, data_level=excluded.data_level, "
-                "esg_pillar=excluded.esg_pillar, sdg_goal=excluded.sdg_goal, "
-                "hexagon_pillar=excluded.hexagon_pillar, confidence=excluded.confidence, "
-                "last_updated=excluded.last_updated",
-                (r["territory"], r["indicator"], r["year"], val, r["unit"], src,
-                 "report", esg_pillar(r["indicator"]), sdg_goal(r["indicator"]),
-                 hexagon_pillar(r["indicator"]), "manual", r.get("retrieved_date") or run_ts),
-            )
-            n_manual += 1
-        print(f"  + manual layer: upserted {n_manual} cited report figures from {MANUAL.name}")
-
-    # Canonical marking: flag the ONE unified metric per concept so the dashboard can
-    # show a single consistent indicator per territory (legacy/extra indicators stay in
-    # the table for reference but canonical=0). The frontend reads WHERE canonical=1.
-    c.execute("UPDATE indicators SET canonical=0")
-    canon = [
-        "Forest extent (2000)", "Fire alerts (VIIRS, annual)", "Air quality (AQI, live)",
-        "Clean water access", "Unemployment rate", "GDP growth", "GDP growth (PDRB)",
-        "Life expectancy", "Mean years schooling (RLS)", "Poverty rate (absolute)",
-        "Poverty rate (P0)", "Control of Corruption (WGI)", "Crop production (paddy)",
-        "Households", "Tourist arrivals", "Tourist trips (domestic)",
-    ]
-    c.executemany("UPDATE indicators SET canonical=1 WHERE indicator=?", [(x,) for x in canon])
-    # Energy: only the %-based rows are canonical (Sabah's household-count row is NOT —
-    # no statewide % is published, so Sabah energy stays a deliberate blank).
-    c.execute("UPDATE indicators SET canonical=1 WHERE indicator IN "
-              "('Electrification ratio','Electricity access') AND unit='%'")
-    n_canon = c.execute("SELECT COUNT(*) FROM indicators WHERE canonical=1").fetchone()[0]
-    print(f"  + canonical: flagged {n_canon} unified-metric rows")
-    conn.commit()
-
-    total = c.execute("SELECT COUNT(*) FROM indicators").fetchone()[0]
-    kept = c.execute("SELECT COUNT(*) FROM indicators WHERE last_updated<>?", (run_ts,)).fetchone()[0]
-    print(f"Upserted {len(rows)} rows; table has {total} ({kept} kept from earlier runs) -> {DB.name}")
-    for label, col in [("ESG pillar", "esg_pillar"), ("SDG goal", "sdg_goal"),
-                       ("data_level", "data_level"), ("confidence", "confidence")]:
-        got = c.execute(f"SELECT {col}, COUNT(*) FROM indicators "
-                        f"GROUP BY {col} ORDER BY 2 DESC").fetchall()
-        print(f"  by {label}: " + ", ".join(f"{k or '-'}={n}" for k, n in got))
-
-    print("\nSample query — latest forest extent per territory:")
-    q = c.execute("SELECT territory, value, unit FROM indicators "
-                  "WHERE indicator='Forest extent (2000)' ORDER BY value DESC").fetchall()
-    for terr, val, unit in q:
-        print(f"  {terr:20} {val:>12,.0f} {unit}")
-    conn.close()
+        print(f"  by {label}: {summary}")
+    if workspace_db_ok:
+        print(f"  workspace copy updated: {DB.name}")
+    if snapshot_ok:
+        print(f"  fallback copy updated: {FALLBACK_DB.name}")
 
 
 if __name__ == "__main__":
