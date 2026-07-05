@@ -2,6 +2,14 @@
 
 > Real keys live in `.env` (git-ignored). This file tracks **status + how each was obtained + gotchas**. Never paste real key values here.
 
+## UPDATE 2026-07-06 — rate limits & CI
+
+- **data.gov.my official limit: 4 requests/minute** (https://developer.data.gov.my/rate-limit — 429 above that). `pull_datagovmy` (ingest_poc) and `pull_datagovmy_history` (ingest_history) now sleep 16 s between dataset calls. Do not remove the throttle.
+- **WAQI quota: 1,000 requests/second** (per token page) — we use 7/day, no risk.
+- **GFW**: per-key service quota, no published number; email gfw@wri.org to raise. Key expires 2027-06-23.
+- **BPS / World Bank / UN SDG**: no published quotas; BPS throttles under load (handled by retry/backoff).
+- **GitHub Actions**: the daily workflow reads keys from repo secrets `GFW_API_KEY` / `BPS_API_KEY` / `WAQI_TOKEN` (`load_env` overlays process env vars over `.env`). Set them at github.com/angelyong/Borneo_Tracker → Settings → Secrets and variables → Actions.
+
 ## Status (verified 2026-06-23)
 
 | Source | Belongs to | Key needed? | Key in `.env` | Verified |

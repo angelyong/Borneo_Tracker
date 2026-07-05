@@ -124,9 +124,17 @@
 
 ## 9. Next steps
 
-1. **Resilience Index computation** — implement methodology Steps 1–4 (normalize to 0–100 vs targets → pillar scores → index + weakest pillar → RAG).
-2. **Phase 4 — frontend dashboard** — read the SQLite DB into the three views (ESG / SDG / Hexagon) + Resilience Index, showing each value with its confidence tag.
+1. **Resilience Index computation** — implement methodology Steps 1–4 (normalize to 0–100 vs targets → pillar scores → index + weakest pillar → RAG). ✅ *Done 2026-07-06 (`compute_resilience.py`)*
+2. **Phase 4 — frontend dashboard** — read the SQLite DB into the three views (ESG / SDG / Hexagon) + Resilience Index, showing each value with its confidence tag. ✅ *Done 2026-07-05/06*
 3. **Optional fills** — Sabah electrification % (write to ECoS) · road/SSR as national-inherited or Phase-2 risk flags.
+
+## 10. Phase 4–5 update (2026-07-06, commit `9c30add`)
+
+- **Frontend ↔ backend bridge (Phase 4)** — all mock data replaced: `export_json.py` → `public/data/indicators.json` → `src/data/useIndicators.js`; Overview / Regional Detail / ESG read real data with visible confidence tags. DB setup hardened: validation before publish, loud failures, model fallback now requires an explicit `--allow-model-fallback` flag.
+- **Real historical trends (Phase 5)** — new `ingest_history.py` pulls multi-year series (256 observations) into a new `indicator_observations` table (PK `territory+indicator+year`); `export_json.py` exports 16 per-territory series (each ≥3 real annual points); Regional Detail gained a working **Trend** tab. Headline: **annual tree-cover loss 2001–2024 for all four territories** (GFW `_change` tables — the `_summary` tables only hold cumulative totals), VIIRS fire alerts since 2012, plus Sabah/Sarawak state-level series (clean water, unemployment, GDP growth, poverty). Brunei/Kalimantan socioeconomic series pending — World Bank API was down 2026-07-05; the daily workflow back-fills automatically.
+- **Resilience Index** — `compute_resilience.py`: linear 0–100 vs documented bounds → hexagon-pillar means → index + weakest pillar + RAG. Current: Brunei 81.2 🟢 · Kalimantan 69.2 🟢 · Sarawak 58.6 🟡 · Sabah 56.9 🟡 (weakest pillar everywhere: Education). Only ratio/percent/years indicators are scored; unscored pillars are excluded and labelled, never imputed. *The original methodology file was removed from the repo — the bounds table in `compute_resilience.py` is a reconstruction awaiting review.*
+- **SDG page** — `/sdg` is now a real page (the 6 client-required goals, region selector, confidence tags).
+- **Automated refresh** — `.github/workflows/refresh-data.yml` runs the 5-step pipeline daily at 05:00 MYT and commits changed data. data.gov.my calls are throttled to respect its official **4 requests/minute** limit.
 
 ---
 

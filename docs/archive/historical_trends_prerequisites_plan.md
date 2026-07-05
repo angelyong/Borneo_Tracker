@@ -1,5 +1,13 @@
 # Historical Trends Prerequisites and Implementation Plan
 
+> ## ✅ STATUS: WAVE 1 SHIPPED (2026-07-06, commit `9c30add`)
+> Phases 1–7 executed in reduced-scope form: DB repair done; `indicator_observations` table (the "safer
+> recommendation" below) chosen over a key change; `ingest_history.py` pulls real multi-year series
+> (256 observations, 16 series); JSON exports `series` + `trendReady`; the frontend charts a trend only
+> when ≥3 real annual points exist. Known holes: WB-sourced Brunei/Kalimantan series back-fill via the
+> daily workflow; Kalimantan Timur unmapped in GFW change tables (4/5 provinces, labelled).
+> Kept as history — the full eligibility-matrix process was deliberately trimmed to the wave-1 subset.
+
 This document records what is currently missing before Borneo Tracker can implement real Historical Trends, what the team should do, and the concrete execution plan.
 
 Current recommendation:

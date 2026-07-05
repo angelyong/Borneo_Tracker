@@ -1,5 +1,12 @@
 # Borneo Tracker — Handoff to Integration Developer
 
+> ## ✅ STATUS: COMPLETED (2026-07-06)
+> This handoff was executed. The bridge (export_json.py → indicators.json → useIndicators.js), the DB setup repair,
+> and all mock-data replacement were done by daiyong (commits `60b93d8`…`28937c7`); Henry then took the work over and
+> added: real historical trends (`ingest_history.py` + `indicator_observations` table + Trend tab), the `/sdg` page,
+> the Resilience Index (`compute_resilience.py`), and the daily GitHub Actions refresh (commit `9c30add`).
+> This document is kept as project history — see `README.md` for the current state.
+
 > **Your mission:** connect the data we collected to the frontend, and get the database set up.
 > This doc explains what already exists, how to run it, and exactly what you need to build.
 > Written by the data-layer author (Henry). Ask me anything that's unclear.
