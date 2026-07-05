@@ -110,4 +110,28 @@
 2. **Real engineering** — you beat real obstacles (bot-blocks, firewalls, outages, truncation).
 3. **Comparability** — unifying 4 different statistics systems onto one metric set is the hard, valuable work.
 4. **Honesty about limits** — documented gaps signal rigour, not weakness.
+
+---
+
+## ⚡ UPDATE 2026-07-06 — the demo got much stronger
+
+Slides 11/13 above are now OUTDATED in your favour. As of commit `9c30add`:
+
+- **The dashboard runs on 100% real data** — zero mock values (slide 11's "sample values" caveat is gone; say the opposite: *"every number on screen is live from the pipeline"*).
+- **Real historical trends** — Regional Detail has a working **Trend** tab: e.g. Sarawak annual tree-cover loss **2001–2024** (24 real satellite-derived points), fire alerts since 2012. Indicators without real history show a greyed-out button — the integrity story in action.
+- **Resilience Index is computed and on screen** — Brunei 81.2 🟢 · Kalimantan 69.2 🟢 · Sarawak 58.6 🟡 · Sabah 56.9 🟡, each with its weakest pillar (Education) and a visible "scored X/6 pillars" honesty label.
+- **SDG page is live** (`/sdg`, the 6 client-required goals).
+- **The data refreshes itself** — GitHub Actions runs the pipeline daily at 05:00 MYT and commits changes. Answer to the client's *"like real-time plane tracking?"* question: **yes — fire and air quality are near-real-time; annual indicators update the moment their source publishes, automatically.**
+
+### Updated 3-minute demo route
+1. `/` — map, switch layers, point at "Data as of <today> · refreshed daily" in the corner.
+2. `/regions` → Sarawak → **Resilience Index chip** (58.6, weakest: Education) → pick *Tree cover loss* → click **Trend** → the 24-year deforestation curve. This is the money shot.
+3. `/regions` → pick *Air quality* → Trend is greyed out ("no free historical source") — 10 seconds on why honesty is a feature.
+4. `/sdg` — flip through two goals with confidence tags.
+5. (Optional) show the GitHub Actions run log — "no human touched this data today."
+
+### New numbers to memorise
+- **256** historical observations · **16** trend series · tree-cover loss **2001–2024** · fire alerts since **2012**.
+- Resilience: **Brunei 81.2 / Kalimantan 69.2 / Sarawak 58.6 / Sabah 56.9** — weakest pillar everywhere: **Education**.
+- Pipeline: **5 steps**, daily at **05:00 MYT**, data.gov.my throttled to its official **4 req/min**.
 </content>

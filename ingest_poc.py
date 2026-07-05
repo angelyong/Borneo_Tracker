@@ -25,6 +25,7 @@ Keys are read from .env (never hard-coded).
 import csv
 import http.client
 import json
+import os
 import time
 from pathlib import Path
 import urllib.request
@@ -45,6 +46,10 @@ def load_env(path=ROOT / ".env"):
             if line and not line.startswith("#") and "=" in line:
                 k, v = line.split("=", 1)
                 env[k.strip()] = v.strip()
+    # Process env vars override .env so CI (GitHub Actions secrets) works without a .env file.
+    for key in ("BPS_API_KEY", "GFW_API_KEY", "WAQI_TOKEN", "FIRMS_MAP_KEY"):
+        if os.environ.get(key):
+            env[key] = os.environ[key]
     return env
 
 
@@ -158,7 +163,9 @@ def pull_datagovmy(rows):
         ("electricity_access", "Electricity access", "households",  # Hexagon: Energy
          lambda r: latest(r, "households")),
     ]
-    for ds, indicator, unit, sel in specs:
+    for index, (ds, indicator, unit, sel) in enumerate(specs):
+        if index:
+            time.sleep(16)  # official limit is 4 requests/minute (429 otherwise)
         try:
             data = get_json(f"https://api.data.gov.my/data-catalogue/?id={ds}&limit=20000")
         except Exception as e:

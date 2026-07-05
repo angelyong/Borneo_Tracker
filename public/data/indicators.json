@@ -1,12 +1,13 @@
 {
-  "generatedAt": "2026-07-02",
+  "generatedAt": "2026-07-06",
   "territories": [
     "Sabah",
     "Sarawak",
     "Brunei",
     "Kalimantan"
   ],
-  "trendReady": false,
+  "trendReady": true,
+  "trendMinPoints": 3,
   "rows": [
     {
       "territory": "Brunei",
@@ -22,7 +23,7 @@
       "sdg_goal": "SDG13",
       "hexagon_pillar": "",
       "confidence": "medium",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -42,7 +43,7 @@
       "sdg_goal": "SDG13",
       "hexagon_pillar": "",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -62,7 +63,7 @@
       "sdg_goal": "SDG15",
       "hexagon_pillar": "",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 0,
       "is_derived": 0,
       "derived_from": "",
@@ -82,7 +83,7 @@
       "sdg_goal": "SDG15",
       "hexagon_pillar": "",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -122,7 +123,7 @@
       "sdg_goal": "SDG7",
       "hexagon_pillar": "Energy",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 0,
       "is_derived": 0,
       "derived_from": "",
@@ -142,7 +143,7 @@
       "sdg_goal": "SDG13",
       "hexagon_pillar": "",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -162,7 +163,7 @@
       "sdg_goal": "SDG16",
       "hexagon_pillar": "",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -182,7 +183,7 @@
       "sdg_goal": "SDG4",
       "hexagon_pillar": "Education",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 0,
       "is_derived": 0,
       "derived_from": "",
@@ -202,7 +203,7 @@
       "sdg_goal": "SDG2",
       "hexagon_pillar": "Food",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 0,
       "is_derived": 0,
       "derived_from": "",
@@ -222,7 +223,7 @@
       "sdg_goal": "SDG11",
       "hexagon_pillar": "Shelter",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 0,
       "is_derived": 0,
       "derived_from": "",
@@ -242,7 +243,7 @@
       "sdg_goal": "SDG6",
       "hexagon_pillar": "Healthcare",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -282,7 +283,7 @@
       "sdg_goal": "SDG7",
       "hexagon_pillar": "Energy",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -302,7 +303,7 @@
       "sdg_goal": "SDG8",
       "hexagon_pillar": "",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 0,
       "is_derived": 0,
       "derived_from": "",
@@ -322,7 +323,7 @@
       "sdg_goal": "SDG8",
       "hexagon_pillar": "",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -342,7 +343,7 @@
       "sdg_goal": "SDG3",
       "hexagon_pillar": "Healthcare",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 0,
       "is_derived": 0,
       "derived_from": "",
@@ -362,7 +363,7 @@
       "sdg_goal": "SDG11",
       "hexagon_pillar": "Shelter",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -382,7 +383,7 @@
       "sdg_goal": "SDG3",
       "hexagon_pillar": "Healthcare",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -422,7 +423,7 @@
       "sdg_goal": "SDG4",
       "hexagon_pillar": "Education",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 0,
       "is_derived": 0,
       "derived_from": "",
@@ -442,7 +443,7 @@
       "sdg_goal": "SDG4",
       "hexagon_pillar": "Education",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 0,
       "is_derived": 0,
       "derived_from": "",
@@ -502,7 +503,7 @@
       "sdg_goal": "SDG8",
       "hexagon_pillar": "",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -522,7 +523,7 @@
       "sdg_goal": "SDG13",
       "hexagon_pillar": "",
       "confidence": "medium",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -542,7 +543,7 @@
       "sdg_goal": "SDG13",
       "hexagon_pillar": "",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -562,7 +563,7 @@
       "sdg_goal": "SDG15",
       "hexagon_pillar": "",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -602,7 +603,7 @@
       "sdg_goal": "SDG7",
       "hexagon_pillar": "Energy",
       "confidence": "medium",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 0,
       "is_derived": 0,
       "derived_from": "",
@@ -622,7 +623,7 @@
       "sdg_goal": "SDG13",
       "hexagon_pillar": "",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -642,7 +643,7 @@
       "sdg_goal": "SDG16",
       "hexagon_pillar": "",
       "confidence": "medium",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -662,7 +663,7 @@
       "sdg_goal": "SDG6",
       "hexagon_pillar": "Healthcare",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -682,7 +683,7 @@
       "sdg_goal": "SDG2",
       "hexagon_pillar": "Food",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -702,7 +703,7 @@
       "sdg_goal": "SDG7",
       "hexagon_pillar": "Energy",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -722,7 +723,7 @@
       "sdg_goal": "SDG8",
       "hexagon_pillar": "",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -742,7 +743,7 @@
       "sdg_goal": "SDG11",
       "hexagon_pillar": "Shelter",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -762,7 +763,7 @@
       "sdg_goal": "SDG3",
       "hexagon_pillar": "Healthcare",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -782,7 +783,7 @@
       "sdg_goal": "SDG4",
       "hexagon_pillar": "Education",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -802,7 +803,7 @@
       "sdg_goal": "SDG1",
       "hexagon_pillar": "",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -822,7 +823,7 @@
       "sdg_goal": "SDG8",
       "hexagon_pillar": "Entertainment",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -862,7 +863,7 @@
       "sdg_goal": "SDG8",
       "hexagon_pillar": "",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -882,7 +883,7 @@
       "sdg_goal": "SDG13",
       "hexagon_pillar": "",
       "confidence": "medium",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -902,7 +903,7 @@
       "sdg_goal": "SDG13",
       "hexagon_pillar": "",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -922,7 +923,7 @@
       "sdg_goal": "SDG15",
       "hexagon_pillar": "",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -962,7 +963,7 @@
       "sdg_goal": "SDG7",
       "hexagon_pillar": "Energy",
       "confidence": "medium",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 0,
       "is_derived": 0,
       "derived_from": "",
@@ -982,7 +983,7 @@
       "sdg_goal": "SDG13",
       "hexagon_pillar": "",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -1002,7 +1003,7 @@
       "sdg_goal": "SDG16",
       "hexagon_pillar": "",
       "confidence": "medium",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -1022,7 +1023,7 @@
       "sdg_goal": "SDG6",
       "hexagon_pillar": "Healthcare",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -1042,7 +1043,7 @@
       "sdg_goal": "SDG2",
       "hexagon_pillar": "Food",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -1062,7 +1063,7 @@
       "sdg_goal": "SDG7",
       "hexagon_pillar": "Energy",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -1082,7 +1083,7 @@
       "sdg_goal": "SDG8",
       "hexagon_pillar": "",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -1102,7 +1103,7 @@
       "sdg_goal": "SDG8",
       "hexagon_pillar": "",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 0,
       "is_derived": 0,
       "derived_from": "",
@@ -1122,7 +1123,7 @@
       "sdg_goal": "SDG3",
       "hexagon_pillar": "Healthcare",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 0,
       "is_derived": 0,
       "derived_from": "",
@@ -1142,7 +1143,7 @@
       "sdg_goal": "SDG11",
       "hexagon_pillar": "Shelter",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -1202,7 +1203,7 @@
       "sdg_goal": "SDG1",
       "hexagon_pillar": "",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -1222,7 +1223,7 @@
       "sdg_goal": "SDG4",
       "hexagon_pillar": "Education",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 0,
       "is_derived": 0,
       "derived_from": "",
@@ -1282,7 +1283,7 @@
       "sdg_goal": "SDG8",
       "hexagon_pillar": "",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -1302,7 +1303,7 @@
       "sdg_goal": "SDG13",
       "hexagon_pillar": "",
       "confidence": "medium",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -1322,7 +1323,7 @@
       "sdg_goal": "SDG13",
       "hexagon_pillar": "",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -1342,7 +1343,7 @@
       "sdg_goal": "SDG15",
       "hexagon_pillar": "",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -1382,7 +1383,7 @@
       "sdg_goal": "SDG7",
       "hexagon_pillar": "Energy",
       "confidence": "medium",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 0,
       "is_derived": 0,
       "derived_from": "",
@@ -1402,7 +1403,7 @@
       "sdg_goal": "SDG13",
       "hexagon_pillar": "",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -1422,7 +1423,7 @@
       "sdg_goal": "SDG16",
       "hexagon_pillar": "",
       "confidence": "medium",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -1442,7 +1443,7 @@
       "sdg_goal": "SDG6",
       "hexagon_pillar": "Healthcare",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -1462,7 +1463,7 @@
       "sdg_goal": "SDG2",
       "hexagon_pillar": "Food",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -1482,7 +1483,7 @@
       "sdg_goal": "SDG7",
       "hexagon_pillar": "Energy",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -1522,7 +1523,7 @@
       "sdg_goal": "SDG8",
       "hexagon_pillar": "",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -1542,7 +1543,7 @@
       "sdg_goal": "SDG8",
       "hexagon_pillar": "",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 0,
       "is_derived": 0,
       "derived_from": "",
@@ -1562,7 +1563,7 @@
       "sdg_goal": "SDG3",
       "hexagon_pillar": "Healthcare",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 0,
       "is_derived": 0,
       "derived_from": "",
@@ -1582,7 +1583,7 @@
       "sdg_goal": "SDG11",
       "hexagon_pillar": "Shelter",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -1642,7 +1643,7 @@
       "sdg_goal": "SDG1",
       "hexagon_pillar": "",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
@@ -1662,7 +1663,7 @@
       "sdg_goal": "SDG4",
       "hexagon_pillar": "Education",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 0,
       "is_derived": 0,
       "derived_from": "",
@@ -1722,11 +1723,2392 @@
       "sdg_goal": "SDG8",
       "hexagon_pillar": "",
       "confidence": "high",
-      "last_updated": "2026-06-30",
+      "last_updated": "2026-07-06",
       "canonical": 1,
       "is_derived": 0,
       "derived_from": "",
       "source_count": 1
     }
-  ]
+  ],
+  "series": {
+    "Brunei": {
+      "clean_water_access": {
+        "indicator": "Clean water access",
+        "unit": "%",
+        "source": "World Bank",
+        "data_level": "national",
+        "confidence": "high",
+        "points": [
+          {
+            "year": "2000",
+            "value": 99.56
+          },
+          {
+            "year": "2001",
+            "value": 99.58
+          },
+          {
+            "year": "2002",
+            "value": 99.61
+          },
+          {
+            "year": "2003",
+            "value": 99.63
+          },
+          {
+            "year": "2004",
+            "value": 99.65
+          },
+          {
+            "year": "2005",
+            "value": 99.67
+          },
+          {
+            "year": "2006",
+            "value": 99.7
+          },
+          {
+            "year": "2007",
+            "value": 99.72
+          },
+          {
+            "year": "2008",
+            "value": 99.74
+          },
+          {
+            "year": "2009",
+            "value": 99.76
+          },
+          {
+            "year": "2010",
+            "value": 99.79
+          },
+          {
+            "year": "2011",
+            "value": 99.81
+          },
+          {
+            "year": "2012",
+            "value": 99.83
+          },
+          {
+            "year": "2013",
+            "value": 99.85
+          },
+          {
+            "year": "2014",
+            "value": 99.88
+          },
+          {
+            "year": "2015",
+            "value": 99.9
+          },
+          {
+            "year": "2016",
+            "value": 99.9
+          },
+          {
+            "year": "2017",
+            "value": 99.9
+          },
+          {
+            "year": "2018",
+            "value": 99.9
+          },
+          {
+            "year": "2019",
+            "value": 99.9
+          },
+          {
+            "year": "2020",
+            "value": 100.0
+          },
+          {
+            "year": "2021",
+            "value": 100.0
+          },
+          {
+            "year": "2022",
+            "value": 100.0
+          },
+          {
+            "year": "2023",
+            "value": 100.0
+          },
+          {
+            "year": "2024",
+            "value": 100.0
+          }
+        ]
+      },
+      "fire_hotspots": {
+        "indicator": "Fire alerts (VIIRS, annual)",
+        "unit": "count",
+        "source": "Global Forest Watch (VIIRS)",
+        "data_level": "satellite",
+        "confidence": "high",
+        "points": [
+          {
+            "year": "2012",
+            "value": 205.0
+          },
+          {
+            "year": "2013",
+            "value": 103.0
+          },
+          {
+            "year": "2014",
+            "value": 267.0
+          },
+          {
+            "year": "2015",
+            "value": 484.0
+          },
+          {
+            "year": "2016",
+            "value": 545.0
+          },
+          {
+            "year": "2017",
+            "value": 142.0
+          },
+          {
+            "year": "2018",
+            "value": 158.0
+          },
+          {
+            "year": "2019",
+            "value": 259.0
+          },
+          {
+            "year": "2020",
+            "value": 280.0
+          },
+          {
+            "year": "2021",
+            "value": 198.0
+          },
+          {
+            "year": "2022",
+            "value": 102.0
+          },
+          {
+            "year": "2023",
+            "value": 179.0
+          },
+          {
+            "year": "2024",
+            "value": 189.0
+          },
+          {
+            "year": "2025",
+            "value": 128.0
+          },
+          {
+            "year": "2026",
+            "value": 1.0
+          }
+        ]
+      },
+      "economy": {
+        "indicator": "GDP growth",
+        "unit": "%",
+        "source": "World Bank",
+        "data_level": "national",
+        "confidence": "high",
+        "points": [
+          {
+            "year": "2000",
+            "value": 3.47
+          },
+          {
+            "year": "2001",
+            "value": 1.47
+          },
+          {
+            "year": "2002",
+            "value": 3.96
+          },
+          {
+            "year": "2003",
+            "value": 3.58
+          },
+          {
+            "year": "2004",
+            "value": 0.1
+          },
+          {
+            "year": "2005",
+            "value": 0.0
+          },
+          {
+            "year": "2006",
+            "value": 4.1
+          },
+          {
+            "year": "2007",
+            "value": -3.76
+          },
+          {
+            "year": "2008",
+            "value": -3.9
+          },
+          {
+            "year": "2009",
+            "value": -1.9
+          },
+          {
+            "year": "2010",
+            "value": 2.74
+          },
+          {
+            "year": "2011",
+            "value": 3.74
+          },
+          {
+            "year": "2012",
+            "value": 0.91
+          },
+          {
+            "year": "2013",
+            "value": -2.12
+          },
+          {
+            "year": "2014",
+            "value": -2.51
+          },
+          {
+            "year": "2015",
+            "value": -0.39
+          },
+          {
+            "year": "2016",
+            "value": -2.48
+          },
+          {
+            "year": "2017",
+            "value": 1.33
+          },
+          {
+            "year": "2018",
+            "value": 0.05
+          },
+          {
+            "year": "2019",
+            "value": 3.87
+          },
+          {
+            "year": "2020",
+            "value": 1.13
+          },
+          {
+            "year": "2021",
+            "value": -1.59
+          },
+          {
+            "year": "2022",
+            "value": -1.63
+          },
+          {
+            "year": "2023",
+            "value": 1.13
+          },
+          {
+            "year": "2024",
+            "value": 4.05
+          },
+          {
+            "year": "2025",
+            "value": 0.67
+          }
+        ]
+      },
+      "healthcare": {
+        "indicator": "Life expectancy",
+        "unit": "years",
+        "source": "World Bank",
+        "data_level": "national",
+        "confidence": "high",
+        "points": [
+          {
+            "year": "2000",
+            "value": 74.02
+          },
+          {
+            "year": "2001",
+            "value": 74.21
+          },
+          {
+            "year": "2002",
+            "value": 74.36
+          },
+          {
+            "year": "2003",
+            "value": 74.51
+          },
+          {
+            "year": "2004",
+            "value": 74.6
+          },
+          {
+            "year": "2005",
+            "value": 74.68
+          },
+          {
+            "year": "2006",
+            "value": 74.75
+          },
+          {
+            "year": "2007",
+            "value": 74.79
+          },
+          {
+            "year": "2008",
+            "value": 74.81
+          },
+          {
+            "year": "2009",
+            "value": 74.81
+          },
+          {
+            "year": "2010",
+            "value": 74.82
+          },
+          {
+            "year": "2011",
+            "value": 74.83
+          },
+          {
+            "year": "2012",
+            "value": 74.84
+          },
+          {
+            "year": "2013",
+            "value": 74.85
+          },
+          {
+            "year": "2014",
+            "value": 74.86
+          },
+          {
+            "year": "2015",
+            "value": 74.88
+          },
+          {
+            "year": "2016",
+            "value": 74.91
+          },
+          {
+            "year": "2017",
+            "value": 74.94
+          },
+          {
+            "year": "2018",
+            "value": 74.99
+          },
+          {
+            "year": "2019",
+            "value": 75.05
+          },
+          {
+            "year": "2020",
+            "value": 75.11
+          },
+          {
+            "year": "2021",
+            "value": 74.87
+          },
+          {
+            "year": "2022",
+            "value": 72.92
+          },
+          {
+            "year": "2023",
+            "value": 75.33
+          },
+          {
+            "year": "2024",
+            "value": 75.5
+          }
+        ]
+      },
+      "deforestation": {
+        "indicator": "Tree cover loss (annual)",
+        "unit": "ha",
+        "source": "Global Forest Watch",
+        "data_level": "satellite",
+        "confidence": "high",
+        "points": [
+          {
+            "year": "2001",
+            "value": 1244.0
+          },
+          {
+            "year": "2002",
+            "value": 1089.0
+          },
+          {
+            "year": "2003",
+            "value": 799.0
+          },
+          {
+            "year": "2004",
+            "value": 1197.0
+          },
+          {
+            "year": "2005",
+            "value": 1278.0
+          },
+          {
+            "year": "2006",
+            "value": 1013.0
+          },
+          {
+            "year": "2007",
+            "value": 1565.0
+          },
+          {
+            "year": "2008",
+            "value": 1300.0
+          },
+          {
+            "year": "2009",
+            "value": 2169.0
+          },
+          {
+            "year": "2010",
+            "value": 967.0
+          },
+          {
+            "year": "2011",
+            "value": 2620.0
+          },
+          {
+            "year": "2012",
+            "value": 1837.0
+          },
+          {
+            "year": "2013",
+            "value": 888.0
+          },
+          {
+            "year": "2014",
+            "value": 2225.0
+          },
+          {
+            "year": "2015",
+            "value": 1761.0
+          },
+          {
+            "year": "2016",
+            "value": 2573.0
+          },
+          {
+            "year": "2017",
+            "value": 945.0
+          },
+          {
+            "year": "2018",
+            "value": 807.0
+          },
+          {
+            "year": "2019",
+            "value": 1168.0
+          },
+          {
+            "year": "2020",
+            "value": 1166.0
+          },
+          {
+            "year": "2021",
+            "value": 953.0
+          },
+          {
+            "year": "2022",
+            "value": 920.0
+          },
+          {
+            "year": "2023",
+            "value": 915.0
+          },
+          {
+            "year": "2024",
+            "value": 1042.0
+          }
+        ]
+      },
+      "unemployment_rate": {
+        "indicator": "Unemployment rate",
+        "unit": "%",
+        "source": "World Bank",
+        "data_level": "national",
+        "confidence": "high",
+        "points": [
+          {
+            "year": "2000",
+            "value": 5.53
+          },
+          {
+            "year": "2001",
+            "value": 5.56
+          },
+          {
+            "year": "2002",
+            "value": 5.65
+          },
+          {
+            "year": "2003",
+            "value": 5.74
+          },
+          {
+            "year": "2004",
+            "value": 5.85
+          },
+          {
+            "year": "2005",
+            "value": 5.97
+          },
+          {
+            "year": "2006",
+            "value": 6.06
+          },
+          {
+            "year": "2007",
+            "value": 6.19
+          },
+          {
+            "year": "2008",
+            "value": 6.31
+          },
+          {
+            "year": "2009",
+            "value": 6.46
+          },
+          {
+            "year": "2010",
+            "value": 6.49
+          },
+          {
+            "year": "2011",
+            "value": 6.51
+          },
+          {
+            "year": "2012",
+            "value": 6.57
+          },
+          {
+            "year": "2013",
+            "value": 6.71
+          },
+          {
+            "year": "2014",
+            "value": 6.86
+          },
+          {
+            "year": "2015",
+            "value": 7.7
+          },
+          {
+            "year": "2016",
+            "value": 8.54
+          },
+          {
+            "year": "2017",
+            "value": 9.32
+          },
+          {
+            "year": "2018",
+            "value": 8.7
+          },
+          {
+            "year": "2019",
+            "value": 6.6
+          },
+          {
+            "year": "2020",
+            "value": 7.41
+          },
+          {
+            "year": "2021",
+            "value": 4.91
+          },
+          {
+            "year": "2022",
+            "value": 5.19
+          },
+          {
+            "year": "2023",
+            "value": 5.3
+          },
+          {
+            "year": "2024",
+            "value": 5.18
+          },
+          {
+            "year": "2025",
+            "value": 5.28
+          }
+        ]
+      }
+    },
+    "Kalimantan": {
+      "clean_water_access": {
+        "indicator": "Clean water access",
+        "unit": "%",
+        "source": "World Bank",
+        "data_level": "national",
+        "confidence": "medium",
+        "points": [
+          {
+            "year": "2000",
+            "value": 75.78
+          },
+          {
+            "year": "2001",
+            "value": 76.78
+          },
+          {
+            "year": "2002",
+            "value": 77.76
+          },
+          {
+            "year": "2003",
+            "value": 78.74
+          },
+          {
+            "year": "2004",
+            "value": 79.71
+          },
+          {
+            "year": "2005",
+            "value": 80.67
+          },
+          {
+            "year": "2006",
+            "value": 81.62
+          },
+          {
+            "year": "2007",
+            "value": 82.56
+          },
+          {
+            "year": "2008",
+            "value": 83.49
+          },
+          {
+            "year": "2009",
+            "value": 84.39
+          },
+          {
+            "year": "2010",
+            "value": 85.17
+          },
+          {
+            "year": "2011",
+            "value": 85.64
+          },
+          {
+            "year": "2012",
+            "value": 86.07
+          },
+          {
+            "year": "2013",
+            "value": 86.5
+          },
+          {
+            "year": "2014",
+            "value": 86.91
+          },
+          {
+            "year": "2015",
+            "value": 87.3
+          },
+          {
+            "year": "2016",
+            "value": 87.68
+          },
+          {
+            "year": "2017",
+            "value": 88.05
+          },
+          {
+            "year": "2018",
+            "value": 88.41
+          },
+          {
+            "year": "2019",
+            "value": 88.75
+          },
+          {
+            "year": "2020",
+            "value": 89.09
+          },
+          {
+            "year": "2021",
+            "value": 89.4
+          },
+          {
+            "year": "2022",
+            "value": 89.71
+          },
+          {
+            "year": "2023",
+            "value": 89.36
+          },
+          {
+            "year": "2024",
+            "value": 89.01
+          }
+        ]
+      },
+      "fire_hotspots": {
+        "indicator": "Fire alerts (VIIRS, annual)",
+        "unit": "count",
+        "source": "Global Forest Watch (VIIRS), sum of 5/5 provinces (E+N Kalimantan via satellite geometry)",
+        "data_level": "satellite",
+        "confidence": "high",
+        "points": [
+          {
+            "year": "2012",
+            "value": 104538.0
+          },
+          {
+            "year": "2013",
+            "value": 63792.0
+          },
+          {
+            "year": "2014",
+            "value": 187107.0
+          },
+          {
+            "year": "2015",
+            "value": 360964.0
+          },
+          {
+            "year": "2016",
+            "value": 36967.0
+          },
+          {
+            "year": "2017",
+            "value": 19055.0
+          },
+          {
+            "year": "2018",
+            "value": 65775.0
+          },
+          {
+            "year": "2019",
+            "value": 176341.0
+          },
+          {
+            "year": "2020",
+            "value": 21778.0
+          },
+          {
+            "year": "2021",
+            "value": 17597.0
+          },
+          {
+            "year": "2022",
+            "value": 10444.0
+          },
+          {
+            "year": "2023",
+            "value": 91206.0
+          }
+        ]
+      },
+      "economy": {
+        "indicator": "GDP growth",
+        "unit": "%",
+        "source": "World Bank",
+        "data_level": "national",
+        "confidence": "medium",
+        "points": [
+          {
+            "year": "2000",
+            "value": 4.92
+          },
+          {
+            "year": "2001",
+            "value": 3.64
+          },
+          {
+            "year": "2002",
+            "value": 4.5
+          },
+          {
+            "year": "2003",
+            "value": 4.78
+          },
+          {
+            "year": "2004",
+            "value": 5.03
+          },
+          {
+            "year": "2005",
+            "value": 5.69
+          },
+          {
+            "year": "2006",
+            "value": 5.5
+          },
+          {
+            "year": "2007",
+            "value": 6.35
+          },
+          {
+            "year": "2008",
+            "value": 6.01
+          },
+          {
+            "year": "2009",
+            "value": 4.63
+          },
+          {
+            "year": "2010",
+            "value": 6.22
+          },
+          {
+            "year": "2011",
+            "value": 6.17
+          },
+          {
+            "year": "2012",
+            "value": 6.03
+          },
+          {
+            "year": "2013",
+            "value": 5.56
+          },
+          {
+            "year": "2014",
+            "value": 5.01
+          },
+          {
+            "year": "2015",
+            "value": 4.88
+          },
+          {
+            "year": "2016",
+            "value": 5.03
+          },
+          {
+            "year": "2017",
+            "value": 5.07
+          },
+          {
+            "year": "2018",
+            "value": 5.17
+          },
+          {
+            "year": "2019",
+            "value": 5.02
+          },
+          {
+            "year": "2020",
+            "value": -2.07
+          },
+          {
+            "year": "2021",
+            "value": 3.7
+          },
+          {
+            "year": "2022",
+            "value": 5.31
+          },
+          {
+            "year": "2023",
+            "value": 5.05
+          },
+          {
+            "year": "2024",
+            "value": 5.03
+          },
+          {
+            "year": "2025",
+            "value": 5.11
+          }
+        ]
+      },
+      "healthcare": {
+        "indicator": "Life expectancy",
+        "unit": "years",
+        "source": "World Bank",
+        "data_level": "national",
+        "confidence": "medium",
+        "points": [
+          {
+            "year": "2000",
+            "value": 66.29
+          },
+          {
+            "year": "2001",
+            "value": 66.58
+          },
+          {
+            "year": "2002",
+            "value": 66.95
+          },
+          {
+            "year": "2003",
+            "value": 67.13
+          },
+          {
+            "year": "2004",
+            "value": 65.52
+          },
+          {
+            "year": "2005",
+            "value": 67.53
+          },
+          {
+            "year": "2006",
+            "value": 67.66
+          },
+          {
+            "year": "2007",
+            "value": 67.91
+          },
+          {
+            "year": "2008",
+            "value": 68.08
+          },
+          {
+            "year": "2009",
+            "value": 68.27
+          },
+          {
+            "year": "2010",
+            "value": 68.36
+          },
+          {
+            "year": "2011",
+            "value": 68.63
+          },
+          {
+            "year": "2012",
+            "value": 68.86
+          },
+          {
+            "year": "2013",
+            "value": 69.06
+          },
+          {
+            "year": "2014",
+            "value": 69.29
+          },
+          {
+            "year": "2015",
+            "value": 69.52
+          },
+          {
+            "year": "2016",
+            "value": 69.73
+          },
+          {
+            "year": "2017",
+            "value": 69.95
+          },
+          {
+            "year": "2018",
+            "value": 70.08
+          },
+          {
+            "year": "2019",
+            "value": 70.35
+          },
+          {
+            "year": "2020",
+            "value": 68.82
+          },
+          {
+            "year": "2021",
+            "value": 67.45
+          },
+          {
+            "year": "2022",
+            "value": 70.92
+          },
+          {
+            "year": "2023",
+            "value": 71.15
+          },
+          {
+            "year": "2024",
+            "value": 71.29
+          }
+        ]
+      },
+      "poverty": {
+        "indicator": "Poverty rate (national line)",
+        "unit": "%",
+        "source": "World Bank",
+        "data_level": "national",
+        "confidence": "medium",
+        "points": [
+          {
+            "year": "2000",
+            "value": 19.1
+          },
+          {
+            "year": "2001",
+            "value": 18.4
+          },
+          {
+            "year": "2002",
+            "value": 18.2
+          },
+          {
+            "year": "2003",
+            "value": 17.4
+          },
+          {
+            "year": "2004",
+            "value": 16.7
+          },
+          {
+            "year": "2005",
+            "value": 16.0
+          },
+          {
+            "year": "2006",
+            "value": 17.8
+          },
+          {
+            "year": "2007",
+            "value": 16.6
+          },
+          {
+            "year": "2008",
+            "value": 15.4
+          },
+          {
+            "year": "2009",
+            "value": 14.1
+          },
+          {
+            "year": "2010",
+            "value": 13.3
+          },
+          {
+            "year": "2011",
+            "value": 12.5
+          },
+          {
+            "year": "2012",
+            "value": 12.0
+          },
+          {
+            "year": "2013",
+            "value": 11.4
+          },
+          {
+            "year": "2014",
+            "value": 11.3
+          },
+          {
+            "year": "2015",
+            "value": 11.2
+          },
+          {
+            "year": "2016",
+            "value": 10.9
+          },
+          {
+            "year": "2017",
+            "value": 10.6
+          },
+          {
+            "year": "2018",
+            "value": 9.8
+          },
+          {
+            "year": "2019",
+            "value": 9.4
+          },
+          {
+            "year": "2020",
+            "value": 9.8
+          },
+          {
+            "year": "2021",
+            "value": 10.1
+          },
+          {
+            "year": "2022",
+            "value": 9.5
+          },
+          {
+            "year": "2023",
+            "value": 9.4
+          },
+          {
+            "year": "2024",
+            "value": 9.0
+          }
+        ]
+      },
+      "deforestation": {
+        "indicator": "Tree cover loss (annual)",
+        "unit": "ha",
+        "source": "Global Forest Watch, sum of 5/5 provinces (E+N Kalimantan via satellite geometry)",
+        "data_level": "satellite",
+        "confidence": "high",
+        "points": [
+          {
+            "year": "2001",
+            "value": 232918.0
+          },
+          {
+            "year": "2002",
+            "value": 304463.0
+          },
+          {
+            "year": "2003",
+            "value": 256631.0
+          },
+          {
+            "year": "2004",
+            "value": 432829.0
+          },
+          {
+            "year": "2005",
+            "value": 378900.0
+          },
+          {
+            "year": "2006",
+            "value": 558971.0
+          },
+          {
+            "year": "2007",
+            "value": 605893.0
+          },
+          {
+            "year": "2008",
+            "value": 570823.0
+          },
+          {
+            "year": "2009",
+            "value": 806389.0
+          },
+          {
+            "year": "2010",
+            "value": 458148.0
+          },
+          {
+            "year": "2011",
+            "value": 673774.0
+          },
+          {
+            "year": "2012",
+            "value": 914112.0
+          },
+          {
+            "year": "2013",
+            "value": 518016.0
+          },
+          {
+            "year": "2014",
+            "value": 825381.0
+          },
+          {
+            "year": "2015",
+            "value": 786467.0
+          },
+          {
+            "year": "2016",
+            "value": 1197076.0
+          },
+          {
+            "year": "2017",
+            "value": 489364.0
+          },
+          {
+            "year": "2018",
+            "value": 491534.0
+          },
+          {
+            "year": "2019",
+            "value": 470622.0
+          },
+          {
+            "year": "2020",
+            "value": 349474.0
+          },
+          {
+            "year": "2021",
+            "value": 276969.0
+          },
+          {
+            "year": "2022",
+            "value": 307116.0
+          },
+          {
+            "year": "2023",
+            "value": 563606.0
+          },
+          {
+            "year": "2024",
+            "value": 450622.0
+          }
+        ]
+      },
+      "unemployment_rate": {
+        "indicator": "Unemployment rate",
+        "unit": "%",
+        "source": "World Bank",
+        "data_level": "national",
+        "confidence": "medium",
+        "points": [
+          {
+            "year": "2000",
+            "value": 6.08
+          },
+          {
+            "year": "2001",
+            "value": 6.08
+          },
+          {
+            "year": "2002",
+            "value": 6.6
+          },
+          {
+            "year": "2003",
+            "value": 6.66
+          },
+          {
+            "year": "2004",
+            "value": 7.3
+          },
+          {
+            "year": "2005",
+            "value": 7.95
+          },
+          {
+            "year": "2006",
+            "value": 7.55
+          },
+          {
+            "year": "2007",
+            "value": 8.06
+          },
+          {
+            "year": "2008",
+            "value": 7.21
+          },
+          {
+            "year": "2009",
+            "value": 6.11
+          },
+          {
+            "year": "2010",
+            "value": 5.61
+          },
+          {
+            "year": "2011",
+            "value": 5.15
+          },
+          {
+            "year": "2012",
+            "value": 4.47
+          },
+          {
+            "year": "2013",
+            "value": 4.34
+          },
+          {
+            "year": "2014",
+            "value": 4.05
+          },
+          {
+            "year": "2015",
+            "value": 4.51
+          },
+          {
+            "year": "2016",
+            "value": 4.3
+          },
+          {
+            "year": "2017",
+            "value": 3.78
+          },
+          {
+            "year": "2018",
+            "value": 4.39
+          },
+          {
+            "year": "2019",
+            "value": 3.59
+          },
+          {
+            "year": "2020",
+            "value": 4.25
+          },
+          {
+            "year": "2021",
+            "value": 3.83
+          },
+          {
+            "year": "2022",
+            "value": 3.46
+          },
+          {
+            "year": "2023",
+            "value": 3.31
+          },
+          {
+            "year": "2024",
+            "value": 3.3
+          },
+          {
+            "year": "2025",
+            "value": 3.24
+          }
+        ]
+      }
+    },
+    "Sabah": {
+      "clean_water_access": {
+        "indicator": "Clean water access",
+        "unit": "%",
+        "source": "data.gov.my / OpenDOSM",
+        "data_level": "state",
+        "confidence": "high",
+        "points": [
+          {
+            "year": "2000",
+            "value": 73.0
+          },
+          {
+            "year": "2001",
+            "value": 72.9
+          },
+          {
+            "year": "2002",
+            "value": 72.9
+          },
+          {
+            "year": "2003",
+            "value": 73.9
+          },
+          {
+            "year": "2004",
+            "value": 75.8
+          },
+          {
+            "year": "2005",
+            "value": 75.5
+          },
+          {
+            "year": "2006",
+            "value": 77.0
+          },
+          {
+            "year": "2007",
+            "value": 76.0
+          },
+          {
+            "year": "2008",
+            "value": 76.0
+          },
+          {
+            "year": "2009",
+            "value": 76.3
+          },
+          {
+            "year": "2010",
+            "value": 79.7
+          },
+          {
+            "year": "2011",
+            "value": 80.0
+          },
+          {
+            "year": "2012",
+            "value": 82.0
+          },
+          {
+            "year": "2013",
+            "value": 86.0
+          },
+          {
+            "year": "2014",
+            "value": 86.5
+          },
+          {
+            "year": "2015",
+            "value": 87.9
+          },
+          {
+            "year": "2016",
+            "value": 89.4
+          },
+          {
+            "year": "2017",
+            "value": 89.0
+          },
+          {
+            "year": "2018",
+            "value": 89.0
+          },
+          {
+            "year": "2019",
+            "value": 89.0
+          },
+          {
+            "year": "2020",
+            "value": 77.0
+          },
+          {
+            "year": "2021",
+            "value": 78.0
+          },
+          {
+            "year": "2022",
+            "value": 80.5
+          }
+        ]
+      },
+      "fire_hotspots": {
+        "indicator": "Fire alerts (VIIRS, annual)",
+        "unit": "count",
+        "source": "Global Forest Watch (VIIRS)",
+        "data_level": "satellite",
+        "confidence": "high",
+        "points": [
+          {
+            "year": "2012",
+            "value": 2186.0
+          },
+          {
+            "year": "2013",
+            "value": 1946.0
+          },
+          {
+            "year": "2014",
+            "value": 3379.0
+          },
+          {
+            "year": "2015",
+            "value": 5109.0
+          },
+          {
+            "year": "2016",
+            "value": 7290.0
+          },
+          {
+            "year": "2017",
+            "value": 1011.0
+          },
+          {
+            "year": "2018",
+            "value": 1734.0
+          },
+          {
+            "year": "2019",
+            "value": 2923.0
+          },
+          {
+            "year": "2020",
+            "value": 1980.0
+          },
+          {
+            "year": "2021",
+            "value": 1179.0
+          },
+          {
+            "year": "2022",
+            "value": 485.0
+          },
+          {
+            "year": "2023",
+            "value": 1185.0
+          },
+          {
+            "year": "2024",
+            "value": 2566.0
+          },
+          {
+            "year": "2025",
+            "value": 697.0
+          },
+          {
+            "year": "2026",
+            "value": 1.0
+          }
+        ]
+      },
+      "economy": {
+        "indicator": "GDP growth",
+        "unit": "%",
+        "source": "data.gov.my / OpenDOSM",
+        "data_level": "state",
+        "confidence": "high",
+        "points": [
+          {
+            "year": "2016",
+            "value": 5.072
+          },
+          {
+            "year": "2017",
+            "value": 8.095
+          },
+          {
+            "year": "2018",
+            "value": 1.454
+          },
+          {
+            "year": "2019",
+            "value": 0.741
+          },
+          {
+            "year": "2020",
+            "value": -9.11
+          },
+          {
+            "year": "2021",
+            "value": 1.49
+          },
+          {
+            "year": "2022",
+            "value": 3.932
+          },
+          {
+            "year": "2023",
+            "value": 1.328
+          }
+        ]
+      },
+      "healthcare": {
+        "indicator": "Life expectancy",
+        "unit": "years",
+        "source": "World Bank",
+        "data_level": "national",
+        "confidence": "medium",
+        "points": [
+          {
+            "year": "2000",
+            "value": 72.73
+          },
+          {
+            "year": "2001",
+            "value": 73.08
+          },
+          {
+            "year": "2002",
+            "value": 73.47
+          },
+          {
+            "year": "2003",
+            "value": 73.73
+          },
+          {
+            "year": "2004",
+            "value": 74.03
+          },
+          {
+            "year": "2005",
+            "value": 74.37
+          },
+          {
+            "year": "2006",
+            "value": 74.7
+          },
+          {
+            "year": "2007",
+            "value": 74.96
+          },
+          {
+            "year": "2008",
+            "value": 75.15
+          },
+          {
+            "year": "2009",
+            "value": 75.27
+          },
+          {
+            "year": "2010",
+            "value": 75.38
+          },
+          {
+            "year": "2011",
+            "value": 75.49
+          },
+          {
+            "year": "2012",
+            "value": 75.55
+          },
+          {
+            "year": "2013",
+            "value": 75.46
+          },
+          {
+            "year": "2014",
+            "value": 75.34
+          },
+          {
+            "year": "2015",
+            "value": 75.29
+          },
+          {
+            "year": "2016",
+            "value": 75.37
+          },
+          {
+            "year": "2017",
+            "value": 75.54
+          },
+          {
+            "year": "2018",
+            "value": 75.73
+          },
+          {
+            "year": "2019",
+            "value": 75.9
+          },
+          {
+            "year": "2020",
+            "value": 76.06
+          },
+          {
+            "year": "2021",
+            "value": 73.92
+          },
+          {
+            "year": "2022",
+            "value": 75.44
+          },
+          {
+            "year": "2023",
+            "value": 76.66
+          },
+          {
+            "year": "2024",
+            "value": 76.82
+          }
+        ]
+      },
+      "poverty": {
+        "indicator": "Poverty rate (absolute)",
+        "unit": "%",
+        "source": "data.gov.my / OpenDOSM",
+        "data_level": "state",
+        "confidence": "high",
+        "points": [
+          {
+            "year": "2002",
+            "value": 16.0
+          },
+          {
+            "year": "2004",
+            "value": 24.2
+          },
+          {
+            "year": "2007",
+            "value": 16.4
+          },
+          {
+            "year": "2009",
+            "value": 19.7
+          },
+          {
+            "year": "2012",
+            "value": 8.1
+          },
+          {
+            "year": "2014",
+            "value": 4.0
+          },
+          {
+            "year": "2016",
+            "value": 2.9
+          },
+          {
+            "year": "2019",
+            "value": 19.5
+          },
+          {
+            "year": "2020",
+            "value": 25.3
+          },
+          {
+            "year": "2022",
+            "value": 19.7
+          }
+        ]
+      },
+      "deforestation": {
+        "indicator": "Tree cover loss (annual)",
+        "unit": "ha",
+        "source": "Global Forest Watch",
+        "data_level": "satellite",
+        "confidence": "high",
+        "points": [
+          {
+            "year": "2001",
+            "value": 63041.0
+          },
+          {
+            "year": "2002",
+            "value": 59778.0
+          },
+          {
+            "year": "2003",
+            "value": 33047.0
+          },
+          {
+            "year": "2004",
+            "value": 86717.0
+          },
+          {
+            "year": "2005",
+            "value": 73026.0
+          },
+          {
+            "year": "2006",
+            "value": 81770.0
+          },
+          {
+            "year": "2007",
+            "value": 62739.0
+          },
+          {
+            "year": "2008",
+            "value": 84258.0
+          },
+          {
+            "year": "2009",
+            "value": 92081.0
+          },
+          {
+            "year": "2010",
+            "value": 104184.0
+          },
+          {
+            "year": "2011",
+            "value": 68464.0
+          },
+          {
+            "year": "2012",
+            "value": 104650.0
+          },
+          {
+            "year": "2013",
+            "value": 65540.0
+          },
+          {
+            "year": "2014",
+            "value": 137521.0
+          },
+          {
+            "year": "2015",
+            "value": 106917.0
+          },
+          {
+            "year": "2016",
+            "value": 113068.0
+          },
+          {
+            "year": "2017",
+            "value": 88766.0
+          },
+          {
+            "year": "2018",
+            "value": 92708.0
+          },
+          {
+            "year": "2019",
+            "value": 90613.0
+          },
+          {
+            "year": "2020",
+            "value": 68313.0
+          },
+          {
+            "year": "2021",
+            "value": 66593.0
+          },
+          {
+            "year": "2022",
+            "value": 64221.0
+          },
+          {
+            "year": "2023",
+            "value": 81567.0
+          },
+          {
+            "year": "2024",
+            "value": 75671.0
+          }
+        ]
+      },
+      "unemployment_rate": {
+        "indicator": "Unemployment rate",
+        "unit": "%",
+        "source": "data.gov.my / OpenDOSM (annual avg of quarters)",
+        "data_level": "state",
+        "confidence": "high",
+        "points": [
+          {
+            "year": "2017",
+            "value": 5.95
+          },
+          {
+            "year": "2018",
+            "value": 5.95
+          },
+          {
+            "year": "2019",
+            "value": 5.88
+          },
+          {
+            "year": "2020",
+            "value": 8.2
+          },
+          {
+            "year": "2021",
+            "value": 8.9
+          },
+          {
+            "year": "2022",
+            "value": 8.5
+          },
+          {
+            "year": "2023",
+            "value": 7.53
+          },
+          {
+            "year": "2024",
+            "value": 7.55
+          },
+          {
+            "year": "2025",
+            "value": 6.2
+          }
+        ]
+      }
+    },
+    "Sarawak": {
+      "clean_water_access": {
+        "indicator": "Clean water access",
+        "unit": "%",
+        "source": "data.gov.my / OpenDOSM",
+        "data_level": "state",
+        "confidence": "high",
+        "points": [
+          {
+            "year": "2000",
+            "value": 96.0
+          },
+          {
+            "year": "2001",
+            "value": 95.8
+          },
+          {
+            "year": "2002",
+            "value": 95.8
+          },
+          {
+            "year": "2003",
+            "value": 95.8
+          },
+          {
+            "year": "2004",
+            "value": 96.0
+          },
+          {
+            "year": "2005",
+            "value": 96.0
+          },
+          {
+            "year": "2006",
+            "value": 96.0
+          },
+          {
+            "year": "2007",
+            "value": 77.0
+          },
+          {
+            "year": "2008",
+            "value": 78.0
+          },
+          {
+            "year": "2009",
+            "value": 86.2
+          },
+          {
+            "year": "2010",
+            "value": 93.7
+          },
+          {
+            "year": "2011",
+            "value": 93.7
+          },
+          {
+            "year": "2012",
+            "value": 93.8
+          },
+          {
+            "year": "2013",
+            "value": 93.8
+          },
+          {
+            "year": "2014",
+            "value": 94.0
+          },
+          {
+            "year": "2015",
+            "value": 87.9
+          },
+          {
+            "year": "2016",
+            "value": 89.2
+          },
+          {
+            "year": "2017",
+            "value": 89.6
+          },
+          {
+            "year": "2018",
+            "value": 89.8
+          },
+          {
+            "year": "2019",
+            "value": 81.9
+          },
+          {
+            "year": "2020",
+            "value": 83.4
+          },
+          {
+            "year": "2021",
+            "value": 83.6
+          },
+          {
+            "year": "2022",
+            "value": 83.7
+          }
+        ]
+      },
+      "fire_hotspots": {
+        "indicator": "Fire alerts (VIIRS, annual)",
+        "unit": "count",
+        "source": "Global Forest Watch (VIIRS)",
+        "data_level": "satellite",
+        "confidence": "high",
+        "points": [
+          {
+            "year": "2012",
+            "value": 12124.0
+          },
+          {
+            "year": "2013",
+            "value": 8463.0
+          },
+          {
+            "year": "2014",
+            "value": 9382.0
+          },
+          {
+            "year": "2015",
+            "value": 5924.0
+          },
+          {
+            "year": "2016",
+            "value": 4548.0
+          },
+          {
+            "year": "2017",
+            "value": 3461.0
+          },
+          {
+            "year": "2018",
+            "value": 5336.0
+          },
+          {
+            "year": "2019",
+            "value": 5476.0
+          },
+          {
+            "year": "2020",
+            "value": 2320.0
+          },
+          {
+            "year": "2021",
+            "value": 3058.0
+          },
+          {
+            "year": "2022",
+            "value": 1700.0
+          },
+          {
+            "year": "2023",
+            "value": 3106.0
+          },
+          {
+            "year": "2024",
+            "value": 2517.0
+          },
+          {
+            "year": "2025",
+            "value": 3326.0
+          },
+          {
+            "year": "2026",
+            "value": 7.0
+          }
+        ]
+      },
+      "economy": {
+        "indicator": "GDP growth",
+        "unit": "%",
+        "source": "data.gov.my / OpenDOSM",
+        "data_level": "state",
+        "confidence": "high",
+        "points": [
+          {
+            "year": "2016",
+            "value": 2.408
+          },
+          {
+            "year": "2017",
+            "value": 4.542
+          },
+          {
+            "year": "2018",
+            "value": 2.183
+          },
+          {
+            "year": "2019",
+            "value": 2.819
+          },
+          {
+            "year": "2020",
+            "value": -6.729
+          },
+          {
+            "year": "2021",
+            "value": 3.165
+          },
+          {
+            "year": "2022",
+            "value": 6.919
+          },
+          {
+            "year": "2023",
+            "value": 1.175
+          }
+        ]
+      },
+      "healthcare": {
+        "indicator": "Life expectancy",
+        "unit": "years",
+        "source": "World Bank",
+        "data_level": "national",
+        "confidence": "medium",
+        "points": [
+          {
+            "year": "2000",
+            "value": 72.73
+          },
+          {
+            "year": "2001",
+            "value": 73.08
+          },
+          {
+            "year": "2002",
+            "value": 73.47
+          },
+          {
+            "year": "2003",
+            "value": 73.73
+          },
+          {
+            "year": "2004",
+            "value": 74.03
+          },
+          {
+            "year": "2005",
+            "value": 74.37
+          },
+          {
+            "year": "2006",
+            "value": 74.7
+          },
+          {
+            "year": "2007",
+            "value": 74.96
+          },
+          {
+            "year": "2008",
+            "value": 75.15
+          },
+          {
+            "year": "2009",
+            "value": 75.27
+          },
+          {
+            "year": "2010",
+            "value": 75.38
+          },
+          {
+            "year": "2011",
+            "value": 75.49
+          },
+          {
+            "year": "2012",
+            "value": 75.55
+          },
+          {
+            "year": "2013",
+            "value": 75.46
+          },
+          {
+            "year": "2014",
+            "value": 75.34
+          },
+          {
+            "year": "2015",
+            "value": 75.29
+          },
+          {
+            "year": "2016",
+            "value": 75.37
+          },
+          {
+            "year": "2017",
+            "value": 75.54
+          },
+          {
+            "year": "2018",
+            "value": 75.73
+          },
+          {
+            "year": "2019",
+            "value": 75.9
+          },
+          {
+            "year": "2020",
+            "value": 76.06
+          },
+          {
+            "year": "2021",
+            "value": 73.92
+          },
+          {
+            "year": "2022",
+            "value": 75.44
+          },
+          {
+            "year": "2023",
+            "value": 76.66
+          },
+          {
+            "year": "2024",
+            "value": 76.82
+          }
+        ]
+      },
+      "poverty": {
+        "indicator": "Poverty rate (absolute)",
+        "unit": "%",
+        "source": "data.gov.my / OpenDOSM",
+        "data_level": "state",
+        "confidence": "high",
+        "points": [
+          {
+            "year": "2002",
+            "value": 5.8
+          },
+          {
+            "year": "2004",
+            "value": 7.5
+          },
+          {
+            "year": "2007",
+            "value": 4.2
+          },
+          {
+            "year": "2009",
+            "value": 5.3
+          },
+          {
+            "year": "2012",
+            "value": 2.4
+          },
+          {
+            "year": "2014",
+            "value": 0.9
+          },
+          {
+            "year": "2016",
+            "value": 0.6
+          },
+          {
+            "year": "2019",
+            "value": 9.0
+          },
+          {
+            "year": "2020",
+            "value": 12.9
+          },
+          {
+            "year": "2022",
+            "value": 10.8
+          }
+        ]
+      },
+      "deforestation": {
+        "indicator": "Tree cover loss (annual)",
+        "unit": "ha",
+        "source": "Global Forest Watch",
+        "data_level": "satellite",
+        "confidence": "high",
+        "points": [
+          {
+            "year": "2001",
+            "value": 100294.0
+          },
+          {
+            "year": "2002",
+            "value": 73917.0
+          },
+          {
+            "year": "2003",
+            "value": 73946.0
+          },
+          {
+            "year": "2004",
+            "value": 109132.0
+          },
+          {
+            "year": "2005",
+            "value": 121973.0
+          },
+          {
+            "year": "2006",
+            "value": 114174.0
+          },
+          {
+            "year": "2007",
+            "value": 175583.0
+          },
+          {
+            "year": "2008",
+            "value": 163494.0
+          },
+          {
+            "year": "2009",
+            "value": 306670.0
+          },
+          {
+            "year": "2010",
+            "value": 136601.0
+          },
+          {
+            "year": "2011",
+            "value": 191239.0
+          },
+          {
+            "year": "2012",
+            "value": 268503.0
+          },
+          {
+            "year": "2013",
+            "value": 128695.0
+          },
+          {
+            "year": "2014",
+            "value": 229051.0
+          },
+          {
+            "year": "2015",
+            "value": 156137.0
+          },
+          {
+            "year": "2016",
+            "value": 178750.0
+          },
+          {
+            "year": "2017",
+            "value": 164696.0
+          },
+          {
+            "year": "2018",
+            "value": 151383.0
+          },
+          {
+            "year": "2019",
+            "value": 118414.0
+          },
+          {
+            "year": "2020",
+            "value": 72370.0
+          },
+          {
+            "year": "2021",
+            "value": 72721.0
+          },
+          {
+            "year": "2022",
+            "value": 75323.0
+          },
+          {
+            "year": "2023",
+            "value": 85124.0
+          },
+          {
+            "year": "2024",
+            "value": 79341.0
+          }
+        ]
+      },
+      "unemployment_rate": {
+        "indicator": "Unemployment rate",
+        "unit": "%",
+        "source": "data.gov.my / OpenDOSM (annual avg of quarters)",
+        "data_level": "state",
+        "confidence": "high",
+        "points": [
+          {
+            "year": "2017",
+            "value": 3.05
+          },
+          {
+            "year": "2018",
+            "value": 3.17
+          },
+          {
+            "year": "2019",
+            "value": 3.23
+          },
+          {
+            "year": "2020",
+            "value": 4.35
+          },
+          {
+            "year": "2021",
+            "value": 4.42
+          },
+          {
+            "year": "2022",
+            "value": 3.15
+          },
+          {
+            "year": "2023",
+            "value": 3.45
+          },
+          {
+            "year": "2024",
+            "value": 3.27
+          },
+          {
+            "year": "2025",
+            "value": 3.3
+          }
+        ]
+      }
+    }
+  }
 }

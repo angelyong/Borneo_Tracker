@@ -1,0 +1,214 @@
+{
+  "generatedAt": "2026-07-06",
+  "method": "linear 0-100 vs documented bounds; pillar = mean of scored indicators; index = mean of scored pillars; unscored pillars excluded, never imputed",
+  "ragThresholds": {
+    "green": 67,
+    "amber": 34
+  },
+  "territories": {
+    "Sabah": {
+      "index": 56.9,
+      "rag": "amber",
+      "weakestPillar": "Education",
+      "pillarScores": {
+        "Education": 45.0,
+        "Healthcare": 68.8
+      },
+      "scoredPillars": [
+        "Education",
+        "Healthcare"
+      ],
+      "unscoredPillars": [
+        "Food",
+        "Energy",
+        "Shelter",
+        "Entertainment"
+      ],
+      "detail": {
+        "Education": [
+          {
+            "indicator": "Mean years schooling (RLS)",
+            "value": 8.7,
+            "unit": "years",
+            "score": 45.0,
+            "confidence": "manual"
+          }
+        ],
+        "Healthcare": [
+          {
+            "indicator": "Clean water access",
+            "value": 80.5,
+            "unit": "%",
+            "score": 61.0,
+            "confidence": "high"
+          },
+          {
+            "indicator": "Life expectancy",
+            "value": 75.3,
+            "unit": "years",
+            "score": 76.5,
+            "confidence": "manual"
+          }
+        ]
+      }
+    },
+    "Sarawak": {
+      "index": 58.6,
+      "rag": "amber",
+      "weakestPillar": "Education",
+      "pillarScores": {
+        "Education": 45.0,
+        "Healthcare": 72.2
+      },
+      "scoredPillars": [
+        "Education",
+        "Healthcare"
+      ],
+      "unscoredPillars": [
+        "Food",
+        "Energy",
+        "Shelter",
+        "Entertainment"
+      ],
+      "detail": {
+        "Education": [
+          {
+            "indicator": "Mean years schooling (RLS)",
+            "value": 8.7,
+            "unit": "years",
+            "score": 45.0,
+            "confidence": "manual"
+          }
+        ],
+        "Healthcare": [
+          {
+            "indicator": "Clean water access",
+            "value": 83.7,
+            "unit": "%",
+            "score": 67.4,
+            "confidence": "high"
+          },
+          {
+            "indicator": "Life expectancy",
+            "value": 75.4,
+            "unit": "years",
+            "score": 77.0,
+            "confidence": "manual"
+          }
+        ]
+      }
+    },
+    "Brunei": {
+      "index": 81.2,
+      "rag": "green",
+      "weakestPillar": "Education",
+      "pillarScores": {
+        "Energy": 100.0,
+        "Education": 54.7,
+        "Healthcare": 88.8
+      },
+      "scoredPillars": [
+        "Education",
+        "Energy",
+        "Healthcare"
+      ],
+      "unscoredPillars": [
+        "Food",
+        "Shelter",
+        "Entertainment"
+      ],
+      "detail": {
+        "Energy": [
+          {
+            "indicator": "Electricity access",
+            "value": 100.0,
+            "unit": "%",
+            "score": 100.0,
+            "confidence": "high"
+          }
+        ],
+        "Education": [
+          {
+            "indicator": "Mean years schooling (RLS)",
+            "value": 9.28,
+            "unit": "years",
+            "score": 54.7,
+            "confidence": "manual"
+          }
+        ],
+        "Healthcare": [
+          {
+            "indicator": "Clean water access",
+            "value": 100.0,
+            "unit": "%",
+            "score": 100.0,
+            "confidence": "high"
+          },
+          {
+            "indicator": "Life expectancy",
+            "value": 75.501,
+            "unit": "years",
+            "score": 77.5,
+            "confidence": "high"
+          }
+        ]
+      }
+    },
+    "Kalimantan": {
+      "index": 69.2,
+      "rag": "green",
+      "weakestPillar": "Education",
+      "pillarScores": {
+        "Energy": 86.2,
+        "Education": 51.3,
+        "Healthcare": 70.2
+      },
+      "scoredPillars": [
+        "Education",
+        "Energy",
+        "Healthcare"
+      ],
+      "unscoredPillars": [
+        "Food",
+        "Shelter",
+        "Entertainment"
+      ],
+      "detail": {
+        "Energy": [
+          {
+            "indicator": "Electrification ratio",
+            "value": 93.09,
+            "unit": "%",
+            "score": 86.2,
+            "confidence": "high"
+          }
+        ],
+        "Education": [
+          {
+            "indicator": "Mean years schooling (RLS)",
+            "value": 9.08,
+            "unit": "years",
+            "score": 51.3,
+            "confidence": "high"
+          }
+        ],
+        "Healthcare": [
+          {
+            "indicator": "Clean water access",
+            "value": 89.41,
+            "unit": "%",
+            "score": 78.8,
+            "confidence": "high"
+          },
+          {
+            "indicator": "Life expectancy",
+            "value": 72.31,
+            "unit": "years",
+            "score": 61.6,
+            "confidence": "high"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,5 +1,12 @@
 # 趋势功能与 Resilience Index 决策清单
 
+> ## ✅ 已拍板并执行（2026-07-06,commit `9c30add`）
+> 1. 趋势:**做了第一波**——真实多年份序列(`ingest_history.py` + `indicator_observations` 表 + 前端 Trend tab),
+>    覆盖毁林(2001-2024)/火点/水/失业/GDP/贫困;AQI 历史因无免费源明确放弃。
+> 2. Resilience Index:**已实现**(`compute_resilience.py`),缺值 pillar 不参与平均并在 UI 标注;
+>    归一化 target 表待 Henry 复核(原 methodology 文件已丢失,现为重建版)。
+> 此文件保留作历史记录。
+
 这份文件用来帮助团队确认两个还没有正式落地的部分：
 
 1. 趋势功能（Historical Trends）

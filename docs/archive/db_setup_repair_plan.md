@@ -1,5 +1,10 @@
 # Database Setup Repair Plan
 
+> ## ✅ STATUS: IMPLEMENTED (2026-07-05/06)
+> All five fixes below are live (`load_db.py` builds only from CSVs + validates before publish + fails loudly;
+> journal-file deletion removed; `export_json.py` requires an explicit `--allow-model-fallback`).
+> Kept as history — see `README.md` for the current pipeline.
+
 This plan explains how to fix the remaining database setup problem in the Borneo Tracker handoff.
 
 The goal is to make this handoff requirement reliable:
