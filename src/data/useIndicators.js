@@ -51,6 +51,42 @@ export function useIndicators() {
   return state;
 }
 
+export function useResilience() {
+  const [state, setState] = useState({
+    data: null,
+    loading: true,
+    error: null,
+  });
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function load() {
+      try {
+        const response = await fetch('/data/resilience.json');
+        if (!response.ok) {
+          throw new Error(`Failed to load resilience scores (${response.status})`);
+        }
+        const payload = await response.json();
+        if (!ignore) {
+          setState({ data: payload, loading: false, error: null });
+        }
+      } catch (error) {
+        if (!ignore) {
+          setState({ data: null, loading: false, error: error.message });
+        }
+      }
+    }
+
+    load();
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  return state;
+}
+
 export function getRowsForTerritory(rows, territory) {
   return rows.filter((row) => row.territory === territory);
 }
@@ -62,6 +98,29 @@ export function getCanonicalRows(rows, territory) {
 export function getRowsForPillar(rows, territory, pillar) {
   return getCanonicalRows(rows, territory)
     .filter((row) => row.esg_pillar === pillar)
+    .sort((a, b) => a.indicator.localeCompare(b.indicator));
+}
+
+export const SDG_GOALS = [
+  { goal: 'SDG1', label: 'No Poverty' },
+  { goal: 'SDG4', label: 'Quality Education' },
+  { goal: 'SDG6', label: 'Clean Water' },
+  { goal: 'SDG8', label: 'Economic Growth' },
+  { goal: 'SDG13', label: 'Climate Action' },
+  { goal: 'SDG15', label: 'Life on Land' },
+];
+
+export function getSeries(data, territory, concept) {
+  return data?.series?.[territory]?.[concept] || null;
+}
+
+export function countTrendReadyConcepts(data, territory) {
+  return Object.keys(data?.series?.[territory] || {}).length;
+}
+
+export function getRowsForSdg(rows, territory, sdgGoal) {
+  return getCanonicalRows(rows, territory)
+    .filter((row) => row.sdg_goal === sdgGoal)
     .sort((a, b) => a.indicator.localeCompare(b.indicator));
 }
 

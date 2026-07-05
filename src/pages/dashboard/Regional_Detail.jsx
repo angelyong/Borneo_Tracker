@@ -3,6 +3,7 @@ import * as echarts from 'echarts';
 import Sidebar from '../../components/sidebar';
 import {
   TERRITORIES,
+  countTrendReadyConcepts,
   formatValue,
   getAvailableConcepts,
   getCanonicalRows,
@@ -10,15 +11,18 @@ import {
   getConfidenceCoverage,
   getEsgCoverage,
   getHexagonCoverage,
+  getSeries,
   summarizeRows,
   titleCaseConfidence,
   useIndicators,
+  useResilience,
 } from '../../data/useIndicators';
 
 const RegionalDetails = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [selectedTerritory, setSelectedTerritory] = useState('Sarawak');
   const { data, loading, error } = useIndicators();
+  const { data: resilience } = useResilience();
   const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
 
   const lineChartRef = useRef(null);
@@ -41,6 +45,15 @@ const RegionalDetails = () => {
     () => (data?.rows ? getComparisonRows(data.rows, activeConcept) : []),
     [activeConcept, data]
   );
+  const [chartMode, setChartMode] = useState('snapshot');
+  const trendSeries = useMemo(
+    () => getSeries(data, selectedTerritory, activeConcept),
+    [activeConcept, data, selectedTerritory]
+  );
+  const activeChartMode = chartMode === 'trend' && trendSeries ? 'trend' : 'snapshot';
+  const trendReadyCount = countTrendReadyConcepts(data, selectedTerritory);
+  const territoryResilience = resilience?.territories?.[selectedTerritory] || null;
+  const ragColor = { green: '#16a34a', amber: '#d97706', red: '#dc2626' };
   const hexagonCoverage = useMemo(() => getHexagonCoverage(data?.rows || [], selectedTerritory), [data, selectedTerritory]);
   const esgCoverage = useMemo(() => getEsgCoverage(data?.rows || [], selectedTerritory), [data, selectedTerritory]);
   const confidenceCoverage = useMemo(
@@ -66,53 +79,84 @@ const RegionalDetails = () => {
     if (!lineChartRef.current) return;
     lineChartInstance.current = echarts.init(lineChartRef.current);
 
-    const option = {
-      tooltip: {
-        trigger: 'item',
-        formatter: function (params) {
-          const row = comparisonRows[params.dataIndex]?.row;
-          return `<strong>${params.name}</strong><br/>${row ? formatValue(row) : 'No data'}`;
-        },
-      },
-      grid: {
-        left: '5%',
-        right: '5%',
-        bottom: '10%',
-        top: '10%',
-        containLabel: true,
-      },
-      xAxis: {
-        type: 'category',
-        data: comparisonRows.map((entry) => entry.territory),
-        axisLine: { lineStyle: { color: theme.borderLight } },
-        axisTick: { show: false },
-        axisLabel: { color: theme.textMuted, fontSize: 11 },
-      },
-      yAxis: {
-        type: 'value',
-        splitLine: {
-          lineStyle: { color: theme.borderLight, type: 'dashed' },
-        },
-        axisLabel: {
-          color: theme.textMuted,
-          fontSize: 10,
-        },
-        axisLine: { show: false },
-        axisTick: { show: false },
-      },
-      series: [
-        {
-          name: selectedConceptLabel,
-          type: 'bar',
-          barWidth: '40%',
-          data: comparisonRows.map((entry) => entry.row?.value ?? null),
-          itemStyle: {
-            color: theme.azure,
-            borderRadius: [6, 6, 0, 0],
-          },
-        },
-      ],
+    const sharedAxisStyle = {
+      axisLine: { lineStyle: { color: theme.borderLight } },
+      axisTick: { show: false },
+      axisLabel: { color: theme.textMuted, fontSize: 11 },
     };
+    const sharedValueAxis = {
+      type: 'value',
+      splitLine: {
+        lineStyle: { color: theme.borderLight, type: 'dashed' },
+      },
+      axisLabel: {
+        color: theme.textMuted,
+        fontSize: 10,
+      },
+      axisLine: { show: false },
+      axisTick: { show: false },
+    };
+
+    const option =
+      activeChartMode === 'trend' && trendSeries
+        ? {
+            tooltip: {
+              trigger: 'axis',
+              formatter: function (params) {
+                const p = params[0];
+                return `<strong>${p.axisValue}</strong><br/>${p.marker} ${trendSeries.indicator}: ${p.value}${
+                  trendSeries.unit ? ` ${trendSeries.unit}` : ''
+                }`;
+              },
+            },
+            grid: { left: '5%', right: '5%', bottom: '10%', top: '10%', containLabel: true },
+            xAxis: {
+              type: 'category',
+              data: trendSeries.points.map((point) => point.year),
+              ...sharedAxisStyle,
+            },
+            yAxis: { ...sharedValueAxis, scale: true },
+            series: [
+              {
+                name: trendSeries.indicator,
+                type: 'line',
+                smooth: false,
+                symbolSize: 6,
+                data: trendSeries.points.map((point) => point.value),
+                lineStyle: { color: theme.primary, width: 2 },
+                itemStyle: { color: theme.primary },
+                areaStyle: { color: 'rgba(34, 197, 94, 0.08)' },
+              },
+            ],
+          }
+        : {
+            tooltip: {
+              trigger: 'item',
+              formatter: function (params) {
+                const row = comparisonRows[params.dataIndex]?.row;
+                return `<strong>${params.name}</strong><br/>${row ? formatValue(row) : 'No data'}`;
+              },
+            },
+            grid: { left: '5%', right: '5%', bottom: '10%', top: '10%', containLabel: true },
+            xAxis: {
+              type: 'category',
+              data: comparisonRows.map((entry) => entry.territory),
+              ...sharedAxisStyle,
+            },
+            yAxis: sharedValueAxis,
+            series: [
+              {
+                name: selectedConceptLabel,
+                type: 'bar',
+                barWidth: '40%',
+                data: comparisonRows.map((entry) => entry.row?.value ?? null),
+                itemStyle: {
+                  color: theme.azure,
+                  borderRadius: [6, 6, 0, 0],
+                },
+              },
+            ],
+          };
 
     lineChartInstance.current.setOption(option);
 
@@ -125,7 +169,7 @@ const RegionalDetails = () => {
       window.removeEventListener('resize', handleResize);
       lineChartInstance.current?.dispose();
     };
-  }, [comparisonRows, selectedConceptLabel, theme.azure, theme.borderLight, theme.textMuted]);
+  }, [activeChartMode, comparisonRows, selectedConceptLabel, theme.azure, theme.borderLight, theme.primary, theme.textMuted, trendSeries]);
 
   useEffect(() => {
     if (!radarChartRef.current) return;
@@ -339,6 +383,17 @@ const RegionalDetails = () => {
         {error ? <div style={styles.errorCard}>{error}</div> : null}
         {!loading && !error ? (
           <div style={styles.summaryStrip}>
+            {territoryResilience?.index != null ? (
+              <div style={styles.summaryChip} title={`Scored ${territoryResilience.scoredPillars.length}/6 hexagon pillars; unscored pillars are excluded, never imputed`}>
+                <span style={styles.summaryChipLabel}>Resilience Index</span>
+                <strong style={{ color: ragColor[territoryResilience.rag] || '#1f2937' }}>
+                  {territoryResilience.index}
+                </strong>
+                <span style={{ fontSize: '11px', color: '#6b7280' }}>
+                  weakest: {territoryResilience.weakestPillar} · {territoryResilience.scoredPillars.length}/6 pillars scored
+                </span>
+              </div>
+            ) : null}
             <div style={styles.summaryChip}>
               <span style={styles.summaryChipLabel}>Canonical indicators</span>
               <strong>{summary.count}</strong>
@@ -349,7 +404,11 @@ const RegionalDetails = () => {
             </div>
             <div style={styles.summaryChip}>
               <span style={styles.summaryChipLabel}>Trend status</span>
-              <strong>Snapshot only</strong>
+              <strong>
+                {trendReadyCount
+                  ? `${trendReadyCount} indicator${trendReadyCount > 1 ? 's' : ''} trend-ready`
+                  : 'Snapshot only'}
+              </strong>
             </div>
           </div>
         ) : null}
@@ -358,36 +417,66 @@ const RegionalDetails = () => {
           <div style={styles.card}>
             <div style={styles.chartHeader}>
               <div style={styles.chartHeaderLeft}>
-                <div style={styles.cardTitle}>Cross-territory snapshot</div>
+                <div style={styles.cardTitle}>
+                  {activeChartMode === 'trend' ? `Historical trend — ${selectedTerritory}` : 'Cross-territory snapshot'}
+                </div>
                 <div style={styles.chartStat}>{selectedConceptLabel}</div>
                 <div style={{ fontSize: '11.5px', color: '#6b7280' }}>
-                  Latest available canonical value for each territory
+                  {activeChartMode === 'trend' && trendSeries
+                    ? `${trendSeries.points.length} real annual points · ${trendSeries.source}`
+                    : 'Latest available canonical value for each territory'}
                 </div>
               </div>
               <div style={styles.chartTabs}>
-                <button style={{ ...styles.chartTab, ...styles.chartTabActive }}>Snapshot</button>
+                <button
+                  onClick={() => setChartMode('snapshot')}
+                  style={{ ...styles.chartTab, ...(activeChartMode === 'snapshot' ? styles.chartTabActive : {}) }}
+                >
+                  Snapshot
+                </button>
+                <button
+                  onClick={() => setChartMode('trend')}
+                  disabled={!trendSeries}
+                  title={trendSeries ? 'Real annual series from the data pipeline' : 'No historical series for this indicator yet'}
+                  style={{
+                    ...styles.chartTab,
+                    ...(activeChartMode === 'trend' ? styles.chartTabActive : {}),
+                    ...(!trendSeries ? { opacity: 0.4, cursor: 'not-allowed' } : {}),
+                  }}
+                >
+                  Trend
+                </button>
               </div>
             </div>
             <div style={styles.chartArea}>
               <div ref={lineChartRef} style={{ width: '100%', height: '100%' }} />
             </div>
             <div style={styles.cardFooter}>
-              <span style={styles.footerLabel}>Confidence by territory:</span>
-              {comparisonRows.map((entry) => (
-                <span key={entry.territory} style={styles.footerItem}>
-                  <span
-                    style={{
-                      width: '8px',
-                      height: '8px',
-                      borderRadius: '50%',
-                      background: theme.primary,
-                      display: 'inline-block',
-                    }}
-                  />
-                  {entry.territory}:{' '}
-                  <strong>{entry.row ? titleCaseConfidence(entry.row.confidence) : 'No data'}</strong>
+              {activeChartMode === 'trend' && trendSeries ? (
+                <span style={styles.footerItem}>
+                  Confidence: <strong>{titleCaseConfidence(trendSeries.confidence)}</strong>
+                  {' · '}Data level: <strong>{trendSeries.data_level}</strong>
                 </span>
-              ))}
+              ) : (
+                <>
+                  <span style={styles.footerLabel}>Confidence by territory:</span>
+                  {comparisonRows.map((entry) => (
+                    <span key={entry.territory} style={styles.footerItem}>
+                      <span
+                        style={{
+                          width: '8px',
+                          height: '8px',
+                          borderRadius: '50%',
+                          background: theme.primary,
+                          display: 'inline-block',
+                        }}
+                      />
+                      {entry.territory}:{' '}
+                      <strong>{entry.row ? titleCaseConfidence(entry.row.confidence) : 'No data'}</strong>
+                    </span>
+                  ))}
+                </>
+              )}
             </div>
           </div>
 
@@ -431,7 +520,9 @@ const RegionalDetails = () => {
               <div style={styles.chartHeaderLeft}>
                 <div style={styles.cardTitle}>Coverage by ESG pillar</div>
                 <div style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>
-                  Trend charts are held back until the schema stores true yearly series
+                  {trendReadyCount
+                    ? 'Real yearly series enabled for selected indicators; the rest remain snapshot-only'
+                    : 'Trend charts are held back until the schema stores true yearly series'}
                 </div>
               </div>
               <div style={styles.chartTabs}>

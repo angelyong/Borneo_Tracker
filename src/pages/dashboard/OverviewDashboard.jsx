@@ -164,6 +164,9 @@ const OverviewDashboard = () => {
               : null}
           </div>
           <div style={styles.panelFooter}>
+            {data?.generatedAt ? (
+              <p style={styles.footerText}>Data as of {data.generatedAt} · refreshed daily</p>
+            ) : null}
             <p style={styles.footerText}>© 2026 Borneo Tracker. All rights reserved</p>
           </div>
         </div>
