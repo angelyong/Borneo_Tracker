@@ -1,8 +1,9 @@
 // pages/dashboard/OverviewDashboard.jsx
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { CircleMarker, MapContainer, Popup, TileLayer, Tooltip } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import Sidebar from '../../components/sidebar';
+import MiniTopBar from '../../components/MiniTopBar';
 import {
   LAYER_CONFIG,
   formatValue,
@@ -16,141 +17,399 @@ import L from 'leaflet';
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconUrl:       'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl:     'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
+const TERRITORY_CENTERS = {
+  Sabah:      [5.5,  117.0],
+  Sarawak:    [2.8,  113.5],
+  Brunei:     [4.7,  114.8],
+  Kalimantan: [0.3,  114.5],
+};
+
+// ── Static display data for the right panel ───────────────────────────────────
+// These drive the UI only — all real data still comes from useIndicators()
+const TERRITORY_OPTIONS = ['Overall Borneo', 'Sabah', 'Sarawak', 'Brunei', 'Kalimantan'];
+
+const RESILIENCE_SCORES = {
+  'Overall Borneo': { score: 64.7, trend: +4.3, segments: [
+    { label: 'Moderate', pct: 34.8, color: '#3db88a' },
+    { label: 'Excellent', pct: 27.6, color: '#2a9d6e' },
+    { label: 'Good',     pct: 20.8, color: '#f0b429' },
+    { label: 'Poor',     pct: 16.8, color: '#e07b39' },
+  ]},
+  Sabah:      { score: 62.0, trend: +3.1, segments: [{ label: 'Good', pct: 62, color: '#2a9d6e' }, { label: 'Poor', pct: 38, color: '#e07b39' }] },
+  Sarawak:    { score: 60.2, trend: +2.8, segments: [{ label: 'Good', pct: 60, color: '#2a9d6e' }, { label: 'Poor', pct: 40, color: '#e07b39' }] },
+  Brunei:     { score: 78.4, trend: +5.2, segments: [{ label: 'Excellent', pct: 78, color: '#3db88a' }, { label: 'Good', pct: 22, color: '#f0b429' }] },
+  Kalimantan: { score: 44.1, trend: -1.2, segments: [{ label: 'Moderate', pct: 44, color: '#e07b39' }, { label: 'Poor', pct: 56, color: '#c0392b' }] },
+};
+
+const PILLAR_DATA = {
+  'Overall Borneo': { Food: 68, Energy: 62, Education: 71, Shelter: 65, Healthcare: 66, Entertainment: 61 },
+  Sabah:            { Food: 60, Energy: 55, Education: 68, Shelter: 58, Healthcare: 60, Entertainment: 54 },
+  Sarawak:          { Food: 64, Energy: 58, Education: 70, Shelter: 62, Healthcare: 63, Entertainment: 57 },
+  Brunei:           { Food: 80, Energy: 78, Education: 84, Shelter: 76, Healthcare: 82, Entertainment: 72 },
+  Kalimantan:       { Food: 48, Energy: 42, Education: 55, Shelter: 46, Healthcare: 49, Entertainment: 40 },
+};
+
+const ESG_CATEGORIES = ['Environment', 'Social', 'Governance'];
+
+const ESG_OVERVIEW = {
+  Environment: { label: 'Environment Overview', scoreLabel: 'Environmental Score:', score: '68/100',
+    items: [{ k: 'Forest Cover', v: '57.3%' }, { k: 'Air Quality Index', v: '42 AQI' }, { k: 'Deforestation Rate', v: '128k ha/yr' }] },
+  Social:      { label: 'Social Overview',       scoreLabel: 'Social Score:',       score: '61/100',
+    items: [{ k: 'Poverty Rate', v: '13.2%' }, { k: 'Employment Rate', v: '67.8%' }, { k: 'Education Index', v: '0.74' }] },
+  Governance:  { label: 'Governance Overview',   scoreLabel: 'Governance Score:',   score: '55/100',
+    items: [{ k: 'Transparency', v: '42/100' }, { k: 'Ease of Business', v: '58.1' }, { k: 'Public Service', v: '54/100' }] },
+};
+
+// ── Donut / Gauge SVG component ───────────────────────────────────────────────
+function GaugeChart({ segments }) {
+  const cx = 110, cy = 110, r = 80, strokeW = 28;
+  const circumference = Math.PI * r; // half-circle = π * r
+  let offset = 0;
+
+  // Build half-donut arcs (rotation: starts left, sweeps right like a speedometer)
+  const arcs = segments.map((seg) => {
+    const dashLen = (seg.pct / 100) * circumference;
+    const arc = { ...seg, dashLen, dashOffset: circumference - dashLen, startOffset: offset };
+    offset += dashLen;
+    return arc;
+  });
+
+  return (
+    <svg viewBox="0 0 220 120" style={{ width: '100%', maxWidth: 220, display: 'block', margin: '0 auto' }}>
+      {/* Grey track */}
+      <path
+        d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
+        fill="none" stroke="#e5e7eb" strokeWidth={strokeW} strokeLinecap="butt"
+      />
+      {/* Coloured segments — we use strokeDasharray on the semicircle path */}
+      {arcs.map((arc, i) => (
+        <path
+          key={i}
+          d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
+          fill="none"
+          stroke={arc.color}
+          strokeWidth={strokeW}
+          strokeLinecap="butt"
+          strokeDasharray={`${arc.dashLen} ${circumference}`}
+          strokeDashoffset={-arc.startOffset}
+          style={{ transformOrigin: `${cx}px ${cy}px` }}
+        />
+      ))}
+    </svg>
+  );
+}
+
+// ── Hexagon radar SVG component ───────────────────────────────────────────────
+function HexRadar({ pillars }) {
+  const keys   = Object.keys(pillars);
+  const values = Object.values(pillars);
+  const cx = 90, cy = 90, maxR = 60, n = keys.length;
+  const MAX = 100;
+
+  const angleOf = (i) => (Math.PI / 2) - (2 * Math.PI * i) / n; // start top
+
+  // Grid rings
+  const rings = [0.25, 0.5, 0.75, 1.0].map((frac) =>
+    keys.map((_, i) => {
+      const a = angleOf(i);
+      return `${cx + maxR * frac * Math.cos(a)},${cy - maxR * frac * Math.sin(a)}`;
+    }).join(' ')
+  );
+
+  // Data polygon
+  const dataPoints = values.map((v, i) => {
+    const a   = angleOf(i);
+    const frac = v / MAX;
+    return `${cx + maxR * frac * Math.cos(a)},${cy - maxR * frac * Math.sin(a)}`;
+  });
+
+  // Axis lines from centre to each vertex
+  const axes = keys.map((_, i) => {
+    const a = angleOf(i);
+    return { x: cx + maxR * Math.cos(a), y: cy - maxR * Math.sin(a) };
+  });
+
+  // Pillar icons (emoji stand-ins matching the screenshot categories)
+  const ICONS = ['🍎', '⚡', '📚', '🏠', '➕', '🎭'];
+
+  return (
+    <svg viewBox="0 0 180 180" style={{ width: '100%', maxWidth: 180, display: 'block', margin: '0 auto' }}>
+      {/* Grid rings */}
+      {rings.map((pts, i) => (
+        <polygon key={i} points={pts} fill="none" stroke="#e5e7eb" strokeWidth="0.8" />
+      ))}
+      {/* Axes */}
+      {axes.map((pt, i) => (
+        <line key={i} x1={cx} y1={cy} x2={pt.x} y2={pt.y} stroke="#e5e7eb" strokeWidth="0.8" />
+      ))}
+      {/* Data fill */}
+      <polygon points={dataPoints.join(' ')} fill="rgba(61,184,138,0.25)" stroke="#3db88a" strokeWidth="1.5" />
+      {/* Centre icon */}
+      <text x={cx} y={cy + 5} textAnchor="middle" fontSize="18">🌿</text>
+      {/* Labels with values */}
+      {keys.map((key, i) => {
+        const a   = angleOf(i);
+        const lx  = cx + (maxR + 20) * Math.cos(a);
+        const ly  = cy - (maxR + 20) * Math.sin(a);
+        return (
+          <g key={key}>
+            <text x={lx} y={ly - 4} textAnchor="middle" fontSize="10" fontWeight="600" fill="#374151">{values[i]}</text>
+            <text x={lx} y={ly + 8} textAnchor="middle" fontSize="8" fill="#6b7280">{key}</text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
 const OverviewDashboard = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [searchText, setSearchText] = useState('');
-  const [activeLayer, setActiveLayer] = useState('deforestation');
+  const [isSidebarOpen, setIsSidebarOpen]   = useState(true);
+  const [searchText,    setSearchText]      = useState('');
+  const [activeLayer,   setActiveLayer]     = useState('deforestation');
+  const [panelTerritory, setPanelTerritory] = useState('Overall Borneo');
+  const [esgCategory,    setEsgCategory]    = useState('Environment');
+  const [panelWidth,     setPanelWidth]     = useState(300);   // px, matches styles.panel default
+  const isDragging = useRef(false);
+  const startX     = useRef(0);
+  const startW     = useRef(0);
   const { data, loading, error } = useIndicators();
 
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
-  const handleLayerToggle = (layer) => setActiveLayer(layer);
+  // ── Panel resize handlers ────────────────────────────────────────────────
+  const onDragStart = useCallback((e) => {
+    isDragging.current = true;
+    startX.current     = e.clientX;
+    startW.current     = panelWidth;
+    document.body.style.cursor    = 'col-resize';
+    document.body.style.userSelect = 'none';
 
+    const onMove = (ev) => {
+      if (!isDragging.current) return;
+      const delta   = startX.current - ev.clientX;   // drag left = panel grows
+      const newWidth = Math.min(520, Math.max(220, startW.current + delta));
+      setPanelWidth(newWidth);
+    };
+    const onUp = () => {
+      isDragging.current             = false;
+      document.body.style.cursor    = '';
+      document.body.style.userSelect = '';
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup',   onUp);
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup',   onUp);
+  }, [panelWidth]);
+
+  // ── Data fetching unchanged ──────────────────────────────────────────────
   const layerEntries = useMemo(() => {
     if (!data?.rows || !activeLayer) return [];
     return getLayerRows(data.rows, activeLayer).filter((entry) =>
       entry.territory.toLowerCase().includes(searchText.trim().toLowerCase())
     );
   }, [activeLayer, data, searchText]);
-  const colorForValue = useMemo(() => layerColorScale(layerEntries, activeLayer), [activeLayer, layerEntries]);
+
+  const colorForValue = useMemo(
+    () => layerColorScale(layerEntries, activeLayer),
+    [activeLayer, layerEntries]
+  );
+
+  // Panel data
+  const resilience = RESILIENCE_SCORES[panelTerritory] || RESILIENCE_SCORES['Overall Borneo'];
+  const pillars    = PILLAR_DATA[panelTerritory]        || PILLAR_DATA['Overall Borneo'];
+  const esgInfo    = ESG_OVERVIEW[esgCategory];
 
   return (
-    <div style={styles.container}>
-      <div style={styles.content}>
-        {/* Sidebar */}
-        <div
-          style={{
-            ...styles.sidebarWrapper,
-            width: isSidebarOpen ? '240px' : '0px',
-            minWidth: isSidebarOpen ? '240px' : '0px',
-          }}
-        >
-          <Sidebar />
-        </div>
+    <div style={styles.root}>
 
-        {/* Map with floating search bar and toggle button */}
-        <div style={styles.mapWrapper}>
-          {/* Floating Toggle Button (always visible) */}
-          <button onClick={toggleSidebar} style={styles.floatingBtn}>
-            ☰
-          </button>
+      {/* ── Sidebar ── */}
+      <div style={{
+        ...styles.sidebarWrapper,
+        width:    isSidebarOpen ? '240px' : '0px',
+        minWidth: isSidebarOpen ? '240px' : '0px',
+      }}>
+        <Sidebar />
+      </div>
 
-          {/* Floating Search Bar */}
-          <div style={styles.searchContainer}>
-            <div style={styles.searchBox}>
-              <span style={styles.searchIcon}>🔍</span>
-              <input
-                type="text"
-                placeholder="Search Borneo Tracker..."
-                value={searchText}
-                onChange={(event) => setSearchText(event.target.value)}
-                style={styles.searchInput}
-              />
-            </div>
-          </div>
+      {/* ── Right column: topbar + body ── */}
+      <div style={styles.rightCol}>
+        <MiniTopBar
+          onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          notifCount={2}
+        />
 
-          <MapContainer
-            center={[-1.5, 114.5]}
-            zoom={5}
-            style={styles.map}
-            zoomControl={false}
-          >
-            <TileLayer
-              url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            />
-            {layerEntries.map(({ territory, row }) => {
-              const position = TERRITORY_CENTERS[territory];
-              if (!position) return null;
-              const color = colorForValue(row?.value);
-              return (
-                <CircleMarker
-                  key={`${activeLayer}-${territory}`}
-                  center={position}
-                  radius={18}
-                  pathOptions={{
-                    color,
-                    fillColor: color,
-                    fillOpacity: row ? 0.7 : 0.25,
-                    weight: 2,
-                  }}
-                >
-                  <Tooltip direction="top" offset={[0, -10]} opacity={1}>
-                    <strong>{territory}</strong>
-                    <br />
-                    {row ? formatValue(row) : 'No data'}
-                  </Tooltip>
-                  <Popup>
-                    <div style={styles.popupContent}>
-                      <strong>{territory}</strong>
-                      <div>{activeLayer ? LAYER_CONFIG[activeLayer].label : 'Layer'}</div>
-                      <div>{row ? formatValue(row) : 'No data for this layer'}</div>
-                      {row ? (
-                        <div style={styles.popupMeta}>
-                          {row.year} · {titleCaseConfidence(row.confidence)}
-                        </div>
-                      ) : null}
-                    </div>
-                  </Popup>
-                </CircleMarker>
-              );
-            })}
-          </MapContainer>
-        </div>
+        {/* ── Map + panel row ── */}
+        <div style={styles.body}>
 
-        {/* Right Layer Panel */}
-        <div style={styles.panel}>
-          <h3 style={styles.panelTitle}>Layer Controls</h3>
-          <p style={styles.panelSubtitle}>
-            Choose one active snapshot overlay at a time. Each layer uses the latest canonical project data.
-          </p>
-          <div style={styles.layerGroup}>
-            {Object.keys(LAYER_CONFIG).map((key) => (
-              <label key={key} style={styles.checkboxLabel}>
+          {/* Map */}
+          <div style={styles.mapWrapper}>
+            {/* Floating search */}
+            <div style={styles.searchContainer}>
+              <div style={styles.searchBox}>
+                <span style={styles.searchIcon}>🔍</span>
                 <input
-                  type="radio"
-                  name="active-layer"
-                  checked={activeLayer === key}
-                  onChange={() => handleLayerToggle(key)}
-                  style={styles.checkbox}
+                  type="text"
+                  placeholder="Search territories…"
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  style={styles.searchInput}
                 />
-                {key
-                  .replace(/([A-Z])/g, ' $1')
-                  .replace(/^./, (str) => str.toUpperCase())}
-              </label>
-            ))}
-          </div>
-          <div style={styles.summaryCard}>
-            <div style={styles.summaryTitle}>
-              Active overlay: {activeLayer ? LAYER_CONFIG[activeLayer].label : 'None'}
+              </div>
             </div>
-            {loading ? <div style={styles.summaryEmpty}>Loading map data…</div> : null}
-            {error ? <div style={styles.summaryError}>{error}</div> : null}
-            {!loading && !error
-              ? layerEntries.map(({ territory, row }) => (
+
+            <MapContainer center={[-1.5, 114.5]} zoom={5} style={styles.map} zoomControl={false}>
+              <TileLayer
+                url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              />
+              {layerEntries.map(({ territory, row }) => {
+                const position = TERRITORY_CENTERS[territory];
+                if (!position) return null;
+                const color = colorForValue(row?.value);
+                return (
+                  <CircleMarker
+                    key={`${activeLayer}-${territory}`}
+                    center={position}
+                    radius={18}
+                    pathOptions={{ color, fillColor: color, fillOpacity: row ? 0.7 : 0.25, weight: 2 }}
+                  >
+                    <Tooltip direction="top" offset={[0, -10]} opacity={1}>
+                      <strong>{territory}</strong><br />
+                      {row ? formatValue(row) : 'No data'}
+                    </Tooltip>
+                    <Popup>
+                      <div style={styles.popupContent}>
+                        <strong>{territory}</strong>
+                        <div>{LAYER_CONFIG[activeLayer]?.label}</div>
+                        <div>{row ? formatValue(row) : 'No data for this layer'}</div>
+                        {row && <div style={styles.popupMeta}>{row.year} · {titleCaseConfidence(row.confidence)}</div>}
+                      </div>
+                    </Popup>
+                  </CircleMarker>
+                );
+              })}
+            </MapContainer>
+          </div>
+
+          {/* ── Right panel ── */}
+          <div style={{ ...styles.panel, width: panelWidth, minWidth: panelWidth }}>
+
+            {/* Drag handle — left edge */}
+            <div
+              onMouseDown={onDragStart}
+              style={styles.dragHandle}
+              title="Drag to resize panel"
+            >
+              <div style={styles.dragGrip} />
+            </div>
+
+            {/* Territory dropdown */}
+            <div style={styles.panelDropdownRow}>
+              <select
+                value={panelTerritory}
+                onChange={(e) => setPanelTerritory(e.target.value)}
+                style={styles.panelDropdown}
+              >
+                {TERRITORY_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+
+            {/* ── Overall Resilience Status ── */}
+            <div style={styles.section}>
+              <div style={styles.sectionTitle}>Overall Resilience Status</div>
+
+              {/* Gauge */}
+              <GaugeChart segments={resilience.segments} />
+
+              {/* Legend */}
+              <div style={styles.gaugeLegend}>
+                {resilience.segments.map((s) => (
+                  <div key={s.label} style={styles.legendRow}>
+                    <span style={{ ...styles.legendDot, background: s.color }} />
+                    <span style={styles.legendLabel}>{s.label}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Score */}
+              <div style={styles.scoreRow}>
+                <span style={styles.scoreBig}>{resilience.score}%</span>
+                <span style={styles.scoreCaption}>Score out of 100</span>
+              </div>
+
+              {/* Trend */}
+              <div style={styles.trendRow}>
+                <span style={styles.trendLabel}>Trend (vs last year)</span>
+                <span style={{
+                  ...styles.trendValue,
+                  color: resilience.trend >= 0 ? '#16a34a' : '#dc2626',
+                }}>
+                  {resilience.trend >= 0 ? '↑' : '↓'} {resilience.trend >= 0 ? '+' : ''}{resilience.trend}
+                </span>
+              </div>
+            </div>
+
+            {/* ── Pillar Performance ── */}
+            <div style={styles.section}>
+              <div style={styles.sectionTitle}>Pillar Performance</div>
+              <div style={styles.sectionSubtitle}>(True Wealth Hexagon)</div>
+              <HexRadar pillars={pillars} />
+            </div>
+
+            {/* ── ESG Indicators ── */}
+            <div style={{ ...styles.section, borderBottom: 'none' }}>
+              <div style={styles.esgHeader}>
+                <span style={styles.sectionTitle}>ESG Indicators</span>
+                <select
+                  value={esgCategory}
+                  onChange={(e) => setEsgCategory(e.target.value)}
+                  style={styles.esgDropdown}
+                >
+                  {ESG_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+
+              <div style={styles.esgCard}>
+                <div style={styles.esgCardTitle}>{esgInfo.label}</div>
+                <div style={styles.esgScoreRow}>
+                  <span style={styles.esgScoreLabel}>{esgInfo.scoreLabel}</span>
+                  <span style={styles.esgScoreValue}>{esgInfo.score}</span>
+                </div>
+                {esgInfo.items.map((item) => (
+                  <div key={item.k} style={styles.esgItemRow}>
+                    <span style={styles.esgItemKey}>{item.k}</span>
+                    <span style={styles.esgItemVal}>{item.v}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Live data section — unchanged from original */}
+              <div style={styles.liveSection}>
+                <div style={styles.liveSectionTitle}>
+                  Live Layer: {activeLayer ? LAYER_CONFIG[activeLayer]?.label : 'None'}
+                </div>
+                <div style={styles.layerRadioGroup}>
+                  {Object.keys(LAYER_CONFIG).map((key) => (
+                    <label key={key} style={styles.radioLabel}>
+                      <input
+                        type="radio"
+                        name="active-layer"
+                        checked={activeLayer === key}
+                        onChange={() => setActiveLayer(key)}
+                        style={styles.radioInput}
+                      />
+                      {key.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase())}
+                    </label>
+                  ))}
+                </div>
+
+                {loading && <div style={styles.stateText}>Loading map data…</div>}
+                {error   && <div style={{ ...styles.stateText, color: '#b91c1c' }}>{error}</div>}
+
+                {!loading && !error && layerEntries.map(({ territory, row }) => (
                   <div key={territory} style={styles.summaryRow}>
                     <div>
                       <div style={styles.summaryTerritory}>{territory}</div>
@@ -160,11 +419,14 @@ const OverviewDashboard = () => {
                     </div>
                     <div style={styles.summaryValue}>{row ? formatValue(row) : '—'}</div>
                   </div>
-                ))
-              : null}
-          </div>
-          <div style={styles.panelFooter}>
-            <p style={styles.footerText}>© 2026 Borneo Tracker. All rights reserved</p>
+                ))}
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div style={styles.panelFooter}>
+              <p style={styles.footerText}>© 2026 Borneo Tracker. All rights reserved</p>
+            </div>
           </div>
         </div>
       </div>
@@ -172,208 +434,124 @@ const OverviewDashboard = () => {
   );
 };
 
-const TERRITORY_CENTERS = {
-  Sabah: [5.5, 117],
-  Sarawak: [2.8, 113.5],
-  Brunei: [4.7, 114.8],
-  Kalimantan: [0.3, 114.5],
-};
-
+// ── STYLES ────────────────────────────────────────────────────────────────────
 const styles = {
-  container: {
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100vh',
-    width: '100%',
-    fontFamily: 'Arial, sans-serif',
-    backgroundColor: '#f5f5f5',
-  },
-  content: {
-    display: 'flex',
-    flex: 1,
-    overflow: 'hidden',
-  },
-  sidebarWrapper: {
-    overflow: 'hidden',
-    transition: 'width 0.3s ease, min-width 0.3s ease',
-    flexShrink: 0,
-    height: '100%',
-  },
-  mapWrapper: {
-    flex: 1,
-    height: '100%',
-    position: 'relative',
-  },
-  map: {
-    height: '100%',
-    width: '100%',
-  },
+  // Layout
+  root:           { display: 'flex', height: '100vh', width: '100%', fontFamily: 'Inter, Arial, sans-serif', overflow: 'hidden', backgroundColor: '#f5f5f5' },
+  sidebarWrapper: { overflow: 'hidden', transition: 'width 0.3s ease, min-width 0.3s ease', flexShrink: 0, height: '100%' },
+  rightCol:       { flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' },
+  body:           { display: 'flex', flex: 1, overflow: 'hidden' },
 
-  // ----- Floating Button (always visible) -----
-  floatingBtn: {
-    position: 'absolute',
-    top: '16px',
-    left: '16px',
-    zIndex: 1001, // above the map and search bar
-    backgroundColor: '#ffffff',
-    border: '1px solid #d0d0d0',
-    borderRadius: '8px',
-    fontSize: '24px',
-    padding: '6px 12px',
-    cursor: 'pointer',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-    color: '#333',
-    transition: 'background 0.2s, box-shadow 0.2s',
-    lineHeight: 1,
-  },
-  // Hover effect – we'll add a class or style via CSS
-  // We can also use inline pseudo-class? Better to add className and put in index.css
-  // Let's just add a className="floating-btn" and put CSS in index.css
-  // For inline, we can't do :hover, so we'll add a className:
+  // Map
+  mapWrapper:      { flex: 1, height: '100%', position: 'relative' },
+  map:             { height: '100%', width: '100%' },
+  searchContainer: { position: 'absolute', top: '16px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000, width: '60%', maxWidth: '500px' },
+  searchBox:       { display: 'flex', alignItems: 'center', backgroundColor: '#ffffff', borderRadius: '24px', padding: '8px 16px', boxShadow: '0 2px 10px rgba(0,0,0,0.15)', border: '1px solid #e0e0e0' },
+  searchIcon:      { marginRight: '10px', fontSize: '16px', color: '#888' },
+  searchInput:     { border: 'none', background: 'transparent', outline: 'none', fontSize: '14px', width: '100%', color: '#333' },
+  popupContent:    { fontSize: '13px', lineHeight: 1.5 },
+  popupMeta:       { marginTop: '4px', color: '#64748b' },
 
-  // ----- Floating Search Bar -----
-  searchContainer: {
-    position: 'absolute',
-    top: '16px',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    zIndex: 1000,
-    width: '60%',
-    maxWidth: '500px',
-  },
-  searchBox: {
-    display: 'flex',
-    alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: '24px',
-    padding: '8px 16px',
-    boxShadow: '0 2px 10px rgba(0,0,0,0.15)',
-    border: '1px solid #e0e0e0',
-  },
-  searchIcon: {
-    marginRight: '10px',
-    fontSize: '18px',
-    color: '#888',
-  },
-  searchInput: {
-    border: 'none',
-    background: 'transparent',
-    outline: 'none',
-    fontSize: '16px',
-    padding: '8px 0',
-    width: '100%',
-    color: '#333',
-  },
-
-  // ----- Right Panel -----
+  // Right panel
   panel: {
-    width: '280px',
+    // width is set dynamically via inline style
     backgroundColor: '#ffffff',
-    borderLeft: '1px solid #e0e0e0',
-    padding: '20px 16px',
-    display: 'flex',
-    flexDirection: 'column',
-    overflowY: 'auto',
-    flexShrink: 0,
+    borderLeft:      'none',       // handle provides the visual border
+    overflowY:       'auto',
+    flexShrink:      0,
+    display:         'flex',
+    flexDirection:   'column',
+    position:        'relative',
   },
-  panelTitle: {
-    fontSize: '18px',
-    fontWeight: '600',
-    margin: '0 0 16px 0',
-    color: '#2c3e50',
-    borderBottom: '1px solid #eee',
-    paddingBottom: '10px',
-  },
-  panelSubtitle: {
-    margin: '0 0 16px 0',
-    color: '#64748b',
-    fontSize: '13px',
-    lineHeight: 1.5,
-  },
-  layerGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-    flex: 1,
-  },
-  checkboxLabel: {
-    display: 'flex',
+
+  // Drag handle — sits on the left edge of the panel
+  dragHandle: {
+    position:   'absolute',
+    top:        0,
+    left:       0,
+    width:      '6px',
+    height:     '100%',
+    cursor:     'col-resize',
+    zIndex:     10,
+    display:    'flex',
     alignItems: 'center',
-    fontSize: '15px',
-    color: '#34495e',
-    cursor: 'pointer',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+    borderLeft: '1px solid #e0e0e0',
+    transition: 'background-color 0.15s',
   },
-  checkbox: {
-    marginRight: '10px',
-    width: '18px',
-    height: '18px',
-    cursor: 'pointer',
+  // Three-dot grip indicator centred in the handle
+  dragGrip: {
+    width:        '3px',
+    height:       '32px',
+    borderRadius: '2px',
+    background:   'repeating-linear-gradient(to bottom, #cbd5e1 0px, #cbd5e1 3px, transparent 3px, transparent 6px)',
   },
-  summaryCard: {
-    marginTop: '20px',
-    backgroundColor: '#f8fafc',
-    borderRadius: '12px',
-    border: '1px solid #e2e8f0',
-    padding: '14px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '10px',
+
+  // Territory dropdown
+  panelDropdownRow: { padding: '12px 16px 0 22px', display: 'flex', justifyContent: 'flex-end' },
+  panelDropdown: {
+    padding:         '8px 12px',
+    borderRadius:    '10px',
+    border:          '1px solid #d1d5db',
+    backgroundColor: '#ffffff',
+    fontSize:        '13px',
+    fontWeight:      '500',
+    color:           '#1f2937',
+    cursor:          'pointer',
+    outline:         'none',
+    minWidth:        '150px',
   },
-  summaryTitle: {
-    fontSize: '14px',
-    fontWeight: '600',
-    color: '#1e293b',
+
+  // Sections
+  section: {
+    padding:      '14px 16px 14px 22px',   // 22px left clears the 6px drag handle
+    borderBottom: '1px solid #f3f4f6',
   },
-  summaryRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    gap: '12px',
-    borderTop: '1px solid #e2e8f0',
-    paddingTop: '10px',
-  },
-  summaryTerritory: {
-    fontSize: '14px',
-    fontWeight: '600',
-    color: '#334155',
-  },
-  summaryMeta: {
-    fontSize: '12px',
-    color: '#64748b',
-    marginTop: '2px',
-  },
-  summaryValue: {
-    fontSize: '14px',
-    fontWeight: '600',
-    color: '#0f172a',
-    textAlign: 'right',
-  },
-  summaryEmpty: {
-    fontSize: '13px',
-    color: '#64748b',
-  },
-  summaryError: {
-    fontSize: '13px',
-    color: '#b91c1c',
-  },
-  popupContent: {
-    fontSize: '13px',
-    lineHeight: 1.5,
-  },
-  popupMeta: {
-    marginTop: '4px',
-    color: '#64748b',
-  },
-  panelFooter: {
-    marginTop: '20px',
-    borderTop: '1px solid #eee',
-    paddingTop: '14px',
-    fontSize: '12px',
-    color: '#999',
-    textAlign: 'center',
-  },
-  footerText: {
-    margin: 0,
-  },
+  sectionTitle:    { fontSize: '13px', fontWeight: '700', color: '#1f2937', marginBottom: '2px' },
+  sectionSubtitle: { fontSize: '11px', color: '#6b7280', marginBottom: '8px' },
+
+  // Gauge legend
+  gaugeLegend: { display: 'flex', flexWrap: 'wrap', gap: '6px 14px', margin: '4px 0 8px', justifyContent: 'center' },
+  legendRow:   { display: 'flex', alignItems: 'center', gap: '4px' },
+  legendDot:   { width: 8, height: 8, borderRadius: '50%', flexShrink: 0 },
+  legendLabel: { fontSize: '11px', color: '#374151' },
+
+  // Score + trend
+  scoreRow:    { textAlign: 'center', margin: '4px 0 2px' },
+  scoreBig:    { fontSize: '32px', fontWeight: '800', color: '#1f2937' },
+  scoreCaption:{ display: 'block', fontSize: '11px', color: '#6b7280', marginTop: '-2px' },
+  trendRow:    { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px', padding: '8px 10px', backgroundColor: '#f9fafb', borderRadius: '8px' },
+  trendLabel:  { fontSize: '12px', fontWeight: '600', color: '#374151' },
+  trendValue:  { fontSize: '14px', fontWeight: '700' },
+
+  // ESG indicators section
+  esgHeader:      { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' },
+  esgDropdown:    { padding: '5px 10px', borderRadius: '8px', border: '1px solid #d1d5db', backgroundColor: '#fff', fontSize: '12px', fontWeight: '500', color: '#1f2937', cursor: 'pointer', outline: 'none' },
+  esgCard:        { backgroundColor: '#f9fafb', borderRadius: '10px', border: '1px solid #e5e7eb', padding: '12px 14px', marginBottom: '10px' },
+  esgCardTitle:   { fontSize: '13px', fontWeight: '700', color: '#1f2937', marginBottom: '8px' },
+  esgScoreRow:    { display: 'flex', justifyContent: 'space-between', marginBottom: '8px', paddingBottom: '6px', borderBottom: '1px solid #e5e7eb' },
+  esgScoreLabel:  { fontSize: '12px', color: '#6b7280' },
+  esgScoreValue:  { fontSize: '13px', fontWeight: '700', color: '#1f2937' },
+  esgItemRow:     { display: 'flex', justifyContent: 'space-between', fontSize: '12px', padding: '3px 0' },
+  esgItemKey:     { color: '#6b7280' },
+  esgItemVal:     { fontWeight: '600', color: '#1f2937' },
+
+  // Live layer section
+  liveSection:     { backgroundColor: '#f8fafc', borderRadius: '10px', border: '1px solid #e2e8f0', padding: '12px' },
+  liveSectionTitle:{ fontSize: '12px', fontWeight: '600', color: '#1e293b', marginBottom: '8px' },
+  layerRadioGroup: { display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' },
+  radioLabel:      { display: 'flex', alignItems: 'center', fontSize: '12px', color: '#34495e', cursor: 'pointer' },
+  radioInput:      { marginRight: '8px', width: '14px', height: '14px', cursor: 'pointer' },
+  stateText:       { fontSize: '12px', color: '#64748b', padding: '4px 0' },
+  summaryRow:      { display: 'flex', justifyContent: 'space-between', gap: '8px', borderTop: '1px solid #e2e8f0', paddingTop: '8px', marginTop: '4px' },
+  summaryTerritory:{ fontSize: '12px', fontWeight: '600', color: '#334155' },
+  summaryMeta:     { fontSize: '11px', color: '#64748b', marginTop: '1px' },
+  summaryValue:    { fontSize: '12px', fontWeight: '600', color: '#0f172a', textAlign: 'right' },
+
+  // Footer
+  panelFooter: { marginTop: 'auto', padding: '12px 16px 12px 22px', borderTop: '1px solid #eee' },
+  footerText:  { fontSize: '11px', color: '#999', textAlign: 'center', margin: 0 },
 };
 
 export default OverviewDashboard;
