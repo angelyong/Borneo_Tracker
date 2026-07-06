@@ -425,21 +425,18 @@ Brunei,"Fire alerts (VIIRS, annual)",fire_hotspots,2023,179,count,Global Forest 
 Brunei,"Fire alerts (VIIRS, annual)",fire_hotspots,2024,189,count,Global Forest Watch (VIIRS),satellite,high,2026-07-06
 Brunei,"Fire alerts (VIIRS, annual)",fire_hotspots,2025,128,count,Global Forest Watch (VIIRS),satellite,high,2026-07-06
 Brunei,"Fire alerts (VIIRS, annual)",fire_hotspots,2026,1,count,Global Forest Watch (VIIRS),satellite,high,2026-07-06
-Kalimantan,"Fire alerts (VIIRS, annual)",fire_hotspots,2012,90432,count,"Global Forest Watch (VIIRS), sum of 4/5 provinces (Kaltim missing from GFW tables)",satellite,medium,2026-07-06
-Kalimantan,"Fire alerts (VIIRS, annual)",fire_hotspots,2013,54271,count,"Global Forest Watch (VIIRS), sum of 4/5 provinces (Kaltim missing from GFW tables)",satellite,medium,2026-07-06
-Kalimantan,"Fire alerts (VIIRS, annual)",fire_hotspots,2014,163194,count,"Global Forest Watch (VIIRS), sum of 4/5 provinces (Kaltim missing from GFW tables)",satellite,medium,2026-07-06
-Kalimantan,"Fire alerts (VIIRS, annual)",fire_hotspots,2015,299437,count,"Global Forest Watch (VIIRS), sum of 4/5 provinces (Kaltim missing from GFW tables)",satellite,medium,2026-07-06
-Kalimantan,"Fire alerts (VIIRS, annual)",fire_hotspots,2016,24447,count,"Global Forest Watch (VIIRS), sum of 4/5 provinces (Kaltim missing from GFW tables)",satellite,medium,2026-07-06
-Kalimantan,"Fire alerts (VIIRS, annual)",fire_hotspots,2017,14597,count,"Global Forest Watch (VIIRS), sum of 4/5 provinces (Kaltim missing from GFW tables)",satellite,medium,2026-07-06
-Kalimantan,"Fire alerts (VIIRS, annual)",fire_hotspots,2018,56289,count,"Global Forest Watch (VIIRS), sum of 4/5 provinces (Kaltim missing from GFW tables)",satellite,medium,2026-07-06
-Kalimantan,"Fire alerts (VIIRS, annual)",fire_hotspots,2019,157139,count,"Global Forest Watch (VIIRS), sum of 4/5 provinces (Kaltim missing from GFW tables)",satellite,medium,2026-07-06
-Kalimantan,"Fire alerts (VIIRS, annual)",fire_hotspots,2020,16320,count,"Global Forest Watch (VIIRS), sum of 4/5 provinces (Kaltim missing from GFW tables)",satellite,medium,2026-07-06
-Kalimantan,"Fire alerts (VIIRS, annual)",fire_hotspots,2021,14896,count,"Global Forest Watch (VIIRS), sum of 4/5 provinces (Kaltim missing from GFW tables)",satellite,medium,2026-07-06
-Kalimantan,"Fire alerts (VIIRS, annual)",fire_hotspots,2022,7937,count,"Global Forest Watch (VIIRS), sum of 4/5 provinces (Kaltim missing from GFW tables)",satellite,medium,2026-07-06
-Kalimantan,"Fire alerts (VIIRS, annual)",fire_hotspots,2023,77626,count,"Global Forest Watch (VIIRS), sum of 4/5 provinces (Kaltim missing from GFW tables)",satellite,medium,2026-07-06
-Kalimantan,"Fire alerts (VIIRS, annual)",fire_hotspots,2024,22633,count,"Global Forest Watch (VIIRS), sum of 4/5 provinces (Kaltim missing from GFW tables)",satellite,medium,2026-07-06
-Kalimantan,"Fire alerts (VIIRS, annual)",fire_hotspots,2025,27652,count,"Global Forest Watch (VIIRS), sum of 4/5 provinces (Kaltim missing from GFW tables)",satellite,medium,2026-07-06
-Kalimantan,"Fire alerts (VIIRS, annual)",fire_hotspots,2026,42,count,"Global Forest Watch (VIIRS), sum of 4/5 provinces (Kaltim missing from GFW tables)",satellite,medium,2026-07-06
+Kalimantan,"Fire alerts (VIIRS, annual)",fire_hotspots,2012,104538,count,"Global Forest Watch (VIIRS), sum of 5/5 provinces (E+N Kalimantan via satellite geometry)",satellite,high,2026-07-06
+Kalimantan,"Fire alerts (VIIRS, annual)",fire_hotspots,2013,63792,count,"Global Forest Watch (VIIRS), sum of 5/5 provinces (E+N Kalimantan via satellite geometry)",satellite,high,2026-07-06
+Kalimantan,"Fire alerts (VIIRS, annual)",fire_hotspots,2014,187107,count,"Global Forest Watch (VIIRS), sum of 5/5 provinces (E+N Kalimantan via satellite geometry)",satellite,high,2026-07-06
+Kalimantan,"Fire alerts (VIIRS, annual)",fire_hotspots,2015,360964,count,"Global Forest Watch (VIIRS), sum of 5/5 provinces (E+N Kalimantan via satellite geometry)",satellite,high,2026-07-06
+Kalimantan,"Fire alerts (VIIRS, annual)",fire_hotspots,2016,36967,count,"Global Forest Watch (VIIRS), sum of 5/5 provinces (E+N Kalimantan via satellite geometry)",satellite,high,2026-07-06
+Kalimantan,"Fire alerts (VIIRS, annual)",fire_hotspots,2017,19055,count,"Global Forest Watch (VIIRS), sum of 5/5 provinces (E+N Kalimantan via satellite geometry)",satellite,high,2026-07-06
+Kalimantan,"Fire alerts (VIIRS, annual)",fire_hotspots,2018,65775,count,"Global Forest Watch (VIIRS), sum of 5/5 provinces (E+N Kalimantan via satellite geometry)",satellite,high,2026-07-06
+Kalimantan,"Fire alerts (VIIRS, annual)",fire_hotspots,2019,176341,count,"Global Forest Watch (VIIRS), sum of 5/5 provinces (E+N Kalimantan via satellite geometry)",satellite,high,2026-07-06
+Kalimantan,"Fire alerts (VIIRS, annual)",fire_hotspots,2020,21778,count,"Global Forest Watch (VIIRS), sum of 5/5 provinces (E+N Kalimantan via satellite geometry)",satellite,high,2026-07-06
+Kalimantan,"Fire alerts (VIIRS, annual)",fire_hotspots,2021,17597,count,"Global Forest Watch (VIIRS), sum of 5/5 provinces (E+N Kalimantan via satellite geometry)",satellite,high,2026-07-06
+Kalimantan,"Fire alerts (VIIRS, annual)",fire_hotspots,2022,10444,count,"Global Forest Watch (VIIRS), sum of 5/5 provinces (E+N Kalimantan via satellite geometry)",satellite,high,2026-07-06
+Kalimantan,"Fire alerts (VIIRS, annual)",fire_hotspots,2023,91206,count,"Global Forest Watch (VIIRS), sum of 5/5 provinces (E+N Kalimantan via satellite geometry)",satellite,high,2026-07-06
 Sabah,Tree cover loss (annual),deforestation,2001,63041,ha,Global Forest Watch,satellite,high,2026-07-06
 Sabah,Tree cover loss (annual),deforestation,2002,59778,ha,Global Forest Watch,satellite,high,2026-07-06
 Sabah,Tree cover loss (annual),deforestation,2003,33047,ha,Global Forest Watch,satellite,high,2026-07-06
