@@ -15,7 +15,7 @@
       "indicator": "Air quality (AQI, live)",
       "dashboard_concept": "air_quality",
       "year": "2026",
-      "value": 7.0,
+      "value": 12.0,
       "unit": "AQI",
       "source": "WAQI / aqicn",
       "data_level": "city",
@@ -294,8 +294,8 @@
       "source_territory": "Brunei",
       "indicator": "GDP (current US$)",
       "dashboard_concept": "economy",
-      "year": "2024",
-      "value": 15340808592.48,
+      "year": "2025",
+      "value": 15031980994.1121,
       "unit": "US$",
       "source": "World Bank",
       "data_level": "national",
@@ -314,8 +314,8 @@
       "source_territory": "Brunei",
       "indicator": "GDP growth",
       "dashboard_concept": "economy",
-      "year": "2024",
-      "value": 4.05251709306727,
+      "year": "2025",
+      "value": 0.66956214816436,
       "unit": "%",
       "source": "World Bank",
       "data_level": "national",
@@ -515,7 +515,7 @@
       "indicator": "Air quality (AQI, live)",
       "dashboard_concept": "air_quality",
       "year": "2026",
-      "value": 56.0,
+      "value": 39.0,
       "unit": "AQI",
       "source": "WAQI / aqicn (mean of 3 Kalimantan cities)",
       "data_level": "city",
@@ -875,7 +875,7 @@
       "indicator": "Air quality (AQI, live)",
       "dashboard_concept": "air_quality",
       "year": "2026",
-      "value": 38.0,
+      "value": 24.0,
       "unit": "AQI",
       "source": "WAQI / aqicn",
       "data_level": "city",
@@ -945,26 +945,6 @@
       "confidence": "manual",
       "last_updated": "2026-06-29",
       "canonical": 1,
-      "is_derived": 0,
-      "derived_from": "",
-      "source_count": 1
-    },
-    {
-      "territory": "Sabah",
-      "source_territory": "Sabah",
-      "indicator": "Renewable electricity (% output)",
-      "dashboard_concept": "energy",
-      "year": "2021",
-      "value": 17.0,
-      "unit": "%",
-      "source": "World Bank",
-      "data_level": "national",
-      "esg_pillar": "E",
-      "sdg_goal": "SDG7",
-      "hexagon_pillar": "Energy",
-      "confidence": "medium",
-      "last_updated": "2026-07-06",
-      "canonical": 0,
       "is_derived": 0,
       "derived_from": "",
       "source_count": 1
@@ -1194,8 +1174,8 @@
       "source_territory": "Sabah",
       "indicator": "Poverty rate (absolute)",
       "dashboard_concept": "poverty",
-      "year": "2022",
-      "value": 19.7,
+      "year": "2024",
+      "value": 17.7,
       "unit": "%",
       "source": "data.gov.my / OpenDOSM",
       "data_level": "state",
@@ -1295,7 +1275,7 @@
       "indicator": "Air quality (AQI, live)",
       "dashboard_concept": "air_quality",
       "year": "2026",
-      "value": 39.0,
+      "value": 41.0,
       "unit": "AQI",
       "source": "WAQI / aqicn",
       "data_level": "city",
@@ -1365,26 +1345,6 @@
       "confidence": "manual",
       "last_updated": "2026-06-29",
       "canonical": 1,
-      "is_derived": 0,
-      "derived_from": "",
-      "source_count": 1
-    },
-    {
-      "territory": "Sarawak",
-      "source_territory": "Sarawak",
-      "indicator": "Renewable electricity (% output)",
-      "dashboard_concept": "energy",
-      "year": "2021",
-      "value": 17.0,
-      "unit": "%",
-      "source": "World Bank",
-      "data_level": "national",
-      "esg_pillar": "E",
-      "sdg_goal": "SDG7",
-      "hexagon_pillar": "Energy",
-      "confidence": "medium",
-      "last_updated": "2026-07-06",
-      "canonical": 0,
       "is_derived": 0,
       "derived_from": "",
       "source_count": 1
@@ -1634,8 +1594,8 @@
       "source_territory": "Sarawak",
       "indicator": "Poverty rate (absolute)",
       "dashboard_concept": "poverty",
-      "year": "2022",
-      "value": 10.8,
+      "year": "2024",
+      "value": 8.4,
       "unit": "%",
       "source": "data.gov.my / OpenDOSM",
       "data_level": "state",
@@ -2464,57 +2424,69 @@
       "fire_hotspots": {
         "indicator": "Fire alerts (VIIRS, annual)",
         "unit": "count",
-        "source": "Global Forest Watch (VIIRS), sum of 5/5 provinces (E+N Kalimantan via satellite geometry)",
+        "source": "Global Forest Watch (VIIRS), sum of 4/5 provinces (Kaltim missing from GFW tables)",
         "data_level": "satellite",
-        "confidence": "high",
+        "confidence": "medium",
         "points": [
           {
             "year": "2012",
-            "value": 104538.0
+            "value": 90432.0
           },
           {
             "year": "2013",
-            "value": 63792.0
+            "value": 54271.0
           },
           {
             "year": "2014",
-            "value": 187107.0
+            "value": 163194.0
           },
           {
             "year": "2015",
-            "value": 360964.0
+            "value": 299437.0
           },
           {
             "year": "2016",
-            "value": 36967.0
+            "value": 24447.0
           },
           {
             "year": "2017",
-            "value": 19055.0
+            "value": 14597.0
           },
           {
             "year": "2018",
-            "value": 65775.0
+            "value": 56289.0
           },
           {
             "year": "2019",
-            "value": 176341.0
+            "value": 157139.0
           },
           {
             "year": "2020",
-            "value": 21778.0
+            "value": 16320.0
           },
           {
             "year": "2021",
-            "value": 17597.0
+            "value": 14896.0
           },
           {
             "year": "2022",
-            "value": 10444.0
+            "value": 7937.0
           },
           {
             "year": "2023",
-            "value": 91206.0
+            "value": 77626.0
+          },
+          {
+            "year": "2024",
+            "value": 22633.0
+          },
+          {
+            "year": "2025",
+            "value": 27652.0
+          },
+          {
+            "year": "2026",
+            "value": 42.0
           }
         ]
       },
@@ -3435,6 +3407,10 @@
           {
             "year": "2022",
             "value": 19.7
+          },
+          {
+            "year": "2024",
+            "value": 17.7
           }
         ]
       },
@@ -3956,6 +3932,10 @@
           {
             "year": "2022",
             "value": 10.8
+          },
+          {
+            "year": "2024",
+            "value": 8.4
           }
         ]
       },
