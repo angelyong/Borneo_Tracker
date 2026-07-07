@@ -5,12 +5,18 @@ import 'leaflet/dist/leaflet.css';
 import Sidebar from '../../components/sidebar';
 import MiniTopBar from '../../components/MiniTopBar';
 import {
+  CATEGORY_TO_PILLAR,
   LAYER_CONFIG,
+  TERRITORIES,
   formatValue,
+  getHexagonCoverage,
   getLayerRows,
+  getRowsForPillar,
   layerColorScale,
+  summarizeRows,
   titleCaseConfidence,
   useIndicators,
+  useResilience,
 } from '../../data/useIndicators';
 
 import L from 'leaflet';
@@ -28,77 +34,54 @@ const TERRITORY_CENTERS = {
   Kalimantan: [0.3,  114.5],
 };
 
-// ── Static display data for the right panel ───────────────────────────────────
-// These drive the UI only — all real data still comes from useIndicators()
+// ── Right panel options ───────────────────────────────────────────────────────
+// All panel figures come from indicators.json / resilience.json; "Overall Borneo"
+// is aggregated client-side from the four territories.
 const TERRITORY_OPTIONS = ['Overall Borneo', 'Sabah', 'Sarawak', 'Brunei', 'Kalimantan'];
-
-const RESILIENCE_SCORES = {
-  'Overall Borneo': { score: 64.7, trend: +4.3, segments: [
-    { label: 'Moderate', pct: 34.8, color: '#3db88a' },
-    { label: 'Excellent', pct: 27.6, color: '#2a9d6e' },
-    { label: 'Good',     pct: 20.8, color: '#f0b429' },
-    { label: 'Poor',     pct: 16.8, color: '#e07b39' },
-  ]},
-  Sabah:      { score: 62.0, trend: +3.1, segments: [{ label: 'Good', pct: 62, color: '#2a9d6e' }, { label: 'Poor', pct: 38, color: '#e07b39' }] },
-  Sarawak:    { score: 60.2, trend: +2.8, segments: [{ label: 'Good', pct: 60, color: '#2a9d6e' }, { label: 'Poor', pct: 40, color: '#e07b39' }] },
-  Brunei:     { score: 78.4, trend: +5.2, segments: [{ label: 'Excellent', pct: 78, color: '#3db88a' }, { label: 'Good', pct: 22, color: '#f0b429' }] },
-  Kalimantan: { score: 44.1, trend: -1.2, segments: [{ label: 'Moderate', pct: 44, color: '#e07b39' }, { label: 'Poor', pct: 56, color: '#c0392b' }] },
-};
-
-const PILLAR_DATA = {
-  'Overall Borneo': { Food: 68, Energy: 62, Education: 71, Shelter: 65, Healthcare: 66, Entertainment: 61 },
-  Sabah:            { Food: 60, Energy: 55, Education: 68, Shelter: 58, Healthcare: 60, Entertainment: 54 },
-  Sarawak:          { Food: 64, Energy: 58, Education: 70, Shelter: 62, Healthcare: 63, Entertainment: 57 },
-  Brunei:           { Food: 80, Energy: 78, Education: 84, Shelter: 76, Healthcare: 82, Entertainment: 72 },
-  Kalimantan:       { Food: 48, Energy: 42, Education: 55, Shelter: 46, Healthcare: 49, Entertainment: 40 },
-};
 
 const ESG_CATEGORIES = ['Environment', 'Social', 'Governance'];
 
-const ESG_OVERVIEW = {
-  Environment: { label: 'Environment Overview', scoreLabel: 'Environmental Score:', score: '68/100',
-    items: [{ k: 'Forest Cover', v: '57.3%' }, { k: 'Air Quality Index', v: '42 AQI' }, { k: 'Deforestation Rate', v: '128k ha/yr' }] },
-  Social:      { label: 'Social Overview',       scoreLabel: 'Social Score:',       score: '61/100',
-    items: [{ k: 'Poverty Rate', v: '13.2%' }, { k: 'Employment Rate', v: '67.8%' }, { k: 'Education Index', v: '0.74' }] },
-  Governance:  { label: 'Governance Overview',   scoreLabel: 'Governance Score:',   score: '55/100',
-    items: [{ k: 'Transparency', v: '42/100' }, { k: 'Ease of Business', v: '58.1' }, { k: 'Public Service', v: '54/100' }] },
-};
+const RAG_COLORS = { green: '#16a34a', amber: '#f59e0b', red: '#dc2626' };
 
-// ── Donut / Gauge SVG component ───────────────────────────────────────────────
-function GaugeChart({ segments }) {
+// ── RAG gauge SVG component ───────────────────────────────────────────────────
+// Half-donut with the real red/amber/green threshold zones from resilience.json
+// and a needle at the territory's Resilience Index.
+function RagGauge({ score, thresholds }) {
   const cx = 110, cy = 110, r = 80, strokeW = 28;
   const circumference = Math.PI * r; // half-circle = π * r
-  let offset = 0;
+  const zones = [
+    { from: 0,                to: thresholds.amber, color: RAG_COLORS.red },
+    { from: thresholds.amber, to: thresholds.green, color: RAG_COLORS.amber },
+    { from: thresholds.green, to: 100,              color: RAG_COLORS.green },
+  ];
 
-  // Build half-donut arcs (rotation: starts left, sweeps right like a speedometer)
-  const arcs = segments.map((seg) => {
-    const dashLen = (seg.pct / 100) * circumference;
-    const arc = { ...seg, dashLen, dashOffset: circumference - dashLen, startOffset: offset };
-    offset += dashLen;
-    return arc;
-  });
+  // Needle: score 0 → far left, score 100 → far right
+  const theta = Math.PI * (1 - Math.min(100, Math.max(0, score)) / 100);
+  const needleR = r + strokeW / 2;
+  const nx = cx + needleR * Math.cos(theta);
+  const ny = cy - needleR * Math.sin(theta);
 
   return (
     <svg viewBox="0 0 220 120" style={{ width: '100%', maxWidth: 220, display: 'block', margin: '0 auto' }}>
-      {/* Grey track */}
-      <path
-        d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
-        fill="none" stroke="#e5e7eb" strokeWidth={strokeW} strokeLinecap="butt"
-      />
-      {/* Coloured segments — we use strokeDasharray on the semicircle path */}
-      {arcs.map((arc, i) => (
-        <path
-          key={i}
-          d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
-          fill="none"
-          stroke={arc.color}
-          strokeWidth={strokeW}
-          strokeLinecap="butt"
-          strokeDasharray={`${arc.dashLen} ${circumference}`}
-          strokeDashoffset={-arc.startOffset}
-          style={{ transformOrigin: `${cx}px ${cy}px` }}
-        />
-      ))}
+      {zones.map((zone) => {
+        const dashLen = ((zone.to - zone.from) / 100) * circumference;
+        const startOffset = (zone.from / 100) * circumference;
+        return (
+          <path
+            key={zone.color}
+            d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
+            fill="none"
+            stroke={zone.color}
+            strokeWidth={strokeW}
+            strokeLinecap="butt"
+            strokeDasharray={`${dashLen} ${circumference}`}
+            strokeDashoffset={-startOffset}
+            opacity={0.85}
+          />
+        );
+      })}
+      <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="#1f2937" strokeWidth="3" strokeLinecap="round" />
+      <circle cx={cx} cy={cy} r="6" fill="#1f2937" />
     </svg>
   );
 }
@@ -108,7 +91,7 @@ function HexRadar({ pillars }) {
   const keys   = Object.keys(pillars);
   const values = Object.values(pillars);
   const cx = 90, cy = 90, maxR = 60, n = keys.length;
-  const MAX = 100;
+  const MAX = Math.max(...values, 1);
 
   const angleOf = (i) => (Math.PI / 2) - (2 * Math.PI * i) / n; // start top
 
@@ -178,6 +161,7 @@ const OverviewDashboard = () => {
   const startX     = useRef(0);
   const startW     = useRef(0);
   const { data, loading, error } = useIndicators();
+  const { data: resilience }     = useResilience();
 
   // ── Panel resize handlers ────────────────────────────────────────────────
   const onDragStart = useCallback((e) => {
@@ -217,10 +201,67 @@ const OverviewDashboard = () => {
     [activeLayer, layerEntries]
   );
 
-  // Panel data
-  const resilience = RESILIENCE_SCORES[panelTerritory] || RESILIENCE_SCORES['Overall Borneo'];
-  const pillars    = PILLAR_DATA[panelTerritory]        || PILLAR_DATA['Overall Borneo'];
-  const esgInfo    = ESG_OVERVIEW[esgCategory];
+  // ── Panel data (all real) ────────────────────────────────────────────────
+  const isOverall = panelTerritory === 'Overall Borneo';
+
+  const resilienceView = useMemo(() => {
+    if (!resilience?.territories) return null;
+    const thresholds = resilience.ragThresholds || { green: 67, amber: 34 };
+    if (!isOverall) {
+      const territory = resilience.territories[panelTerritory];
+      if (!territory || !Number.isFinite(territory.index)) return null;
+      return {
+        index: territory.index,
+        rag: territory.rag,
+        thresholds,
+        note: `Weakest pillar: ${territory.weakestPillar} · ${territory.scoredPillars.length}/6 pillars scored`,
+      };
+    }
+    const scored = Object.values(resilience.territories).filter((t) => Number.isFinite(t.index));
+    if (!scored.length) return null;
+    const avg = scored.reduce((sum, t) => sum + t.index, 0) / scored.length;
+    const index = Math.round(avg * 10) / 10;
+    const rag = index >= thresholds.green ? 'green' : index >= thresholds.amber ? 'amber' : 'red';
+    return { index, rag, thresholds, note: `Average of ${scored.length} territories` };
+  }, [isOverall, panelTerritory, resilience]);
+
+  const hexCoverage = useMemo(() => {
+    if (!data?.rows) return null;
+    if (!isOverall) return getHexagonCoverage(data.rows, panelTerritory);
+    const totals = { Food: 0, Energy: 0, Education: 0, Shelter: 0, Healthcare: 0, Entertainment: 0 };
+    TERRITORIES.forEach((territory) => {
+      const counts = getHexagonCoverage(data.rows, territory);
+      Object.keys(totals).forEach((pillar) => { totals[pillar] += counts[pillar]; });
+    });
+    return totals;
+  }, [data, isOverall, panelTerritory]);
+
+  const esgCard = useMemo(() => {
+    if (!data?.rows) return null;
+    const pillar = CATEGORY_TO_PILLAR[esgCategory];
+    if (!isOverall) {
+      const rows = getRowsForPillar(data.rows, panelTerritory, pillar);
+      const summary = summarizeRows(rows);
+      return {
+        label: `${esgCategory} Overview`,
+        meta: `${summary.count} indicator${summary.count === 1 ? '' : 's'} · latest ${summary.latestYear ?? '—'}`,
+        items: rows.slice(0, 3).map((row) => ({ k: row.indicator, v: formatValue(row) })),
+      };
+    }
+    const perTerritory = TERRITORIES.map((territory) => ({
+      territory,
+      rows: getRowsForPillar(data.rows, territory, pillar),
+    }));
+    const summary = summarizeRows(perTerritory.flatMap((entry) => entry.rows));
+    return {
+      label: `${esgCategory} Overview`,
+      meta: `${summary.count} indicator${summary.count === 1 ? '' : 's'} · latest ${summary.latestYear ?? '—'}`,
+      items: perTerritory.map((entry) => ({
+        k: entry.territory,
+        v: `${entry.rows.length} indicator${entry.rows.length === 1 ? '' : 's'}`,
+      })),
+    };
+  }, [data, esgCategory, isOverall, panelTerritory]);
 
   return (
     <div style={styles.root}>
@@ -321,42 +362,50 @@ const OverviewDashboard = () => {
             <div style={styles.section}>
               <div style={styles.sectionTitle}>Overall Resilience Status</div>
 
-              {/* Gauge */}
-              <GaugeChart segments={resilience.segments} />
+              {resilienceView ? (
+                <>
+                  {/* Gauge */}
+                  <RagGauge score={resilienceView.index} thresholds={resilienceView.thresholds} />
 
-              {/* Legend */}
-              <div style={styles.gaugeLegend}>
-                {resilience.segments.map((s) => (
-                  <div key={s.label} style={styles.legendRow}>
-                    <span style={{ ...styles.legendDot, background: s.color }} />
-                    <span style={styles.legendLabel}>{s.label}</span>
+                  {/* Legend — real RAG thresholds */}
+                  <div style={styles.gaugeLegend}>
+                    {[
+                      { label: `Poor (<${resilienceView.thresholds.amber})`,                                       color: RAG_COLORS.red },
+                      { label: `Moderate (${resilienceView.thresholds.amber}–${resilienceView.thresholds.green})`, color: RAG_COLORS.amber },
+                      { label: `Good (≥${resilienceView.thresholds.green})`,                                       color: RAG_COLORS.green },
+                    ].map((s) => (
+                      <div key={s.label} style={styles.legendRow}>
+                        <span style={{ ...styles.legendDot, background: s.color }} />
+                        <span style={styles.legendLabel}>{s.label}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
 
-              {/* Score */}
-              <div style={styles.scoreRow}>
-                <span style={styles.scoreBig}>{resilience.score}%</span>
-                <span style={styles.scoreCaption}>Score out of 100</span>
-              </div>
+                  {/* Score */}
+                  <div style={styles.scoreRow}>
+                    <span style={{ ...styles.scoreBig, color: RAG_COLORS[resilienceView.rag] || '#1f2937' }}>
+                      {resilienceView.index}
+                    </span>
+                    <span style={styles.scoreCaption}>Resilience Index (0–100)</span>
+                  </div>
 
-              {/* Trend */}
-              <div style={styles.trendRow}>
-                <span style={styles.trendLabel}>Trend (vs last year)</span>
-                <span style={{
-                  ...styles.trendValue,
-                  color: resilience.trend >= 0 ? '#16a34a' : '#dc2626',
-                }}>
-                  {resilience.trend >= 0 ? '↑' : '↓'} {resilience.trend >= 0 ? '+' : ''}{resilience.trend}
-                </span>
-              </div>
+                  {/* Coverage note */}
+                  <div style={styles.trendRow}>
+                    <span style={styles.trendLabel}>{resilienceView.note}</span>
+                  </div>
+                </>
+              ) : (
+                <div style={styles.stateText}>Loading resilience scores…</div>
+              )}
             </div>
 
-            {/* ── Pillar Performance ── */}
+            {/* ── Pillar Coverage ── */}
             <div style={styles.section}>
-              <div style={styles.sectionTitle}>Pillar Performance</div>
-              <div style={styles.sectionSubtitle}>(True Wealth Hexagon)</div>
-              <HexRadar pillars={pillars} />
+              <div style={styles.sectionTitle}>Pillar Coverage</div>
+              <div style={styles.sectionSubtitle}>(True Wealth Hexagon · indicators per pillar)</div>
+              {hexCoverage
+                ? <HexRadar pillars={hexCoverage} />
+                : <div style={styles.stateText}>Loading indicator data…</div>}
             </div>
 
             {/* ── ESG Indicators ── */}
@@ -372,19 +421,29 @@ const OverviewDashboard = () => {
                 </select>
               </div>
 
-              <div style={styles.esgCard}>
-                <div style={styles.esgCardTitle}>{esgInfo.label}</div>
-                <div style={styles.esgScoreRow}>
-                  <span style={styles.esgScoreLabel}>{esgInfo.scoreLabel}</span>
-                  <span style={styles.esgScoreValue}>{esgInfo.score}</span>
-                </div>
-                {esgInfo.items.map((item) => (
-                  <div key={item.k} style={styles.esgItemRow}>
-                    <span style={styles.esgItemKey}>{item.k}</span>
-                    <span style={styles.esgItemVal}>{item.v}</span>
+              {esgCard ? (
+                <div style={styles.esgCard}>
+                  <div style={styles.esgCardTitle}>{esgCard.label}</div>
+                  <div style={styles.esgScoreRow}>
+                    <span style={styles.esgScoreLabel}>Coverage:</span>
+                    <span style={styles.esgScoreValue}>{esgCard.meta}</span>
                   </div>
-                ))}
-              </div>
+                  {esgCard.items.length ? (
+                    esgCard.items.map((item) => (
+                      <div key={item.k} style={styles.esgItemRow}>
+                        <span style={styles.esgItemKey}>{item.k}</span>
+                        <span style={styles.esgItemVal}>{item.v}</span>
+                      </div>
+                    ))
+                  ) : (
+                    <div style={styles.stateText}>No canonical indicators for this pillar yet.</div>
+                  )}
+                </div>
+              ) : (
+                <div style={styles.esgCard}>
+                  <div style={styles.stateText}>Loading indicator data…</div>
+                </div>
+              )}
 
               {/* Live data section — unchanged from original */}
               <div style={styles.liveSection}>

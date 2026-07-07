@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import Sidebar from '../../components/sidebar';
+import MiniTopBar from '../../components/MiniTopBar';
 import {
   SDG_GOALS,
   TERRITORIES,
@@ -36,11 +37,10 @@ const SDGProgress = () => {
         <Sidebar />
       </div>
 
-      <div style={styles.content}>
-        <button onClick={toggleSidebar} style={styles.floatingBtn} className="floating-btn">
-          ☰
-        </button>
+      <div style={styles.rightCol}>
+        <MiniTopBar onMenuClick={toggleSidebar} notifCount={2} />
 
+        <div style={styles.content}>
         <div style={styles.header}>
           <div style={styles.headerLeft}>
             <h1 style={styles.pageTitle}>SDG Progress</h1>
@@ -143,6 +143,7 @@ const SDGProgress = () => {
             </div>
           </div>
         ) : null}
+        </div>
       </div>
     </div>
   );
@@ -155,7 +156,7 @@ const styles = {
     height: '100vh',
     width: '100%',
     backgroundColor: '#f3f4f6',
-    fontFamily: 'Arial, sans-serif',
+    fontFamily: 'Inter, Arial, sans-serif',
     overflow: 'hidden',
   },
   sidebarWrapper: {
@@ -164,33 +165,23 @@ const styles = {
     flexShrink: 0,
     height: '100%',
   },
+  rightCol: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    height: '100vh',
+    overflow: 'hidden',
+  },
   content: {
     flex: 1,
     padding: '24px',
     overflowY: 'auto',
-    position: 'relative',
-  },
-  floatingBtn: {
-    position: 'absolute',
-    top: '16px',
-    left: '16px',
-    zIndex: 1001,
-    backgroundColor: '#ffffff',
-    border: '1px solid #d1d5db',
-    borderRadius: '8px',
-    fontSize: '24px',
-    padding: '6px 12px',
-    cursor: 'pointer',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-    color: '#1f2937',
-    transition: 'background 0.2s, box-shadow 0.2s',
-    lineHeight: 1,
+    boxSizing: 'border-box',
   },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: '40px',
     marginBottom: '24px',
     flexWrap: 'wrap',
     gap: '16px',

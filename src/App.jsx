@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import OverviewDashboard from './pages/dashboard/OverviewDashboard';
 import RegionalDetails from './pages/dashboard/Regional_Detail';
 import ESGIndicator from './pages/ESG/esg_indicator';
-import SDGProgress from './pages/SDG/sdg_indicator';
+import SDGProgress from './pages/SDG/sdg_progress';
 import MyProfile from './pages/profile/MyProfile';
 
 // Placeholder components (create these later)

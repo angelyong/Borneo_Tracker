@@ -103,11 +103,16 @@ export function getRowsForPillar(rows, territory, pillar) {
 
 export const SDG_GOALS = [
   { goal: 'SDG1', label: 'No Poverty' },
+  { goal: 'SDG2', label: 'Zero Hunger' },
+  { goal: 'SDG3', label: 'Good Health' },
   { goal: 'SDG4', label: 'Quality Education' },
   { goal: 'SDG6', label: 'Clean Water' },
+  { goal: 'SDG7', label: 'Clean Energy' },
   { goal: 'SDG8', label: 'Economic Growth' },
+  { goal: 'SDG11', label: 'Sustainable Cities' },
   { goal: 'SDG13', label: 'Climate Action' },
   { goal: 'SDG15', label: 'Life on Land' },
+  { goal: 'SDG16', label: 'Peace & Justice' },
 ];
 
 export function getSeries(data, territory, concept) {
