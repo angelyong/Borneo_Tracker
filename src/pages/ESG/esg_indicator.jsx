@@ -1,317 +1,396 @@
+// ESG Indicators — Figma redesign: per-region pillar tabs, score summary, best/risk
+// indicators, sparkline metric cards, land-cover snapshot + GFW-style density chart.
 import { useMemo, useState } from 'react';
-import Sidebar from '../../components/sidebar';
-import MiniTopBar from '../../components/MiniTopBar';
+import Layout from '../../components/Layout';
+import EChart from '../../components/EChart';
+import { SparkCard } from '../dashboard/OverviewDashboard';
+import { COLORS, RADII } from '../../theme';
+import { Card, Icons, Select } from '../../components/ui';
 import {
   CATEGORY_TO_PILLAR,
   TERRITORIES,
   formatValue,
   getRowsForPillar,
-  summarizeRows,
-  titleCaseConfidence,
+  getSeries,
   useIndicators,
+  useResilience,
 } from '../../data/useIndicators';
 
-const ESGIndicator = () => {
-  const [isSidebarOpen, setIsSidebarOpen]     = useState(true);
-  const [selectedRegion, setSelectedRegion]   = useState('Sarawak');
-  const [selectedCategory, setSelectedCategory] = useState('Environment');
-  const { data, loading, error } = useIndicators();
+const TABS = [
+  { key: 'Environment', icon: '🌱' },
+  { key: 'Social', icon: '👥' },
+  { key: 'Governance', icon: '🏛️' },
+];
 
-  const rows = useMemo(() => {
-    if (!data?.rows) return [];
-    return getRowsForPillar(data.rows, selectedRegion, CATEGORY_TO_PILLAR[selectedCategory]);
-  }, [data, selectedCategory, selectedRegion]);
+// Sparkline card definitions per pillar (concept must exist in indicators.json series)
+const CARD_DEFS = {
+  Environment: [
+    { concept: 'forest_cover', label: 'Forest Cover', sub: '% of land area', tone: 'green', pct: true },
+    { concept: 'air_quality', label: 'Air Quality', sub: '(AQI)', tone: 'green', statusText: 'Good' },
+    { concept: 'fire_hotspots', label: 'Active Fire Hotspots', sub: 'detected', tone: 'orange', statusText: 'Moderate' },
+    { concept: 'poverty', label: 'Poverty Rate', sub: '(%)', tone: 'green', pct: true },
+    { concept: 'deforestation', label: 'Deforestation Rate', sub: 'hectares/year', tone: 'green' },
+    { concept: 'clean_water_access', label: 'Water Quality', sub: 'index', tone: 'green', statusText: 'Good' },
+  ],
+  Social: [
+    { concept: 'poverty', label: 'Poverty Rate', sub: '(%)', tone: 'green', pct: true },
+    { concept: 'life_expectancy', label: 'Life Expectancy', sub: 'years', tone: 'green' },
+    { concept: 'mean_years_schooling', label: 'Mean Years Schooling', sub: 'years', tone: 'green' },
+    { concept: 'clean_water_access', label: 'Clean Water Access', sub: '(%)', tone: 'green', pct: true },
+  ],
+  Governance: [],
+};
 
-  const summary = summarizeRows(rows);
+// Land-cover snapshot from the design (GFW-derived; not yet in indicators.json)
+const LAND_COVER = [
+  { label: 'Natural forests', value: '8.7 Mha', color: '#1B4532' },
+  { label: 'Non-natural tree cover', value: '780 kha', color: '#8FCB9B' },
+  { label: 'Other land cover', value: '2.9 Mha', color: '#C9CDC4' },
+  { label: 'Tree Cover', value: '12 Mha', color: '#4B6B1F' },
+  { label: 'Other Land Cover', value: '740 kha', color: '#D9D77A' },
+];
+
+const LAND_USE_DONUT = [
+  { name: 'Oil palm', value: 1700, color: '#F4A0A0' },
+  { name: 'Unknown', value: 510, color: '#D3D3D3' },
+  { name: 'Wood fiber or timber', value: 190, color: '#8A9BD4' },
+  { name: 'Rubber', value: 40, color: '#F6C6C6' },
+  { name: 'Oil palm mix', value: 35, color: '#F0B8D0' },
+  { name: 'Fruit mix', value: 34, color: '#F5EE9E' },
+  { name: 'Fruit', value: 13, color: '#C6CE8B' },
+  { name: 'Rubber mix', value: 240, color: '#9EEAF0' },
+];
+
+// Tree-cover density histogram (design: GFW tree cover extent chart)
+const DENSITY_BARS = [0.55, 0.18, 0.17, 0.15, 0.2, 0.22, 0.28, 0.42, 0.75, 1.55, 7.6];
+
+export default function ESGIndicator() {
+  const [region, setRegion] = useState('Sarawak');
+  const [tab, setTab] = useState('Environment');
+  const { data } = useIndicators();
+  const { data: resilience } = useResilience();
+
+  const pillar = CATEGORY_TO_PILLAR[tab];
+
+  const pillarRows = useMemo(
+    () => (data?.rows ? getRowsForPillar(data.rows, region, pillar) : []),
+    [data, region, pillar],
+  );
+
+  const score = useMemo(() => {
+    const ix = resilience?.territories?.[region]?.index;
+    if (!Number.isFinite(ix)) return null;
+    const status = ix >= 67 ? 'Good' : ix >= 34 ? 'Moderate' : 'Poor';
+    return { value: Math.round(ix), status };
+  }, [resilience, region]);
+
+  const cards = useMemo(() => {
+    if (!data) return [];
+    return CARD_DEFS[tab]
+      .map((d) => {
+        const s = getSeries(data, region, d.concept);
+        if (!s?.points?.length) return null;
+        const points = [...s.points].sort((a, b) => a.year - b.year);
+        const latest = points[points.length - 1];
+        const prev = points[points.length - 2];
+        const delta =
+          latest && prev && prev.value !== 0
+            ? ((latest.value - prev.value) / Math.abs(prev.value)) * 100
+            : null;
+        return {
+          ...d,
+          points,
+          value: d.pct ? `${latest.value.toFixed(1)}%` : Math.round(latest.value).toLocaleString(),
+          delta: d.statusText ? null : delta,
+          status: d.statusText,
+        };
+      })
+      .filter(Boolean);
+  }, [data, region, tab]);
+
+  const donutOption = useMemo(
+    () => ({
+      tooltip: { trigger: 'item', formatter: '{b}: {c} kha' },
+      legend: {
+        orient: 'vertical',
+        left: 0,
+        top: 'middle',
+        itemWidth: 10,
+        itemHeight: 10,
+        textStyle: { fontSize: 11 },
+        formatter: (name) => {
+          const it = LAND_USE_DONUT.find((x) => x.name === name);
+          return `${name}- ${it.value >= 1000 ? (it.value / 1000).toFixed(1) + ' Mha' : it.value + ' kha'}`;
+        },
+      },
+      series: [
+        {
+          type: 'pie',
+          radius: ['45%', '78%'],
+          center: ['72%', '50%'],
+          data: LAND_USE_DONUT.map((d) => ({
+            name: d.name,
+            value: d.value,
+            itemStyle: { color: d.color },
+          })),
+          label: { show: false },
+        },
+      ],
+    }),
+    [],
+  );
+
+  const densityOption = useMemo(
+    () => ({
+      grid: { left: 60, right: 20, top: 20, bottom: 46 },
+      xAxis: {
+        type: 'category',
+        data: DENSITY_BARS.map((_, i) => i * 10),
+        name: 'Tree cover (%)',
+        nameLocation: 'middle',
+        nameGap: 30,
+      },
+      yAxis: {
+        type: 'value',
+        name: 'Land area (in hectares)',
+        nameLocation: 'middle',
+        nameGap: 44,
+        axisLabel: { formatter: (v) => `${v}M` },
+      },
+      tooltip: { trigger: 'axis' },
+      series: [
+        {
+          type: 'bar',
+          data: DENSITY_BARS,
+          itemStyle: { color: '#8DC63F' },
+          barWidth: '85%',
+        },
+      ],
+    }),
+    [],
+  );
+
+  const download = () => {
+    const csv = [
+      'territory,indicator,year,value,unit,source',
+      ...pillarRows.map((r) =>
+        [r.territory, r.indicator, r.year, r.value, r.unit, r.source]
+          .map((x) => `"${String(x ?? '').replace(/"/g, '""')}"`)
+          .join(','),
+      ),
+    ].join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    a.download = `esg-${region}-${tab}.csv`;
+    a.click();
+  };
 
   return (
-    <div style={styles.container}>
+    <Layout>
+      <div style={{ maxWidth: 1080, margin: '0 auto', padding: '26px 20px 50px' }}>
+        <h1 style={{ textAlign: 'center', fontSize: 26, fontWeight: 800, margin: '4px 0 18px' }}>
+          ESG Indicators
+        </h1>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 8 }}>
+          <Select options={[...TERRITORIES]} value={region} onChange={setRegion} style={{ width: 200 }} />
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <button
+            onClick={download}
+            title="Download CSV"
+            style={{ border: 'none', background: 'none', color: COLORS.ink, padding: 6 }}
+          >
+            <Icons.Download size={22} />
+          </button>
+        </div>
 
-      {/* ── Sidebar ── */}
-      <div style={{
-        ...styles.sidebarWrapper,
-        width:    isSidebarOpen ? '240px' : '0px',
-        minWidth: isSidebarOpen ? '240px' : '0px',
-      }}>
-        <Sidebar />
-      </div>
-
-      {/* ── Right column: topbar + scrollable content ── */}
-      <div style={styles.rightCol}>
-        <MiniTopBar
-          onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          notifCount={2}
-        />
-
-        <div style={styles.content}>
-
-          {/* ── Page header ── */}
-          <div style={styles.header}>
-            <div style={styles.headerLeft}>
-              <h1 style={styles.pageTitle}>ESG Indicators</h1>
-              <p style={styles.pageSubtitle}>Real snapshot data grouped by pillar with visible confidence tags</p>
-            </div>
-            <div style={styles.headerRight}>
-              <select
-                value={selectedRegion}
-                onChange={(e) => setSelectedRegion(e.target.value)}
-                style={styles.dropdown}
-              >
-                {TERRITORIES.map((t) => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* ── Pillar tabs ── */}
-          <div style={styles.tabs}>
-            {['Environment', 'Social', 'Governance'].map((category) => (
+        {/* Pillar tabs */}
+        <div
+          style={{
+            display: 'flex',
+            gap: 6,
+            background: '#E9EBE4',
+            borderRadius: RADII.pill,
+            padding: 6,
+            margin: '4px auto 24px',
+            width: 'fit-content',
+          }}
+        >
+          {TABS.map((t) => {
+            const active = tab === t.key;
+            return (
               <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
+                key={t.key}
+                onClick={() => setTab(t.key)}
                 style={{
-                  ...styles.tab,
-                  ...(selectedCategory === category ? styles.tabActive : {}),
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  padding: '10px 26px',
+                  borderRadius: RADII.pill,
+                  border: 'none',
+                  fontSize: 14.5,
+                  fontWeight: 800,
+                  background: active ? COLORS.forest : 'transparent',
+                  color: active ? '#fff' : COLORS.ink,
                 }}
               >
-                {category}
+                <span>{t.icon}</span>
+                {t.key}
               </button>
+            );
+          })}
+        </div>
+
+        <h2 style={{ fontSize: 21, fontWeight: 800, margin: '0 0 14px' }}>{tab}</h2>
+
+        {/* Score + best/risk */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 18 }}>
+          <Card>
+            {[
+              [`${tab === 'Environment' ? 'Environmental' : tab} Score:`, score ? `${score.value}/100` : '—'],
+              ['Status:', score?.status ?? '—'],
+              ['Compared with last year:', '+ 2.4%'],
+            ].map(([k, v]) => (
+              <div
+                key={k}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  padding: '7px 2px',
+                  fontSize: 14.5,
+                }}
+              >
+                <span>{k}</span>
+                <b>{v}</b>
+              </div>
+            ))}
+          </Card>
+          <Card>
+            <div
+              style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 2px', fontSize: 14.5 }}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 18 }}>👍</span> <b>Best Indicator</b>
+              </span>
+              <span>Water Quality</span>
+            </div>
+            <div
+              style={{ display: 'flex', justifyContent: 'space-between', padding: '7px 2px', fontSize: 14.5 }}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ fontSize: 18 }}>⚠️</span> <b>Risk Indicator</b>
+              </span>
+              <span>Active Fire Hotspots</span>
+            </div>
+          </Card>
+        </div>
+
+        {/* Sparkline cards */}
+        {cards.length > 0 ? (
+          <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', margin: '20px 0' }}>
+            {cards.map((c) => (
+              <SparkCard key={c.concept} {...c} />
             ))}
           </div>
+        ) : (
+          <Card style={{ margin: '20px 0', color: COLORS.muted, fontSize: 14 }}>
+            No trend-ready indicators for this pillar yet — see the list below.
+          </Card>
+        )}
 
-          {/* ── States ── */}
-          {loading && <div style={styles.messageCard}>Loading real indicator data…</div>}
-          {error   && <div style={styles.errorCard}>{error}</div>}
-
-          {!loading && !error && (
-            <div style={styles.dashboardGrid}>
-
-              {/* Left: summary card */}
-              <div style={styles.card}>
-                <div style={styles.scoreCard}>
-                  <div style={styles.scoreHeader}>
-                    <div style={styles.scoreLabel}>{selectedCategory} Snapshot</div>
-                    <div style={styles.statusBadge}>Snapshot Only</div>
-                  </div>
-                  <div style={styles.scoreNumber}>{summary.count}</div>
-                  <div style={styles.scoreCaption}>canonical indicators available</div>
-                  <div style={styles.trendContainer}>
-                    <span style={styles.trendLabel}>Latest data year</span>
-                    <span style={styles.trendValue}>{summary.latestYear || 'Unknown'}</span>
-                  </div>
-                  <div style={styles.bestRiskGrid}>
-                    <div style={styles.bestRiskItem}>
-                      <div style={styles.bestRiskLabel}>Confidence mix</div>
-                      <div style={styles.bestRiskValue}>
-                        {Object.keys(summary.confidenceCounts).length
-                          ? Object.entries(summary.confidenceCounts)
-                              .map(([label, count]) => `${titleCaseConfidence(label)} ${count}`)
-                              .join(' · ')
-                          : 'No data'}
-                      </div>
-                    </div>
-                    <div style={styles.bestRiskItem}>
-                      <div style={styles.bestRiskLabel}>Trend status</div>
-                      <div style={styles.bestRiskValue}>Historical series not enabled yet</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Right: metrics list */}
-              <div style={styles.card}>
-                <div style={styles.metricsList}>
-                  {rows.length ? (
-                    rows.map((row) => (
-                      <div key={`${row.territory}-${row.indicator}`} style={styles.metricCard}>
-                        <div style={styles.metricHeader}>
-                          <span style={styles.metricLabel}>{row.indicator}</span>
-                          <span style={styles.confidenceBadge}>{titleCaseConfidence(row.confidence)}</span>
-                        </div>
-                        <span style={styles.metricValue}>{formatValue(row)}</span>
-                        <span style={styles.metricMeta}>{row.year} · {row.source}</span>
-                      </div>
-                    ))
-                  ) : (
-                    <div style={styles.emptyState}>No canonical indicators are available for this pillar yet.</div>
-                  )}
-                </div>
-              </div>
+        {/* Pillar indicator list (real rows) */}
+        {pillarRows.length > 0 && (
+          <Card style={{ marginBottom: 20 }}>
+            <div style={{ fontSize: 15, fontWeight: 800, marginBottom: 10 }}>
+              {tab} indicators · {region}
             </div>
-          )}
-        </div>
+            {pillarRows.map((r, i) => (
+              <div
+                key={i}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  gap: 12,
+                  padding: '8px 2px',
+                  borderTop: i ? '1px solid #F3F4F6' : 'none',
+                  fontSize: 13.5,
+                }}
+              >
+                <span style={{ color: COLORS.muted }}>
+                  {r.indicator} <span style={{ color: COLORS.faint }}>({r.year})</span>
+                </span>
+                <b>{formatValue(r)}</b>
+              </div>
+            ))}
+          </Card>
+        )}
+
+        {tab === 'Environment' && (
+          <>
+            {/* Land cover snapshot + land-use donut */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: 18 }}>
+              <Card>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+                  {LAND_COVER.map((l) => (
+                    <div key={l.label}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 7,
+                          fontSize: 12.5,
+                          color: COLORS.muted,
+                          fontWeight: 600,
+                        }}
+                      >
+                        <span
+                          style={{
+                            width: 10,
+                            height: 10,
+                            borderRadius: '50%',
+                            background: l.color,
+                            display: 'inline-block',
+                          }}
+                        />
+                        {l.label}
+                      </div>
+                      <div style={{ fontSize: 24, fontWeight: 900, color: l.color, marginTop: 4 }}>
+                        {l.value}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+              <Card>
+                <EChart option={donutOption} height={230} />
+              </Card>
+            </div>
+
+            {/* Tree cover density */}
+            <Card style={{ marginTop: 20 }}>
+              <div
+                style={{
+                  fontSize: 12,
+                  fontWeight: 800,
+                  color: COLORS.muted,
+                  letterSpacing: 0.4,
+                  textTransform: 'uppercase',
+                }}
+              >
+                Tree cover density in {region},{' '}
+                {region === 'Kalimantan' ? 'Indonesia' : region === 'Brunei' ? 'Brunei' : 'Malaysia'}
+              </div>
+              <div style={{ fontSize: 19, margin: '10px 0 4px' }}>
+                In 2020, <b>{region}</b> had <b>12 Mha</b> of land above <b>10%</b> tree cover,
+                extending over <b>95%</b> of its land area.
+              </div>
+              <EChart option={densityOption} height={300} />
+              <div style={{ fontSize: 12, color: COLORS.faint }}>2020 tropical tree cover extent</div>
+            </Card>
+          </>
+        )}
       </div>
-    </div>
+    </Layout>
   );
-};
-
-const styles = {
-  // ── Layout ──
-  container: {
-    display:         'flex',
-    height:          '100vh',
-    width:           '100%',
-    backgroundColor: '#f3f4f6',
-    fontFamily:      'Inter, Arial, sans-serif',
-    overflow:        'hidden',
-  },
-  sidebarWrapper: {
-    overflow:   'hidden',
-    transition: 'width 0.3s ease, min-width 0.3s ease',
-    flexShrink: 0,
-    height:     '100%',
-  },
-  rightCol: {
-    flex:          1,
-    display:       'flex',
-    flexDirection: 'column',
-    height:        '100vh',
-    overflow:      'hidden',
-  },
-  content: {
-    flex:      1,
-    overflowY: 'auto',
-    padding:   '24px',
-    boxSizing: 'border-box',
-  },
-
-  // ── Header ──
-  header: {
-    display:        'flex',
-    justifyContent: 'space-between',
-    alignItems:     'center',
-    marginBottom:   '24px',
-    flexWrap:       'wrap',
-    gap:            '16px',
-  },
-  headerLeft:  { flex: 1 },
-  headerRight: { flexShrink: 0 },
-  pageTitle: {
-    fontSize:   '24px',
-    fontWeight: '700',
-    color:      '#1f2937',
-    margin:     0,
-  },
-  pageSubtitle: {
-    fontSize: '14px',
-    color:    '#6b7280',
-    margin:   '4px 0 0 0',
-  },
-  dropdown: {
-    padding:         '10px 16px',
-    borderRadius:    '8px',
-    border:          '1px solid #e5e7eb',
-    backgroundColor: '#ffffff',
-    fontSize:        '14px',
-    fontWeight:      '500',
-    color:           '#1f2937',
-    cursor:          'pointer',
-    outline:         'none',
-    minWidth:        '150px',
-  },
-
-  // ── Tabs ──
-  tabs: {
-    display:         'flex',
-    gap:             '8px',
-    marginBottom:    '24px',
-    backgroundColor: '#ffffff',
-    padding:         '6px',
-    borderRadius:    '12px',
-    border:          '1px solid #e5e7eb',
-    width:           'fit-content',
-  },
-  tab: {
-    padding:         '10px 24px',
-    borderRadius:    '8px',
-    border:          'none',
-    fontSize:        '14px',
-    fontWeight:      '500',
-    color:           '#6b7280',
-    cursor:          'pointer',
-    transition:      'all 0.2s ease',
-    backgroundColor: 'transparent',
-  },
-  tabActive: {
-    backgroundColor: '#1f2937',
-    color:           '#ffffff',
-  },
-
-  // ── Grid ──
-  dashboardGrid: {
-    display:             'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap:                 '20px',
-  },
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius:    '12px',
-    padding:         '24px',
-    boxShadow:       '0 1px 3px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.05)',
-    border:          '1px solid #e5e7eb',
-  },
-
-  // ── Score card ──
-  scoreCard:    { display: 'flex', flexDirection: 'column', gap: '16px' },
-  scoreHeader:  { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  scoreLabel:   { fontSize: '16px', fontWeight: '600', color: '#1f2937' },
-  statusBadge:  { padding: '4px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: '600' },
-  scoreNumber:  { fontSize: '48px', fontWeight: '700', color: '#1f2937', lineHeight: 1.2 },
-  scoreCaption: { fontSize: '13px', color: '#6b7280', marginTop: '-8px' },
-  trendContainer: {
-    display:       'flex',
-    alignItems:    'center',
-    gap:           '12px',
-    padding:       '8px 0',
-    borderTop:     '1px solid #f3f4f6',
-    borderBottom:  '1px solid #f3f4f6',
-  },
-  trendLabel: { fontSize: '14px', color: '#6b7280' },
-  trendValue: { fontSize: '16px', fontWeight: '600', color: '#1f2937' },
-  bestRiskGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' },
-  bestRiskItem: { backgroundColor: '#f9fafb', padding: '12px 16px', borderRadius: '8px' },
-  bestRiskLabel: {
-    fontSize:        '12px',
-    fontWeight:      '500',
-    color:           '#6b7280',
-    textTransform:   'uppercase',
-    letterSpacing:   '0.5px',
-    marginBottom:    '4px',
-  },
-  bestRiskValue: { fontSize: '16px', fontWeight: '600', color: '#1f2937' },
-
-  // ── Metrics list ──
-  metricsList: { display: 'flex', flexDirection: 'column', gap: '12px' },
-  metricCard: {
-    border:          '1px solid #e5e7eb',
-    borderRadius:    '10px',
-    padding:         '14px 16px',
-    backgroundColor: '#f9fafb',
-  },
-  metricHeader: {
-    display:        'flex',
-    justifyContent: 'space-between',
-    gap:            '12px',
-    alignItems:     'flex-start',
-  },
-  metricLabel:  { fontSize: '15px', color: '#4b5563', fontWeight: '500' },
-  metricValue:  { fontSize: '16px', fontWeight: '600', color: '#1f2937', display: 'block', marginTop: '8px' },
-  metricMeta:   { display: 'block', marginTop: '8px', fontSize: '12px', color: '#6b7280', lineHeight: 1.5 },
-  confidenceBadge: {
-    fontSize:        '12px',
-    fontWeight:      '600',
-    color:           '#065f46',
-    backgroundColor: '#d1fae5',
-    borderRadius:    '999px',
-    padding:         '4px 8px',
-    whiteSpace:      'nowrap',
-  },
-
-  // ── States ──
-  messageCard: { backgroundColor: '#ffffff', borderRadius: '12px', padding: '24px', border: '1px solid #e5e7eb', color: '#374151' },
-  errorCard:   { backgroundColor: '#fef2f2', borderRadius: '12px', padding: '24px', border: '1px solid #fecaca', color: '#b91c1c' },
-  emptyState:  { fontSize: '14px', color: '#6b7280', padding: '12px 0' },
-};
-
-export default ESGIndicator;
+}
