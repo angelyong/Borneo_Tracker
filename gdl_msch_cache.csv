@@ -1,0 +1,1612 @@
+# fetched=2026-07-09
+Country,Continent,ISO_Code,Level,GDLCODE,Region,Year,msch
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,1990,7.51
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,1991,7.62
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,1992,7.73
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,1993,7.84
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,1994,7.95
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,1995,8.06
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,1996,8.106
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,1997,8.152
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,1998,8.198
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,1999,8.244
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,2000,8.29
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,2001,8.328
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,2002,8.366
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,2003,8.404
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,2004,8.442
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,2005,8.48
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,2006,8.538
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,2007,8.596
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,2008,8.654
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,2009,8.712
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,2010,8.77
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,2011,8.82
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,2012,8.87
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,2013,8.92
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,2014,8.97
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,2015,9.02
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,2016,9.06
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,2017,9.1
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,2018,9.14
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,2019,9.18
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,2020,9.22
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,2021,9.282
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,2022,9.282
+"Brunei Darussalam",Asia/Pacific,BRN,National,BRNt,Total,2023,9.282
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,1990,3.22
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,1991,3.493
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,1992,3.766
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,1993,4.039
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,1994,4.313
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,1995,4.586
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,1996,4.859
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,1997,5.132
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,1998,5.405
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,1999,5.678
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,2000,5.951
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,2001,6.224
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,2002,6.498
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,2003,6.771
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,2004,7.044
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,2005,7.317
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,2006,7.59
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,2007,7.02
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,2008,7.07
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,2009,7.31
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,2010,7.41
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,2011,7.51
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,2012,7.607
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,2013,7.703
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,2014,7.8
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,2015,7.91
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,2016,7.98
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,2017,8.24
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,2018,8.16
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,2019,8.36
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,2020,8.56
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,2021,8.697
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,2022,8.697
+Indonesia,Asia/Pacific,IDN,National,IDNt,Total,2023,8.697
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,1990,3.214
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,1991,3.487
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,1992,3.759
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,1993,4.032
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,1994,4.305
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,1995,4.577
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,1996,4.85
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,1997,5.123
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,1998,5.512
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,1999,5.906
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,2000,6.306
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,2001,6.709
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,2002,7.117
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,2003,7.529
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,2004,7.739
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,2005,7.945
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,2006,8.147
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,2007,7.45
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,2008,7.487
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,2009,7.725
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,2010,7.814
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,2011,7.904
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,2012,7.991
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,2013,8.076
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,2014,8.162
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,2015,8.262
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,2016,8.32
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,2017,8.575
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,2018,8.492
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,2019,8.701
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,2020,8.909
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,2021,9.052
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,2022,9.052
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr116,Bali,2023,9.052
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",1990,3.46
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",1991,3.754
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",1992,4.048
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",1993,4.341
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",1994,4.635
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",1995,4.928
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",1996,5.222
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",1997,5.515
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",1998,5.647
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",1999,5.773
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",2000,5.891
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",2001,6.004
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",2002,6.111
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",2003,6.213
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",2004,6.626
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",2005,7.047
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",2006,7.475
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",2007,7.061
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",2008,7.013
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",2009,7.154
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",2010,7.157
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",2011,7.161
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",2012,7.162
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",2013,7.326
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",2014,7.49
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",2015,7.667
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",2016,7.804
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",2017,8.128
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",2018,8.049
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",2019,8.246
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",2020,8.444
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",2021,8.579
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",2022,8.579
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr109,"Bangka Belitung",2023,8.579
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,1990,3.877
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,1991,4.206
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,1992,4.535
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,1993,4.863
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,1994,5.192
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,1995,5.521
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,1996,5.85
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,1997,6.179
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,1998,6.327
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,1999,6.467
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,2000,6.6
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,2001,6.726
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,2002,6.846
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,2003,6.96
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,2004,7.222
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,2005,7.482
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,2006,7.742
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,2007,7.143
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,2008,7.22
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,2009,7.491
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,2010,7.618
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,2011,7.746
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,2012,7.869
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,2013,7.951
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,2014,8.033
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,2015,8.129
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,2016,8.184
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,2017,8.433
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,2018,8.351
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,2019,8.556
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,2020,8.761
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,2021,8.901
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,2022,8.901
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr115,Banten,2023,8.901
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,1990,3.39
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,1991,3.678
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,1992,3.965
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,1993,4.253
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,1994,4.54
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,1995,4.828
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,1996,5.115
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,1997,5.403
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,1998,5.724
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,1999,6.047
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,2000,6.371
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,2001,6.696
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,2002,7.022
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,2003,7.35
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,2004,7.62
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,2005,7.89
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,2006,8.158
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,2007,7.522
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,2008,7.55
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,2009,7.78
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,2010,7.861
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,2011,7.943
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,2012,8.021
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,2013,8.121
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,2014,8.22
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,2015,8.334
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,2016,8.406
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,2017,8.677
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,2018,8.593
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,2019,8.804
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,2020,9.014
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,2021,9.159
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,2022,9.159
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr107,Bengkulu,2023,9.159
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",1990,2.751
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",1991,2.984
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",1992,3.217
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",1993,3.451
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",1994,3.684
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",1995,3.917
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",1996,4.151
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",1997,4.384
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",1998,4.631
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",1999,4.879
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",2000,5.127
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",2001,5.376
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",2002,5.626
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",2003,5.876
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",2004,6.163
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",2005,6.452
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",2006,6.743
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",2007,6.282
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",2008,6.329
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",2009,6.546
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",2010,6.638
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",2011,6.73
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",2012,6.819
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",2013,6.901
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",2014,6.984
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",2015,7.078
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",2016,7.137
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",2017,7.365
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",2018,7.294
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",2019,7.472
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",2020,7.651
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",2021,7.774
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",2022,7.774
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr112,"Central Java",2023,7.774
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",1990,3.578
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",1991,3.881
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",1992,4.185
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",1993,4.488
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",1994,4.792
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",1995,5.095
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",1996,5.399
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",1997,5.702
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",1998,6.03
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",1999,6.36
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",2000,6.69
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",2001,7.022
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",2002,7.354
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",2003,7.687
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",2004,7.987
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",2005,8.287
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",2006,8.586
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",2007,7.932
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",2008,7.813
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",2009,7.903
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",2010,7.841
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",2011,7.78
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",2012,7.718
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",2013,7.786
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",2014,7.854
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",2015,7.936
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",2016,7.978
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",2017,8.209
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",2018,8.13
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",2019,8.329
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",2020,8.528
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",2021,8.665
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",2022,8.665
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr121,"Central Kalimantan",2023,8.665
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",1990,3.859
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",1991,4.187
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",1992,4.514
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",1993,4.841
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",1994,5.169
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",1995,5.496
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",1996,5.823
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",1997,6.151
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",1998,6.367
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",1999,6.578
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",2000,6.785
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",2001,6.988
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",2002,7.186
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",2003,7.381
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",2004,7.669
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",2005,7.956
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",2006,8.243
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",2007,7.614
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",2008,7.566
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",2009,7.721
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",2010,7.726
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",2011,7.733
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",2012,7.738
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",2013,7.901
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",2014,8.063
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",2015,8.24
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",2016,8.374
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",2017,8.708
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",2018,8.623
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",2019,8.835
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",2020,9.046
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",2021,9.191
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",2022,9.191
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr125,"Central Sulawesi",2023,9.191
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",1990,3.648
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",1991,3.958
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",1992,4.267
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",1993,4.576
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",1994,4.886
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",1995,5.195
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",1996,5.505
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",1997,5.814
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",1998,6.048
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",1999,6.278
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",2000,6.504
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",2001,6.728
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",2002,6.95
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",2003,7.169
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",2004,7.444
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",2005,7.718
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",2006,7.992
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",2007,7.379
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",2008,7.507
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",2009,7.838
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",2010,8.018
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",2011,8.199
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",2012,8.374
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",2013,8.473
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",2014,8.572
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",2015,8.686
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",2016,8.755
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",2017,9.033
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",2018,8.946
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",2019,9.165
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",2020,9.384
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",2021,9.535
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",2022,9.535
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr101,"DI Aceh",2023,9.535
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",1990,3.519
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",1991,3.818
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",1992,4.116
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",1993,4.415
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",1994,4.713
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",1995,5.012
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",1996,5.31
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",1997,5.609
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",1998,5.888
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",1999,6.167
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",2000,6.446
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",2001,6.723
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",2002,7
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",2003,7.276
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",2004,7.699
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",2005,8.127
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",2006,8.561
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",2007,8.035
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",2008,8.094
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",2009,8.371
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",2010,8.488
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",2011,8.605
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",2012,8.718
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",2013,8.838
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",2014,8.958
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",2015,9.094
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",2016,9.183
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",2017,9.491
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",2018,9.399
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",2019,9.629
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",2020,9.86
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",2021,10.02
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",2022,10.02
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr113,"DI Yogyakarta",2023,10.02
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",1990,5.273
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",1991,5.72
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",1992,6.167
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",1993,6.615
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",1994,7.062
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",1995,7.509
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",1996,7.956
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",1997,8.404
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",1998,8.669
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",1999,8.926
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",2000,9.177
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",2001,9.42
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",2002,9.656
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",2003,9.887
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",2004,10.23
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",2005,10.57
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",2006,10.9
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",2007,10.03
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",2008,10.02
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",2009,10.28
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",2010,10.34
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",2011,10.4
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",2012,10.46
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",2013,10.44
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",2014,10.43
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",2015,10.44
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",2016,10.4
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",2017,10.6
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",2018,10.5
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",2019,10.75
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",2020,11.01
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",2021,11.19
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",2022,11.19
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr110,"DKI Jakarta",2023,11.19
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",1990,2.686
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",1991,2.914
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",1992,3.142
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",1993,3.37
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",1994,3.598
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",1995,3.826
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",1996,4.053
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",1997,4.281
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",1998,4.601
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",1999,4.925
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",2000,5.252
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",2001,5.583
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",2002,5.917
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",2003,6.255
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",2004,6.389
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",2005,6.518
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",2006,6.642
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",2007,6.036
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",2008,6.135
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",2009,6.399
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",2010,6.54
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",2011,6.681
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",2012,6.819
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",2013,6.96
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",2014,7.1
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",2015,7.253
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",2016,7.368
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",2017,7.66
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",2018,7.586
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",2019,7.772
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",2020,7.958
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",2021,8.085
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",2022,8.085
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr114,"East Java",2023,8.085
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",1990,4.246
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",1991,4.607
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",1992,4.967
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",1993,5.327
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",1994,5.687
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",1995,6.047
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",1996,6.408
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",1997,6.768
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",1998,7.047
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",1999,7.322
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",2000,7.594
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",2001,7.863
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",2002,8.129
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",2003,8.392
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",2004,8.593
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",2005,8.788
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",2006,8.977
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",2007,8.178
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",2008,8.179
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",2009,8.4
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",2010,8.46
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",2011,8.52
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",2012,8.576
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",2013,8.606
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",2014,8.637
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",2015,8.682
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",2016,8.683
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",2017,8.891
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",2018,8.805
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",2019,9.021
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",2020,9.236
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",2021,9.384
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",2022,9.384
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr123,"East Kalimantan",2023,9.384
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",1990,3.126
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",1991,3.391
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",1992,3.656
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",1993,3.922
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",1994,4.187
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",1995,4.452
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",1996,4.717
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",1997,4.982
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",1998,5.153
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",1999,5.319
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",2000,5.482
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",2001,5.641
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",2002,5.797
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",2003,5.949
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",2004,6.273
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",2005,6.601
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",2006,6.932
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",2007,6.487
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",2008,6.53
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",2009,6.748
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",2010,6.836
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",2011,6.925
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",2012,7.011
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",2013,6.996
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",2014,6.982
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",2015,6.98
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",2016,6.943
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",2017,7.07
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",2018,7.001
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",2019,7.173
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",2020,7.345
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",2021,7.462
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",2022,7.462
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr118,"East Nusa Tenggara",2023,7.462
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr119,"East Timor",1990,2.059
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr119,"East Timor",1991,2.233
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr119,"East Timor",1992,2.408
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr119,"East Timor",1993,2.583
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr119,"East Timor",1994,2.757
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr119,"East Timor",1995,2.932
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr119,"East Timor",1996,3.106
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr119,"East Timor",1997,3.281
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr119,"East Timor",1998,3.36
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr119,"East Timor",1999,3.434
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr119,"East Timor",2000,3.505
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr119,"East Timor",2001,3.572
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,1990,3.777
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,1991,4.098
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,1992,4.418
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,1993,4.738
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,1994,5.059
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,1995,5.379
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,1996,5.7
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,1997,6.02
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,1998,6.164
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,1999,6.301
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,2000,6.431
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,2001,6.553
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,2002,6.67
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,2003,6.781
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,2004,7.065
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,2005,7.35
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,2006,7.635
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,2007,7.071
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,2008,6.961
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,2009,7.037
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,2010,6.977
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,2011,6.919
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,2012,6.859
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,2013,7.026
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,2014,7.193
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,2015,7.371
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,2016,7.512
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,2017,7.833
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,2018,7.757
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,2019,7.947
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,2020,8.137
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,2021,8.268
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,2022,8.268
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr128,Gorontalo,2023,8.268
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",1990,3.918
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",1991,4.25
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",1992,4.583
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",1993,4.915
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",1994,5.247
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",1995,5.58
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",1996,5.912
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",1997,6.244
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",1998,6.346
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",1999,6.438
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",2000,6.52
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",2001,6.594
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",2002,6.66
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",2003,6.718
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",2004,6.823
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",2005,6.92
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",2006,7.01
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",2007,6.333
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",2008,6.414
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",2009,6.667
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",2010,6.793
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",2011,6.919
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",2012,7.041
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",2013,7.31
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",2014,7.579
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",2015,7.86
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",2016,8.1
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",2017,8.535
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",2018,8.452
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",2019,8.659
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",2020,8.866
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",2021,9.009
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",2022,9.009
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr130,"Irian Jaya (Papua and Papua Barat)",2023,9.009
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,1990,3.525
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,1991,3.824
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,1992,4.123
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,1993,4.422
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,1994,4.721
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,1995,5.02
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,1996,5.319
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,1997,5.618
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,1998,5.936
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,1999,6.255
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,2000,6.575
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,2001,6.896
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,2002,7.217
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,2003,7.539
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,2004,7.653
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,2005,7.758
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,2006,7.854
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,2007,7.092
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,2008,7.06
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,2009,7.218
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,2010,7.236
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,2011,7.256
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,2012,7.273
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,2013,7.423
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,2014,7.573
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,2015,7.735
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,2016,7.858
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,2017,8.168
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,2018,8.089
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,2019,8.288
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,2020,8.486
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,2021,8.622
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,2022,8.622
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr105,Jambi,2023,8.622
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,1990,3.009
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,1991,3.264
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,1992,3.519
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,1993,3.774
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,1994,4.03
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,1995,4.285
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,1996,4.54
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,1997,4.795
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,1998,5.067
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,1999,5.339
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,2000,5.612
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,2001,5.885
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,2002,6.159
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,2003,6.434
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,2004,6.718
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,2005,7.003
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,2006,7.289
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,2007,6.764
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,2008,6.762
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,2009,6.943
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,2010,6.989
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,2011,7.037
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,2012,7.081
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,2013,7.222
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,2014,7.362
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,2015,7.514
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,2016,7.628
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,2017,7.924
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,2018,7.848
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,2019,8.04
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,2020,8.232
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,2021,8.364
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,2022,8.364
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr108,Lampung,2023,8.364
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,1990,4.27
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,1991,4.632
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,1992,4.994
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,1993,5.356
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,1994,5.719
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,1995,6.081
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,1996,6.443
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,1997,6.805
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,1998,7.034
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,1999,7.256
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,2000,7.473
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,2001,7.685
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,2002,7.892
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,2003,8.095
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,2004,8.36
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,2005,8.622
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,2006,8.881
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,2007,8.158
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,2008,8.157
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,2009,8.375
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,2010,8.433
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,2011,8.491
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,2012,8.546
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,2013,8.679
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,2014,8.811
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,2015,8.959
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,2016,9.061
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,2017,9.379
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,2018,9.288
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,2019,9.516
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,2020,9.744
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,2021,9.9
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,2022,9.9
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr129,Maluku,2023,9.9
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",1990,4.053
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",1991,4.397
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",1992,4.74
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",1993,5.084
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",1994,5.428
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",1995,5.772
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",1996,6.115
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",1997,6.459
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",1998,6.842
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",1999,7.227
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",2000,7.614
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",2001,8.002
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",2002,8.391
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",2003,8.782
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",2004,9.019
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",2005,9.251
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",2006,9.478
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",2007,8.66
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",2008,8.62
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",2009,8.813
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",2010,8.835
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",2011,8.859
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",2012,8.879
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",2013,8.975
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",2014,9.071
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",2015,9.182
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",2016,9.247
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",2017,9.531
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",2018,9.439
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",2019,9.671
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",2020,9.902
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",2021,10.06
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",2022,10.06
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr124,"North Sulawesi",2023,10.06
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",1990,4.323
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",1991,4.689
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",1992,5.056
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",1993,5.423
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",1994,5.789
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",1995,6.156
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",1996,6.523
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",1997,6.889
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",1998,7.131
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",1999,7.368
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",2000,7.599
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",2001,7.825
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",2002,8.048
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",2003,8.266
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",2004,8.62
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",2005,8.975
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",2006,9.331
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",2007,8.649
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",2008,8.57
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",2009,8.72
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",2010,8.703
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",2011,8.686
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",2012,8.667
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",2013,8.745
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",2014,8.824
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",2015,8.917
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",2016,8.965
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",2017,9.226
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",2018,9.137
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",2019,9.361
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",2020,9.585
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",2021,9.739
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",2022,9.739
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr102,"North Sumatra",2023,9.739
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",1990,3.437
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",1991,3.729
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",1992,4.02
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",1993,4.312
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",1994,4.603
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",1995,4.895
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",1996,5.186
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",1997,5.478
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",1998,5.901
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",1999,6.33
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",2000,6.765
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",2001,7.205
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",2002,7.649
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",2003,8.097
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",2004,8.316
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",2005,8.529
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",2006,8.738
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",2007,7.983
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",2008,8.04
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",2009,8.312
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",2010,8.425
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",2011,8.538
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",2012,8.647
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",2013,8.699
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",2014,8.751
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",2015,8.818
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",2016,8.841
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",2017,9.074
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",2018,8.986
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",2019,9.206
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",2020,9.427
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",2021,9.578
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",2022,9.578
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr104,"Riau (incl. Riau islands)",2023,9.578
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",1990,3.531
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",1991,3.83
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",1992,4.13
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",1993,4.429
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",1994,4.729
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",1995,5.028
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",1996,5.328
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",1997,5.627
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",1998,5.785
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",1999,5.936
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",2000,6.081
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",2001,6.221
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",2002,6.356
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",2003,6.486
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",2004,6.764
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",2005,7.041
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",2006,7.32
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",2007,6.784
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",2008,6.845
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",2009,7.09
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",2010,7.2
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",2011,7.309
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",2012,7.415
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",2013,7.504
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",2014,7.593
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",2015,7.695
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",2016,7.758
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",2017,8.006
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",2018,7.928
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",2019,8.123
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",2020,8.317
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",2021,8.45
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",2022,8.45
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr122,"South Kalimantan",2023,8.45
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",1990,3.044
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",1991,3.302
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",1992,3.56
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",1993,3.819
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",1994,4.077
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",1995,4.335
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",1996,4.593
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",1997,4.851
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",1998,5.156
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",1999,5.463
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",2000,5.772
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",2001,6.082
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",2002,6.394
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",2003,6.707
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",2004,6.917
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",2005,7.124
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",2006,7.328
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",2007,6.723
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",2008,6.835
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",2009,7.131
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",2010,7.292
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",2011,7.451
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",2012,7.607
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",2013,7.659
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",2014,7.712
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",2015,7.777
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",2016,7.804
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",2017,8.016
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",2018,7.938
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",2019,8.133
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",2020,8.328
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",2021,8.461
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",2022,8.461
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr126,"South Sulawesi (incl Sulawesi Barat)",2023,8.461
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",1990,3.636
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",1991,3.945
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",1992,4.253
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",1993,4.562
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",1994,4.87
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",1995,5.179
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",1996,5.487
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",1997,5.796
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",1998,6.069
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",1999,6.34
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",2000,6.61
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",2001,6.879
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",2002,7.147
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",2003,7.413
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",2004,7.521
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",2005,7.62
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",2006,7.711
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",2007,6.959
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",2008,7.013
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",2009,7.257
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",2010,7.361
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",2011,7.465
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",2012,7.566
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",2013,7.647
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",2014,7.728
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",2015,7.822
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",2016,7.876
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",2017,8.118
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",2018,8.039
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",2019,8.236
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",2020,8.433
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",2021,8.568
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",2022,8.568
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr106,"South Sumatra",2023,8.568
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",1990,3.625
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",1991,3.932
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",1992,4.24
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",1993,4.547
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",1994,4.855
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",1995,5.162
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",1996,5.469
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",1997,5.777
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",1998,5.994
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",1999,6.206
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",2000,6.416
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",2001,6.621
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",2002,6.824
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",2003,7.023
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",2004,7.399
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",2005,7.78
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",2006,8.164
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",2007,7.635
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",2008,7.639
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",2009,7.848
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",2010,7.906
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",2011,7.965
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",2012,8.021
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",2013,8.119
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",2014,8.216
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",2015,8.328
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",2016,8.398
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",2017,8.667
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",2018,8.583
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",2019,8.793
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",2020,9.004
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",2021,9.148
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",2022,9.148
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr127,"Southeast Sulawesi",2023,9.148
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",1990,3.114
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",1991,3.379
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",1992,3.643
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",1993,3.907
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",1994,4.171
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",1995,4.435
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",1996,4.699
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",1997,4.964
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",1998,5.199
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",1999,5.434
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",2000,5.667
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",2001,5.899
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",2002,6.13
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",2003,6.36
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",2004,6.796
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",2005,7.24
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",2006,7.691
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",2007,7.276
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",2008,7.311
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",2009,7.542
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",2010,7.628
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",2011,7.715
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",2012,7.799
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",2013,7.879
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",2014,7.959
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",2015,8.053
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",2016,8.106
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",2017,8.351
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",2018,8.271
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",2019,8.474
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",2020,8.676
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",2021,8.815
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",2022,8.815
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr111,"West Java",2023,8.815
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",1990,2.798
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",1991,3.035
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",1992,3.272
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",1993,3.51
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",1994,3.747
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",1995,3.984
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",1996,4.222
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",1997,4.459
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",1998,4.729
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",1999,5
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",2000,5.272
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",2001,5.546
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",2002,5.821
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",2003,6.097
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",2004,6.262
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",2005,6.424
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",2006,6.583
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",2007,6.016
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",2008,6.064
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",2009,6.275
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",2010,6.367
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",2011,6.458
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",2012,6.546
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",2013,6.671
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",2014,6.797
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",2015,6.933
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",2016,7.035
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",2017,7.304
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",2018,7.233
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",2019,7.41
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",2020,7.588
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",2021,7.709
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",2022,7.709
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr120,"West Kalimantan",2023,7.709
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",1990,2.34
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",1991,2.539
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",1992,2.737
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",1993,2.936
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",1994,3.134
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",1995,3.333
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",1996,3.531
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",1997,3.73
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",1998,3.853
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",1999,3.972
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",2000,4.089
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",2001,4.203
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",2002,4.314
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",2003,4.422
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",2004,5.039
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",2005,5.675
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",2006,6.33
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",2007,6.251
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",2008,6.256
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",2009,6.429
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",2010,6.479
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",2011,6.529
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",2012,6.576
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",2013,6.772
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",2014,6.968
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",2015,7.174
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",2016,7.344
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",2017,7.69
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",2018,7.616
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",2019,7.803
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",2020,7.989
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",2021,8.117
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",2022,8.117
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr117,"West Nusa Tenggara",2023,8.117
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",1990,4.012
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",1991,4.352
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",1992,4.692
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",1993,5.033
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",1994,5.373
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",1995,5.713
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",1996,6.054
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",1997,6.394
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",1998,6.713
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",1999,7.032
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",2000,7.349
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",2001,7.666
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",2002,7.982
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",2003,8.297
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",2004,8.343
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",2005,8.375
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",2006,8.395
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",2007,7.502
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",2008,7.645
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",2009,7.994
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",2010,8.19
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",2011,8.386
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",2012,8.576
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",2013,8.679
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",2014,8.781
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",2015,8.899
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",2016,8.971
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",2017,9.257
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",2018,9.167
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",2019,9.392
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",2020,9.617
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",2021,9.771
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",2022,9.771
+Indonesia,Asia/Pacific,IDN,Subnat,IDNr103,"West Sumatra",2023,9.771
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,1990,6.147
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,1991,6.341
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,1992,6.535
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,1993,6.729
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,1994,6.923
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,1995,7.117
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,1996,7.23
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,1997,7.528
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,1998,7.825
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,1999,8.123
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,2000,8.42
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,2001,8.254
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,2002,8.088
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,2003,7.922
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,2004,7.756
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,2005,7.59
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,2006,8.083
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,2007,8.575
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,2008,9.068
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,2009,9.56
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,2010,9.7
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,2011,9.812
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,2012,9.923
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,2013,10.04
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,2014,10.15
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,2015,10.26
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,2016,10.37
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,2017,10.46
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,2018,10.56
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,2019,10.65
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,2020,10.8
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,2021,10.94
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,2022,11.09
+Malaysia,Asia/Pacific,MYS,National,MYSt,Total,2023,11.09
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,1990,6.194
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,1991,6.39
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,1992,6.585
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,1993,6.781
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,1994,6.976
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,1995,7.171
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,1996,7.285
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,1997,7.585
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,1998,7.885
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,1999,8.185
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,2000,8.484
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,2001,8.317
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,2002,8.15
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,2003,7.983
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,2004,7.815
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,2005,7.648
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,2006,8.144
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,2007,8.641
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,2008,9.137
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,2009,9.633
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,2010,9.774
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,2011,9.887
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,2012,9.999
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,2013,10.11
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,2014,10.22
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,2015,10.34
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,2016,10.45
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,2017,10.54
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,2018,10.64
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,2019,10.73
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,2020,10.88
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,2021,11.03
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,2022,11.18
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr101,Johor,2023,11.18
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,1990,5.904
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,1991,6.091
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,1992,6.277
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,1993,6.463
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,1994,6.649
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,1995,6.836
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,1996,6.944
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,1997,7.23
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,1998,7.516
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,1999,7.801
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,2000,8.087
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,2001,7.928
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,2002,7.768
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,2003,7.609
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,2004,7.449
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,2005,7.29
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,2006,7.763
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,2007,8.236
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,2008,8.709
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,2009,9.182
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,2010,9.316
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,2011,9.424
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,2012,9.531
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,2013,9.638
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,2014,9.745
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,2015,9.853
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,2016,9.96
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,2017,10.05
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,2018,10.14
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,2019,10.23
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,2020,10.37
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,2021,10.51
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,2022,10.65
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr102,Kedah,2023,10.65
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,1990,5.402
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,1991,5.573
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,1992,5.743
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,1993,5.914
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,1994,6.084
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,1995,6.255
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,1996,6.354
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,1997,6.615
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,1998,6.877
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,1999,7.138
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,2000,7.4
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,2001,7.254
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,2002,7.108
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,2003,6.962
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,2004,6.816
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,2005,6.67
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,2006,7.103
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,2007,7.536
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,2008,7.969
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,2009,8.402
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,2010,8.525
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,2011,8.623
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,2012,8.721
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,2013,8.819
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,2014,8.917
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,2015,9.015
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,2016,9.113
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,2017,9.195
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,2018,9.277
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,2019,9.36
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,2020,9.488
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,2021,9.617
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,2022,9.746
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr103,Kelantan,2023,9.746
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",1990,7.441
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",1991,7.676
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",1992,7.911
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",1993,8.145
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",1994,8.38
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",1995,8.615
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",1996,8.752
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",1997,9.112
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",1998,9.472
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",1999,9.832
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",2000,10.19
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",2001,9.991
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",2002,9.79
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",2003,9.589
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",2004,9.388
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",2005,9.187
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",2006,9.784
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",2007,10.38
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",2008,10.98
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",2009,11.57
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",2010,11.74
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",2011,11.88
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",2012,12.01
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",2013,12.15
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",2014,12.28
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",2015,12.42
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",2016,12.55
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",2017,12.67
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",2018,12.78
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",2019,12.89
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",2020,13.07
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",2021,13.25
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",2022,13.42
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr114,"Kuala Lumpur Federal Territory",2023,13.42
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",1990,6.485
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",1991,6.689
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",1992,6.894
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",1993,7.098
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",1994,7.303
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",1995,7.507
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",1996,7.627
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",1997,7.94
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",1998,8.254
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",1999,8.568
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",2000,8.882
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",2001,8.707
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",2002,8.532
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",2003,8.356
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",2004,8.181
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",2005,8.006
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",2006,8.526
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",2007,9.045
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",2008,9.565
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",2009,10.08
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",2010,10.23
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",2011,10.35
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",2012,10.47
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",2013,10.59
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",2014,10.7
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",2015,10.82
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",2016,10.94
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",2017,11.04
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",2018,11.14
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",2019,11.23
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",2020,11.39
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",2021,11.54
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",2022,11.7
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr115,"Labuan Federal Territory",2023,11.7
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,1990,6.336
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,1991,6.535
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,1992,6.735
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,1993,6.935
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,1994,7.135
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,1995,7.335
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,1996,7.451
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,1997,7.758
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,1998,8.065
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,1999,8.371
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,2000,8.678
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,2001,8.507
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,2002,8.336
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,2003,8.165
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,2004,7.993
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,2005,7.822
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,2006,8.33
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,2007,8.838
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,2008,9.345
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,2009,9.853
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,2010,9.997
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,2011,10.11
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,2012,10.23
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,2013,10.34
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,2014,10.46
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,2015,10.57
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,2016,10.69
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,2017,10.78
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,2018,10.88
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,2019,10.98
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,2020,11.13
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,2021,11.28
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,2022,11.43
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr104,Melaka,2023,11.43
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",1990,6.375
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",1991,6.576
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",1992,6.777
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",1993,6.978
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",1994,7.179
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",1995,7.38
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",1996,7.497
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",1997,7.806
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",1998,8.114
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",1999,8.423
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",2000,8.731
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",2001,8.559
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",2002,8.387
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",2003,8.215
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",2004,8.043
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",2005,7.871
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",2006,8.381
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",2007,8.892
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",2008,9.403
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",2009,9.914
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",2010,10.06
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",2011,10.18
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",2012,10.29
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",2013,10.41
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",2014,10.52
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",2015,10.64
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",2016,10.75
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",2017,10.85
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",2018,10.95
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",2019,11.04
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",2020,11.2
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",2021,11.35
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",2022,11.5
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr105,"Negeri Sembilan",2023,11.5
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,1990,5.951
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,1991,6.139
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,1992,6.327
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,1993,6.515
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,1994,6.702
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,1995,6.89
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,1996,6.999
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,1997,7.287
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,1998,7.575
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,1999,7.863
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,2000,8.152
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,2001,7.991
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,2002,7.83
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,2003,7.669
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,2004,7.509
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,2005,7.348
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,2006,7.825
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,2007,8.302
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,2008,8.778
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,2009,9.255
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,2010,9.391
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,2011,9.499
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,2012,9.607
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,2013,9.715
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,2014,9.823
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,2015,9.931
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,2016,10.04
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,2017,10.13
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,2018,10.22
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,2019,10.31
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,2020,10.45
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,2021,10.59
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,2022,10.74
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr106,Pahang,2023,10.74
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,1990,5.873
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,1991,6.058
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,1992,6.243
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,1993,6.429
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,1994,6.614
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,1995,6.799
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,1996,6.907
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,1997,7.191
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,1998,7.476
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,1999,7.76
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,2000,8.044
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,2001,7.886
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,2002,7.727
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,2003,7.568
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,2004,7.41
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,2005,7.251
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,2006,7.722
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,2007,8.192
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,2008,8.663
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,2009,9.133
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,2010,9.267
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,2011,9.374
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,2012,9.48
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,2013,9.587
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,2014,9.694
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,2015,9.8
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,2016,9.907
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,2017,9.996
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,2018,10.09
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,2019,10.18
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,2020,10.32
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,2021,10.46
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,2022,10.6
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr108,Perak,2023,10.6
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,1990,5.834
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,1991,6.018
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,1992,6.202
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,1993,6.386
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,1994,6.57
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,1995,6.754
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,1996,6.861
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,1997,7.143
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,1998,7.426
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,1999,7.708
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,2000,7.99
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,2001,7.833
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,2002,7.675
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,2003,7.518
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,2004,7.36
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,2005,7.203
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,2006,7.67
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,2007,8.138
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,2008,8.605
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,2009,9.072
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,2010,9.205
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,2011,9.311
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,2012,9.417
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,2013,9.523
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,2014,9.629
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,2015,9.735
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,2016,9.841
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,2017,9.929
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,2018,10.02
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,2019,10.11
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,2020,10.25
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,2021,10.39
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,2022,10.52
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr109,Perlis,2023,10.52
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",1990,6.696
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",1991,6.908
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",1992,7.119
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",1993,7.33
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",1994,7.541
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",1995,7.752
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",1996,7.876
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",1997,8.2
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",1998,8.524
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",1999,8.848
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",2000,9.172
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",2001,8.991
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",2002,8.81
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",2003,8.629
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",2004,8.449
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",2005,8.268
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",2006,8.804
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",2007,9.341
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",2008,9.877
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",2009,10.41
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",2010,10.57
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",2011,10.69
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",2012,10.81
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",2013,10.93
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",2014,11.05
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",2015,11.17
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",2016,11.3
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",2017,11.4
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",2018,11.5
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",2019,11.6
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",2020,11.76
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",2021,11.92
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",2022,12.08
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr107,"Pulau Pinang",2023,12.08
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,1990,4.822
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,1991,4.974
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,1992,5.126
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,1993,5.279
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,1994,5.431
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,1995,5.583
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,1996,5.671
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,1997,5.905
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,1998,6.138
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,1999,6.372
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,2000,6.605
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,2001,6.475
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,2002,6.345
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,2003,6.214
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,2004,6.084
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,2005,5.954
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,2006,6.34
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,2007,6.727
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,2008,7.113
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,2009,7.499
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,2010,7.609
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,2011,7.697
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,2012,7.784
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,2013,7.872
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,2014,7.959
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,2015,8.047
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,2016,8.135
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,2017,8.208
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,2018,8.281
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,2019,8.354
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,2020,8.469
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,2021,8.584
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,2022,8.699
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr112,Sabah,2023,8.699
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,1990,4.822
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,1991,4.974
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,1992,5.126
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,1993,5.279
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,1994,5.431
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,1995,5.583
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,1996,5.671
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,1997,5.905
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,1998,6.138
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,1999,6.372
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,2000,6.605
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,2001,6.475
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,2002,6.345
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,2003,6.214
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,2004,6.084
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,2005,5.954
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,2006,6.34
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,2007,6.727
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,2008,7.113
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,2009,7.499
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,2010,7.609
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,2011,7.697
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,2012,7.784
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,2013,7.872
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,2014,7.959
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,2015,8.047
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,2016,8.135
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,2017,8.208
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,2018,8.281
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,2019,8.354
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,2020,8.469
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,2021,8.584
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,2022,8.699
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr113,Sarawak,2023,8.699
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,1990,7.363
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,1991,7.595
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,1992,7.827
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,1993,8.06
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,1994,8.292
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,1995,8.524
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,1996,8.659
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,1997,9.016
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,1998,9.372
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,1999,9.728
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,2000,10.09
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,2001,9.886
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,2002,9.687
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,2003,9.488
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,2004,9.289
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,2005,9.091
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,2006,9.68
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,2007,10.27
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,2008,10.86
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,2009,11.45
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,2010,11.62
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,2011,11.75
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,2012,11.89
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,2013,12.02
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,2014,12.15
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,2015,12.29
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,2016,12.42
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,2017,12.53
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,2018,12.64
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,2019,12.76
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,2020,12.93
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,2021,13.11
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,2022,13.28
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr110,Selangor,2023,13.28
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,1990,5.873
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,1991,6.058
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,1992,6.243
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,1993,6.429
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,1994,6.614
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,1995,6.799
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,1996,6.907
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,1997,7.191
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,1998,7.476
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,1999,7.76
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,2000,8.044
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,2001,7.886
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,2002,7.727
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,2003,7.568
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,2004,7.41
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,2005,7.251
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,2006,7.722
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,2007,8.192
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,2008,8.663
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,2009,9.133
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,2010,9.267
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,2011,9.374
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,2012,9.48
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,2013,9.587
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,2014,9.694
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,2015,9.8
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,2016,9.907
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,2017,9.996
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,2018,10.09
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,2019,10.18
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,2020,10.32
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,2021,10.46
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,2022,10.6
+Malaysia,Asia/Pacific,MYS,Subnat,MYSr111,Terengganu,2023,10.6

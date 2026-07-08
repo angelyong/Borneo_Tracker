@@ -179,6 +179,10 @@ def confidence_for_row(row):
         return "manual"
     if "manual" in low(source):
         return "manual"
+    if row.get("data_level") == "modeled":
+        # academic/harmonised sources (e.g. Global Data Lab) — cite-able but not
+        # an official statistics office, so never "high".
+        return "medium"
     if territory in {"Sabah", "Sarawak", "Kalimantan"} and row["data_level"] == "national":
         return "medium"
     if row["data_level"] == "city":
@@ -203,6 +207,7 @@ def data_level_rank(row):
         "report": 1,
         "satellite": 1,
         "national": 2,
+        "modeled": 2,
         "city": 3,
     }
     return order.get(row["data_level"], 9)

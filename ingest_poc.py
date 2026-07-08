@@ -47,7 +47,7 @@ def load_env(path=ROOT / ".env"):
                 k, v = line.split("=", 1)
                 env[k.strip()] = v.strip()
     # Process env vars override .env so CI (GitHub Actions secrets) works without a .env file.
-    for key in ("BPS_API_KEY", "GFW_API_KEY", "WAQI_TOKEN", "FIRMS_MAP_KEY"):
+    for key in ("BPS_API_KEY", "GFW_API_KEY", "WAQI_TOKEN", "FIRMS_MAP_KEY", "GDL_API_TOKEN"):
         if os.environ.get(key):
             env[key] = os.environ[key]
     return env
@@ -104,6 +104,23 @@ def get_json_raw(url, headers=None, timeout=60):
 
 def get_text(url, headers=None, timeout=60):
     return _fetch(url, headers, timeout).decode("utf-8", "replace")
+
+
+def get_bytes_raw(url, headers=None, timeout=60):
+    """Minimal http.client GET returning raw bytes. Some WAFs (UNESCO, GFW) 403
+    urllib's request shape but accept a plain http.client request — use for those."""
+    u = urlsplit(url)
+    conn = http.client.HTTPSConnection(u.netloc, timeout=timeout)
+    try:
+        conn.request("GET", u.path + (f"?{u.query}" if u.query else ""),
+                     headers=headers or {"User-Agent": UA})
+        resp = conn.getresponse()
+        body = resp.read()
+    finally:
+        conn.close()
+    if resp.status != 200:
+        raise RuntimeError(f"HTTP {resp.status}: {body[:120].decode('utf-8', 'replace')}")
+    return body
 
 
 def add(rows, territory, indicator, year, value, unit, source, data_level):
@@ -720,6 +737,138 @@ def aggregate_kalimantan(rows):
     print(f"  [aggregate] added {made} Kalimantan roll-up rows (province rows kept)")
 
 
+# ---------------------------------------------------------------- 8. UNESCO WHS
+# Borneo territory bounding boxes (lat_min, lat_max, lon_min, lon_max). UNESCO's
+# feed is country-level; Sabah/Sarawak/Kalimantan need sub-national counts, so each
+# site's poi coordinates are assigned to a territory by box. Cross-checked 2026-07:
+# yields Sabah 1 (Kinabalu), Sarawak 2 (Mulu + Niah), Brunei 0, Kalimantan 0 — which
+# matches the hand-typed manual_overrides rows this puller replaces.
+UNESCO_XML = "https://whc.unesco.org/en/list/xml/"
+_UNESCO_BOXES = {
+    "Sabah":      (4.0, 7.5, 115.4, 119.6),
+    "Sarawak":    (0.8, 5.1, 109.5, 115.4),
+    "Kalimantan": (-4.3, 4.4, 108.8, 119.0),
+}
+
+
+def _in_box(lat, lon, box):
+    lat_min, lat_max, lon_min, lon_max = box
+    return lat_min <= lat <= lat_max and lon_min <= lon <= lon_max
+
+
+def pull_unesco(rows):
+    """UNESCO World Heritage Sites per Borneo territory (official register, keyless).
+    The sub-national split is derived from each site's coordinates, not UNESCO's own
+    breakdown, so Sabah/Sarawak are tagged 'state', Kalimantan 'territory'. A failed
+    fetch is non-fatal: the run continues and the manual_overrides fallback stays."""
+    import xml.etree.ElementTree as ET
+    try:
+        raw = get_bytes_raw(UNESCO_XML, timeout=90)
+        root = ET.fromstring(raw)
+    except Exception as e:
+        print(f"  [UNESCO] fetch/parse failed ({e}); skipping — manual_overrides stays")
+        return
+
+    counts = {"Sabah": 0, "Sarawak": 0, "Brunei": 0, "Kalimantan": 0}
+    for row in root.findall(".//row"):
+        iso = (row.findtext("iso_code") or "").strip().lower()
+        if iso not in ("my", "bn", "id"):
+            continue
+        if iso == "bn":
+            counts["Brunei"] += 1
+            continue
+        pois = []
+        for poi in row.findall("./geolocations/poi"):
+            try:
+                pois.append((float(poi.findtext("latitude")), float(poi.findtext("longitude"))))
+            except (TypeError, ValueError):
+                continue
+        candidates = ("Sabah", "Sarawak") if iso == "my" else ("Kalimantan",)
+        assigned = next(
+            (terr for lat, lon in pois for terr in candidates
+             if _in_box(lat, lon, _UNESCO_BOXES[terr])),
+            None,
+        )
+        if assigned:  # 'my' sites outside both Borneo boxes are peninsular -> skipped
+            counts[assigned] += 1
+
+    year = time.localtime().tm_year
+    levels = {"Sabah": "state", "Sarawak": "state", "Brunei": "national", "Kalimantan": "territory"}
+    for terr, n in counts.items():
+        add(rows, terr, "UNESCO World Heritage Sites", year, n, "count",
+            "UNESCO World Heritage List (whc.unesco.org)", levels[terr])
+
+
+# ---------------------------------------------------------------- 9. Global Data Lab
+# Mean years of schooling (education) for Sabah/Sarawak (MY states, subnational) and
+# Brunei (national). GDL is academic/harmonised (Radboud University), NOT an official
+# statistics office, so rows are tagged data_level='modeled' -> 'medium' confidence.
+# One request returns every country + year + level, so we hit the API at most ~monthly
+# via a committed cache to stay far under the free 1000-call token limit. GDLCODE keys:
+# Sabah MYSr112, Sarawak MYSr113, Brunei BRNt (cross-checked 2026-07: 8.70 / 8.70 / 9.28).
+GDL_MSCH_URL = ("https://globaldatalab.org/shdi/download/msch/MYS+BRN+IDN/"
+                "?format=csv&token={token}&interpolation=0")
+GDL_CACHE = ROOT / "gdl_msch_cache.csv"
+GDL_MAX_AGE_DAYS = 28
+_GDL_TARGETS = [("Sabah", "MYSr112"), ("Sarawak", "MYSr113"), ("Brunei", "BRNt")]
+
+
+def pull_gdl(rows, token):
+    """Mean years schooling from Global Data Lab (academic, keyed). Cached ~monthly to
+    protect the 1000-call token limit. Non-fatal on failure (run continues)."""
+    import csv as _csv
+    import datetime
+    import io
+    if not token:
+        print("  [GDL] no GDL_API_TOKEN — skipped (mean years schooling absent this run)")
+        return
+
+    today = datetime.date.today()
+    text = None
+    if GDL_CACHE.exists():
+        raw = GDL_CACHE.read_text(encoding="utf-8")
+        head, _, body = raw.partition("\n")
+        cached = None
+        if head.startswith("# fetched="):
+            try:
+                cached = datetime.date.fromisoformat(head.split("=", 1)[1].strip())
+            except ValueError:
+                cached = None
+        if cached and (today - cached).days < GDL_MAX_AGE_DAYS:
+            text = body
+            print(f"  [GDL] using cache from {cached} (<{GDL_MAX_AGE_DAYS}d old; no API call)")
+
+    if text is None:
+        try:
+            fetched = get_bytes_raw(GDL_MSCH_URL.format(token=token),
+                                    headers={"User-Agent": UA, "Accept": "text/csv"},
+                                    timeout=90).decode("utf-8", "replace")
+        except Exception as e:
+            if GDL_CACHE.exists():
+                print(f"  [GDL] fetch failed ({e}); falling back to stale cache")
+                text = GDL_CACHE.read_text(encoding="utf-8").partition("\n")[2]
+            else:
+                print(f"  [GDL] fetch failed ({e}) and no cache; skipping this run")
+                return
+        else:
+            GDL_CACHE.write_text(f"# fetched={today.isoformat()}\n{fetched}", encoding="utf-8")
+            text = fetched
+            print(f"  [GDL] fetched fresh from API, cached {today}")
+
+    latest = {}
+    for r in _csv.DictReader(io.StringIO(text)):
+        code = r.get("GDLCODE")
+        if code and (code not in latest or r["Year"] > latest[code]["Year"]):
+            latest[code] = r
+    for terr, code in _GDL_TARGETS:
+        r = latest.get(code)
+        if not r or not r.get("msch"):
+            print(f"  [GDL] no data for {terr} ({code}) — skipped")
+            continue
+        add(rows, terr, "Mean years schooling (RLS)", r["Year"], round(float(r["msch"]), 2),
+            "years", "Global Data Lab Subnational HDI (globaldatalab.org)", "modeled")
+
+
 def main():
     env = load_env()
     rows = []
@@ -745,6 +894,10 @@ def main():
     pull_firms(rows, env.get("FIRMS_MAP_KEY"))
     print("7. WAQI / aqicn (4 cities, city):")
     pull_waqi(rows, env.get("WAQI_TOKEN"))
+    print("8. UNESCO World Heritage List (official register, sub-national by coords):")
+    pull_unesco(rows)
+    print("9. Global Data Lab (mean years schooling; Sabah/Sarawak/Brunei, modeled):")
+    pull_gdl(rows, env.get("GDL_API_TOKEN"))
     # Reference figure (official census, not an API): Brunei household count. DEPS
     # publishes it only in the census report, so it's cited here, not auto-pulled.
     print("7b. Reference data (cited, non-API):")
