@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-07",
+  "generatedAt": "2026-07-08",
   "method": "linear 0-100 vs documented bounds; pillar = mean of scored indicators; index = mean of scored pillars; unscored pillars excluded, never imputed",
   "ragThresholds": {
     "green": 67,
@@ -7,33 +7,23 @@
   },
   "territories": {
     "Sabah": {
-      "index": 56.9,
-      "rag": "amber",
-      "weakestPillar": "Education",
+      "index": 68.8,
+      "rag": "green",
+      "weakestPillar": "Healthcare",
       "pillarScores": {
-        "Education": 45.0,
         "Healthcare": 68.8
       },
       "scoredPillars": [
-        "Education",
         "Healthcare"
       ],
       "unscoredPillars": [
         "Food",
         "Energy",
+        "Education",
         "Shelter",
         "Entertainment"
       ],
       "detail": {
-        "Education": [
-          {
-            "indicator": "Mean years schooling (RLS)",
-            "value": 8.7,
-            "unit": "years",
-            "score": 45.0,
-            "confidence": "manual"
-          }
-        ],
         "Healthcare": [
           {
             "indicator": "Clean water access",
@@ -53,33 +43,23 @@
       }
     },
     "Sarawak": {
-      "index": 58.6,
-      "rag": "amber",
-      "weakestPillar": "Education",
+      "index": 72.2,
+      "rag": "green",
+      "weakestPillar": "Healthcare",
       "pillarScores": {
-        "Education": 45.0,
         "Healthcare": 72.2
       },
       "scoredPillars": [
-        "Education",
         "Healthcare"
       ],
       "unscoredPillars": [
         "Food",
         "Energy",
+        "Education",
         "Shelter",
         "Entertainment"
       ],
       "detail": {
-        "Education": [
-          {
-            "indicator": "Mean years schooling (RLS)",
-            "value": 8.7,
-            "unit": "years",
-            "score": 45.0,
-            "confidence": "manual"
-          }
-        ],
         "Healthcare": [
           {
             "indicator": "Clean water access",
@@ -99,12 +79,12 @@
       }
     },
     "Brunei": {
-      "index": 81.2,
+      "index": 93.0,
       "rag": "green",
-      "weakestPillar": "Education",
+      "weakestPillar": "Healthcare",
       "pillarScores": {
         "Energy": 100.0,
-        "Education": 54.7,
+        "Education": 90.2,
         "Healthcare": 88.8
       },
       "scoredPillars": [
@@ -129,11 +109,11 @@
         ],
         "Education": [
           {
-            "indicator": "Mean years schooling (RLS)",
-            "value": 9.28,
-            "unit": "years",
-            "score": 54.7,
-            "confidence": "manual"
+            "indicator": "Adult literacy",
+            "value": 96.0899963378906,
+            "unit": "%",
+            "score": 90.2,
+            "confidence": "high"
           }
         ],
         "Healthcare": [
