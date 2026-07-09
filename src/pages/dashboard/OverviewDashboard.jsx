@@ -1,18 +1,25 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { CircleMarker, MapContainer, Popup, TileLayer, Tooltip, useMap } from 'react-leaflet';
+import { CircleMarker, GeoJSON, MapContainer, Popup, TileLayer, Tooltip, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
 import {
   CATEGORY_TO_PILLAR,
   LAYER_CONFIG,
   TERRITORIES,
+  buildDistrictChoropleth,
   formatValue,
+  getDistrictLayerRows,
+  getDistrictNameByKey,
+  getDistrictParents,
+  getDistrictsForParent,
   getHexagonCoverage,
   getLayerRows,
   getRowsForPillar,
   layerColorScale,
   summarizeRows,
   titleCaseConfidence,
+  useDistrictGeo,
+  useDistricts,
   useIndicators,
   useResilience,
 } from '../../data/useIndicators';
@@ -105,6 +112,59 @@ const FitBorneoOnLoad = () => {
     const id = setTimeout(() => applyBorneoFit(map), 250);
     return () => clearTimeout(id);
   }, [map]);
+
+  return null;
+};
+
+// District-mode camera. District mode opens on the whole Borneo island; the map
+// only flies to a district once the user actively selects one (dropdown or map
+// click, via `zoomToDistrict`). Leaving district mode restores the Borneo framing.
+// Right padding keeps the focus in the map area, not hidden behind the panel.
+const MapFocus = ({ geo, parent, selectedKey, isDistrict, zoomToDistrict, panelWidth }) => {
+  const map = useMap();
+  const wasDistrict = useRef(false);
+  const rightPad = (panelWidth || 360) + 40;
+
+  useEffect(() => {
+    if (!isDistrict) {
+      if (wasDistrict.current) {
+        wasDistrict.current = false;
+        applyBorneoFit(map);
+      }
+      return;
+    }
+
+    wasDistrict.current = true;
+    // Unlock the Borneo-wide zoom/pan clamp so we can zoom into a district.
+    map.setMinZoom(5);
+    map.setMaxBounds(null);
+
+    // Zoom to the chosen district only after an explicit selection.
+    if (zoomToDistrict && selectedKey && geo) {
+      const sel = geo.features.filter(
+        (f) => f.properties.parent === parent && f.properties.key === selectedKey
+      );
+      if (sel.length) {
+        const bounds = L.geoJSON({ type: 'FeatureCollection', features: sel }).getBounds();
+        if (bounds.isValid()) {
+          map.fitBounds(bounds, {
+            paddingTopLeft: [50, 70],
+            paddingBottomRight: [rightPad, 40],
+            maxZoom: 10,
+            animate: true,
+          });
+          return;
+        }
+      }
+    }
+
+    // Default district-mode view: the whole Borneo island.
+    map.fitBounds(BORNEO_BOUNDS, {
+      paddingTopLeft: [40, 80],
+      paddingBottomRight: [rightPad, 30],
+      animate: true,
+    });
+  }, [map, geo, parent, selectedKey, isDistrict, zoomToDistrict, rightPad]);
 
   return null;
 };
@@ -231,6 +291,15 @@ const OverviewDashboard = () => {
   const [esgCategory, setEsgCategory] = useState('Environment');
   const [panelWidth, setPanelWidth] = useState(360);
 
+  // Region vs District drill-down. `level` toggles the whole panel between the
+  // 4-territory view (indicators.json) and the ADM2 district view (districts.json).
+  const [level, setLevel] = useState('region');
+  const [districtParent, setDistrictParent] = useState('Sabah');
+  const [districtSel, setDistrictSel] = useState('');
+  // Only zoom the map into a district once the user actively picks one; entering
+  // district mode (or switching province) keeps the whole-Borneo overview.
+  const [zoomToDistrict, setZoomToDistrict] = useState(false);
+
   const isDragging = useRef(false);
   const startX = useRef(0);
   const startW = useRef(0);
@@ -238,6 +307,29 @@ const OverviewDashboard = () => {
 
   const { data, loading, error } = useIndicators();
   const { data: resilience } = useResilience();
+  const { data: districtData } = useDistricts();
+  const { data: districtGeo } = useDistrictGeo();
+
+  const isDistrict = level === 'district';
+  const districtParents = useMemo(() => getDistrictParents(districtData), [districtData]);
+  const districtOptions = useMemo(
+    () => getDistrictsForParent(districtData, districtParent),
+    [districtData, districtParent]
+  );
+
+  // Derive the effective district (falling back to the first available) rather than
+  // syncing state in an effect — avoids cascading renders and keeps the <select>
+  // controlled even right after the parent changes.
+  const district = districtOptions.includes(districtSel) ? districtSel : districtOptions[0] || '';
+
+  // The active scope feeding every panel card: district rows + name in district
+  // mode, else the territory rows + selected territory.
+  const scopeRows = useMemo(
+    () => (isDistrict ? districtData?.rows || [] : data?.rows || []),
+    [isDistrict, districtData, data]
+  );
+  const scopeName = isDistrict ? district : panelTerritory;
+  const isOverall = !isDistrict && panelTerritory === 'Overall Borneo';
 
   const handleZoomIn = useCallback(() => {
     mapRef.current?.zoomIn();
@@ -291,9 +383,82 @@ const OverviewDashboard = () => {
 
   const colorForValue = useMemo(() => layerColorScale(layerEntries, activeLayer), [activeLayer, layerEntries]);
 
-  const isOverall = panelTerritory === 'Overall Borneo';
+  // District choropleth/list entries for the active layer, under the current parent.
+  const districtLayerEntries = useMemo(() => {
+    if (!isDistrict || !districtData?.rows) return [];
+    return getDistrictLayerRows(districtData.rows, districtParent, activeLayer).filter((entry) =>
+      entry.territory.toLowerCase().includes(searchText.trim().toLowerCase())
+    );
+  }, [isDistrict, districtData, districtParent, activeLayer, searchText]);
+
+  // Choropleth colouring for the district polygons, by the active layer.
+  const choropleth = useMemo(
+    () => (districtData?.rows ? buildDistrictChoropleth(districtData.rows, activeLayer) : null),
+    [districtData, activeLayer]
+  );
+
+  // The join key of the currently-selected district — used to highlight it and to
+  // focus the map. Matching by key (not name) also fixes Indonesian districts whose
+  // BPS name differs from the GADM polygon name.
+  const selectedKey = useMemo(() => {
+    const row = (districtData?.rows || []).find(
+      (r) => r.parent === districtParent && r.territory === district
+    );
+    return row?.key || null;
+  }, [districtData, districtParent, district]);
+
+  const styleDistrict = useCallback(
+    (feature) => {
+      const props = feature.properties;
+
+      // The selected district gets a distinct SELECTION colour (blue) + bold outline,
+      // so it stands out from the red/amber/green data colouring of every other district.
+      if (props.parent === districtParent && props.key === selectedKey) {
+        return { fillColor: '#2563eb', fillOpacity: 0.85, color: '#0b1220', weight: 3.5 };
+      }
+
+      const color = choropleth?.colorForKey(props.key);
+      const hasData = !!color;
+      return {
+        fillColor: color || '#94a3b8',
+        fillOpacity: hasData ? 0.72 : 0.3,
+        color: '#ffffff',
+        weight: 0.8,
+        dashArray: hasData ? null : '2 3',
+      };
+    },
+    [choropleth, districtParent, selectedKey]
+  );
+
+  const onEachDistrict = useCallback(
+    (feature, layer) => {
+      const props = feature.properties;
+      const row = choropleth?.valueByKey[props.key];
+      const valueText = row ? formatValue(row) : 'No data for this layer';
+      layer.bindTooltip(`<strong>${props.name}</strong><br/>${props.parent}<br/>${valueText}`, {
+        direction: 'top',
+        sticky: true,
+      });
+      layer.on('click', () => {
+        setDistrictParent(props.parent);
+        const canonical =
+          getDistrictNameByKey(districtData?.rows || [], props.parent, props.key) || props.name;
+        setDistrictSel(canonical);
+        setZoomToDistrict(true); // explicit pick -> fly to it
+      });
+      // Lift the selected polygon above its neighbours so its bold outline shows.
+      if (props.parent === districtParent && props.key === selectedKey) {
+        layer.bringToFront();
+      }
+    },
+    [choropleth, districtData, districtParent, selectedKey]
+  );
 
   const resilienceView = useMemo(() => {
+    // Resilience Index is only computed at territory level (6 pillars). Districts
+    // don't have full pillar coverage, so we surface an honest note instead.
+    if (isDistrict) return { unavailable: true };
+
     if (!resilience?.territories) return null;
 
     const thresholds = resilience.ragThresholds || { green: 67, amber: 34 };
@@ -325,9 +490,13 @@ const OverviewDashboard = () => {
       thresholds,
       note: `Average of ${scored.length} territories`,
     };
-  }, [isOverall, panelTerritory, resilience]);
+  }, [isDistrict, isOverall, panelTerritory, resilience]);
 
   const hexCoverage = useMemo(() => {
+    if (isDistrict) {
+      return scopeName ? getHexagonCoverage(scopeRows, scopeName) : null;
+    }
+
     if (!data?.rows) return null;
 
     if (!isOverall) return getHexagonCoverage(data.rows, panelTerritory);
@@ -350,12 +519,29 @@ const OverviewDashboard = () => {
     });
 
     return totals;
-  }, [data, isOverall, panelTerritory]);
+  }, [data, isDistrict, isOverall, panelTerritory, scopeRows, scopeName]);
+
+  // True when the hexagon has at least one scored pillar (districts often don't).
+  const hasHexCoverage = useMemo(
+    () => !!hexCoverage && Object.values(hexCoverage).some((count) => count > 0),
+    [hexCoverage]
+  );
 
   const esgCard = useMemo(() => {
-    if (!data?.rows) return null;
-
     const pillar = CATEGORY_TO_PILLAR[esgCategory];
+
+    if (isDistrict) {
+      if (!scopeName) return null;
+      const rows = getRowsForPillar(scopeRows, scopeName, pillar);
+      const summary = summarizeRows(rows);
+      return {
+        label: `${esgCategory} · ${scopeName}`,
+        meta: `${summary.count} indicator${summary.count === 1 ? '' : 's'} · latest ${summary.latestYear ?? '—'}`,
+        items: rows.slice(0, 4).map((row) => ({ k: row.indicator, v: formatValue(row) })),
+      };
+    }
+
+    if (!data?.rows) return null;
 
     if (!isOverall) {
       const rows = getRowsForPillar(data.rows, panelTerritory, pillar);
@@ -386,7 +572,7 @@ const OverviewDashboard = () => {
         v: `${entry.rows.length} indicator${entry.rows.length === 1 ? '' : 's'}`,
       })),
     };
-  }, [data, esgCategory, isOverall, panelTerritory]);
+  }, [data, esgCategory, isDistrict, isOverall, panelTerritory, scopeRows, scopeName]);
 
   return (
     <div style={styles.root}>
@@ -414,52 +600,70 @@ const OverviewDashboard = () => {
         >
           <ResizeMap />
           <FitBorneoOnLoad />
+          <MapFocus
+            geo={districtGeo}
+            parent={districtParent}
+            selectedKey={selectedKey}
+            isDistrict={isDistrict}
+            zoomToDistrict={zoomToDistrict}
+            panelWidth={panelWidth}
+          />
 
           <TileLayer
             url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           />
 
-          {layerEntries.map(({ territory, row }) => {
-            const position = TERRITORY_CENTERS[territory];
+          {isDistrict && districtGeo && (
+            <GeoJSON
+              key={`districts-${activeLayer}-${districtParent}-${district}`}
+              data={districtGeo}
+              style={styleDistrict}
+              onEachFeature={onEachDistrict}
+            />
+          )}
 
-            if (!position) return null;
+          {!isDistrict &&
+            layerEntries.map(({ territory, row }) => {
+              const position = TERRITORY_CENTERS[territory];
 
-            const color = colorForValue(row?.value);
+              if (!position) return null;
 
-            return (
-              <CircleMarker
-                key={`${activeLayer}-${territory}`}
-                center={position}
-                radius={18}
-                pathOptions={{
-                  color,
-                  fillColor: color,
-                  fillOpacity: row ? 0.7 : 0.25,
-                  weight: 2,
-                }}
-              >
-                <Tooltip direction="top" offset={[0, -10]} opacity={1}>
-                  <strong>{territory}</strong>
-                  <br />
-                  {row ? formatValue(row) : 'No data'}
-                </Tooltip>
+              const color = colorForValue(row?.value);
 
-                <Popup>
-                  <div style={styles.popupContent}>
+              return (
+                <CircleMarker
+                  key={`${activeLayer}-${territory}`}
+                  center={position}
+                  radius={18}
+                  pathOptions={{
+                    color,
+                    fillColor: color,
+                    fillOpacity: row ? 0.7 : 0.25,
+                    weight: 2,
+                  }}
+                >
+                  <Tooltip direction="top" offset={[0, -10]} opacity={1}>
                     <strong>{territory}</strong>
-                    <div>{LAYER_CONFIG[activeLayer]?.label}</div>
-                    <div>{row ? formatValue(row) : 'No data for this layer'}</div>
-                    {row && (
-                      <div style={styles.popupMeta}>
-                        {row.year} · {titleCaseConfidence(row.confidence)}
-                      </div>
-                    )}
-                  </div>
-                </Popup>
-              </CircleMarker>
-            );
-          })}
+                    <br />
+                    {row ? formatValue(row) : 'No data'}
+                  </Tooltip>
+
+                  <Popup>
+                    <div style={styles.popupContent}>
+                      <strong>{territory}</strong>
+                      <div>{LAYER_CONFIG[activeLayer]?.label}</div>
+                      <div>{row ? formatValue(row) : 'No data for this layer'}</div>
+                      {row && (
+                        <div style={styles.popupMeta}>
+                          {row.year} · {titleCaseConfidence(row.confidence)}
+                        </div>
+                      )}
+                    </div>
+                  </Popup>
+                </CircleMarker>
+              );
+            })}
         </MapContainer>
 
         <div style={{ ...styles.mapControls, right: panelWidth + 32 }}>
@@ -487,23 +691,81 @@ const OverviewDashboard = () => {
         </div>
 
         <div style={styles.panelDropdownRow}>
-          <select
-            value={panelTerritory}
-            onChange={(e) => setPanelTerritory(e.target.value)}
-            style={styles.panelDropdown}
-          >
-            {TERRITORY_OPTIONS.map((territory) => (
-              <option key={territory} value={territory}>
-                {territory}
-              </option>
-            ))}
-          </select>
+          <div style={styles.levelToggle}>
+            <button
+              type="button"
+              onClick={() => setLevel('region')}
+              style={{ ...styles.levelBtn, ...(!isDistrict ? styles.levelBtnActive : {}) }}
+            >
+              Region
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setLevel('district');
+                setZoomToDistrict(false); // open on the whole Borneo island
+              }}
+              style={{ ...styles.levelBtn, ...(isDistrict ? styles.levelBtnActive : {}) }}
+            >
+              District
+            </button>
+          </div>
+
+          {isDistrict ? (
+            <div style={styles.cascadeWrap}>
+              <select
+                value={districtParent}
+                onChange={(e) => {
+                  setDistrictParent(e.target.value);
+                  setZoomToDistrict(false); // province switch -> back to island overview
+                }}
+                style={{ ...styles.panelDropdown, ...styles.cascadeSelect }}
+              >
+                {districtParents.map((parent) => (
+                  <option key={parent} value={parent}>
+                    {parent}
+                  </option>
+                ))}
+              </select>
+              <select
+                value={district}
+                onChange={(e) => {
+                  setDistrictSel(e.target.value);
+                  setZoomToDistrict(true); // explicit pick -> fly to it
+                }}
+                style={{ ...styles.panelDropdown, ...styles.cascadeSelect }}
+              >
+                {districtOptions.map((name) => (
+                  <option key={name} value={name}>
+                    {name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            <select
+              value={panelTerritory}
+              onChange={(e) => setPanelTerritory(e.target.value)}
+              style={styles.panelDropdown}
+            >
+              {TERRITORY_OPTIONS.map((territory) => (
+                <option key={territory} value={territory}>
+                  {territory}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
 
         <div style={styles.card}>
           <div style={styles.sectionTitle}>Overall Resilience Status</div>
 
-          {resilienceView ? (
+          {resilienceView?.unavailable ? (
+            <div style={styles.stateText}>
+              The Resilience Index is computed at territory level (6 pillars). Switch to Region view
+              for {districtParent}'s score — district-level indicators don't yet cover all pillars.
+            </div>
+          ) : resilienceView ? (
             <>
               <RagGauge score={resilienceView.index} thresholds={resilienceView.thresholds} />
 
@@ -549,7 +811,18 @@ const OverviewDashboard = () => {
           <div style={styles.sectionTitle}>Pillar Coverage</div>
           <div style={styles.sectionSubtitle}>(True Wealth Hexagon · indicators per pillar)</div>
 
-          {hexCoverage ? <HexRadar pillars={hexCoverage} /> : <div style={styles.stateText}>Loading indicator data…</div>}
+          {hasHexCoverage ? (
+            <HexRadar pillars={hexCoverage} />
+          ) : isDistrict ? (
+            <div style={styles.stateText}>
+              Hexagon pillars aren't mapped at district level yet — see the ESG &amp; layer figures below
+              for {scopeName || 'this district'}.
+            </div>
+          ) : hexCoverage ? (
+            <HexRadar pillars={hexCoverage} />
+          ) : (
+            <div style={styles.stateText}>Loading indicator data…</div>
+          )}
         </div>
 
         <div style={styles.card}>
@@ -615,7 +888,28 @@ const OverviewDashboard = () => {
           {loading && <div style={styles.stateText}>Loading map data…</div>}
           {error && <div style={{ ...styles.stateText, color: '#b91c1c' }}>{error}</div>}
 
-          {!loading &&
+          {isDistrict ? (
+            districtLayerEntries.length ? (
+              districtLayerEntries.map(({ territory, row }) => (
+                <div key={territory} style={styles.summaryRow}>
+                  <div>
+                    <div style={styles.summaryTerritory}>{territory}</div>
+                    <div style={styles.summaryMeta}>
+                      {row ? `${row.year} · ${titleCaseConfidence(row.confidence)}` : 'No data'}
+                    </div>
+                  </div>
+
+                  <div style={styles.summaryValue}>{row ? formatValue(row) : '—'}</div>
+                </div>
+              ))
+            ) : (
+              <div style={styles.stateText}>
+                No district data for “{LAYER_CONFIG[activeLayer]?.label}” in {districtParent} yet.
+                Poverty is available now; forest, fire &amp; air layers arrive with the satellite feed.
+              </div>
+            )
+          ) : (
+            !loading &&
             !error &&
             layerEntries.map(({ territory, row }) => (
               <div key={territory} style={styles.summaryRow}>
@@ -628,7 +922,8 @@ const OverviewDashboard = () => {
 
                 <div style={styles.summaryValue}>{row ? formatValue(row) : '—'}</div>
               </div>
-            ))}
+            ))
+          )}
         </div>
       </div>
     </div>
@@ -790,8 +1085,49 @@ const styles = {
 
   panelDropdownRow: {
     display: 'flex',
-    justifyContent: 'flex-end',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: '8px',
+    flexWrap: 'wrap',
     flexShrink: 0,
+  },
+
+  levelToggle: {
+    display: 'inline-flex',
+    backgroundColor: '#eef2f7',
+    borderRadius: '10px',
+    padding: '3px',
+    gap: '2px',
+  },
+
+  levelBtn: {
+    border: 'none',
+    background: 'transparent',
+    padding: '6px 14px',
+    borderRadius: '8px',
+    fontSize: '12px',
+    fontWeight: '600',
+    color: '#64748b',
+    cursor: 'pointer',
+    lineHeight: 1,
+  },
+
+  levelBtnActive: {
+    backgroundColor: '#ffffff',
+    color: '#0f172a',
+    boxShadow: '0 1px 3px rgba(15, 23, 42, 0.16)',
+  },
+
+  cascadeWrap: {
+    display: 'flex',
+    gap: '6px',
+    flexWrap: 'wrap',
+    justifyContent: 'flex-end',
+  },
+
+  cascadeSelect: {
+    minWidth: '112px',
+    padding: '7px 8px',
   },
 
   panelDropdown: {

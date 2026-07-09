@@ -87,6 +87,127 @@ export function useResilience() {
   return state;
 }
 
+// District-level (ADM2) drill-down data — parallel to indicators.json. Rows use
+// the district name as `territory`, so all the territory helpers below (
+// getCanonicalRows, getRowsForPillar, getHexagonCoverage, summarizeRows…) work
+// unchanged when passed a district name.
+export function useDistricts() {
+  const [state, setState] = useState({
+    data: null,
+    loading: true,
+    error: null,
+  });
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function load() {
+      try {
+        const response = await fetch('/data/districts.json');
+        if (!response.ok) {
+          throw new Error(`Failed to load district data (${response.status})`);
+        }
+        const payload = await response.json();
+        if (!ignore) {
+          setState({ data: payload, loading: false, error: null });
+        }
+      } catch (error) {
+        if (!ignore) {
+          setState({ data: null, loading: false, error: error.message });
+        }
+      }
+    }
+
+    load();
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  return state;
+}
+
+// District (ADM2) boundary polygons for the drill-down map. Static GeoJSON built
+// from GADM 4.1; feature.properties.key joins to district rows' `key`.
+export function useDistrictGeo() {
+  const [state, setState] = useState({ data: null, loading: true, error: null });
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function load() {
+      try {
+        const response = await fetch('/data/borneo_districts.geojson');
+        if (!response.ok) throw new Error(`Failed to load district boundaries (${response.status})`);
+        const payload = await response.json();
+        if (!ignore) setState({ data: payload, loading: false, error: null });
+      } catch (error) {
+        if (!ignore) setState({ data: null, loading: false, error: error.message });
+      }
+    }
+
+    load();
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  return state;
+}
+
+// value-by-join-key for one layer's concept, plus a RAG color function over the
+// spread of those values — powers the district choropleth. Mirrors layerColorScale.
+export function buildDistrictChoropleth(rows, layerKey) {
+  const config = LAYER_CONFIG[layerKey];
+  const valueByKey = {};
+  if (config) {
+    rows
+      .filter((row) => row.canonical === 1 && row.dashboard_concept === config.concept)
+      .forEach((row) => {
+        valueByKey[row.key] = row;
+      });
+  }
+  const values = Object.values(valueByKey)
+    .map((row) => row.value)
+    .filter((value) => Number.isFinite(value));
+  const min = values.length ? Math.min(...values) : 0;
+  const max = values.length ? Math.max(...values) : 0;
+  const colorForKey = (key) => {
+    const row = valueByKey[key];
+    if (!row || !Number.isFinite(row.value)) return null; // no data -> caller greys it
+    const ratio = max === min ? 0.5 : (row.value - min) / (max - min);
+    const adjusted = config.better === 'higher' ? ratio : 1 - ratio;
+    if (adjusted > 0.66) return '#16a34a';
+    if (adjusted > 0.33) return '#f59e0b';
+    return '#dc2626';
+  };
+  return { valueByKey, colorForKey };
+}
+
+// Parents (states/provinces) that actually have district rows, in display order.
+export function getDistrictParents(districtData) {
+  return districtData?.parents ? Object.keys(districtData.parents) : [];
+}
+
+// Canonical district display name for a (parent, key), for map-click -> dropdown sync.
+export function getDistrictNameByKey(rows, parent, key) {
+  const row = rows.find((r) => r.parent === parent && r.key === key);
+  return row ? row.territory : null;
+}
+
+export function getDistrictsForParent(districtData, parent) {
+  return districtData?.parents?.[parent] || [];
+}
+
+// Layer entries (map choropleth) for every district under one parent.
+export function getDistrictLayerRows(rows, parent, layerKey) {
+  const config = LAYER_CONFIG[layerKey];
+  if (!config) return [];
+  return rows
+    .filter((row) => row.parent === parent && row.canonical === 1 && row.dashboard_concept === config.concept)
+    .map((row) => ({ territory: row.territory, row }));
+}
+
 export function getRowsForTerritory(rows, territory) {
   return rows.filter((row) => row.territory === territory);
 }

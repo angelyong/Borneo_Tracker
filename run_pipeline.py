@@ -19,6 +19,7 @@ Schedule it (data updates yearly/quarterly, so weekly is plenty):
 import sys
 import compute_resilience
 import export_json
+import ingest_districts
 import ingest_history
 import ingest_poc
 import load_db
@@ -30,21 +31,28 @@ def ensure_success(step_name, result):
 
 
 def main():
-    print(">>> [1/5] Pulling sources -> CSV")
+    print(">>> [1/6] Pulling sources -> CSV")
     ensure_success("ingest_poc", ingest_poc.main())
-    print("\n>>> [2/5] Pulling historical series -> history CSV")
+    print("\n>>> [2/6] Pulling historical series -> history CSV")
     try:
         ensure_success("ingest_history", ingest_history.main())
     except RuntimeError as error:
         # Trends are an add-on: a failed history pull must not block the
         # snapshot refresh. load_db keeps the previous history CSV if present.
         print(f"WARNING: history pull failed, keeping previous history CSV. {error}")
-    print("\n>>> [3/5] Loading CSV -> SQLite")
+    print("\n>>> [3/6] Loading CSV -> SQLite")
     ensure_success("load_db", load_db.main())
-    print("\n>>> [4/5] Exporting dashboard JSON")
+    print("\n>>> [4/6] Exporting dashboard JSON")
     ensure_success("export_json", export_json.main())
-    print("\n>>> [5/5] Computing Resilience Index")
+    print("\n>>> [5/6] Computing Resilience Index")
     ensure_success("compute_resilience", compute_resilience.main())
+    print("\n>>> [6/6] Building district (ADM2) drill-down JSON")
+    try:
+        ensure_success("ingest_districts", ingest_districts.main())
+    except RuntimeError as error:
+        # District drill-down is an add-on layer (separate districts.json); a failed
+        # pull must not block the core territory dashboard refresh.
+        print(f"WARNING: district pull failed, keeping previous districts.json. {error}")
     print("\n>>> Pipeline complete.")
     return 0
 
