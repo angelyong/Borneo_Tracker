@@ -5,6 +5,7 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import logoImg from '../assets/logo.png';
 
 const MiniTopBar = ({ onMenuClick, notifCount = 0 }) => {
   const navigate = useNavigate();
@@ -36,8 +37,13 @@ const MiniTopBar = ({ onMenuClick, notifCount = 0 }) => {
         <HamburgerIcon />
       </button>
 
+      <div style={styles.logoCenter} onClick={() => navigate('/')}>
+        <img src={logoImg} alt="Borneo Tracker Logo" style={styles.logoImage} />
+      </div>
+
       {/* ── Spacer ── */}
       <div style={{ flex: 1 }} />
+      
 
       {/* ── Right: bell + avatar ── */}
       <div style={styles.rightGroup}>
@@ -109,24 +115,40 @@ const MiniTopBar = ({ onMenuClick, notifCount = 0 }) => {
 // ── Inline SVG icons ──────────────────────────────────────────────────────────
 
 const HamburgerIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-    <rect x="2" y="4"  width="16" height="2" rx="1" fill="#374151" />
-    <rect x="2" y="9"  width="16" height="2" rx="1" fill="#374151" />
-    <rect x="2" y="14" width="16" height="2" rx="1" fill="#374151" />
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+    <line x1="4" y1="7" x2="20" y2="7" />
+    <line x1="4" y1="12" x2="20" y2="12" />
+    <line x1="4" y1="17" x2="20" y2="17" />
   </svg>
 );
 
 const BellIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-    stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="22"
+    height="22"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
     <path d="M13.73 21a2 2 0 0 1-3.46 0" />
   </svg>
 );
 
 const PersonIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-    stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg
+    width="22"
+    height="22"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
     <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
     <circle cx="12" cy="7" r="4" />
   </svg>
@@ -140,31 +162,39 @@ const styles = {
     alignItems:      'center',
     height:          '52px',
     padding:         '0 12px',
-    backgroundColor: '#f5f4f0',   // same warm off-white as screenshot
+    backgroundColor: '#f5f4f0',   // warm off-white header
     borderBottom:    '1px solid #e5e5df',
     flexShrink:      0,
     boxSizing:       'border-box',
-    position:        'relative',
-    zIndex:          50,
+    position:        'fixed',
+    top:             0,
+    left:            0,
+    right:           0,
+    width:           '100%',
+    zIndex:          300,
   },
 
   iconBtn: {
     display:         'flex',
     alignItems:      'center',
     justifyContent:  'center',
-    width:           '36px',
-    height:          '36px',
+    width:           '34px',
+    height:          '34px',
     borderRadius:    '50%',
     border:          'none',
-    backgroundColor: 'transparent',
+    backgroundColor: '#0d3b2b',
+    color:           '#ffffff',
     cursor:          'pointer',
+    boxShadow:       '0 6px 12px rgba(13,33,24,0.12)',
+    marginLeft:      '12px',
   },
 
-  rightGroup: {
-    display:    'flex',
-    alignItems: 'center',
-    gap:        '2px',
-  },
+rightGroup: {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '16px',
+  marginLeft: 'auto',
+},
 
   // Bell badge
   bellWrap: {
@@ -192,36 +222,38 @@ const styles = {
 
   // Avatar circle button — dark green fill matching sidebar
   avatarWrap: { position: 'relative' },
-  avatarCircle: {
-    display:         'flex',
-    alignItems:      'center',
-    justifyContent:  'center',
-    width:           '34px',
-    height:          '34px',
-    borderRadius:    '50%',
-    border:          'none',
-    backgroundColor: '#e5e7eb',
-    cursor:          'pointer',
-  },
+avatarCircle: {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '35px',
+  height: '35px',
+  borderRadius: '50%',
+  border: 'none',
+  backgroundColor: '#0d3b2b',
+  color: '#ffffff',
+  cursor: 'pointer',
+  boxShadow: '0 6px 12px rgba(13,33,24,0.16)',
+},
 
   // Click-away invisible overlay
   overlay: {
     position: 'fixed',
     inset:    0,
-    zIndex:   199,
+    zIndex:   299,
   },
 
   // Dropdown panel
   dropdown: {
     position:        'absolute',
-    top:             '42px',
+    top:             '52px',
     right:           0,
     backgroundColor: '#ffffff',
     border:          '1px solid #e5e7eb',
     borderRadius:    '12px',
     boxShadow:       '0 8px 24px rgba(0,0,0,0.12)',
     minWidth:        '200px',
-    zIndex:          200,
+    zIndex:          400,
     padding:         '6px 0',
   },
   dropdownTop: {
@@ -270,6 +302,38 @@ const styles = {
     color:           '#374151',
     cursor:          'pointer',
   },
+
+  // Logo in the center
+  logoImage: {
+  width: '42px',
+  height: '42px',
+  objectFit: 'contain',
+},
+
+logoCenter: {
+  position: 'absolute',
+  left: '50%',
+  top: '50%',
+  transform: 'translate(-50%, -50%)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  cursor: 'pointer',
+  zIndex: 301,
+},
+bellBtn: {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '58px',
+  height: '58px',
+  borderRadius: '50%',
+  border: 'none',
+  backgroundColor: '#0d3b2b',
+  color: '#ffffff',
+  cursor: 'pointer',
+  boxShadow: '0 6px 12px rgba(13,33,24,0.16)',
+},
 };
 
 export default MiniTopBar;

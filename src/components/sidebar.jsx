@@ -1,19 +1,21 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { COLORS, RADII, SHADOWS } from '../theme';
+import { Icons, Logo, Menu } from './ui';
 
-const Sidebar = () => {
+const Sidebar = ({ collapsed = false }) => {
   const navigate = useNavigate();
   const [logoutHovered, setLogoutHovered] = useState(false);
 
   const menuItems = [
-    { name: 'Overview',                 path: '/'             },
-    { name: 'Regional Details',         path: '/regions'      },
-    { name: 'ESG Indicators',           path: '/esg'          },
-    { name: 'SDG Progress',             path: '/sdg'          },
-    { name: 'Environmental Indicators', path: '/environmental' },
-    { name: 'Social Indicators',        path: '/social'       },
-    { name: 'Data Sources',             path: '/data-sources' },
-    { name: 'About Borneo Tracker',     path: '/about'        },
+    { name: 'Dashboard',                path: '/'       ,   icon: <Icons.Grid size={20} />     },
+    { name: 'Regional Details',         path: '/regions',   icon: <Icons.Table size={20} /> },
+    { name: 'ESG Indicators',           path: '/esg',       icon: <Icons.Gauge size={20} /> },
+    { name: 'SDG Progress',             path: '/sdg',       icon: <Icons.Chart size={20} /> },
+    { name: 'Submit Report',            path: '/submission', icon: <Icons.FileArrow size={20} />     },
+    { name: 'Incident Report',          path: '/incident_report', icon: <Icons.People size={20} /> },
+    { name: 'Data Sources',             path: '/data-sources', icon: <Icons.Frame size={20} /> },
+    { name: 'About Borneo Tracker',     path: '/about',     icon: <Icons.Info size={20} />         },
   ];
 
   const handleLogout = () => {
@@ -23,13 +25,9 @@ const Sidebar = () => {
   };
 
   return (
-    <div style={styles.sidebar}>
+    <div style={{ ...styles.sidebar, width: collapsed ? 72 : '100%' }}>
 
-      {/* ── Logo ── */}
-      <div style={styles.logoContainer}>
-        <div style={styles.logoIcon}>🌿</div>
-        <h1 style={styles.logo}>Borneo Tracker</h1>
-      </div>
+      
 
       {/* ── Nav links ── */}
       <nav style={styles.nav}>
@@ -40,9 +38,12 @@ const Sidebar = () => {
             style={({ isActive }) => ({
               ...styles.navLink,
               ...(isActive ? styles.navLinkActive : {}),
+              justifyContent: collapsed ? 'center' : 'flex-start',
+              padding: collapsed ? '12px 8px' : '12px 14px',
             })}
           >
-            {item.name}
+            <span style={styles.navIcon}>{item.icon}</span>
+            {!collapsed && <span>{item.name}</span>}
           </NavLink>
         ))}
       </nav>
@@ -50,14 +51,7 @@ const Sidebar = () => {
       {/* ── Bottom section ── */}
       <div style={styles.bottom}>
 
-        {/* User info row */}
-        <div style={styles.userRow}>
-          <div style={styles.avatar}>A</div>
-          <div style={styles.userInfo}>
-            <span style={styles.userName}>Admin User</span>
-            <span style={styles.userRole}>Administrator</span>
-          </div>
-        </div>
+        
 
         {/* Divider */}
         <div style={styles.divider} />
@@ -73,15 +67,12 @@ const Sidebar = () => {
           }}
         >
           <span style={styles.logoutIcon}>⎋</span>
-          Log out
+          {!collapsed && 'Log out'}
         </button>
 
-        {/* Footer */}
-        <div style={styles.footer}>
-          <p style={styles.footerText}>© 2026 Borneo Tracker</p>
-          <p style={styles.footerText}>All rights reserved</p>
-        </div>
+       
       </div>
+      
     </div>
   );
 };
@@ -96,16 +87,18 @@ const Sidebar = () => {
 
 const styles = {
   sidebar: {
-    width:           '100%',
-    height:          '100vh',
-    backgroundColor: '#0d2118',
-    color:           '#c8ddd2',
-    display:         'flex',
-    flexDirection:   'column',
-    overflowY:       'auto',
-    borderRight:     '1px solid #2d5a42',
-    zIndex:          10,
-  },
+  width: '100%',
+  height: '100%',
+  backgroundColor: '#0d2118',
+  color: '#c8ddd2',
+  display: 'flex',
+  flexDirection: 'column',
+  overflowY: 'auto',
+  borderRight: '1px solid #2d5a42',
+  zIndex: 10,
+  paddingTop: '24px',
+  boxSizing: 'border-box',
+},
 
   logoContainer: {
     display:      'flex',
@@ -142,20 +135,33 @@ const styles = {
     gap:           '2px',
   },
   navLink: {
-    padding:        '10px 14px',
+    display:        'flex',
+    alignItems:     'center',
+    gap:            '10px',
+    padding:        '12px 14px',
     borderRadius:   '8px',
     textDecoration: 'none',
     color:          '#a0bfad',
-    fontSize:       '13.5px',
-    fontWeight:     '500',
+    fontSize:       '14px',
+    fontWeight:     '600',
     transition:     'all 0.2s ease',
     borderLeft:     '3px solid transparent',
+    fontFamily:     'Inter, Arial, sans-serif',
+  },
+  navIcon: {
+    display:       'inline-flex',
+    alignItems:    'center',
+    justifyContent:'center',
+    width:         '22px',
+    height:        '22px',
+    color:         '#9caea4',
+    flexShrink:    0,
   },
   navLinkActive: {
     backgroundColor: '#1e4433',
     color:           '#ffffff',
     borderLeft:      '3px solid #4ade80',
-    fontWeight:      '600',
+    fontWeight:      '700',
   },
 
   // ── Bottom ──

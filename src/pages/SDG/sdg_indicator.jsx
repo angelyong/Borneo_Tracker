@@ -123,10 +123,7 @@ const SDGProgress = () => {
 
   return (
     <div style={styles.pageWrapper}>
-      {/* Sidebar */}
-      <div style={{ ...styles.sidebarWrapper, width: isSidebarOpen ? '240px' : '0px', minWidth: isSidebarOpen ? '240px' : '0px' }}>
-        <Sidebar />
-      </div>
+      
 
       {/* Right column */}
       <div style={styles.rightCol}>

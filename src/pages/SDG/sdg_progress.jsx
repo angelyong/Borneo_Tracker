@@ -27,15 +27,7 @@ const SDGProgress = () => {
 
   return (
     <div style={styles.container}>
-      <div
-        style={{
-          ...styles.sidebarWrapper,
-          width: isSidebarOpen ? '240px' : '0px',
-          minWidth: isSidebarOpen ? '240px' : '0px',
-        }}
-      >
-        <Sidebar />
-      </div>
+      
 
       <div style={styles.rightCol}>
         <MiniTopBar onMenuClick={toggleSidebar} notifCount={2} />
