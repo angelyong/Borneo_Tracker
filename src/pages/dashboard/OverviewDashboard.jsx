@@ -286,6 +286,8 @@ function HexRadar({ pillars }) {
 
 const OverviewDashboard = () => {
   const [searchText, setSearchText] = useState('');
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchActiveIdx, setSearchActiveIdx] = useState(0);
   const [activeLayer, setActiveLayer] = useState('deforestation');
   const [panelTerritory, setPanelTerritory] = useState('Overall Borneo');
   const [esgCategory, setEsgCategory] = useState('Environment');
@@ -304,6 +306,7 @@ const OverviewDashboard = () => {
   const startX = useRef(0);
   const startW = useRef(0);
   const mapRef = useRef(null);
+  const searchRef = useRef(null);
 
   const { data, loading, error } = useIndicators();
   const { data: resilience } = useResilience();
@@ -375,21 +378,16 @@ const OverviewDashboard = () => {
 
   const layerEntries = useMemo(() => {
     if (!data?.rows || !activeLayer) return [];
-
-    return getLayerRows(data.rows, activeLayer).filter((entry) =>
-      entry.territory.toLowerCase().includes(searchText.trim().toLowerCase())
-    );
-  }, [activeLayer, data, searchText]);
+    return getLayerRows(data.rows, activeLayer);
+  }, [activeLayer, data]);
 
   const colorForValue = useMemo(() => layerColorScale(layerEntries, activeLayer), [activeLayer, layerEntries]);
 
   // District choropleth/list entries for the active layer, under the current parent.
   const districtLayerEntries = useMemo(() => {
     if (!isDistrict || !districtData?.rows) return [];
-    return getDistrictLayerRows(districtData.rows, districtParent, activeLayer).filter((entry) =>
-      entry.territory.toLowerCase().includes(searchText.trim().toLowerCase())
-    );
-  }, [isDistrict, districtData, districtParent, activeLayer, searchText]);
+    return getDistrictLayerRows(districtData.rows, districtParent, activeLayer);
+  }, [isDistrict, districtData, districtParent, activeLayer]);
 
   // Choropleth colouring for the district polygons, by the active layer.
   const choropleth = useMemo(
@@ -406,6 +404,106 @@ const OverviewDashboard = () => {
     );
     return row?.key || null;
   }, [districtData, districtParent, district]);
+
+  // Global place index for the locator search: the 4 top-level regions plus every
+  // district across every province. Districts come from the deduped `parents` map,
+  // so each name appears once regardless of how many indicator rows it has.
+  const placeIndex = useMemo(() => {
+    const regions = TERRITORIES.map((name) => ({ type: 'region', name, parent: null }));
+    const districts = [];
+    const parents = districtData?.parents || {};
+    Object.keys(parents).forEach((parentName) => {
+      (parents[parentName] || []).forEach((name) => {
+        districts.push({ type: 'district', name, parent: parentName });
+      });
+    });
+    return [...regions, ...districts];
+  }, [districtData]);
+
+  // Ranked matches for the current query: name match first (exact > prefix >
+  // substring), then province-name match; regions before districts on ties.
+  const searchMatches = useMemo(() => {
+    const q = searchText.trim().toLowerCase();
+    if (!q) return [];
+    const rank = (item) => {
+      const name = item.name.toLowerCase();
+      if (name === q) return 0;
+      if (name.startsWith(q)) return 1;
+      if (name.includes(q)) return 2;
+      return 3; // matched on province name only
+    };
+    return placeIndex
+      .filter(
+        (item) =>
+          item.name.toLowerCase().includes(q) ||
+          (item.parent && item.parent.toLowerCase().includes(q))
+      )
+      .map((item) => ({ item, r: rank(item) }))
+      .sort((a, b) => {
+        if (a.r !== b.r) return a.r - b.r;
+        if (a.item.type !== b.item.type) return a.item.type === 'region' ? -1 : 1;
+        return a.item.name.localeCompare(b.item.name);
+      })
+      .slice(0, 8)
+      .map((entry) => entry.item);
+  }, [placeIndex, searchText]);
+
+  // Fly the map to the picked place and drive the panel / drill-down to match,
+  // reusing the exact state contract the polygon-click and dropdown pickers use.
+  const handleSelectPlace = useCallback(
+    (item) => {
+      if (!item) return;
+      if (item.type === 'region') {
+        const wasRegion = level === 'region';
+        setLevel('region');
+        setPanelTerritory(item.name);
+        const center = TERRITORY_CENTERS[item.name];
+        // Only fly while already in region mode: leaving district mode lets MapFocus
+        // restore the whole-island framing, which would override an immediate flyTo.
+        if (center && wasRegion) mapRef.current?.flyTo(center, 7, { duration: 0.8 });
+      } else {
+        setLevel('district');
+        setDistrictParent(item.parent);
+        setDistrictSel(item.name);
+        setZoomToDistrict(true); // explicit pick -> MapFocus flies to the polygon
+      }
+      setSearchText(item.name);
+      setSearchOpen(false);
+    },
+    [level]
+  );
+
+  // Close the suggestions dropdown when clicking outside the search box.
+  useEffect(() => {
+    if (!searchOpen) return undefined;
+    const onDocMouseDown = (e) => {
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setSearchOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', onDocMouseDown);
+    return () => document.removeEventListener('mousedown', onDocMouseDown);
+  }, [searchOpen]);
+
+  const onSearchKeyDown = useCallback(
+    (e) => {
+      if (!searchMatches.length) return;
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSearchOpen(true);
+        setSearchActiveIdx((i) => (i + 1) % searchMatches.length);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSearchActiveIdx((i) => (i - 1 + searchMatches.length) % searchMatches.length);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        handleSelectPlace(searchMatches[searchActiveIdx] || searchMatches[0]);
+      } else if (e.key === 'Escape') {
+        setSearchOpen(false);
+      }
+    },
+    [searchMatches, searchActiveIdx, handleSelectPlace]
+  );
 
   const styleDistrict = useCallback(
     (feature) => {
@@ -577,17 +675,76 @@ const OverviewDashboard = () => {
   return (
     <div style={styles.root}>
       <div style={styles.mapWrapper}>
-        <div style={styles.searchContainer}>
+        <div style={styles.searchContainer} ref={searchRef}>
           <div style={styles.searchBox}>
             <span style={styles.searchIcon}>🔍</span>
             <input
               type="text"
-              placeholder="Search territories…"
+              placeholder="Search regions & districts…"
               value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
+              onChange={(e) => {
+                setSearchText(e.target.value);
+                setSearchOpen(true);
+                setSearchActiveIdx(0);
+              }}
+              onFocus={() => setSearchOpen(true)}
+              onKeyDown={onSearchKeyDown}
               style={styles.searchInput}
             />
+            {searchText && (
+              <button
+                type="button"
+                aria-label="Clear search"
+                onClick={() => {
+                  setSearchText('');
+                  setSearchOpen(false);
+                }}
+                style={styles.searchClear}
+              >
+                ×
+              </button>
+            )}
           </div>
+
+          {searchOpen && searchText.trim() && (
+            <ul style={styles.searchDropdown}>
+              {searchMatches.length ? (
+                searchMatches.map((item, idx) => (
+                  <li
+                    key={`${item.type}-${item.parent || ''}-${item.name}`}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      handleSelectPlace(item);
+                    }}
+                    onMouseEnter={() => setSearchActiveIdx(idx)}
+                    style={{
+                      ...styles.searchOption,
+                      ...(idx === searchActiveIdx ? styles.searchOptionActive : {}),
+                    }}
+                  >
+                    <span style={styles.searchOptionMain}>
+                      <span style={styles.searchOptionName}>{item.name}</span>
+                      {item.type === 'district' && (
+                        <span style={styles.searchOptionParent}>{item.parent}</span>
+                      )}
+                    </span>
+                    <span
+                      style={{
+                        ...styles.searchOptionTag,
+                        ...(item.type === 'region'
+                          ? styles.searchOptionTagRegion
+                          : styles.searchOptionTagDistrict),
+                      }}
+                    >
+                      {item.type === 'region' ? 'Region' : 'District'}
+                    </span>
+                  </li>
+                ))
+              ) : (
+                <li style={styles.searchEmpty}>No places match “{searchText.trim()}”.</li>
+              )}
+            </ul>
+          )}
         </div>
 
         <MapContainer
@@ -1021,6 +1178,89 @@ const styles = {
     fontSize: '14px',
     width: '100%',
     color: '#333',
+  },
+
+  searchClear: {
+    border: 'none',
+    background: 'transparent',
+    cursor: 'pointer',
+    color: '#999',
+    fontSize: '18px',
+    lineHeight: 1,
+    padding: '0 2px',
+    marginLeft: '6px',
+  },
+
+  searchDropdown: {
+    listStyle: 'none',
+    margin: '8px 0 0',
+    padding: '6px',
+    backgroundColor: '#ffffff',
+    borderRadius: '14px',
+    boxShadow: '0 6px 22px rgba(0,0,0,0.18)',
+    border: '1px solid #e6e6e6',
+    maxHeight: '320px',
+    overflowY: 'auto',
+  },
+
+  searchOption: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '10px',
+    padding: '9px 12px',
+    borderRadius: '10px',
+    cursor: 'pointer',
+  },
+
+  searchOptionActive: {
+    backgroundColor: '#f1f5f9',
+  },
+
+  searchOptionMain: {
+    display: 'flex',
+    flexDirection: 'column',
+    minWidth: 0,
+  },
+
+  searchOptionName: {
+    fontSize: '14px',
+    color: '#1f2937',
+    fontWeight: 600,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+
+  searchOptionParent: {
+    fontSize: '12px',
+    color: '#6b7280',
+  },
+
+  searchOptionTag: {
+    fontSize: '11px',
+    fontWeight: 600,
+    padding: '2px 8px',
+    borderRadius: '999px',
+    whiteSpace: 'nowrap',
+    flexShrink: 0,
+  },
+
+  searchOptionTagRegion: {
+    backgroundColor: '#e0f2fe',
+    color: '#0369a1',
+  },
+
+  searchOptionTagDistrict: {
+    backgroundColor: '#dcfce7',
+    color: '#15803d',
+  },
+
+  searchEmpty: {
+    padding: '12px',
+    fontSize: '13px',
+    color: '#6b7280',
+    textAlign: 'center',
   },
 
   popupContent: {
