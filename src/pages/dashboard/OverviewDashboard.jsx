@@ -301,7 +301,16 @@ const OverviewDashboard = () => {
               </div>
             </div>
 
-            <MapContainer center={[-1.5, 114.5]} zoom={5} style={styles.map} zoomControl={false}>
+            <MapContainer
+              center={[1.5, 114.6]}
+              zoom={6}
+              minZoom={6}
+              maxZoom={8}
+              maxBounds={[[ -7.0, 108.5 ], [ 7.0, 119.5 ]]}
+              maxBoundsViscosity={1.0}
+              style={styles.map}
+              zoomControl={false}
+            >
               <TileLayer
                 url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
