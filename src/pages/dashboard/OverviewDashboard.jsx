@@ -33,6 +33,9 @@ const TERRITORY_CENTERS = {
   Kalimantan: [0.3, 114.5],
 };
 
+const BORNEO_CENTER = [1.5, 114.6];
+const DEFAULT_ZOOM = 6;
+
 const TERRITORY_OPTIONS = ['Overall Borneo', 'Sabah', 'Sarawak', 'Brunei', 'Kalimantan'];
 const ESG_CATEGORIES = ['Environment', 'Social', 'Governance'];
 const RAG_COLORS = { green: '#16a34a', amber: '#f59e0b', red: '#dc2626' };
@@ -70,7 +73,7 @@ function RagGauge({ score, thresholds }) {
   const cx = 110;
   const cy = 110;
   const r = 80;
-  const strokeW = 28;
+  const strokeW = 38;
   const circumference = Math.PI * r;
 
   const zones = [
@@ -191,9 +194,22 @@ const OverviewDashboard = () => {
   const isDragging = useRef(false);
   const startX = useRef(0);
   const startW = useRef(0);
+  const mapRef = useRef(null);
 
   const { data, loading, error } = useIndicators();
   const { data: resilience } = useResilience();
+
+  const handleZoomIn = useCallback(() => {
+    mapRef.current?.zoomIn();
+  }, []);
+
+  const handleZoomOut = useCallback(() => {
+    mapRef.current?.zoomOut();
+  }, []);
+
+  const handleRecenter = useCallback(() => {
+    mapRef.current?.setView(BORNEO_CENTER, DEFAULT_ZOOM);
+  }, []);
 
   const onDragStart = useCallback(
     (e) => {
@@ -349,8 +365,9 @@ const OverviewDashboard = () => {
         </div>
 
         <MapContainer
-          center={[1.5, 114.6]}
-          zoom={6}
+          ref={mapRef}
+          center={BORNEO_CENTER}
+          zoom={DEFAULT_ZOOM}
           minZoom={6}
           maxZoom={8}
           maxBounds={[
@@ -409,6 +426,24 @@ const OverviewDashboard = () => {
             );
           })}
         </MapContainer>
+
+        <div style={{ ...styles.mapControls, right: panelWidth + 32 }}>
+          <button type="button" onClick={handleZoomIn} style={styles.mapControlBtn} title="Zoom in" aria-label="Zoom in">
+            +
+          </button>
+          <button type="button" onClick={handleZoomOut} style={styles.mapControlBtn} title="Zoom out" aria-label="Zoom out">
+            −
+          </button>
+          <button
+            type="button"
+            onClick={handleRecenter}
+            style={{ ...styles.mapControlBtn, ...styles.mapControlBtnLast }}
+            title="Recenter map"
+            aria-label="Recenter map"
+          >
+            ⟲
+          </button>
+        </div>
       </div>
 
       <div style={{ ...styles.panel, width: panelWidth, minWidth: panelWidth }}>
@@ -430,7 +465,7 @@ const OverviewDashboard = () => {
           </select>
         </div>
 
-        <div style={styles.section}>
+        <div style={styles.card}>
           <div style={styles.sectionTitle}>Overall Resilience Status</div>
 
           {resilienceView ? (
@@ -475,14 +510,14 @@ const OverviewDashboard = () => {
           )}
         </div>
 
-        <div style={styles.section}>
+        <div style={styles.card}>
           <div style={styles.sectionTitle}>Pillar Coverage</div>
           <div style={styles.sectionSubtitle}>(True Wealth Hexagon · indicators per pillar)</div>
 
           {hexCoverage ? <HexRadar pillars={hexCoverage} /> : <div style={styles.stateText}>Loading indicator data…</div>}
         </div>
 
-        <div style={{ ...styles.section, borderBottom: 'none' }}>
+        <div style={styles.card}>
           <div style={styles.esgHeader}>
             <span style={styles.sectionTitle}>ESG Indicators</span>
 
@@ -496,7 +531,7 @@ const OverviewDashboard = () => {
           </div>
 
           {esgCard ? (
-            <div style={styles.esgCard}>
+            <div style={styles.esgCardBody}>
               <div style={styles.esgCardTitle}>{esgCard.label}</div>
 
               <div style={styles.esgScoreRow}>
@@ -516,49 +551,49 @@ const OverviewDashboard = () => {
               )}
             </div>
           ) : (
-            <div style={styles.esgCard}>
+            <div style={styles.esgCardBody}>
               <div style={styles.stateText}>Loading indicator data…</div>
             </div>
           )}
+        </div>
 
-          <div style={styles.liveSection}>
-            <div style={styles.liveSectionTitle}>
-              Live Layer: {activeLayer ? LAYER_CONFIG[activeLayer]?.label : 'None'}
-            </div>
-
-            <div style={styles.layerRadioGroup}>
-              {Object.keys(LAYER_CONFIG).map((key) => (
-                <label key={key} style={styles.radioLabel}>
-                  <input
-                    type="radio"
-                    name="active-layer"
-                    checked={activeLayer === key}
-                    onChange={() => setActiveLayer(key)}
-                    style={styles.radioInput}
-                  />
-                  {key.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase())}
-                </label>
-              ))}
-            </div>
-
-            {loading && <div style={styles.stateText}>Loading map data…</div>}
-            {error && <div style={{ ...styles.stateText, color: '#b91c1c' }}>{error}</div>}
-
-            {!loading &&
-              !error &&
-              layerEntries.map(({ territory, row }) => (
-                <div key={territory} style={styles.summaryRow}>
-                  <div>
-                    <div style={styles.summaryTerritory}>{territory}</div>
-                    <div style={styles.summaryMeta}>
-                      {row ? `${row.year} · ${titleCaseConfidence(row.confidence)}` : 'No data'}
-                    </div>
-                  </div>
-
-                  <div style={styles.summaryValue}>{row ? formatValue(row) : '—'}</div>
-                </div>
-              ))}
+        <div style={styles.card}>
+          <div style={styles.liveSectionTitle}>
+            Live Layer: {activeLayer ? LAYER_CONFIG[activeLayer]?.label : 'None'}
           </div>
+
+          <div style={styles.layerRadioGroup}>
+            {Object.keys(LAYER_CONFIG).map((key) => (
+              <label key={key} style={styles.radioLabel}>
+                <input
+                  type="radio"
+                  name="active-layer"
+                  checked={activeLayer === key}
+                  onChange={() => setActiveLayer(key)}
+                  style={styles.radioInput}
+                />
+                {key.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase())}
+              </label>
+            ))}
+          </div>
+
+          {loading && <div style={styles.stateText}>Loading map data…</div>}
+          {error && <div style={{ ...styles.stateText, color: '#b91c1c' }}>{error}</div>}
+
+          {!loading &&
+            !error &&
+            layerEntries.map(({ territory, row }) => (
+              <div key={territory} style={styles.summaryRow}>
+                <div>
+                  <div style={styles.summaryTerritory}>{territory}</div>
+                  <div style={styles.summaryMeta}>
+                    {row ? `${row.year} · ${titleCaseConfidence(row.confidence)}` : 'No data'}
+                  </div>
+                </div>
+
+                <div style={styles.summaryValue}>{row ? formatValue(row) : '—'}</div>
+              </div>
+            ))}
         </div>
       </div>
     </div>
@@ -574,6 +609,7 @@ const styles = {
     overflow: 'hidden',
     backgroundColor: '#ffffff',
     fontFamily: 'Inter, Arial, sans-serif',
+    position: 'relative',
   },
 
   mapWrapper: {
@@ -587,6 +623,39 @@ const styles = {
   map: {
     width: '100%',
     height: '100%',
+  },
+
+  mapControls: {
+    position: 'absolute',
+    bottom: '24px',
+    display: 'flex',
+    flexDirection: 'column',
+    boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
+    borderRadius: '10px',
+    overflow: 'hidden',
+    zIndex: 850,
+  },
+
+  mapControlBtn: {
+    width: '38px',
+    height: '38px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ffffff',
+    border: 'none',
+    borderBottom: '1px solid #e5e7eb',
+    fontSize: '18px',
+    fontWeight: '600',
+    color: '#374151',
+    cursor: 'pointer',
+    lineHeight: 1,
+    padding: 0,
+  },
+
+  mapControlBtnLast: {
+    borderBottom: 'none',
+    fontSize: '16px',
   },
 
   searchContainer: {
@@ -635,20 +704,38 @@ const styles = {
   },
 
   panel: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.45)',
+    backdropFilter: 'blur(4px) saturate(150%)',
+    WebkitBackdropFilter: 'blur(4px) saturate(150%)',
+    border: '1px solid rgba(255, 255, 255, 0.55)',
     overflowY: 'auto',
+    overflowX: 'hidden',
     flexShrink: 0,
     display: 'flex',
     flexDirection: 'column',
-    position: 'relative',
-    borderLeft: '1px solid #e5e7eb',
+    gap: '14px',
+    padding: '16px 16px 16px 26px',
+    position: 'absolute',
+    top: '16px',
+    right: '16px',
+    bottom: '16px',
+    borderRadius: '24px',
+    zIndex: 900,
+  },
+
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: '18px',
+    boxShadow: '0 10px 28px rgba(15, 23, 42, 0.14)',
+    padding: '16px 18px',
+    flexShrink: 0,
   },
 
   dragHandle: {
     position: 'absolute',
     top: 0,
     left: 0,
-    width: '6px',
+    width: '10px',
     height: '100%',
     cursor: 'col-resize',
     zIndex: 10,
@@ -656,7 +743,6 @@ const styles = {
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'transparent',
-    borderLeft: '1px solid #e0e0e0',
   },
 
   dragGrip: {
@@ -668,9 +754,9 @@ const styles = {
   },
 
   panelDropdownRow: {
-    padding: '12px 16px 0 22px',
     display: 'flex',
     justifyContent: 'flex-end',
+    flexShrink: 0,
   },
 
   panelDropdown: {
@@ -684,11 +770,6 @@ const styles = {
     cursor: 'pointer',
     outline: 'none',
     minWidth: '150px',
-  },
-
-  section: {
-    padding: '14px 16px 14px 22px',
-    borderBottom: '1px solid #f3f4f6',
   },
 
   sectionTitle: {
@@ -797,12 +878,8 @@ const styles = {
     outline: 'none',
   },
 
-  esgCard: {
-    backgroundColor: '#f9fafb',
-    borderRadius: '10px',
-    border: '1px solid #e5e7eb',
-    padding: '12px 14px',
-    marginBottom: '10px',
+  esgCardBody: {
+    paddingTop: '2px',
   },
 
   esgCardTitle: {
@@ -845,13 +922,6 @@ const styles = {
   esgItemVal: {
     fontWeight: '600',
     color: '#1f2937',
-  },
-
-  liveSection: {
-    backgroundColor: '#f8fafc',
-    borderRadius: '10px',
-    border: '1px solid #e2e8f0',
-    padding: '12px',
   },
 
   liveSectionTitle: {
