@@ -36,6 +36,12 @@ const TERRITORY_CENTERS = {
 const BORNEO_CENTER = [1.5, 114.6];
 const DEFAULT_ZOOM = 6;
 
+// SW / NE corners tracing the island itself — Kudat (north tip) to Banjarmasin (south tip)
+const BORNEO_BOUNDS = [
+  [-4.3, 108.8],
+  [6.95, 119.2],
+];
+
 const TERRITORY_OPTIONS = ['Overall Borneo', 'Sabah', 'Sarawak', 'Brunei', 'Kalimantan'];
 const ESG_CATEGORIES = ['Environment', 'Social', 'Governance'];
 const RAG_COLORS = { green: '#16a34a', amber: '#f59e0b', red: '#dc2626' };
@@ -64,6 +70,40 @@ const ResizeMap = () => {
       observer.disconnect();
       window.removeEventListener('resize', resizeMap);
     };
+  }, [map]);
+
+  return null;
+};
+
+const BORNEO_SHIFT_LEFT_FRACTION = 0.18;
+
+function applyBorneoFit(map) {
+  // Fit Borneo (Sabah, Sarawak, Brunei, Kalimantan) centered in the map.
+  map.fitBounds(BORNEO_BOUNDS, {
+    paddingTopLeft: [40, 90],
+    paddingBottomRight: [40, 30],
+    animate: false,
+  });
+
+  // Nudge slightly left, same zoom.
+  const shiftLeft = map.getSize().x * BORNEO_SHIFT_LEFT_FRACTION;
+  map.panBy([shiftLeft, 0], { animate: false });
+
+  // Lock this framing as the maximum zoom-out — users can zoom in but not past this.
+  map.setMinZoom(map.getZoom());
+
+  // Cap panning to exactly this framing: at the locked-out zoom there's no
+  // slack to drag at all; zooming in opens up room to pan within this box only.
+  map.setMaxBounds(map.getBounds());
+}
+
+const FitBorneoOnLoad = () => {
+  const map = useMap();
+
+  useEffect(() => {
+    // Defer one tick so the container has its final layout size.
+    const id = setTimeout(() => applyBorneoFit(map), 250);
+    return () => clearTimeout(id);
   }, [map]);
 
   return null;
@@ -208,7 +248,7 @@ const OverviewDashboard = () => {
   }, []);
 
   const handleRecenter = useCallback(() => {
-    mapRef.current?.setView(BORNEO_CENTER, DEFAULT_ZOOM);
+    if (mapRef.current) applyBorneoFit(mapRef.current);
   }, []);
 
   const onDragStart = useCallback(
@@ -368,17 +408,12 @@ const OverviewDashboard = () => {
           ref={mapRef}
           center={BORNEO_CENTER}
           zoom={DEFAULT_ZOOM}
-          minZoom={6}
-          maxZoom={8}
-          maxBounds={[
-            [-7.0, 108.5],
-            [7.0, 119.5],
-          ]}
-          maxBoundsViscosity={1.0}
           style={styles.map}
           zoomControl={false}
+          maxBoundsViscosity={1.0}
         >
           <ResizeMap />
+          <FitBorneoOnLoad />
 
           <TileLayer
             url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
