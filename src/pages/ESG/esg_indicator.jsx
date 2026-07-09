@@ -1,6 +1,4 @@
 import { useMemo, useState } from 'react';
-import Sidebar from '../../components/sidebar';
-import MiniTopBar from '../../components/MiniTopBar';
 import {
   CATEGORY_TO_PILLAR,
   TERRITORIES,
@@ -12,7 +10,6 @@ import {
 } from '../../data/useIndicators';
 
 const ESGIndicator = () => {
-  const [isSidebarOpen, setIsSidebarOpen]     = useState(true);
   const [selectedRegion, setSelectedRegion]   = useState('Sarawak');
   const [selectedCategory, setSelectedCategory] = useState('Environment');
   const { data, loading, error } = useIndicators();
@@ -31,11 +28,6 @@ const ESGIndicator = () => {
 
       {/* ── Right column: topbar + scrollable content ── */}
       <div style={styles.rightCol}>
-        <MiniTopBar
-          onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          notifCount={2}
-        />
-
         <div style={styles.content}>
 
           {/* ── Page header ── */}
@@ -143,14 +135,14 @@ const styles = {
   // ── Layout ──
   container: {
     display:         'flex',
-    height:          '100vh',
+    minHeight:       '100%',
     width:           '100%',
     backgroundColor: '#f3f4f6',
     fontFamily:      'Inter, Arial, sans-serif',
-    overflow:        'hidden',
+    overflow:        'visible',
   },
   sidebarWrapper: {
-    overflow:   'hidden',
+    overflow:   'visible',
     transition: 'width 0.3s ease, min-width 0.3s ease',
     flexShrink: 0,
     height:     '100%',
@@ -159,12 +151,12 @@ const styles = {
     flex:          1,
     display:       'flex',
     flexDirection: 'column',
-    height:        '100vh',
-    overflow:      'hidden',
+    minHeight:     '100%',
+    overflow:      'visible',
   },
   content: {
     flex:      1,
-    overflowY: 'auto',
+    overflow:  'visible',
     padding:   '24px',
     boxSizing: 'border-box',
   },

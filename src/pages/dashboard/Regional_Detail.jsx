@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import * as echarts from 'echarts';
-import Sidebar from '../../components/sidebar';
-import MiniTopBar from '../../components/MiniTopBar';
 import {
   TERRITORIES,
   countTrendReadyConcepts,
@@ -20,7 +18,6 @@ import {
 } from '../../data/useIndicators';
 
 const RegionalDetails = () => {
-  const [isSidebarOpen,      setIsSidebarOpen]      = useState(true);
   const [selectedTerritory,  setSelectedTerritory]  = useState('Sarawak');
   const [selectedConcept,    setSelectedConcept]    = useState('forest_cover');
   const [chartMode,          setChartMode]          = useState('snapshot');
@@ -219,8 +216,6 @@ const RegionalDetails = () => {
 
       {/* Right column */}
       <div style={styles.rightCol}>
-        <MiniTopBar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} notifCount={2} />
-
         <div style={styles.content}>
 
           {/* Toolbar */}
@@ -426,10 +421,10 @@ const RegionalDetails = () => {
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 const styles = {
-  container:      { display: 'flex', height: '100vh', width: '100%', backgroundColor: '#f3f4f6', fontFamily: 'Inter, Arial, sans-serif', overflow: 'hidden' },
-  sidebarWrapper: { overflow: 'hidden', transition: 'width 0.3s ease, min-width 0.3s ease', flexShrink: 0, height: '100%' },
-  rightCol:       { flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' },
-  content:        { flex: 1, padding: '24px', overflowY: 'auto', boxSizing: 'border-box' },
+  container:      { display: 'flex', minHeight: '100%', width: '100%', backgroundColor: '#f3f4f6', fontFamily: 'Inter, Arial, sans-serif', overflow: 'visible' },
+  sidebarWrapper: { overflow: 'visible', transition: 'width 0.3s ease, min-width 0.3s ease', flexShrink: 0, height: '100%' },
+  rightCol:       { flex: 1, display: 'flex', flexDirection: 'column', minHeight: '100%', overflow: 'visible' },
+  content:        { flex: 1, padding: '24px', overflow: 'visible', boxSizing: 'border-box' },
 
   topToolbar:   { display: 'flex', gap: '16px', flexWrap: 'wrap', marginBottom: '20px' },
   toolbarGroup: { display: 'flex', flexDirection: 'column', gap: '6px' },

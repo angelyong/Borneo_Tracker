@@ -20,7 +20,7 @@ const styles = {
     left: 0,
     right: 0,
     bottom: 0,
-    height: '25px',
+    height: '20px',
     background: COLORS.forestDark,
     color: '#E5EFE8',
     display: 'flex',

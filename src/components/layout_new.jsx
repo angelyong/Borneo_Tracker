@@ -1,20 +1,31 @@
 import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import Footer from './footer';
 import Sidebar from './sidebar';
 import MiniTopBar from './MiniTopBar';
 
-const TOPBAR_HEIGHT  = 38;
+const TOPBAR_HEIGHT = 38;
 const FOOTER_HEIGHT = 10;
 
 const Layout = ({ children }) => {
+  const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const isDashboardPage = location.pathname === '/';
   const sidebarWidth = isSidebarOpen ? 240 : 0;
+
+  const handleMenuClick = () => {
+    setIsSidebarOpen((value) => !value);
+
+    setTimeout(() => {
+      window.dispatchEvent(new Event('resize'));
+    }, 300);
+  };
 
   return (
     <div style={styles.layout}>
       <MiniTopBar
-        onMenuClick={() => setIsSidebarOpen((value) => !value)}
+        onMenuClick={handleMenuClick}
         notifCount={2}
       />
 
@@ -23,8 +34,13 @@ const Layout = ({ children }) => {
           <Sidebar collapsed={!isSidebarOpen} />
         </aside>
 
-        <main style={styles.main}>
-          {children || <Outlet />}
+        <main
+          style={{
+            ...styles.main,
+            overflow: isDashboardPage ? 'hidden' : 'auto',
+          }}
+        >
+          {children || <Outlet context={{ isSidebarOpen }} />}
         </main>
       </div>
 
@@ -67,7 +83,6 @@ const styles = {
     minHeight: 0,
     height: '100%',
     position: 'relative',
-    overflow: 'hidden',
     backgroundColor: '#ffffff',
   },
 };

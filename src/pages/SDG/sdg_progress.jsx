@@ -1,6 +1,4 @@
 import { useMemo, useState } from 'react';
-import Sidebar from '../../components/sidebar';
-import MiniTopBar from '../../components/MiniTopBar';
 import {
   SDG_GOALS,
   TERRITORIES,
@@ -12,12 +10,10 @@ import {
 } from '../../data/useIndicators';
 
 const SDGProgress = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [selectedRegion, setSelectedRegion] = useState('Sarawak');
   const [selectedGoal, setSelectedGoal] = useState('SDG1');
   const { data, loading, error } = useIndicators();
 
-  const toggleSidebar = () => setIsSidebarOpen(!isSidebarOpen);
   const rows = useMemo(() => {
     if (!data?.rows) return [];
     return getRowsForSdg(data.rows, selectedRegion, selectedGoal);
@@ -30,8 +26,6 @@ const SDGProgress = () => {
       
 
       <div style={styles.rightCol}>
-        <MiniTopBar onMenuClick={toggleSidebar} notifCount={2} />
-
         <div style={styles.content}>
         <div style={styles.header}>
           <div style={styles.headerLeft}>
@@ -145,14 +139,14 @@ const SDGProgress = () => {
 const styles = {
   container: {
     display: 'flex',
-    height: '100vh',
+    minHeight: '100%',
     width: '100%',
     backgroundColor: '#f3f4f6',
     fontFamily: 'Inter, Arial, sans-serif',
-    overflow: 'hidden',
+    overflow: 'visible',
   },
   sidebarWrapper: {
-    overflow: 'hidden',
+    overflow: 'visible',
     transition: 'width 0.3s ease, min-width 0.3s ease',
     flexShrink: 0,
     height: '100%',
@@ -161,13 +155,13 @@ const styles = {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    height: '100vh',
-    overflow: 'hidden',
+    minHeight: '100%',
+    overflow: 'visible',
   },
   content: {
     flex: 1,
     padding: '24px',
-    overflowY: 'auto',
+    overflow: 'visible',
     boxSizing: 'border-box',
   },
   header: {

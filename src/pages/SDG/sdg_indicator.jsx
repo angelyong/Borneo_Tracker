@@ -1,6 +1,4 @@
 import { useState } from 'react';
-import Sidebar from '../../components/sidebar';
-import MiniTopBar from '../../components/MiniTopBar';
 
 // ── DATA ──────────────────────────────────────────────────────────────────────
 const TERRITORIES = ['All Borneo', 'Sabah', 'Sarawak', 'Brunei', 'Kalimantan'];
@@ -107,7 +105,6 @@ function SDGCard({ sdg }) {
 }
 
 const SDGProgress = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [selectedRegion, setSelectedRegion] = useState('Sarawak');
   const sdgList = SDG_DATA[selectedRegion] || SDG_DATA['All Borneo'];
 
@@ -127,9 +124,6 @@ const SDGProgress = () => {
 
       {/* Right column */}
       <div style={styles.rightCol}>
-        {/* Mini top bar */}
-        <MiniTopBar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} notifCount={2} />
-
         {/* Scrollable content */}
         <div style={styles.main}>
           <div style={styles.exportRow}>
@@ -156,10 +150,10 @@ const SDGProgress = () => {
 };
 
 const styles = {
-  pageWrapper:    { display: 'flex', height: '100vh', width: '100%', backgroundColor: '#f3f4f6', fontFamily: 'Inter, Arial, sans-serif', overflow: 'hidden' },
-  sidebarWrapper: { overflow: 'hidden', transition: 'width 0.3s ease, min-width 0.3s ease', flexShrink: 0, height: '100%' },
-  rightCol:       { flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' },
-  main:           { flex: 1, overflowY: 'auto', padding: '20px 32px 48px', boxSizing: 'border-box' },
+  pageWrapper:    { display: 'flex', minHeight: '100%', width: '100%', backgroundColor: '#f3f4f6', fontFamily: 'Inter, Arial, sans-serif', overflow: 'visible' },
+  sidebarWrapper: { overflow: 'visible', transition: 'width 0.3s ease, min-width 0.3s ease', flexShrink: 0, height: '100%' },
+  rightCol:       { flex: 1, display: 'flex', flexDirection: 'column', minHeight: '100%', overflow: 'visible' },
+  main:           { flex: 1, overflow: 'visible', padding: '20px 32px 48px', boxSizing: 'border-box' },
   exportRow:      { display: 'flex', justifyContent: 'flex-end', marginBottom: '4px' },
   exportBtn:      { backgroundColor: 'transparent', border: '1px solid #d1d5db', borderRadius: '8px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', color: '#374151', padding: '6px 14px' },
   pageTitle:      { fontSize: '28px', fontWeight: '700', color: '#1a1a1a', textAlign: 'center', margin: '8px 0 20px' },
