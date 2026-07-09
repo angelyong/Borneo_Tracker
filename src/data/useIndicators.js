@@ -1,6 +1,26 @@
 import { useEffect, useState } from 'react';
 
 export const TERRITORIES = ['Sabah', 'Sarawak', 'Brunei', 'Kalimantan'];
+
+// Region-mode fill: the district/boundary GeoJSON is keyed by province (`parent`),
+// but the Overview map colours the 4 top-level territories. Kalimantan is split
+// across 5 Indonesian provinces, so they all roll up to one "Kalimantan".
+export const PROVINCE_TO_TERRITORY = {
+  Sabah: 'Sabah',
+  Sarawak: 'Sarawak',
+  Brunei: 'Brunei',
+  'Kalimantan Barat': 'Kalimantan',
+  'Kalimantan Selatan': 'Kalimantan',
+  'Kalimantan Tengah': 'Kalimantan',
+  'Kalimantan Timur': 'Kalimantan',
+  'Kalimantan Utara': 'Kalimantan',
+};
+
+// Map a boundary polygon's `parent` (province/state) to its top-level territory.
+export function territoryForParent(parent) {
+  return PROVINCE_TO_TERRITORY[parent] || parent || null;
+}
+
 export const CATEGORY_TO_PILLAR = {
   Environment: 'E',
   Social: 'S',
@@ -139,6 +159,35 @@ export function useDistrictGeo() {
       try {
         const response = await fetch('/data/borneo_districts.geojson');
         if (!response.ok) throw new Error(`Failed to load district boundaries (${response.status})`);
+        const payload = await response.json();
+        if (!ignore) setState({ data: payload, loading: false, error: null });
+      } catch (error) {
+        if (!ignore) setState({ data: null, loading: false, error: error.message });
+      }
+    }
+
+    load();
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  return state;
+}
+
+// Brunei's national outline. The district boundary file only covers Sabah,
+// Sarawak and Kalimantan's provinces, so Brunei is loaded separately to complete
+// the 4-territory fill on the Overview map.
+export function useBruneiGeo() {
+  const [state, setState] = useState({ data: null, loading: true, error: null });
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function load() {
+      try {
+        const response = await fetch('/data/brunei.geojson');
+        if (!response.ok) throw new Error(`Failed to load Brunei boundary (${response.status})`);
         const payload = await response.json();
         if (!ignore) setState({ data: payload, loading: false, error: null });
       } catch (error) {

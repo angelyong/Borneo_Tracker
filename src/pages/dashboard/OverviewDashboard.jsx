@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { CircleMarker, GeoJSON, MapContainer, Popup, TileLayer, Tooltip, useMap } from 'react-leaflet';
+import { GeoJSON, MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
 import {
@@ -17,7 +17,9 @@ import {
   getRowsForPillar,
   layerColorScale,
   summarizeRows,
+  territoryForParent,
   titleCaseConfidence,
+  useBruneiGeo,
   useDistrictGeo,
   useDistricts,
   useIndicators,
@@ -312,6 +314,7 @@ const OverviewDashboard = () => {
   const { data: resilience } = useResilience();
   const { data: districtData } = useDistricts();
   const { data: districtGeo } = useDistrictGeo();
+  const { data: bruneiGeo } = useBruneiGeo();
 
   const isDistrict = level === 'district';
   const districtParents = useMemo(() => getDistrictParents(districtData), [districtData]);
@@ -382,6 +385,84 @@ const OverviewDashboard = () => {
   }, [activeLayer, data]);
 
   const colorForValue = useMemo(() => layerColorScale(layerEntries, activeLayer), [activeLayer, layerEntries]);
+
+  // Region-mode fill: colour each of the 4 territories by the active layer's value,
+  // reusing the same relative RAG scale the circle markers used. Boundary polygons
+  // are keyed by province, so each province rolls up to its parent territory.
+  const territoryFill = useMemo(() => {
+    const byTerritory = {};
+    layerEntries.forEach(({ territory, row }) => {
+      const value = row?.value;
+      byTerritory[territory] = {
+        row: row || null,
+        color: Number.isFinite(value) ? colorForValue(value) : null,
+      };
+    });
+    return byTerritory;
+  }, [layerEntries, colorForValue]);
+
+  const styleTerritoryFeature = useCallback(
+    (feature) => {
+      const territory = territoryForParent(feature.properties?.parent);
+      const fill = territoryFill[territory]?.color;
+      const hasData = !!fill;
+      // Stroke matches the fill so internal province/district seams vanish and each
+      // territory reads as one solid shape; neighbouring territories still separate
+      // wherever their colours differ.
+      return {
+        fillColor: fill || '#94a3b8',
+        color: fill || '#94a3b8',
+        weight: 1,
+        fillOpacity: hasData ? 0.72 : 0.28,
+        dashArray: hasData ? null : '2 3',
+      };
+    },
+    [territoryFill]
+  );
+
+  const onEachTerritoryFeature = useCallback(
+    (feature, layer) => {
+      const territory = territoryForParent(feature.properties?.parent);
+      const entry = territoryFill[territory];
+      const valueText = entry?.row ? formatValue(entry.row) : 'No data for this layer';
+      layer.bindTooltip(
+        `<strong>${territory}</strong><br/>${LAYER_CONFIG[activeLayer]?.label || ''}<br/>${valueText}`,
+        { direction: 'top', sticky: true }
+      );
+    },
+    [territoryFill, activeLayer]
+  );
+
+  // Floating value labels pinned at each territory centre (the demo's "pills").
+  const territoryLabels = useMemo(() => {
+    return layerEntries
+      .map(({ territory, row }) => {
+        const center = TERRITORY_CENTERS[territory];
+        if (!center) return null;
+        const valueText = row ? formatValue(row) : 'No data';
+        const icon = L.divIcon({
+          className: '',
+          html:
+            `<div style="transform:translate(-50%,-50%);display:inline-block;white-space:nowrap;` +
+            `background:#ffffff;border:1px solid #e3e9e5;border-radius:7px;padding:2px 8px;` +
+            `font:600 11px/1.25 Inter,Arial,sans-serif;color:#1f2937;` +
+            `box-shadow:0 1px 5px rgba(15,23,42,0.22);">${territory} · ${valueText}</div>`,
+          iconSize: [0, 0],
+        });
+        return { territory, center, icon };
+      })
+      .filter(Boolean);
+  }, [layerEntries]);
+
+  // On-map legend scale for the active layer (green = better end, red = worse).
+  const legendScale = useMemo(() => {
+    const better = LAYER_CONFIG[activeLayer]?.better;
+    return [
+      { label: better === 'higher' ? 'Higher (better)' : 'Lower (better)', color: RAG_COLORS.green },
+      { label: 'Middle', color: RAG_COLORS.amber },
+      { label: better === 'higher' ? 'Lower (worse)' : 'Higher (worse)', color: RAG_COLORS.red },
+    ];
+  }, [activeLayer]);
 
   // District choropleth/list entries for the active layer, under the current parent.
   const districtLayerEntries = useMemo(() => {
@@ -780,47 +861,36 @@ const OverviewDashboard = () => {
             />
           )}
 
+          {/* Region mode: fill each of the 4 territories by the active layer's value.
+              District polygons (Sabah/Sarawak/Kalimantan) plus Brunei's own outline. */}
+          {!isDistrict && districtGeo && (
+            <GeoJSON
+              key={`region-fill-${activeLayer}`}
+              data={districtGeo}
+              style={styleTerritoryFeature}
+              onEachFeature={onEachTerritoryFeature}
+            />
+          )}
+
+          {!isDistrict && bruneiGeo && (
+            <GeoJSON
+              key={`region-brunei-${activeLayer}`}
+              data={bruneiGeo}
+              style={styleTerritoryFeature}
+              onEachFeature={onEachTerritoryFeature}
+            />
+          )}
+
           {!isDistrict &&
-            layerEntries.map(({ territory, row }) => {
-              const position = TERRITORY_CENTERS[territory];
-
-              if (!position) return null;
-
-              const color = colorForValue(row?.value);
-
-              return (
-                <CircleMarker
-                  key={`${activeLayer}-${territory}`}
-                  center={position}
-                  radius={18}
-                  pathOptions={{
-                    color,
-                    fillColor: color,
-                    fillOpacity: row ? 0.7 : 0.25,
-                    weight: 2,
-                  }}
-                >
-                  <Tooltip direction="top" offset={[0, -10]} opacity={1}>
-                    <strong>{territory}</strong>
-                    <br />
-                    {row ? formatValue(row) : 'No data'}
-                  </Tooltip>
-
-                  <Popup>
-                    <div style={styles.popupContent}>
-                      <strong>{territory}</strong>
-                      <div>{LAYER_CONFIG[activeLayer]?.label}</div>
-                      <div>{row ? formatValue(row) : 'No data for this layer'}</div>
-                      {row && (
-                        <div style={styles.popupMeta}>
-                          {row.year} · {titleCaseConfidence(row.confidence)}
-                        </div>
-                      )}
-                    </div>
-                  </Popup>
-                </CircleMarker>
-              );
-            })}
+            territoryLabels.map(({ territory, center, icon }) => (
+              <Marker
+                key={`label-${territory}`}
+                position={center}
+                icon={icon}
+                interactive={false}
+                keyboard={false}
+              />
+            ))}
         </MapContainer>
 
         <div style={{ ...styles.mapControls, right: panelWidth + 32 }}>
@@ -839,6 +909,19 @@ const OverviewDashboard = () => {
           >
             ⟲
           </button>
+        </div>
+
+        <div style={styles.mapLegend}>
+          <div style={styles.mapLegendTitle}>{LAYER_CONFIG[activeLayer]?.label || 'Layer'}</div>
+          <div style={styles.mapLegendSub}>
+            {isDistrict ? `Across ${districtParent} districts` : 'Coloured across the 4 regions'}
+          </div>
+          {legendScale.map((item) => (
+            <div key={item.label} style={styles.mapLegendRow}>
+              <span style={{ ...styles.mapLegendDot, background: item.color }} />
+              <span style={styles.mapLegendLabel}>{item.label}</span>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -1143,6 +1226,51 @@ const styles = {
   mapControlBtnLast: {
     borderBottom: 'none',
     fontSize: '16px',
+  },
+
+  mapLegend: {
+    position: 'absolute',
+    left: '20px',
+    bottom: '24px',
+    backgroundColor: 'rgba(255,255,255,0.94)',
+    border: '1px solid rgba(20,40,30,0.12)',
+    borderRadius: '10px',
+    padding: '9px 11px',
+    boxShadow: '0 4px 16px rgba(0,0,0,0.14)',
+    backdropFilter: 'blur(4px)',
+    WebkitBackdropFilter: 'blur(4px)',
+    zIndex: 850,
+  },
+
+  mapLegendTitle: {
+    fontSize: '12px',
+    fontWeight: 700,
+    color: '#1f2937',
+  },
+
+  mapLegendSub: {
+    fontSize: '10.5px',
+    color: '#6b7280',
+    marginBottom: '5px',
+  },
+
+  mapLegendRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    margin: '2px 0',
+  },
+
+  mapLegendDot: {
+    width: 10,
+    height: 10,
+    borderRadius: '50%',
+    flexShrink: 0,
+  },
+
+  mapLegendLabel: {
+    fontSize: '11px',
+    color: '#374151',
   },
 
   searchContainer: {
