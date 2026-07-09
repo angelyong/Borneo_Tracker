@@ -37,6 +37,8 @@ Sabah,Control of Corruption (WGI),2024,57.9,score/100,World Bank WGI,national
 Sarawak,Control of Corruption (WGI),2024,57.9,score/100,World Bank WGI,national
 Brunei,Control of Corruption (WGI),2024,71.9,score/100,World Bank WGI,national
 Kalimantan,Control of Corruption (WGI),2024,36.8,score/100,World Bank WGI,national
+Sabah,Renewable electricity (% output),2021,17.0,%,World Bank,national
+Sarawak,Renewable electricity (% output),2021,17.0,%,World Bank,national
 Brunei,Renewable electricity (% output),2021,0.02,%,World Bank,national
 Kalimantan,Renewable electricity (% output),2021,15.53,%,World Bank,national
 Malaysia,Poverty headcount <$2.15/day (SDG1),2021,0,%,UN SDG API,national
@@ -103,14 +105,14 @@ Kalimantan Barat,"Fire alerts (VIIRS, annual)",2025,21611,count,Global Forest Wa
 Kalimantan Selatan,"Fire alerts (VIIRS, annual)",2025,1987,count,Global Forest Watch (VIIRS),satellite
 Kalimantan Tengah,"Fire alerts (VIIRS, annual)",2025,3895,count,Global Forest Watch (VIIRS),satellite
 Kalimantan Utara,"Fire alerts (VIIRS, annual)",2025,159,count,Global Forest Watch (VIIRS),satellite
-Borneo (all),Active fire hotspots (1d),2026,324,count,"NASA FIRMS (VIIRS, regional CSV)",satellite
-Sabah,"Air quality (AQI, live)",2026,34,AQI,WAQI / aqicn,city
-Sarawak,"Air quality (AQI, live)",2026,50,AQI,WAQI / aqicn,city
-Brunei,"Air quality (AQI, live)",2026,2,AQI,WAQI / aqicn,city
+Borneo (all),Active fire hotspots (1d),2026,436,count,"NASA FIRMS (VIIRS, regional CSV)",satellite
+Sabah,"Air quality (AQI, live)",2026,43,AQI,WAQI / aqicn,city
+Sarawak,"Air quality (AQI, live)",2026,56,AQI,WAQI / aqicn,city
+Brunei,"Air quality (AQI, live)",2026,8,AQI,WAQI / aqicn,city
 Kalimantan Barat,"Air quality (AQI, live)",2023,62,AQI,WAQI / aqicn,city
-Kalimantan Timur,"Air quality (AQI, live)",2026,44,AQI,WAQI / aqicn,city
-Kalimantan Tengah,"Air quality (AQI, live)",2026,55,AQI,WAQI / aqicn,city
-Kalimantan,"Air quality (AQI, live)",2026,54,AQI,WAQI / aqicn (mean of 3 Kalimantan cities),city
+Kalimantan Timur,"Air quality (AQI, live)",2026,50,AQI,WAQI / aqicn,city
+Kalimantan Tengah,"Air quality (AQI, live)",2026,40,AQI,WAQI / aqicn,city
+Kalimantan,"Air quality (AQI, live)",2026,51,AQI,WAQI / aqicn (mean of 3 Kalimantan cities),city
 Sabah,UNESCO World Heritage Sites,2026,1,count,UNESCO World Heritage List (whc.unesco.org),state
 Sarawak,UNESCO World Heritage Sites,2026,2,count,UNESCO World Heritage List (whc.unesco.org),state
 Brunei,UNESCO World Heritage Sites,2026,0,count,UNESCO World Heritage List (whc.unesco.org),national
