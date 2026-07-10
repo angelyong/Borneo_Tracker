@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { COLORS, RADII, SHADOWS } from '../theme';
-import { Icons, Logo, Menu } from './ui';
+import { Icons } from './ui';
 
 const Sidebar = ({ collapsed = false }) => {
   const navigate = useNavigate();
@@ -12,8 +11,8 @@ const Sidebar = ({ collapsed = false }) => {
     { name: 'Regional Details',         path: '/regions',   icon: <Icons.Table size={20} /> },
     { name: 'ESG Indicators',           path: '/esg',       icon: <Icons.Gauge size={20} /> },
     { name: 'SDG Progress',             path: '/sdg',       icon: <Icons.Chart size={20} /> },
-    { name: 'Submit Report',            path: '/submission', icon: <Icons.FileArrow size={20} />     },
     { name: 'Incident Report',          path: '/incident_report', icon: <Icons.People size={20} /> },
+    { name: 'News & Insights',          path: '/news',      icon: <Icons.Newspaper size={20} /> },
     { name: 'Data Sources',             path: '/data-sources', icon: <Icons.Frame size={20} /> },
     { name: 'About Borneo Tracker',     path: '/about',     icon: <Icons.Info size={20} />         },
   ];

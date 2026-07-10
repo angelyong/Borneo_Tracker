@@ -1,0 +1,161 @@
+export const mockNewsArticles = [
+  {
+    id: 'sarawak-peatland-restoration-2026',
+    title: 'Sarawak expands peatland restoration work near coastal villages',
+    aiSummary:
+      'Local agencies and community groups are widening peatland rewetting work in vulnerable coastal areas. The programme focuses on restoring water tables, reducing fire risk, and protecting village livelihoods tied to fisheries and smallholder farms.',
+    imageUrl:
+      'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
+    territory: 'Sarawak',
+    category: 'Environment',
+    sourceName: 'Borneo Environment Desk',
+    sourceUrl: 'https://example.com/sarawak-peatland-restoration',
+    publishedAt: '2026-07-08T08:30:00+08:00',
+    sdgTags: ['SDG 13', 'SDG 15'],
+    indicatorTags: ['Peatland', 'Fire Risk', 'Community Resilience'],
+    isFeatured: true,
+  },
+  {
+    id: 'sabah-renewable-mini-grid',
+    title: 'Sabah pilots renewable mini-grid for remote health facilities',
+    aiSummary:
+      'A new solar and battery mini-grid pilot is being tested to improve power reliability for clinics in interior Sabah. The project is expected to reduce diesel dependence while supporting vaccine storage and emergency care.',
+    imageUrl:
+      'https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=1200&q=80',
+    territory: 'Sabah',
+    category: 'Energy',
+    sourceName: 'Sustainable Infrastructure Review',
+    sourceUrl: 'https://example.com/sabah-renewable-mini-grid',
+    publishedAt: '2026-07-07T10:15:00+08:00',
+    sdgTags: ['SDG 3', 'SDG 7'],
+    indicatorTags: ['Renewable Energy', 'Rural Access', 'Health Services'],
+    isFeatured: false,
+  },
+  {
+    id: 'brunei-mangrove-carbon-monitoring',
+    title: 'Brunei researchers map mangrove carbon storage with drones',
+    aiSummary:
+      'University researchers are combining drone imagery with field measurements to estimate mangrove carbon storage. The work could help improve coastal conservation planning and support more transparent blue carbon reporting.',
+    imageUrl:
+      'https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=1200&q=80',
+    territory: 'Brunei',
+    category: 'Research',
+    sourceName: 'Coastal Science Bulletin',
+    sourceUrl: 'https://example.com/brunei-mangrove-carbon',
+    publishedAt: '2026-07-06T14:40:00+08:00',
+    sdgTags: ['SDG 13', 'SDG 14', 'SDG 15'],
+    indicatorTags: ['Mangroves', 'Carbon Storage', 'Coastal Protection'],
+    isFeatured: false,
+  },
+  {
+    id: 'kalimantan-forest-monitoring-alerts',
+    title: 'Kalimantan forest monitoring alerts focus on high-risk concessions',
+    aiSummary:
+      'Satellite-based alerts are being prioritised around concessions with repeated canopy loss signals. Analysts say faster local verification can help separate legal land clearing from suspected encroachment and illegal logging.',
+    imageUrl:
+      'https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1200&q=80',
+    territory: 'Kalimantan',
+    category: 'Forest',
+    sourceName: 'Regional Forest Watch',
+    sourceUrl: 'https://example.com/kalimantan-forest-alerts',
+    publishedAt: '2026-07-05T09:05:00+08:00',
+    sdgTags: ['SDG 12', 'SDG 15'],
+    indicatorTags: ['Forest Loss', 'Satellite Alerts', 'Land Use'],
+    isFeatured: false,
+  },
+  {
+    id: 'sarawak-river-water-quality',
+    title: 'River water quality checks increase around upstream settlements',
+    aiSummary:
+      'Community monitors are collecting more frequent water samples after heavy rainfall events. The expanded checks will track turbidity, waste indicators, and potential impacts on household water sources.',
+    imageUrl: '',
+    territory: 'Sarawak',
+    category: 'Water',
+    sourceName: 'Borneo Water Network',
+    sourceUrl: '',
+    publishedAt: '2026-07-04T16:20:00+08:00',
+    sdgTags: ['SDG 6', 'SDG 11'],
+    indicatorTags: ['Water Quality', 'Flood Risk', 'Community Monitoring'],
+    isFeatured: false,
+  },
+  {
+    id: 'sabah-wildlife-corridor-planning',
+    title: 'Sabah reviews wildlife corridor plans after road expansion proposal',
+    aiSummary:
+      'Planners are reviewing options to keep wildlife movement routes connected while transport upgrades proceed. Conservation groups are calling for stronger mitigation measures near known elephant and orangutan habitats.',
+    imageUrl:
+      'https://images.unsplash.com/photo-1546182990-dffeafbe841d?auto=format&fit=crop&w=1200&q=80',
+    territory: 'Sabah',
+    category: 'Biodiversity',
+    sourceName: 'Borneo Conservation Brief',
+    sourceUrl: 'https://example.com/sabah-wildlife-corridor',
+    publishedAt: '2026-07-03T11:10:00+08:00',
+    sdgTags: ['SDG 9', 'SDG 15'],
+    indicatorTags: ['Biodiversity', 'Habitat Connectivity', 'Road Planning'],
+    isFeatured: false,
+  },
+  {
+    id: 'kalimantan-air-quality-schools',
+    title: 'Air quality sensors installed near schools in fire-prone districts',
+    aiSummary:
+      'District officials are installing low-cost air quality sensors near schools to support earlier haze response. The data will be used to guide outdoor activity decisions and public health alerts during dry periods.',
+    imageUrl:
+      'https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=1200&q=80',
+    territory: 'Kalimantan',
+    category: 'Health',
+    sourceName: 'Public Health Monitor',
+    sourceUrl: 'https://example.com/kalimantan-air-quality-schools',
+    publishedAt: '2026-07-02T13:25:00+08:00',
+    sdgTags: ['SDG 3', 'SDG 13'],
+    indicatorTags: ['Air Quality', 'Haze', 'Schools'],
+    isFeatured: false,
+  },
+  {
+    id: 'brunei-circular-economy-market',
+    title: 'Brunei market vendors join circular economy waste pilot',
+    aiSummary:
+      'A municipal pilot is helping market vendors separate organic waste and reusable packaging. Early results will inform whether composting and supplier take-back models can be scaled across other commercial areas.',
+    imageUrl:
+      'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&w=1200&q=80',
+    territory: 'Brunei',
+    category: 'Waste',
+    sourceName: 'Urban Sustainability Asia',
+    sourceUrl: 'https://example.com/brunei-circular-market',
+    publishedAt: '2026-06-30T12:00:00+08:00',
+    sdgTags: ['SDG 11', 'SDG 12'],
+    indicatorTags: ['Waste Reduction', 'Circular Economy', 'Markets'],
+    isFeatured: false,
+  },
+  {
+    id: 'sarawak-rural-broadband-climate-data',
+    title: 'Rural broadband upgrades improve climate data reporting',
+    aiSummary:
+      'Connectivity upgrades are helping remote communities submit weather and hazard observations more consistently. Better reporting could strengthen local disaster preparedness and improve regional climate datasets.',
+    imageUrl:
+      'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80',
+    territory: 'Sarawak',
+    category: 'Technology',
+    sourceName: 'Digital Development Journal',
+    sourceUrl: 'https://example.com/sarawak-broadband-climate-data',
+    publishedAt: '2026-06-28T09:45:00+08:00',
+    sdgTags: ['SDG 9', 'SDG 13'],
+    indicatorTags: ['Connectivity', 'Climate Data', 'Disaster Preparedness'],
+    isFeatured: false,
+  },
+  {
+    id: 'sabah-community-reforestation',
+    title: 'Community nurseries supply seedlings for hillside reforestation',
+    aiSummary:
+      'Village nurseries are supplying native seedlings for hillside reforestation in areas affected by erosion. The initiative links local income generation with slope stabilisation and habitat recovery.',
+    imageUrl:
+      'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?auto=format&fit=crop&w=1200&q=80',
+    territory: 'Sabah',
+    category: 'Community',
+    sourceName: 'Green Livelihoods Report',
+    sourceUrl: 'https://example.com/sabah-community-reforestation',
+    publishedAt: '2026-06-25T15:30:00+08:00',
+    sdgTags: ['SDG 8', 'SDG 15'],
+    indicatorTags: ['Reforestation', 'Livelihoods', 'Erosion'],
+    isFeatured: false,
+  },
+];

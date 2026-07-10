@@ -157,6 +157,12 @@ export const Icons = {
       <path d="M9.5 13.5h5m0 0-2-2m2 2-2 2" />
     </g>
   )),
+  Newspaper: I((c) => (
+    <g stroke={c} strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 5.5h12A1.5 1.5 0 0 1 18.5 7v11A1.5 1.5 0 0 1 17 19.5H6.5A2.5 2.5 0 0 1 4 17V7A1.5 1.5 0 0 1 5.5 5.5Z" />
+      <path d="M18.5 8.5H20v8a3 3 0 0 1-3 3M8 9h6M8 12h6M8 15h3" />
+    </g>
+  )),
   People: I((c) => (
     <g stroke={c} strokeWidth="1.8" fill="none" strokeLinecap="round">
       <circle cx="9" cy="9" r="3" />
