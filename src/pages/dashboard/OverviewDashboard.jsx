@@ -106,14 +106,20 @@ function applyBorneoFit(map) {
   map.setMaxBounds(map.getBounds());
 }
 
-const FitBorneoOnLoad = () => {
+const FitBorneoOnLoad = ({ onInitialView }) => {
   const map = useMap();
 
   useEffect(() => {
     // Defer one tick so the container has its final layout size.
-    const id = setTimeout(() => applyBorneoFit(map), 250);
+    const id = setTimeout(() => {
+      applyBorneoFit(map);
+      // Snapshot the exact view the page opened on, so "recenter" can restore
+      // this precisely later instead of recomputing a fit (which drifts if the
+      // container size at click-time differs from load-time).
+      onInitialView?.({ center: map.getCenter(), zoom: map.getZoom() });
+    }, 250);
     return () => clearTimeout(id);
-  }, [map]);
+  }, [map, onInitialView]);
 
   return null;
 };
@@ -309,6 +315,7 @@ const OverviewDashboard = () => {
   const startW = useRef(0);
   const mapRef = useRef(null);
   const searchRef = useRef(null);
+  const initialViewRef = useRef(null);
 
   const { data, loading, error } = useIndicators();
   const { data: resilience } = useResilience();
@@ -345,8 +352,22 @@ const OverviewDashboard = () => {
     mapRef.current?.zoomOut();
   }, []);
 
+  const handleInitialView = useCallback((view) => {
+    initialViewRef.current = view;
+  }, []);
+
   const handleRecenter = useCallback(() => {
-    if (mapRef.current) applyBorneoFit(mapRef.current);
+    const map = mapRef.current;
+    if (!map) return;
+
+    if (initialViewRef.current) {
+      // Restore the exact view captured on first load — not a recomputed fit,
+      // which can land somewhere slightly different if the container size at
+      // click-time doesn't match load-time.
+      map.setView(initialViewRef.current.center, initialViewRef.current.zoom, { animate: true });
+    } else {
+      applyBorneoFit(map);
+    }
   }, []);
 
   const onDragStart = useCallback(
@@ -837,7 +858,7 @@ const OverviewDashboard = () => {
           maxBoundsViscosity={1.0}
         >
           <ResizeMap />
-          <FitBorneoOnLoad />
+          <FitBorneoOnLoad onInitialView={handleInitialView} />
           <MapFocus
             geo={districtGeo}
             parent={districtParent}
