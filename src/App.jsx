@@ -6,6 +6,7 @@ import SDGProgress from './pages/SDG/sdg_progress';
 import MyProfile from './pages/profile/MyProfile';
 import NewsPage from './pages/news/NewsPage';
 import NewsDetailPage from './pages/news/NewsDetailPage';
+import AboutPage from './pages/about/AboutPage';
 import Layout from './components/layout_new';
 
 const Placeholder = ({ title }) => (
@@ -28,7 +29,7 @@ function App() {
           <Route path="/submission" element={<Placeholder title="Submit Report" />} />
           <Route path="/incident_report" element={<Placeholder title="Incident Report" />} />
           <Route path="/data-sources" element={<Placeholder title="Data Sources" />} />
-          <Route path="/about" element={<Placeholder title="About Borneo Tracker" />} />
+          <Route path="/about" element={<AboutPage />} />
           <Route path="/profile" element={<MyProfile />} />
         </Route>
       </Routes>

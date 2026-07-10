@@ -51,7 +51,9 @@ const Layout = ({ children }) => {
 
 const styles = {
   layout: {
-    width: '100vw',
+    width: '100%',
+    maxWidth: '100%',
+    minWidth: 0,
     height: '100vh',
     backgroundColor: '#f5f7f8',
     overflow: 'hidden',
@@ -64,6 +66,7 @@ const styles = {
     right: 0,
     bottom: FOOTER_HEIGHT,
     display: 'flex',
+    minWidth: 0,
     overflow: 'hidden',
     backgroundColor: '#f5f7f8',
     zIndex: 1,
@@ -80,6 +83,7 @@ const styles = {
   main: {
     flex: 1,
     minWidth: 0,
+    maxWidth: '100%',
     minHeight: 0,
     height: '100%',
     position: 'relative',
