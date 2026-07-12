@@ -74,10 +74,10 @@ const exploreItems = [
   },
   {
     title: 'Community',
-    body: 'Connect with community initiatives, local updates, and sustainability activities across Borneo.',
+    body: 'Discuss wildlife, culture, livelihoods and everyday life with people across Borneo.',
+    to: '/community',
     icon: Icons.People,
     tone: 'blue',
-    comingSoon: true,
   },
 ];
 

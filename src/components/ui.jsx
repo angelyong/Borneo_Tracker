@@ -23,11 +23,13 @@ export function Logo({ size = 40 }) {
 }
 
 /* ---------- Icons (16/20px inline SVGs) ---------- */
+// `path` normally only needs the stroke/fill color; icons that support a toggled
+// visual state (e.g. a "liked" heart) can read `filled` from the second argument.
 const I = (path, viewBox = '0 0 24 24') =>
-  function Icon({ size = 20, color = 'currentColor', style }) {
+  function Icon({ size = 20, color = 'currentColor', style, filled }) {
     return (
       <svg width={size} height={size} viewBox={viewBox} fill="none" style={style}>
-        {path(color)}
+        {path(color, filled)}
       </svg>
     );
   };
@@ -227,6 +229,32 @@ export const Icons = {
     <g stroke={c} strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
       <path d="M12 4 2.8 19.5h18.4L12 4Z" />
       <path d="M12 10v4M12 16.8v.4" />
+    </g>
+  )),
+  Heart: I((c, filled) => (
+    <path
+      d="M12 20.2s-7.8-4.8-10-9.6C.5 7.3 2.4 4 5.8 4c2 0 3.6 1 6.2 3.6C14.6 5 16.2 4 18.2 4c3.4 0 5.3 3.3 3.8 6.6-2.2 4.8-10 9.6-10 9.6Z"
+      stroke={c}
+      strokeWidth="1.8"
+      strokeLinejoin="round"
+      fill={filled ? c : 'none'}
+    />
+  )),
+  Comment: I((c) => (
+    <path
+      d="M4 5.5h16A1.5 1.5 0 0 1 21.5 7v9A1.5 1.5 0 0 1 20 17.5H9l-4.5 4v-4H4A1.5 1.5 0 0 1 2.5 16V7A1.5 1.5 0 0 1 4 5.5Z"
+      stroke={c}
+      strokeWidth="1.8"
+      strokeLinejoin="round"
+      fill="none"
+    />
+  )),
+  Share: I((c) => (
+    <g stroke={c} strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="18" cy="5.5" r="2.6" />
+      <circle cx="6" cy="12" r="2.6" />
+      <circle cx="18" cy="18.5" r="2.6" />
+      <path d="m8.3 10.6 7.4-4.2M8.3 13.4l7.4 4.2" />
     </g>
   )),
 };

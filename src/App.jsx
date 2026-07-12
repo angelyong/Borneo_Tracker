@@ -7,6 +7,7 @@ import MyProfile from './pages/profile/MyProfile';
 import NewsPage from './pages/news/NewsPage';
 import NewsDetailPage from './pages/news/NewsDetailPage';
 import AboutPage from './pages/about/AboutPage';
+import CommunityPage from './pages/community/CommunityPage';
 import Layout from './components/layout_new';
 
 const Placeholder = ({ title }) => (
@@ -26,6 +27,7 @@ function App() {
           <Route path="/sdg" element={<SDGProgress />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/news/:articleId" element={<NewsDetailPage />} />
+          <Route path="/community" element={<CommunityPage />} />
           <Route path="/submission" element={<Placeholder title="Submit Report" />} />
           <Route path="/incident_report" element={<Placeholder title="Incident Report" />} />
           <Route path="/data-sources" element={<Placeholder title="Data Sources" />} />
