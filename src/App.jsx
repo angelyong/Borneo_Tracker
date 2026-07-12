@@ -38,6 +38,7 @@ function App() {
           <Route path="/news" element={<NewsPage />} />
           <Route path="/news/:articleId" element={<NewsDetailPage />} />
           <Route path="/community" element={<CommunityPage />} />
+          <Route path="/reports" element={<GenerateReportPage />} />
           <Route path="/submission" element={<Placeholder title="Submit Report" />} />
           <Route path="/incident_report" element={<Placeholder title="Incident Report" />} />
           <Route path="/data-sources" element={<Placeholder title="Data Sources" />} />
