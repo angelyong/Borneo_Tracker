@@ -8,6 +8,10 @@ import NewsPage from './pages/news/NewsPage';
 import NewsDetailPage from './pages/news/NewsDetailPage';
 import AboutPage from './pages/about/AboutPage';
 import CommunityPage from './pages/community/CommunityPage';
+import LoginPage from './pages/auth/LoginPage';
+import RegisterPage from './pages/auth/RegisterPage';
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
+import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import Layout from './components/layout_new';
 
 const Placeholder = ({ title }) => (
@@ -20,6 +24,11 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+
         <Route element={<Layout />}>
           <Route path="/" element={<OverviewDashboard />} />
           <Route path="/regions" element={<RegionalDetails />} />
