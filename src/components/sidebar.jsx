@@ -14,6 +14,7 @@ const Sidebar = ({ collapsed = false }) => {
     { name: 'Incident Report',          path: '/incident_report', icon: <Icons.People size={20} /> },
     { name: 'News & Insights',          path: '/news',      icon: <Icons.Newspaper size={20} /> },
     { name: 'Community',                path: '/community', icon: <Icons.Comment size={20} /> },
+    { name: 'Generate Report',          path: '/reports',   icon: <Icons.FileArrow size={20} /> },
     { name: 'Data Sources',             path: '/data-sources', icon: <Icons.Frame size={20} /> },
     { name: 'About Borneo Tracker',     path: '/about',     icon: <Icons.Info size={20} />         },
   ];

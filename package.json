@@ -12,6 +12,7 @@
   "dependencies": {
     "echarts": "^6.1.0",
     "html-to-image": "^1.11.13",
+    "jspdf": "^4.2.1",
     "leaflet": "^1.9.4",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
