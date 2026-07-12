@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoImg from '../assets/logo.png';
+import AIbotButton from './AIbotButton';
 
 const MiniTopBar = ({ onMenuClick, notifCount = 0 }) => {
   const navigate = useNavigate();
@@ -36,6 +37,8 @@ const MiniTopBar = ({ onMenuClick, notifCount = 0 }) => {
       >
         <HamburgerIcon />
       </button>
+
+      <AIbotButton />
 
       <div style={styles.logoCenter} onClick={() => navigate('/')}>
         <img src={logoImg} alt="Borneo Tracker Logo" style={styles.logoImage} />
