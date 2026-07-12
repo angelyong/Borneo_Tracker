@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
   SDG_GOALS,
   TERRITORIES,
@@ -8,11 +8,13 @@ import {
   titleCaseConfidence,
   useIndicators,
 } from '../../data/useIndicators';
+import ExportMenu from '../../components/ExportMenu';
 
 const SDGProgress = () => {
   const [selectedRegion, setSelectedRegion] = useState('Sarawak');
   const [selectedGoal, setSelectedGoal] = useState('SDG1');
   const { data, loading, error } = useIndicators();
+  const contentRef = useRef(null);
 
   const rows = useMemo(() => {
     if (!data?.rows) return [];
@@ -20,13 +22,14 @@ const SDGProgress = () => {
   }, [data, selectedGoal, selectedRegion]);
   const summary = summarizeRows(rows);
   const goalLabel = SDG_GOALS.find((item) => item.goal === selectedGoal)?.label || selectedGoal;
+  const filenameBase = `sdg-${selectedGoal}-${selectedRegion}`.toLowerCase().replace(/\s+/g, '-');
 
   return (
     <div style={styles.container}>
-      
+
 
       <div style={styles.rightCol}>
-        <div style={styles.content}>
+        <div style={styles.content} ref={contentRef}>
         <div style={styles.header}>
           <div style={styles.headerLeft}>
             <h1 style={styles.pageTitle}>SDG Progress</h1>
@@ -46,6 +49,9 @@ const SDGProgress = () => {
                 </option>
               ))}
             </select>
+            {!loading && !error && (
+              <ExportMenu targetRef={contentRef} filenameBase={filenameBase} rows={rows} />
+            )}
           </div>
         </div>
 
@@ -188,6 +194,9 @@ const styles = {
   },
   headerRight: {
     flexShrink: 0,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
   },
   dropdown: {
     padding: '10px 16px',

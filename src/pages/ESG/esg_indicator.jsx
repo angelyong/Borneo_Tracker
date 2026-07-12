@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import {
   CATEGORY_TO_PILLAR,
   TERRITORIES,
@@ -8,11 +8,13 @@ import {
   titleCaseConfidence,
   useIndicators,
 } from '../../data/useIndicators';
+import ExportMenu from '../../components/ExportMenu';
 
 const ESGIndicator = () => {
   const [selectedRegion, setSelectedRegion]   = useState('Sarawak');
   const [selectedCategory, setSelectedCategory] = useState('Environment');
   const { data, loading, error } = useIndicators();
+  const contentRef = useRef(null);
 
   const rows = useMemo(() => {
     if (!data?.rows) return [];
@@ -20,15 +22,16 @@ const ESGIndicator = () => {
   }, [data, selectedCategory, selectedRegion]);
 
   const summary = summarizeRows(rows);
+  const filenameBase = `esg-${selectedCategory}-${selectedRegion}`.toLowerCase().replace(/\s+/g, '-');
 
   return (
     <div style={styles.container}>
 
-     
+
 
       {/* ── Right column: topbar + scrollable content ── */}
       <div style={styles.rightCol}>
-        <div style={styles.content}>
+        <div style={styles.content} ref={contentRef}>
 
           {/* ── Page header ── */}
           <div style={styles.header}>
@@ -46,6 +49,9 @@ const ESGIndicator = () => {
                   <option key={t} value={t}>{t}</option>
                 ))}
               </select>
+              {!loading && !error && (
+                <ExportMenu targetRef={contentRef} filenameBase={filenameBase} rows={rows} />
+              )}
             </div>
           </div>
 
@@ -171,7 +177,7 @@ const styles = {
     gap:            '16px',
   },
   headerLeft:  { flex: 1 },
-  headerRight: { flexShrink: 0 },
+  headerRight: { flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10 },
   pageTitle: {
     fontSize:   '24px',
     fontWeight: '700',
