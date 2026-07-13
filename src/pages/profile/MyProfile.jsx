@@ -183,15 +183,7 @@ export default function MyProfile() {
             )}
           </div>
 
-          {/* ── Footer ── */}
-          <footer style={s.footer}>
-            <span>© 2026 Borneo Tracker. All right reserved</span>
-            <div style={s.footerLinks}>
-              {['Privacy Policy', 'Terms of Use', 'Data Policy'].map(l => (
-                <span key={l} style={s.footerLink}>{l}</span>
-              ))}
-            </div>
-          </footer>
+        
         </div>
       </div>
 
@@ -287,10 +279,6 @@ const s = {
   cancelBtn: { padding: '10px 20px', borderRadius: '10px', border: '1px solid #d1d5db', background: '#fff', fontSize: '14px', fontWeight: '600', color: '#374151', cursor: 'pointer' },
   saveBtn:   { padding: '10px 28px', borderRadius: '10px', border: 'none', background: '#d97706', color: '#fff', fontSize: '14px', fontWeight: '700', cursor: 'pointer' },
 
-  // Footer
-  footer:      { marginTop: '32px', paddingTop: '16px', borderTop: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px', color: '#9ca3af', flexWrap: 'wrap', gap: '8px' },
-  footerLinks: { display: 'flex', gap: '16px' },
-  footerLink:  { cursor: 'pointer', color: '#9ca3af' },
 
   // Toast
   toastOverlay: { position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.35)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center' },
