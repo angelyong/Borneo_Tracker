@@ -446,11 +446,16 @@ export function StatCard({ label, value, style }) {
 }
 
 /* ---------- Modal ---------- */
-export function Modal({ open, onClose, width = 560, children, closeButton = true }) {
+// `disableClose` (default false, so existing usages are unchanged) suppresses
+// the two ways this modal can be dismissed — backdrop click and the close
+// button — for flows that must not be interrupted mid-operation, e.g. while a
+// post with attachments is being published. There is intentionally no Escape
+// handler to guard.
+export function Modal({ open, onClose, width = 560, children, closeButton = true, disableClose = false }) {
   if (!open) return null;
   return (
     <div
-      onMouseDown={(e) => e.target === e.currentTarget && onClose?.()}
+      onMouseDown={(e) => !disableClose && e.target === e.currentTarget && onClose?.()}
       style={{
         position: 'fixed',
         inset: 0,
@@ -476,7 +481,7 @@ export function Modal({ open, onClose, width = 560, children, closeButton = true
           position: 'relative',
         }}
       >
-        {closeButton && (
+        {closeButton && !disableClose && (
           <button
             onClick={onClose}
             aria-label="Close"

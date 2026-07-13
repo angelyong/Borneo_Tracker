@@ -1,12 +1,18 @@
 # Borneo Tracker Community 功能实施计划
 
+> **修订记录 (2026-07-13)：** 本版根据评审做了四处调整——
+> ① 新增「删除自己发布的帖子（连同附件）」为本阶段能力；
+> ② 砍掉后台 grace-period orphan reconciliation，只保留「操作当场」的 best-effort 清理（发帖失败回滚 + 删帖清附件），崩溃残留的 orphan 留给未来后端处理；
+> ③ 组件（React Testing Library）测试降级为可选，完成标准以「纯函数校验 + service 一致性」自动化测试为准；
+> ④ 修正两处与实际代码不符的表述：现有 `Modal`（`src/components/ui.jsx`）没有 Escape 关闭逻辑，只有 backdrop 与右上角关闭按钮会触发 `onClose`；以及 IndexedDB 可能被浏览器回收，「刷新后仍可用」不是永久保证。
+
 ## 1. 计划目的
 
 本计划用于把当前已经存在的 Community 前端原型，完成为一个功能连贯、可验证的前端 Community Feed，并加入用户明确要求的 Upload 功能。
 
 本阶段的主要目标是：
 
-> 用户可以查看 Community 帖子，使用搜索与筛选，发布文字以及附件内容，其他内容卡片可以显示图片、播放视频、提供文件下载，并继续支持点赞、评论与分享。
+> 用户可以查看 Community 帖子，使用搜索与筛选，发布文字以及附件内容，删除自己发布的帖子，其他内容卡片可以显示图片、播放视频、提供文件下载，并继续支持点赞、评论与分享。
 
 本阶段不是重新设计 Community，也不加入现有方案以外的社交功能。关注用户、收藏、通知、地图、推荐算法、管理员后台、Verification、无限层评论等均不在本计划实施范围。
 
@@ -31,7 +37,7 @@
 | Mock seed posts | `mockCommunityPosts.js` | 保留并向后兼容 | 页面首次进入仍有示范内容 |
 | 本地互动数据 | `communityService.js` | 本阶段继续使用 | 在没有后端时完成前端工作流 |
 
-### 2.2 本阶段唯一新增的产品能力
+### 2.2 本阶段新增的产品能力
 
 1. 选择或拖放附件。
 2. 发布前预览附件。
@@ -41,15 +47,18 @@
 6. 视频在 Post Card 内播放。
 7. 文件显示名称、格式与大小。
 8. 文件可以下载。
-9. 页面刷新后，同一个浏览器中的附件仍然可用。
+9. 页面刷新后，同一个浏览器中的附件仍然可用（前提是浏览器未回收本地存储，见 2.3）。
 10. 附件读取失败时显示安全的 fallback，不破坏整张帖子。
+11. 删除自己发布的帖子，并连同其附件一起清除（seed 示范帖为只读，不可删除）。
 
 ### 2.3 当前阶段的限制
 
 当前项目没有真正的后端、共享数据库或真实身份系统。因此本阶段完成的是可操作的 frontend prototype：
 
 - 同一浏览器可以发布、查看和下载自己的附件。
-- 刷新页面后附件仍存在。
+- 刷新页面后附件仍存在（前提是浏览器未回收本地存储，见下条）。
+- 浏览器在存储压力下可能回收 IndexedDB（Safari 对脚本可写存储尤其激进），因此附件并非永久保证；v1 可调用 `navigator.storage.persist?.()` 尽力申请持久化，但不能承诺永不丢失。
+- 只能删除本浏览器中自己创建的帖子；seed 示范帖为只读，不可删除。
 - 不同电脑或不同用户无法共享这些本地附件。
 - `CURRENT_USER` 仍然是现有的示范身份 `You`。
 - 前端验证只用于用户体验，不能声称提供生产环境的病毒扫描或安全审核。
@@ -108,6 +117,14 @@
 - Share link。
 - 从 `?post=<id>` 打开并定位到目标帖子。
 
+### 3.6 删除自己的帖子
+
+1. 用户只在自己创建的帖子上看到 **Delete** 操作（seed 示范帖不显示）。
+2. 点击后弹出二次确认，避免误删。
+3. 确认后，service 先从 overlay 移除该帖 metadata（成功即视为删除成功），再 best-effort 删除其全部附件 Blob。
+4. Feed 立即刷新，被删帖子从列表消失。
+5. 删除失败时保留帖子并显示可理解的错误，不留下「看起来删了但其实还在」的状态。
+
 ## 4. 上传规则
 
 ### 4.1 支持格式
@@ -154,6 +171,8 @@
   attachments: []
 }
 ```
+
+删除权限不在 post shape 上加字段：帖子可删 ⇔ 它存在于 overlay（用户创建），seed 帖恒不可删。`getPosts`／`hydratePost` 为 overlay 来源的帖子标记一个派生标志（如 `canDelete: true`），让 UI 直接依据它显示 Delete，而不是靠 `author` 字符串去猜归属。
 
 ### 5.2 Attachment metadata
 
@@ -220,13 +239,12 @@ IndexedDB 保存完整 record：
 - 当前 `saveOverlay()` 会吞掉 localStorage 写入异常，必须增加 strict write path，让 `createPost` 可以知道 quota／serialization 写入是否失败；现有 likes/comments 如需保留静默降级，可以继续使用非 strict wrapper。
 - 如果第 N 个附件失败，best-effort 删除该次已经保存的前 N-1 个附件。
 - 如果附件成功但帖子 metadata 保存失败，best-effort 回滚本次所有新附件。
+- 删除帖子时，先从 overlay 移除 metadata（成功即视为删除成功），再 best-effort 删除其附件 Blob；附件删除失败只记录诊断，不回滚帖子删除。
 - 不允许发布引用不存在 storageKey 的帖子。
 - 旧帖读取失败或 attachment 字段缺失时，normalize 为 `attachments: []`。
-- localStorage 与 IndexedDB 不能形成跨储存的真正原子事务。浏览器在两次写入之间崩溃时仍可能留下 orphan Blob，因此必须实现 reconciliation：读取帖子时收集所有有效 storageKeys，定期或在 Community 初始化时删除没有任何帖子引用、且超过安全保留时间的附件记录。
-- Reconciliation 不能删除刚保存、尚未来得及写 metadata 的附件；attachment record 需要 `createdAt`，并设置合理 grace period 后才可清理。
-- Reconciliation 固定为 Community 成功载入帖子后的 best-effort 后台维护，不阻塞 `getPosts()`、Feed loading 或发帖；失败只记录诊断信息，不能令 Community 进入 error state。
-- Reconciliation 必须跳过刚保存记录、grace-period 边界记录，以及结构损坏但无法确认年龄的记录，不能因无法判断就立即删除。
 - `createPost` 不可在上传开始前读取 overlay，并在上传结束后把旧副本写回。附件保存完成后必须重新读取最新 overlay，只合并新 post 再 strict save；否则会覆盖上传期间刚发生的 Like／Comment。
+- **关于 orphan Blob（本版决定）：** localStorage 与 IndexedDB 无法形成跨储存的真正原子事务，浏览器若在两次写入之间崩溃，仍可能留下没有帖子引用的 orphan Blob。本阶段**不实现**后台 grace-period reconciliation——它为对付一个单用户下近乎理论的边界情况，却引入「误删正在使用的附件」这一更严重的风险和一大堆计时/边界逻辑，投入产出不成正比。v1 只做「操作当场」的 best-effort 清理（发帖失败回滚、删帖清附件）；崩溃残留的 orphan 至多占用用户本机少量配额，可接受，并留待未来后端以服务端定时任务统一清理（见 §13）。
+- **已知并发局限（本版记录）：** 「上传后重新读取 overlay 再合并」只是对发帖路径的针对性缓解。事实上整个 service 的 like／comment 都是 `loadOverlay → 改 → saveOverlay` 的 read-modify-write，同类丢更新问题在单用户下极少发生，本阶段一并接受、不做全局加锁。
 
 ## 7. 文件级实施方案
 
@@ -253,10 +271,11 @@ IndexedDB 保存完整 record：
 - `saveAttachment({ storageKey, blob, createdAt })`
 - `getAttachment(storageKey)`
 - `deleteAttachment(storageKey)`
-- `deleteAttachments(storageKeys)`
-- `listAttachmentRecords()`（供 reconciliation 使用）
+- `deleteAttachments(storageKeys)`（删帖与失败回滚都用它）
+- `listAttachmentRecords()`（可选，仅未来 reconciliation 需要；v1 不依赖，可暂不实现）
 - 统一转换 IndexedDB request／transaction error 为 Promise rejection。
 - 对不支持 IndexedDB、权限拒绝和 quota exceeded 返回可识别错误。
+- 初始化时尽力调用 `navigator.storage.persist?.()` 申请持久化存储，降低被浏览器回收的概率（失败不阻断功能）。
 
 目的：UI 不直接操作浏览器数据库；未来接后端时只需要替换储存适配层。
 
@@ -299,7 +318,9 @@ IndexedDB 保存完整 record：
 - 捕获 create/upload failure。
 - 保持 composer open，并在 Modal 内显示错误。
 - 维护 `submitError` state 并传给 `NewPostForm`。
-- `submittingPost` 为 true 时，Escape、backdrop 和 close action 不得关闭 composer；如现有通用 `Modal` 没有该能力，应增加默认不影响其他页面的 `disableClose` prop。
+- `submittingPost` 为 true 时，backdrop 与关闭按钮不得关闭 composer。**注意现有 `Modal`（`src/components/ui.jsx`）并没有 Escape 关闭逻辑，只有 backdrop mousedown 与右上角关闭按钮会触发 `onClose`**，因此只需新增一个默认不影响其他页面的 `disableClose` prop 去拦截这两者，不要为「拦截 Escape」写一段并不存在的行为。
+- 新增 `handleDeletePost(postId)`：弹二次确认 → 调 `deletePost` → 成功后 `refresh()`；失败用现有 toast/错误提示，且不从列表移除该帖。
+- 把 `onDelete` 传给可删除的 `PostCard`（依 `post.canDelete`）。
 - 成功后调用现有 `refresh()`。
 - 避免 `showToast` 的 timeout 在页面卸载后继续更新 state。
 - Like、Comment 和 Share handler 的行为保持不变。
@@ -317,11 +338,13 @@ IndexedDB 保存完整 record：
 - 只把 metadata 写进 overlay。
 - 实现失败 rollback。
 - 增加可抛出写入错误的 strict metadata save；不能继续依赖当前会吞异常的 `saveOverlay()` 来判断成功。
-- 增加 orphan attachment reconciliation，并使用 grace period 防止误删进行中的上传。
 - 附件保存后重新读取最新 overlay 再合并新 post，避免覆盖同时发生的 Like／Comment。
+- 新增 `deletePost(postId)`：仅允许删除 overlay 中的用户帖子（引用 seed 帖时拒绝并抛错）；先移除 overlay 中的 metadata，再 best-effort 删除其附件 Blob，附件删除失败不回滚帖子删除。
+- `getPosts`／`hydratePost` 为 overlay 来源的帖子标记 `canDelete` 派生标志，供 UI 判断是否显示 Delete。
 - `hydratePost` 对所有帖子补上 `attachments: []`。
 - `loadOverlay` 对损坏或旧版本结构安全降级。
 - 保持现有 `getPosts`、likes、comments API 兼容。
+- 本阶段不实现后台 reconciliation（见 §6.3）。
 
 目的：保持 CommunityPage 使用单一 service API，并确保 metadata 与 Blob 不出现半完成状态。
 
@@ -351,6 +374,8 @@ IndexedDB 保存完整 record：
 - 无附件时不产生额外空白。
 - 保持 Like、Comment、Share 和 Read more 的 DOM 行为。
 - 确保长文件名不撑破卡片。
+- `post.canDelete` 为 true 时显示 **Delete** 操作，点击经二次确认后触发 `onDelete`；seed 帖不显示。
+- Delete 控件需有可被 screen reader 识别的 accessible name（含帖子标题）。
 
 目的：让所有帖子保持统一卡片结构，同时控制组件职责。
 
@@ -380,6 +405,7 @@ IndexedDB 保存完整 record：
 - 浏览器 quota exceeded。
 - IndexedDB transaction 失败。
 - Post metadata 写入失败。
+- 删除帖子时 metadata 写入失败（保留帖子并报错，不留下「已消失但其实还在」的假象）。
 - 已发布附件后来找不到。
 
 失败行为：
@@ -405,15 +431,13 @@ IndexedDB 保存完整 record：
 
 ## 10. 测试基础与自动化
 
-当前 `package.json` 没有 test script。本计划需要先加入最小测试基础：
+当前 `package.json` 没有 test script。本计划的**必需**测试基础（完成标准以此为准）：
 
 - Vitest。
-- jsdom。
-- React Testing Library（用于组件交互测试）。
-- fake-indexeddb（用于稳定测试 IndexedDB service；不要依赖测试环境真实浏览器数据库）。
+- fake-indexeddb（稳定测试 IndexedDB service；不要依赖测试环境真实浏览器数据库）。
 - `npm run test` script。
 
-如果项目团队不希望新增测试依赖，至少必须完成纯函数测试；但本计划的完成标准仍以有可重复运行的自动化测试为准。
+**可选**（仅当要做组件交互测试时才装）：jsdom + React Testing Library。§10.3 的组件测试本版降级为可选、不进入完成标准——原因是它最贵写、最脆（UI 一改就红），而这是快速迭代的原型 UI；同样的信心用 §10.1 纯函数测试 + §10.2 service 测试即可拿到，回报率更高。§10.4 手动验收清单继续作为 UI 层的验证手段。
 
 ### 10.1 单元测试
 
@@ -436,15 +460,14 @@ IndexedDB 保存完整 record：
 - metadata save 失败时 rollback 全部新附件。
 - strict metadata save 必须向 `createPost` 抛出 quota／serialization error。
 - attachment store failure 不产生 post。
-- reconciliation 只清理无引用且超过 grace period 的记录。
-- reconciliation 不删除仍被 post metadata 引用的 Blob。
 - 上传期间发生的 Like／Comment 不会被 `createPost` 的旧 overlay 覆盖。
-- reconciliation 失败不影响 `getPosts` 和 Feed loading。
-- 刚保存记录、grace-period 边界和无法确认年龄的损坏记录不会被误删。
+- `deletePost` 从 overlay 移除用户帖并 best-effort 删除其附件 Blob。
+- `deletePost` 拒绝删除 seed 帖，且不影响其他帖子与既有 likes/comments。
+- 删附件 Blob 失败时，帖子仍被视为删除成功（不回滚删除）。
 - 旧 localStorage overlay 可以继续读取。
 - likes、comments、comment likes 不受 attachments 影响。
 
-### 10.3 Component 测试
+### 10.3 Component 测试（可选，不进入完成标准）
 
 - Browse 选择文件。
 - Drag-and-drop 文件。
@@ -453,10 +476,11 @@ IndexedDB 保存完整 record：
 - 提交中防止 double submit。
 - 发布失败后 form 内容仍存在。
 - `submitError` 正确显示和清除，失败后 title、body 与 attachments 都仍存在。
-- submitting 时 Escape 和 backdrop 不能关闭 Modal。
+- submitting 时 backdrop 与关闭按钮不能关闭 Modal（现有 Modal 无 Escape 逻辑，无需测 Escape）。
 - 有 attachment 的 PostCard 正确渲染。
 - missing attachment 显示 fallback。
 - Download action 使用正确文件名。
+- 可删除帖子显示 Delete、seed 帖不显示；确认后触发 `onDelete`。
 
 ### 10.4 手动验收
 
@@ -475,6 +499,7 @@ IndexedDB 保存完整 record：
 13. 使用 shared URL 打开 attachment post 并正确定位。
 14. 手动删除 IndexedDB attachment，确认 fallback 正常。
 15. 清除 localStorage 后确认 seed posts 仍正常。
+16. 删除自己发布的附件帖，确认帖子消失、附件同时清除，且 seed 帖没有 Delete 按钮。
 
 ## 11. 实施阶段与依赖顺序
 
@@ -483,7 +508,7 @@ IndexedDB 保存完整 record：
 目的：确保后续可以判断是否破坏现有功能。
 
 - [ ] 记录现有 Community 主要用户流程。
-- [ ] 加入 test runner 和 test script。
+- [ ] 加入 test runner（Vitest + fake-indexeddb）和 `npm run test`；RTL/jsdom 可选，仅做组件测试时才加。
 - [ ] 为 `communityUtils` 和 `communityService` 现有行为补 baseline tests。
 - [ ] 确认 lint 状态。
 - [ ] 修复当前环境的 production build dependency 问题后记录基线 build。
@@ -499,7 +524,7 @@ IndexedDB 保存完整 record：
 - [ ] 新增 `communityAttachmentStore.js`。
 - [ ] 测试 save、get、delete、bulk delete 和失败情况。
 - [ ] 固定 IndexedDB record shape 为 `{ storageKey, blob, createdAt }`。
-- [ ] 实现并测试带 grace period 的 orphan reconciliation。
+- [ ] 初始化时尽力 `navigator.storage.persist?.()` 申请持久化。
 - [ ] 在 `communityService.js` 加 post normalization。
 
 完成条件：允许文件可以保存、读取、删除；非法文件在写入前被拒绝；旧帖子仍可读取。
@@ -528,8 +553,8 @@ IndexedDB 保存完整 record：
 - [ ] 写入 serializable metadata。
 - [ ] 实现 rollback。
 - [ ] 实现 strict metadata save，使 localStorage 写入失败可被 create flow 捕获。
-- [ ] 在 Community 成功载入帖子后，以不阻塞 Feed 的 best-effort 后台任务运行 reconciliation。
 - [ ] 附件保存后重新读取最新 overlay 再合并帖子，并测试不会覆盖并发 Like／Comment。
+- [ ] 实现 `deletePost`（仅用户帖，先删 metadata 再 best-effort 删附件）+ `CommunityPage` 的删除确认与刷新。
 - [ ] 接通 `submitError` state/prop，并在 submitting 时阻止 Modal dismiss。
 - [ ] 在 `CommunityPage.jsx` 显示 submitting／failure 状态。
 - [ ] 成功后刷新 Feed 并关闭 Modal。
@@ -587,7 +612,9 @@ IndexedDB 保存完整 record：
 5. Frontend 使用 attachment IDs 创建帖子。
 6. 查看／下载时 backend 返回有权限和期限的 URL。
 
-未来 production 阶段必须另外处理：真实登录、权限、共享数据库、恶意文件扫描、内容审核、隐私、删除政策和储存费用。这些不是本次 frontend plan 的完成条件。
+未来 production 阶段必须另外处理：真实登录、权限、共享数据库、恶意文件扫描、内容审核、隐私、删除政策和储存费用。这些不是本次 frontend plan 的完成条件。此外，本阶段砍掉的 orphan Blob 清理属于后端的服务端定时任务（扫描无引用的 storage key 再删）——放在这一层与这个时机才正确。
+
+> **可选产品方向（非本阶段范围）：** 若要让 Community 真正长在本产品上，可把「附件」定位为**田野证据**而非泛社交文件——利用帖子已有的 `territory` 给带图帖子挂上地点，让它们在 Overview 地图上作为公民实地上报（森林砍伐、水灾、野生动物）浮现，并回流到数据层。这只是方向记录，是否采用由产品决定。
 
 ## 14. Definition of Done
 
@@ -600,13 +627,14 @@ IndexedDB 保存完整 record：
 - [ ] 图片、视频、PDF、DOCX、XLSX、CSV 可以选择与验证。
 - [ ] 发布前可以预览和移除附件。
 - [ ] 图片可以显示，视频可以播放，文件可以下载。
-- [ ] 同一浏览器刷新后附件仍可用。
+- [ ] 在浏览器未回收本地存储的前提下，同一浏览器刷新后附件仍可用。
 - [ ] Like、Comment、Comment Like、Share、Read more 正常。
+- [ ] 可以删除自己发布的帖子，附件一并清除；seed 帖不可删。
 - [ ] 非法文件不会被保存。
-- [ ] 失败不会产生 broken post；一般失败会 best-effort rollback，浏览器中断产生的 orphan blobs 会在 grace period 后由 reconciliation 清理。
+- [ ] 失败不会产生 broken post；一般失败会 best-effort rollback（发帖失败回滚、删帖清附件）。浏览器崩溃残留的 orphan blob 本阶段不做后台清理，属于已知可接受局限。
 - [ ] 缺失附件有 fallback。
 - [ ] Desktop、mobile 和 keyboard flow 可用。
-- [ ] 自动化测试通过。
+- [ ] 必需自动化测试（纯函数校验 + service 一致性）通过；组件测试为可选。
 - [ ] Lint 通过。
 - [ ] Production build 通过。
-- [ ] README 清楚标明 frontend-only 与 same-browser limitation。
+- [ ] README 清楚标明 frontend-only、same-browser，以及「存储可能被浏览器回收」的 limitation。

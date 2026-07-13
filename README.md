@@ -12,6 +12,7 @@ A public, open-data **ESG / SDG / Resilience dashboard for Borneo Island** — S
 | Regional Detail | `/regions` | Per-territory dashboard: Resilience Index, cross-territory comparison, **real historical trend charts**, Hexagon/ESG coverage |
 | ESG Indicators | `/esg` | E / S / G indicators per territory with confidence tags |
 | SDG Progress | `/sdg` | Six UN SDGs (No Poverty, Quality Education, Clean Water, Economic Growth, Climate Action, Life on Land) |
+| Community | `/community` | Discussion feed with search/filter, posting **with image/video/file attachments**, likes, comments, share, and delete-your-own-post (frontend-only — see limitations below) |
 
 ## Quick start
 
@@ -26,6 +27,7 @@ python compute_resilience.py
 # 3. Run the frontend
 npm install
 npm run dev          # -> http://localhost:5173
+npm run test         # -> Vitest (Community upload rules, storage & service)
 ```
 
 To re-pull fresh data from the live sources you need API keys (`cp .env.example .env` and fill in), then:
@@ -82,6 +84,17 @@ python run_pipeline.py   # ingest -> history -> SQLite -> JSON -> resilience (5 
 - **River water quality**: PDF-only for MY/ID, none for Brunei → Clean Water *Access* is the SDG 6 metric.
 - **Kalimantan Timur** is unmapped in GFW's VIIRS/TCL-change tables → Kalimantan fire & deforestation trends aggregate 4/5 provinces (labelled).
 - **Governance** is country-level only (no sub-national score exists anywhere).
+
+### Community attachments (frontend-only prototype)
+
+The Community feature has **no backend**. Posts, comments, likes and uploaded attachments are stored **only in the current browser** — post/attachment metadata in `localStorage`, and attachment blobs in IndexedDB (`borneo-tracker-community`). Consequences:
+
+- Content is **not shared** across devices or users; another visitor sees only the seed posts.
+- Attachments survive a refresh **only while the browser keeps the storage** — browsers can evict IndexedDB under storage pressure (Safari especially). The app requests persistent storage best-effort, but persistence is **not guaranteed**.
+- Front-end file validation (type / size / count) is for UX only — it is **not** a virus scan or content-signature check.
+- A crash between the two storage writes can leave an orphan blob; v1 does best-effort cleanup at create/delete time and does **not** run a background reconciliation pass (that belongs on a future backend).
+
+A real multi-user version needs a backend (auth, shared DB, object storage, malware scanning, moderation) — the migration path is in `docs/COMMUNITY_UPLOAD_IMPLEMENTATION_PLAN.md`.
 
 ## Key files
 

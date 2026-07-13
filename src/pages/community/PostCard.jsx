@@ -3,6 +3,7 @@ import { Card, Icons } from '../../components/ui';
 import { COLORS, FONT, RADII } from '../../theme';
 import { formatRelativeTime, initialOf, truncateText } from './communityUtils';
 import CommentThread from './CommentThread';
+import PostAttachments from './PostAttachments';
 
 const BODY_PREVIEW_LENGTH = 220;
 
@@ -12,6 +13,7 @@ const PostCard = ({
   onToggleLikeComment,
   onAddComment,
   onShare,
+  onDelete,
   isCommentPosting,
   defaultExpanded = false,
 }) => {
@@ -48,6 +50,8 @@ const PostCard = ({
         )}
       </p>
 
+      <PostAttachments postTitle={post.title} attachments={post.attachments} />
+
       <div style={styles.actionRow}>
         <button
           type="button"
@@ -74,6 +78,18 @@ const PostCard = ({
           <Icons.Share size={18} color={COLORS.muted} />
           Share
         </button>
+
+        {onDelete && (
+          <button
+            type="button"
+            onClick={onDelete}
+            style={styles.deleteBtn}
+            aria-label={`Delete discussion: ${post.title}`}
+          >
+            <Icons.Trash size={18} color={COLORS.red} />
+            Delete
+          </button>
+        )}
       </div>
 
       {expanded && (
@@ -153,6 +169,20 @@ const styles = {
     border: 'none',
     background: 'transparent',
     color: COLORS.muted,
+    fontSize: 13.5,
+    fontWeight: 700,
+    cursor: 'pointer',
+    padding: 0,
+    fontFamily: FONT,
+  },
+  deleteBtn: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 6,
+    marginLeft: 'auto',
+    border: 'none',
+    background: 'transparent',
+    color: COLORS.red,
     fontSize: 13.5,
     fontWeight: 700,
     cursor: 'pointer',

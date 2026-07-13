@@ -6,10 +6,12 @@ import { TERRITORY_OPTIONS, TOPIC_OPTIONS } from '../../data/mockCommunityPosts'
 import {
   addComment,
   createPost,
+  deletePost,
   getPosts,
   toggleLikeComment,
   toggleLikePost,
 } from '../../services/communityService';
+import { requestPersistentStorage } from '../../services/communityAttachmentStore';
 import { buildPostShareUrl, matchesCommunitySearch } from './communityUtils';
 import CommunityFilters from './CommunityFilters';
 import NewPostForm from './NewPostForm';
@@ -29,8 +31,10 @@ const CommunityPage = () => {
 
   const [composerOpen, setComposerOpen] = useState(false);
   const [submittingPost, setSubmittingPost] = useState(false);
+  const [submitError, setSubmitError] = useState('');
   const [pendingCommentPostId, setPendingCommentPostId] = useState(null);
   const [toast, setToast] = useState('');
+  const toastTimer = useRef(null);
 
   const [searchParams] = useSearchParams();
   const highlightedPostId = searchParams.get('post');
@@ -44,6 +48,10 @@ const CommunityPage = () => {
 
   useEffect(() => {
     let cancelled = false;
+
+    // Best-effort: ask the browser to keep our attachment storage from being
+    // evicted under pressure. Never blocks; failure is fine (plan §2.3).
+    requestPersistentStorage();
 
     getPosts()
       .then((nextPosts) => {
@@ -61,6 +69,11 @@ const CommunityPage = () => {
     };
   }, []);
 
+  // Clear any pending toast timeout on unmount so it can't setState afterwards.
+  useEffect(() => () => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+  }, []);
+
   // Land on a shared post: scroll it into view once it's actually on screen.
   useEffect(() => {
     if (!highlightedPostId || loading || !highlightedRef.current) return;
@@ -69,18 +82,44 @@ const CommunityPage = () => {
 
   const showToast = (message) => {
     setToast(message);
-    setTimeout(() => setToast(''), 2500);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(''), 2500);
+  };
+
+  const openComposer = () => {
+    setSubmitError('');
+    setComposerOpen(true);
+  };
+
+  const closeComposer = () => {
+    setComposerOpen(false);
+    setSubmitError('');
   };
 
   const handleCreatePost = async (form) => {
     setSubmittingPost(true);
+    setSubmitError('');
     try {
       await createPost(form);
       await refresh();
-      setComposerOpen(false);
+      closeComposer();
       showToast('Your discussion has been posted.');
+    } catch (err) {
+      // Keep the composer open with the user's input intact and explain why.
+      setSubmitError(err?.message || 'Something went wrong while publishing. Please try again.');
     } finally {
       setSubmittingPost(false);
+    }
+  };
+
+  const handleDeletePost = async (postId) => {
+    if (!window.confirm('Delete this discussion? This can’t be undone.')) return;
+    try {
+      await deletePost(postId);
+      await refresh();
+      showToast('Your discussion has been deleted.');
+    } catch {
+      showToast('Could not delete the discussion. Please try again.');
     }
   };
 
@@ -137,7 +176,7 @@ const CommunityPage = () => {
             life across Sabah, Sarawak, Brunei and Kalimantan.
           </p>
         </div>
-        <Button variant="primary" onClick={() => setComposerOpen(true)}>
+        <Button variant="primary" onClick={openComposer}>
           <Icons.Plus size={18} style={{ marginRight: 6, verticalAlign: -3 }} />
           Start a discussion
         </Button>
@@ -189,6 +228,7 @@ const CommunityPage = () => {
                 onToggleLikeComment={(commentId) => handleToggleLikeComment(post.id, commentId)}
                 onAddComment={(body) => handleAddComment(post.id, body)}
                 onShare={() => handleShare(post.id)}
+                onDelete={post.canDelete ? () => handleDeletePost(post.id) : undefined}
                 isCommentPosting={pendingCommentPostId === post.id}
                 defaultExpanded={post.id === highlightedPostId}
               />
@@ -197,11 +237,13 @@ const CommunityPage = () => {
         </div>
       )}
 
-      <Modal open={composerOpen} onClose={() => setComposerOpen(false)} width={560}>
+      <Modal open={composerOpen} onClose={closeComposer} width={560} disableClose={submittingPost}>
         <NewPostForm
           onSubmit={handleCreatePost}
-          onCancel={() => setComposerOpen(false)}
+          onCancel={closeComposer}
           submitting={submittingPost}
+          submitError={submitError}
+          onDirty={() => setSubmitError('')}
         />
       </Modal>
 
