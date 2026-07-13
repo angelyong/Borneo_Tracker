@@ -1,0 +1,144 @@
+# Borneo Tracker — News Tracker source & query config  (AR-3, Plan A)
+# ---------------------------------------------------------------------------
+# Consumed by fetch_news.py. This is the single source of truth for WHAT news
+# we pull. Edit outlets / keywords here — no code change needed.
+#
+# Design (finalised):
+#   • 6 focused beats: 4 Environment (E) + 2 Governance (G).  High news supply,
+#     sharp identity. NO forced Social (S) searches — but every item is still
+#     tagged esg_pillar (E/S/G) + sdg, so a good social story (e.g. haze →
+#     school closures) that surfaces under an E search still carries its S tag.
+#   • Daily refresh, 48h rolling window.  NO real-time indicator linkage.
+#   • Country label on every item (Malaysia / Brunei / Indonesia).
+
+refresh: daily            # one automated run per day (GitHub Action news.yml)
+lookback_hours: 48        # rolling look-back window at collection time
+languages: [en, ms, id]   # English, Bahasa Malaysia, Bahasa Indonesia
+
+# --- Territories -> country ------------------------------------------------
+territories:
+  - name: Sabah
+    country: Malaysia
+    langs: [en, ms]
+  - name: Sarawak
+    country: Malaysia
+    langs: [en, ms]
+  - name: Brunei
+    country: Brunei
+    langs: [en, ms]
+  - name: Kalimantan          # 5 Indonesian provinces
+    country: Indonesia
+    langs: [id]
+    subregions:
+      - Kalimantan Timur
+      - Kalimantan Barat
+      - Kalimantan Tengah
+      - Kalimantan Selatan
+      - Kalimantan Utara
+
+# --- The 6 focused beats ----------------------------------------------------
+# A query = beat_keyword × territory(or subregion) × language, sent to Google
+# News RSS. esg/sdg are attached to every resulting item as tags.
+beats:
+  - id: fire_haze
+    label: Fire & Haze
+    esg: E
+    sdg: [SDG13, SDG3]
+    keywords:
+      en: [fire, haze, hotspot, "air quality", "peat fire"]
+      ms: [kebakaran, jerebu, "titik panas"]
+      id: [karhutla, "kebakaran hutan", "kabut asap", "titik api"]
+
+  - id: deforestation
+    label: Deforestation & Palm Oil
+    esg: E
+    sdg: [SDG15, SDG12]
+    keywords:
+      en: [deforestation, logging, "palm oil", "forest clearing"]
+      ms: [pembalakan, "kelapa sawit", "penebangan hutan"]
+      id: [deforestasi, "pembalakan liar", "kelapa sawit", "penggundulan hutan"]
+
+  - id: floods_weather
+    label: Floods & Extreme Weather
+    esg: E
+    sdg: [SDG13, SDG11, SDG6]
+    keywords:
+      en: [flood, landslide, drought, storm]
+      ms: [banjir, "tanah runtuh", kemarau]
+      id: [banjir, longsor, "cuaca ekstrem", kekeringan]
+
+  - id: conservation
+    label: Conservation & Wildlife
+    esg: E
+    sdg: [SDG15, SDG14]
+    keywords:
+      en: [orangutan, wildlife, conservation, elephant, "national park"]
+      ms: ["orang utan", "hidupan liar", pemuliharaan, gajah]
+      id: [orangutan, "satwa liar", konservasi, "taman nasional"]
+
+  - id: policy_dev
+    label: Policy & Major Development
+    esg: G
+    sdg: [SDG7, SDG9]
+    keywords:
+      en: [carbon, "renewable energy", "IKN Nusantara", sustainability]
+      ms: ["tenaga boleh baharu", karbon, mampan]
+      id: ["IKN Nusantara", "energi terbarukan", "perdagangan karbon", kelestarian]
+
+  - id: governance
+    label: Governance & Institutions
+    esg: G
+    sdg: [SDG16]
+    keywords:
+      en: ["environmental policy", enforcement, "illegal logging", "land permit", corruption, moratorium]
+      ms: ["dasar alam sekitar", penguatkuasaan, "kelulusan tanah", rasuah, moratorium]
+      id: ["kebijakan lingkungan", "penegakan hukum", "izin lahan", "korupsi kehutanan", moratorium, "tata kelola"]
+
+# --- Trusted outlet whitelist ----------------------------------------------
+# Only stories from these outlets are kept. Google News RSS aggregates them by
+# query (keyless). Outlets with `rss:` ALSO get their native feed pulled for
+# fuller summaries + real publisher links + images (better input = less AI guessing).
+#
+# VERIFIED 2026-07-14 (fetch_news.py --publisher). Live feeds carry a real
+# <description> (fuller than Google News, which only echoes the headline) and
+# usually an image (media:content / <img> in content). Native links are the real
+# publisher URL — no Google redirect. Notes on the checks:
+#   • ANTARA regional feeds only work with the `.xml` suffix (the plain
+#     /rss/terkini path 404s). All 5 Kalimantan editions are live.
+#   • Mongabay (ID + EN) only respond to a real browser User-Agent (Cloudflare
+#     403s a bare urllib UA); fetch_news.py sends a browser UA for these.
+#   • These are general (all-topic) feeds, so fetch_news.py re-applies the beat
+#     keyword + territory tagging and drops anything out of scope. National feeds
+#     (Mongabay, ANTARA national) are kept only when they mention a Borneo territory.
+# Dead as of the check: Kompas (all RSS paths 404/403), Daily Express MY (403),
+#   Jakarta Post (404). Left without a working rss: url below.
+outlets:
+  Sabah:
+    - {name: The Borneo Post, rss: "https://www.theborneopost.com/feed/", verify: true}
+    - {name: Daily Express, rss: "https://www.dailyexpress.com.my/rss/", verify: false}   # 403 to bots
+    - {name: New Sabah Times}
+  Sarawak:
+    - {name: The Borneo Post, rss: "https://www.theborneopost.com/feed/", verify: true}
+    - {name: New Sarawak Tribune}
+    - {name: Utusan Borneo}
+    - {name: See Hua Daily News}
+  Brunei:
+    - {name: Borneo Bulletin}
+    - {name: BruDirect}
+    - {name: Media Permata}
+    - {name: RTB}
+  Kalimantan:
+    - {name: ANTARA Kaltim,  rss: "https://kaltim.antaranews.com/rss/terkini.xml",  verify: true}
+    - {name: ANTARA Kalbar,  rss: "https://kalbar.antaranews.com/rss/terkini.xml",  verify: true}
+    - {name: ANTARA Kalteng, rss: "https://kalteng.antaranews.com/rss/terkini.xml", verify: true}
+    - {name: ANTARA Kalsel,  rss: "https://kalsel.antaranews.com/rss/terkini.xml",  verify: true}
+    - {name: ANTARA Kaltara, rss: "https://kaltara.antaranews.com/rss/terkini.xml", verify: true}
+    - {name: Tribun Kaltim}
+    - {name: Kaltim Post}
+    - {name: Kompas}                                                                     # no live RSS found (404/403)
+    - {name: Tempo}
+    - {name: Mongabay Indonesia, rss: "https://www.mongabay.co.id/feed/", verify: true}  # needs browser UA
+    - {name: Mongabay (English), rss: "https://news.mongabay.com/feed/",  verify: true}  # needs browser UA
+
+# --- Exclusions (hard filter, enforced again by the AI relevance step) ------
+exclude_topics: [sports, entertainment, celebrity, "general crime", elections, "party politics"]
