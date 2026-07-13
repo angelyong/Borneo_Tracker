@@ -57,10 +57,7 @@ export default function MyProfile() {
 
   return (
     <div style={s.root}>
-      {/* Sidebar */}
-      <div style={{ ...s.sidebarWrap, width: isSidebarOpen ? '240px' : '0px', minWidth: isSidebarOpen ? '240px' : '0px' }}>
-        <Sidebar />
-      </div>
+     
 
       {/* Right column */}
       <div style={s.rightCol}>
@@ -223,10 +220,30 @@ const EditIcon = () => (
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 const s = {
-  root:        { display: 'flex', height: '100vh', width: '100%', fontFamily: 'Inter, Arial, sans-serif', overflow: 'hidden', backgroundColor: '#f5f4f0' },
-  sidebarWrap: { overflow: 'hidden', transition: 'width 0.3s ease, min-width 0.3s ease', flexShrink: 0, height: '100%' },
-  rightCol:    { flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' },
-  content:     { flex: 1, overflowY: 'auto', padding: '32px 40px 60px', boxSizing: 'border-box', maxWidth: '860px', width: '100%', margin: '0 auto' },
+   root: {
+    display: 'flex',
+    width: '100%',
+    minHeight: '100vh',
+    fontFamily: 'Inter, Arial, sans-serif',
+    backgroundColor: '#f5f4f0',
+  },
+   sidebarWrap: {
+    transition: 'width 0.3s ease, min-width 0.3s ease',
+    flexShrink: 0,
+  },
+   rightCol: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    minWidth: 0,
+  },
+   content: {
+    padding: '32px 40px 60px',
+    boxSizing: 'border-box',
+    maxWidth: '860px',
+    width: '100%',
+    margin: '0 auto',
+  },
 
   pageTitle: { fontSize: '26px', fontWeight: '700', color: '#111827', marginBottom: '24px' },
 
