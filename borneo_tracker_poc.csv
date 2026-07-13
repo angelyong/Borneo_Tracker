@@ -19,7 +19,6 @@ Sabah,Poverty rate (absolute),2024,17.7,%,data.gov.my / OpenDOSM,state
 Sarawak,Poverty rate (absolute),2024,8.4,%,data.gov.my / OpenDOSM,state
 Sabah,Electricity access,2021,544186,households,data.gov.my / OpenDOSM,state
 Sarawak,Electricity access,2021,617255,households,data.gov.my / OpenDOSM,state
-Brunei,Clean water access,2024,100,%,World Bank,national
 Brunei,Unemployment rate,2025,5.277,%,World Bank,national
 Brunei,GDP growth,2025,0.66956214816436,%,World Bank,national
 Brunei,GDP (current US$),2025,15031980994.1121,US$,World Bank,national
@@ -105,14 +104,14 @@ Kalimantan Barat,"Fire alerts (VIIRS, annual)",2025,21611,count,Global Forest Wa
 Kalimantan Selatan,"Fire alerts (VIIRS, annual)",2025,1987,count,Global Forest Watch (VIIRS),satellite
 Kalimantan Tengah,"Fire alerts (VIIRS, annual)",2025,3895,count,Global Forest Watch (VIIRS),satellite
 Kalimantan Utara,"Fire alerts (VIIRS, annual)",2025,159,count,Global Forest Watch (VIIRS),satellite
-Borneo (all),Active fire hotspots (1d),2026,653,count,"NASA FIRMS (VIIRS, regional CSV)",satellite
-Sabah,"Air quality (AQI, live)",2026,63,AQI,WAQI / aqicn,city
-Sarawak,"Air quality (AQI, live)",2026,63,AQI,WAQI / aqicn,city
-Brunei,"Air quality (AQI, live)",2026,18,AQI,WAQI / aqicn,city
+Borneo (all),Active fire hotspots (1d),2026,645,count,"NASA FIRMS (VIIRS, regional CSV)",satellite
+Sabah,"Air quality (AQI, live)",2026,59,AQI,WAQI / aqicn,city
+Sarawak,"Air quality (AQI, live)",2026,65,AQI,WAQI / aqicn,city
+Brunei,"Air quality (AQI, live)",2026,20,AQI,WAQI / aqicn,city
 Kalimantan Barat,"Air quality (AQI, live)",2023,62,AQI,WAQI / aqicn,city
-Kalimantan Timur,"Air quality (AQI, live)",2026,43,AQI,WAQI / aqicn,city
+Kalimantan Timur,"Air quality (AQI, live)",2026,47,AQI,WAQI / aqicn,city
 Kalimantan Tengah,"Air quality (AQI, live)",2026,38,AQI,WAQI / aqicn,city
-Kalimantan,"Air quality (AQI, live)",2026,48,AQI,WAQI / aqicn (mean of 3 Kalimantan cities),city
+Kalimantan,"Air quality (AQI, live)",2026,49,AQI,WAQI / aqicn (mean of 3 Kalimantan cities),city
 Sabah,UNESCO World Heritage Sites,2026,1,count,UNESCO World Heritage List (whc.unesco.org),state
 Sarawak,UNESCO World Heritage Sites,2026,2,count,UNESCO World Heritage List (whc.unesco.org),state
 Brunei,UNESCO World Heritage Sites,2026,0,count,UNESCO World Heritage List (whc.unesco.org),national
