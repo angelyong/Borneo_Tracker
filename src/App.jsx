@@ -42,7 +42,7 @@ function App() {
           <Route path="/community" element={<CommunityPage />} />
           <Route path="/reports" element={<GenerateReportPage />} />
           <Route path="/submission" element={<Placeholder title="Submit Report" />} />
-          <Route path="/incident_report" element={<Placeholder title="Incident Report" />} />
+         
           <Route path="/data-sources" element={<Placeholder title="Data Sources" />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/profile" element={<MyProfile />} />
