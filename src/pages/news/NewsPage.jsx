@@ -17,7 +17,8 @@ const NewsPage = () => {
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [territory, setTerritory] = useState('All Territories');
-  const [category, setCategory] = useState('All Categories');
+  const [country, setCountry] = useState('All Countries');
+  const [topic, setTopic] = useState('All Topics');
   const [sort, setSort] = useState('latest');
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
   const [sourceNotice, setSourceNotice] = useState('');
@@ -74,8 +75,13 @@ const NewsPage = () => {
     resetVisibleCount();
   };
 
-  const handleCategoryChange = (value) => {
-    setCategory(value);
+  const handleCountryChange = (value) => {
+    setCountry(value);
+    resetVisibleCount();
+  };
+
+  const handleTopicChange = (value) => {
+    setTopic(value);
     resetVisibleCount();
   };
 
@@ -84,33 +90,39 @@ const NewsPage = () => {
     resetVisibleCount();
   };
 
-  const categories = useMemo(() => {
-    const uniqueCategories = [...new Set(articles.map((article) => article.category))].sort();
-    return ['All Categories', ...uniqueCategories];
+  const topics = useMemo(() => {
+    const uniqueTopics = [...new Set(articles.map((article) => article.beatLabel))].sort();
+    return ['All Topics', ...uniqueTopics];
   }, [articles]);
 
   const filteredArticles = useMemo(() => {
     return articles
-      .filter((article) => (territory === 'All Territories' ? true : article.territory === territory))
-      .filter((article) => (category === 'All Categories' ? true : article.category === category))
+      .filter((article) => (territory === 'All Territories' ? true : article.territories?.includes(territory)))
+      .filter((article) => (country === 'All Countries' ? true : article.country === country))
+      .filter((article) => (topic === 'All Topics' ? true : article.beatLabel === topic))
       .filter((article) => matchesNewsSearch(article, search))
       .sort((a, b) => {
         const first = new Date(a.publishedAt).getTime();
         const second = new Date(b.publishedAt).getTime();
         return sort === 'latest' ? second - first : first - second;
       });
-  }, [articles, category, search, sort, territory]);
+  }, [articles, country, search, sort, territory, topic]);
 
   const displayedFeaturedArticle = filteredArticles.find((article) => article.isFeatured) || filteredArticles[0];
   const latestArticles = filteredArticles.filter((article) => article.id !== displayedFeaturedArticle?.id);
   const visibleArticles = latestArticles.slice(0, visibleCount);
-  const hasFilters = search || territory !== 'All Territories' || category !== 'All Categories';
+  const hasFilters =
+    search ||
+    territory !== 'All Territories' ||
+    country !== 'All Countries' ||
+    topic !== 'All Topics';
   const hasMore = visibleCount < latestArticles.length;
 
   const clearFilters = () => {
     setSearch('');
     setTerritory('All Territories');
-    setCategory('All Categories');
+    setCountry('All Countries');
+    setTopic('All Topics');
     setSort('latest');
   };
 
@@ -131,13 +143,15 @@ const NewsPage = () => {
         <NewsFilters
           search={search}
           territory={territory}
-          category={category}
+          country={country}
+          topic={topic}
           sort={sort}
-          categories={categories}
+          topics={topics}
           resultCount={filteredArticles.length}
           onSearchChange={handleSearchChange}
           onTerritoryChange={handleTerritoryChange}
-          onCategoryChange={handleCategoryChange}
+          onCountryChange={handleCountryChange}
+          onTopicChange={handleTopicChange}
           onSortChange={handleSortChange}
         />
 

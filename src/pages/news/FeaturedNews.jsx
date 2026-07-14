@@ -1,43 +1,48 @@
 import { Link } from 'react-router-dom';
 import NewsImage from './NewsImage';
-import { formatNewsDate } from './newsUtils';
+import { formatCountryLabel, formatNewsDate, formatSourceCount } from './newsUtils';
 
 const FeaturedNews = ({ article, onUnavailableSource }) => {
   if (!article) return null;
 
+  const primarySourceUrl = article.sources?.[0]?.url;
+
   return (
     <section className="news-featured" aria-labelledby="featured-news-title">
       <div className="news-featured-media">
-        <NewsImage src={article.imageUrl} alt={`${article.title} image`} lazy={false} />
+        <NewsImage
+          src={article.imageUrl}
+          alt={`${article.title} image`}
+          beat={article.beat}
+          beatLabel={article.beatLabel}
+          lazy={false}
+        />
+        <span className="news-featured-flag">★ Featured</span>
+        <span className="news-featured-media-beat">{article.beatLabel}</span>
       </div>
 
       <div className="news-featured-content">
-        <span className="news-featured-label">Featured</span>
         <div className="news-chip-row">
-          <span className="news-chip news-chip-territory">{article.territory}</span>
-          <span className="news-chip">{article.category}</span>
+          {article.territories.map((territory) => (
+            <span className="news-chip news-chip-territory" key={territory}>
+              {territory}
+            </span>
+          ))}
+          <span className="news-chip news-chip-country">{formatCountryLabel(article.country)}</span>
         </div>
 
         <h2 id="featured-news-title">{article.title}</h2>
-        <p>{article.aiSummary}</p>
+        <p>{article.body}</p>
         <div className="news-ai-label">AI Summary</div>
 
         <div className="news-card-meta">
-          <span>{article.sourceName}</span>
+          <span className="news-source-badge">{formatSourceCount(article.sourceCount)}</span>
           <span>{formatNewsDate(article.publishedAt)}</span>
         </div>
 
         <div className="news-tag-group" aria-label="SDG tags">
-          {article.sdgTags.map((tag) => (
+          {article.sdg.map((tag) => (
             <span className="news-tag news-tag-sdg" key={tag}>
-              {tag}
-            </span>
-          ))}
-        </div>
-
-        <div className="news-tag-group" aria-label="Indicator tags">
-          {article.indicatorTags.map((tag) => (
-            <span className="news-tag" key={tag}>
               {tag}
             </span>
           ))}
@@ -47,9 +52,9 @@ const FeaturedNews = ({ article, onUnavailableSource }) => {
           <Link to={`/news/${article.id}`} className="news-button">
             Read Summary
           </Link>
-          {article.sourceUrl ? (
+          {primarySourceUrl ? (
             <a
-              href={article.sourceUrl}
+              href={primarySourceUrl}
               className="news-button news-button-secondary"
               target="_blank"
               rel="noopener noreferrer"

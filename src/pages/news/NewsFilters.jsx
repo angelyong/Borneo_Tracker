@@ -1,15 +1,17 @@
-import { SORT_OPTIONS, TERRITORY_OPTIONS } from './newsUtils';
+import { COUNTRY_OPTIONS, SORT_OPTIONS, TERRITORY_OPTIONS } from './newsUtils';
 
 const NewsFilters = ({
   search,
   territory,
-  category,
+  country,
+  topic,
   sort,
-  categories,
+  topics,
   resultCount,
   onSearchChange,
   onTerritoryChange,
-  onCategoryChange,
+  onCountryChange,
+  onTopicChange,
   onSortChange,
 }) => (
   <section className="news-filter-panel" aria-label="News search and filters">
@@ -19,7 +21,7 @@ const NewsFilters = ({
         type="search"
         value={search}
         onChange={(event) => onSearchChange(event.target.value)}
-        placeholder="Search title, summary, territory, category, or tags"
+        placeholder="Search title, summary, territory, topic, country, or tags"
       />
     </label>
 
@@ -35,9 +37,20 @@ const NewsFilters = ({
     </label>
 
     <label className="news-field">
-      <span>Category</span>
-      <select value={category} onChange={(event) => onCategoryChange(event.target.value)}>
-        {categories.map((option) => (
+      <span>Country</span>
+      <select value={country} onChange={(event) => onCountryChange(event.target.value)}>
+        {COUNTRY_OPTIONS.map((option) => (
+          <option value={option} key={option}>
+            {option}
+          </option>
+        ))}
+      </select>
+    </label>
+
+    <label className="news-field">
+      <span>Topic</span>
+      <select value={topic} onChange={(event) => onTopicChange(event.target.value)}>
+        {topics.map((option) => (
           <option value={option} key={option}>
             {option}
           </option>

@@ -1,34 +1,47 @@
 import { Link } from 'react-router-dom';
 import NewsImage from './NewsImage';
-import { formatRelativeTime, truncateText } from './newsUtils';
+import { formatCountryLabel, formatRelativeTime, formatSourceCount, truncateText } from './newsUtils';
 
 const NewsCard = ({ article }) => (
   <article className="news-card">
     <Link to={`/news/${article.id}`} className="news-card-image-link" aria-label={article.title}>
-      <NewsImage src={article.imageUrl} alt={`${article.title} image`} />
+      <NewsImage
+        src={article.imageUrl}
+        alt={`${article.title} image`}
+        beat={article.beat}
+        beatLabel={article.beatLabel}
+      />
+      <span className="news-card-beat-flag">{article.beatLabel}</span>
     </Link>
 
     <div className="news-card-body">
       <div className="news-chip-row">
-        <span className="news-chip news-chip-territory">{article.territory}</span>
-        <span className="news-chip">{article.category}</span>
+        {article.territories.map((territory) => (
+          <span className="news-chip news-chip-territory" key={territory}>
+            {territory}
+          </span>
+        ))}
+        <span className="news-chip news-chip-country">{formatCountryLabel(article.country)}</span>
       </div>
 
       <h2 className="news-card-title">
         <Link to={`/news/${article.id}`}>{article.title}</Link>
       </h2>
 
-      <p className="news-card-summary">{truncateText(article.aiSummary)}</p>
-      <div className="news-ai-label">AI Summary</div>
+      <p className="news-card-summary">{truncateText(article.body)}</p>
 
-      <div className="news-card-meta">
-        <span>{article.sourceName}</span>
-        <span>{formatRelativeTime(article.publishedAt)}</span>
+      <div className="news-card-footer">
+        <div className="news-card-meta">
+          <span className="news-source-badge">{formatSourceCount(article.sourceCount)}</span>
+          <span className="news-ai-label">AI Summary</span>
+        </div>
+        <div className="news-card-footer-row">
+          <span className="news-meta-time">{formatRelativeTime(article.publishedAt)}</span>
+          <Link to={`/news/${article.id}`} className="news-text-link">
+            Read Summary &rarr;
+          </Link>
+        </div>
       </div>
-
-      <Link to={`/news/${article.id}`} className="news-text-link">
-        Read Summary
-      </Link>
     </div>
   </article>
 );

@@ -5,7 +5,7 @@ import NewsEmptyState from './NewsEmptyState';
 import NewsImage from './NewsImage';
 import NewsSkeleton from './NewsSkeleton';
 import { getNewsArticleById, getRelatedNewsArticles } from '../../services/newsService';
-import { formatNewsDate, formatRelativeTime } from './newsUtils';
+import { formatCountryLabel, formatNewsDate, formatRelativeTime, formatSourceCount } from './newsUtils';
 import './news.css';
 
 const NewsDetailPage = () => {
@@ -100,11 +100,24 @@ const NewsDetailPage = () => {
         {!loading && !error && article ? (
           <>
             <article className="news-detail-card">
-              <NewsImage src={article.imageUrl} alt={`${article.title} image`} lazy={false} />
+              <div className="news-detail-media">
+                <NewsImage
+                  src={article.imageUrl}
+                  alt={`${article.title} image`}
+                  beat={article.beat}
+                  beatLabel={article.beatLabel}
+                  lazy={false}
+                />
+                <span className="news-detail-media-beat">{article.beatLabel}</span>
+              </div>
               <div className="news-detail-content">
                 <div className="news-chip-row">
-                  <span className="news-chip news-chip-territory">{article.territory}</span>
-                  <span className="news-chip">{article.category}</span>
+                  {article.territories.map((territory) => (
+                    <span className="news-chip news-chip-territory" key={territory}>
+                      {territory}
+                    </span>
+                  ))}
+                  <span className="news-chip news-chip-country">{formatCountryLabel(article.country)}</span>
                 </div>
 
                 <h1>{article.title}</h1>
@@ -119,21 +132,38 @@ const NewsDetailPage = () => {
                 </p>
 
                 <div className="news-ai-label">AI-generated Summary</div>
-                <p className="news-detail-summary">{article.aiSummary}</p>
+                <p className="news-detail-summary">{article.body}</p>
 
-                <div className="news-source-block">Original source: {article.sourceName}</div>
-
-                <div className="news-tag-group" aria-label="SDG tags">
-                  {article.sdgTags.map((tag) => (
-                    <span className="news-tag news-tag-sdg" key={tag}>
-                      {tag}
-                    </span>
-                  ))}
+                <div className="news-source-block">
+                  <span className="news-source-badge">{formatSourceCount(article.sourceCount)}</span>
+                  {article.sources.length ? (
+                    <ul className="news-source-list">
+                      {article.sources.map((source) => (
+                        <li key={source.url}>
+                          <a
+                            href={source.url}
+                            className="news-text-link"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {source.name}
+                          </a>
+                          {source.publishedAt ? (
+                            <span className="news-source-date">{formatNewsDate(source.publishedAt)}</span>
+                          ) : null}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <button type="button" className="news-button news-button-secondary" onClick={showUnavailableSource}>
+                      View Original Source
+                    </button>
+                  )}
                 </div>
 
-                <div className="news-tag-group" aria-label="Indicator tags">
-                  {article.indicatorTags.map((tag) => (
-                    <span className="news-tag" key={tag}>
+                <div className="news-tag-group" aria-label="SDG tags">
+                  {article.sdg.map((tag) => (
+                    <span className="news-tag news-tag-sdg" key={tag}>
                       {tag}
                     </span>
                   ))}
@@ -146,20 +176,6 @@ const NewsDetailPage = () => {
                 ) : null}
 
                 <div className="news-action-row">
-                  {article.sourceUrl ? (
-                    <a
-                      href={article.sourceUrl}
-                      className="news-button"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      View Original Source
-                    </a>
-                  ) : (
-                    <button type="button" className="news-button" onClick={showUnavailableSource}>
-                      View Original Source
-                    </button>
-                  )}
                   <Link to="/news" className="news-button news-button-secondary">
                     Back to News
                   </Link>

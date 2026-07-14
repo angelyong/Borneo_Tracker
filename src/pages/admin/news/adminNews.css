@@ -1,0 +1,374 @@
+/* Admin News Review queue — self-contained styles. */
+
+.admin-news-page {
+  padding: 24px 16px 64px;
+  background: #f5f6f8;
+  min-height: 100%;
+}
+
+.admin-news-inner {
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+.admin-news-header {
+  margin-bottom: 20px;
+}
+
+.admin-news-header h1 {
+  margin: 0 0 6px;
+  font-size: 1.6rem;
+  color: #16241a;
+}
+
+.admin-news-subtitle {
+  margin: 0;
+  color: #5c6b62;
+  font-size: 0.92rem;
+}
+
+/* Tabs */
+.admin-news-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0 20px;
+  flex-wrap: wrap;
+}
+
+.admin-news-tab {
+  border: 1px solid #d3dbd6;
+  background: #ffffff;
+  color: #3a463f;
+  padding: 7px 14px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.admin-news-tab:hover {
+  border-color: #2f7d4f;
+}
+
+.admin-news-tab.is-active {
+  background: #2f7d4f;
+  border-color: #2f7d4f;
+  color: #ffffff;
+}
+
+/* State blocks */
+.admin-news-state {
+  background: #ffffff;
+  border: 1px solid #e2e7e4;
+  border-radius: 12px;
+  padding: 32px 20px;
+  text-align: center;
+  color: #4c5a52;
+}
+
+.admin-news-state.is-error {
+  border-color: #e3b7b7;
+  color: #9a3131;
+}
+
+.admin-news-empty {
+  font-size: 1.05rem;
+}
+
+/* Draft card */
+.admin-news-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.draft-card {
+  background: #ffffff;
+  border: 1px solid #e2e7e4;
+  border-radius: 12px;
+  padding: 18px;
+  box-shadow: 0 1px 2px rgba(20, 36, 26, 0.04);
+}
+
+.draft-card-top {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.draft-card-thumb {
+  width: 120px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex: 0 0 auto;
+  background: #eef1ef;
+}
+
+.draft-card-fields {
+  flex: 1 1 260px;
+  min-width: 240px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.draft-field-label {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6b7a71;
+  margin-bottom: 4px;
+}
+
+.draft-input,
+.draft-textarea {
+  width: 100%;
+  border: 1px solid #cfd7d2;
+  border-radius: 8px;
+  padding: 9px 11px;
+  font-size: 0.92rem;
+  font-family: inherit;
+  color: #16241a;
+  background: #fbfcfb;
+  box-sizing: border-box;
+}
+
+.draft-input:focus,
+.draft-textarea:focus {
+  outline: none;
+  border-color: #2f7d4f;
+  box-shadow: 0 0 0 2px rgba(47, 125, 79, 0.15);
+}
+
+.draft-textarea {
+  min-height: 120px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+/* Meta */
+.draft-meta {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  font-size: 0.82rem;
+  color: #4c5a52;
+  border-top: 1px solid #eef1ef;
+  padding-top: 12px;
+}
+
+.draft-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.draft-meta-item strong {
+  color: #16241a;
+  font-weight: 600;
+}
+
+/* Chips */
+.draft-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.draft-chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  background: #eef4ef;
+  color: #2f5b40;
+  border: 1px solid #d7e6dd;
+}
+
+.draft-chip-pillar {
+  background: #2f7d4f;
+  color: #ffffff;
+  border-color: #2f7d4f;
+  font-weight: 600;
+}
+
+.draft-ai-label {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #7a5a1e;
+  background: #fbf0d8;
+  border: 1px solid #ecd9a6;
+  padding: 3px 9px;
+  border-radius: 6px;
+}
+
+/* Corroboration / sources */
+.draft-sources {
+  margin-top: 14px;
+  background: #f7faf8;
+  border: 1px solid #e2e9e4;
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+
+.draft-sources-count {
+  margin: 0 0 8px;
+  font-weight: 600;
+  color: #16241a;
+  font-size: 0.9rem;
+}
+
+.draft-sources-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.draft-source-link {
+  color: #2f7d4f;
+  text-decoration: none;
+  font-size: 0.86rem;
+  word-break: break-word;
+}
+
+.draft-source-link:hover {
+  text-decoration: underline;
+}
+
+.draft-source-date {
+  color: #7a887f;
+  font-size: 0.76rem;
+  margin-left: 6px;
+}
+
+/* Actions */
+.draft-actions {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  border-top: 1px solid #eef1ef;
+  padding-top: 14px;
+}
+
+.draft-btn {
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 9px 16px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.draft-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.draft-btn-approve {
+  background: #ffffff;
+  border-color: #2f7d4f;
+  color: #2f7d4f;
+}
+
+.draft-btn-approve:hover:not(:disabled) {
+  background: #eef6f0;
+}
+
+.draft-btn-publish {
+  background: #2f7d4f;
+  color: #ffffff;
+}
+
+.draft-btn-publish:hover:not(:disabled) {
+  background: #266641;
+}
+
+.draft-btn-save {
+  background: #ffffff;
+  border-color: #cfd7d2;
+  color: #3a463f;
+}
+
+.draft-btn-save:hover:not(:disabled) {
+  background: #f3f5f4;
+}
+
+.draft-btn-reject {
+  background: #ffffff;
+  border-color: #d99b9b;
+  color: #a23a3a;
+}
+
+.draft-btn-reject:hover:not(:disabled) {
+  background: #fbf1f1;
+}
+
+.draft-confirm {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-left: auto;
+}
+
+.draft-confirm.is-published {
+  color: #2f7d4f;
+}
+
+.draft-confirm.is-rejected {
+  color: #a23a3a;
+}
+
+.draft-confirm.is-saved {
+  color: #3a6ea5;
+}
+
+/* Read-only (published / rejected) cards */
+.draft-card.is-readonly {
+  opacity: 0.96;
+}
+
+.draft-readonly-title {
+  margin: 0 0 6px;
+  font-size: 1.05rem;
+  color: #16241a;
+}
+
+.draft-readonly-body {
+  margin: 0;
+  color: #4c5a52;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.draft-status-tag {
+  display: inline-block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.draft-status-tag.status-published {
+  background: #eaf5ee;
+  color: #2f7d4f;
+}
+
+.draft-status-tag.status-rejected {
+  background: #fbeaea;
+  color: #a23a3a;
+}
