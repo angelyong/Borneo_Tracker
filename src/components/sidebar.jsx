@@ -11,7 +11,7 @@ const Sidebar = ({ collapsed = false }) => {
     { name: 'Regional Details',         path: '/regions',   icon: <Icons.Table size={20} /> },
     { name: 'ESG Indicators',           path: '/esg',       icon: <Icons.Gauge size={20} /> },
     { name: 'SDG Progress',             path: '/sdg',       icon: <Icons.Chart size={20} /> },
-    { name: 'Incident Report',          path: '/incident_report', icon: <Icons.People size={20} /> },
+  
     { name: 'News & Insights',          path: '/news',      icon: <Icons.Newspaper size={20} /> },
     { name: 'Community',                path: '/community', icon: <Icons.Comment size={20} /> },
     { name: 'Generate Report',          path: '/reports',   icon: <Icons.FileArrow size={20} /> },

@@ -65,13 +65,7 @@ const exploreItems = [
     icon: Icons.Newspaper,
     tone: 'green',
   },
-  {
-    title: 'Incident Report',
-    body: 'Report environmental or community-related incidents for future review and monitoring.',
-    icon: Icons.Warn,
-    tone: 'amber',
-    comingSoon: true,
-  },
+ 
   {
     title: 'Community',
     body: 'Discuss wildlife, culture, livelihoods and everyday life with people across Borneo.',
