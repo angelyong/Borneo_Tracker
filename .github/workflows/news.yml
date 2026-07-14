@@ -1,0 +1,46 @@
+name: Refresh news digest
+
+# Daily News Tracker pipeline (AR-3). Runs on GitHub's servers — independent of
+# the frontend and of any deployment. It fetches Borneo sustainability news,
+# AI-digests it (Gemini), and UPSERTS drafts (status=pending) into Supabase. A
+# human then approves them (Supabase Table Editor -> set status=published).
+#
+# It writes to Supabase, so — unlike refresh-data.yml — there is NO git commit.
+# It is a separate workflow, so a failure here never affects the dashboard refresh.
+#
+# NOTE: scheduled runs only fire from the repo's DEFAULT branch (master). Until
+# this is merged to master, test it with "Run workflow" (workflow_dispatch) and
+# pick the feature/news-tracker branch.
+#
+# Requires these repo secrets (Settings -> Secrets and variables -> Actions):
+#   GEMINI_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_KEY
+
+on:
+  schedule:
+    # 22:00 UTC = 06:00 MYT — daily, just after the dashboard data refresh.
+    - cron: "0 22 * * *"
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "Rolling look-back window (days)"
+        default: "3"
+        required: false
+
+jobs:
+  news:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Collect + AI-digest Borneo news -> Supabase (drafts)
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: |
+          python fetch_news.py --days "${{ github.event.inputs.days || '3' }}" --out news_fetched.json
+          python digest_news.py --in news_fetched.json
