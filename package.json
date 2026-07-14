@@ -3,13 +3,25 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "workspaces": [
+    "server"
+  ],
   "scripts": {
     "dev": "vite",
+    "dev:server": "npm run dev --workspace server",
+    "dev:worker": "npm run dev:worker --workspace server",
     "build": "vite build",
+    "build:all": "npm run build && npm run build --workspace server",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "npm run test:frontend && npm run test:server",
+    "test:frontend": "vitest run",
+    "test:server": "npm test --workspace server",
+    "test:watch": "vitest",
+    "typecheck:server": "npm run typecheck --workspace server",
+    "db:generate": "npm run db:generate --workspace server",
+    "db:deploy": "npm run db:deploy --workspace server",
+    "db:check-drift": "npm run db:check-drift --workspace server"
   },
   "dependencies": {
     "echarts": "^6.1.0",

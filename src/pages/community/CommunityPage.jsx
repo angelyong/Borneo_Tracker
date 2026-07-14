@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '../../auth/useAuth';
 import { Button, Icons, Modal } from '../../components/ui';
 import { COLORS, FONT, RADII } from '../../theme';
 import { TERRITORY_OPTIONS, TOPIC_OPTIONS } from '../../data/mockCommunityPosts';
@@ -19,8 +20,12 @@ import PostCard from './PostCard';
 
 const TOPIC_FILTER_OPTIONS = ['All Topics', ...TOPIC_OPTIONS];
 const TERRITORY_FILTER_OPTIONS = ['All Regions', ...TERRITORY_OPTIONS.filter((t) => t !== 'All Borneo')];
+const COMMUNITY_WRITES_ENABLED = import.meta.env.DEV || import.meta.env.VITE_ENABLE_COMMUNITY_WRITES === 'true';
 
 const CommunityPage = () => {
+  const navigate = useNavigate();
+  const { status, user } = useAuth();
+  const actor = useMemo(() => user ? { id: user.id, name: `${user.firstName} ${user.lastName}` } : null, [user]);
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -41,10 +46,10 @@ const CommunityPage = () => {
   const highlightedRef = useRef(null);
 
   const refresh = useCallback(async () => {
-    const nextPosts = await getPosts();
+    const nextPosts = await getPosts(actor);
     setPosts(nextPosts);
     return nextPosts;
-  }, []);
+  }, [actor]);
 
   useEffect(() => {
     let cancelled = false;
@@ -53,7 +58,7 @@ const CommunityPage = () => {
     // evicted under pressure. Never blocks; failure is fine (plan §2.3).
     requestPersistentStorage();
 
-    getPosts()
+    getPosts(actor)
       .then((nextPosts) => {
         if (!cancelled) setPosts(nextPosts);
       })
@@ -67,7 +72,7 @@ const CommunityPage = () => {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [actor]);
 
   // Clear any pending toast timeout on unmount so it can't setState afterwards.
   useEffect(() => () => {
@@ -96,11 +101,22 @@ const CommunityPage = () => {
     setSubmitError('');
   };
 
+  const requireActiveUser = () => {
+    if (!COMMUNITY_WRITES_ENABLED) {
+      showToast('Community writing is disabled until its authenticated backend is connected.');
+      return false;
+    }
+    if (status === 'authenticated') return true;
+    navigate('/login', { state: { from: '/community' } });
+    return false;
+  };
+
   const handleCreatePost = async (form) => {
+    if (!requireActiveUser()) return;
     setSubmittingPost(true);
     setSubmitError('');
     try {
-      await createPost(form);
+      await createPost({ ...form, actor });
       await refresh();
       closeComposer();
       showToast('Your discussion has been posted.');
@@ -113,9 +129,10 @@ const CommunityPage = () => {
   };
 
   const handleDeletePost = async (postId) => {
+    if (!requireActiveUser()) return;
     if (!window.confirm('Delete this discussion? This can’t be undone.')) return;
     try {
-      await deletePost(postId);
+      await deletePost(postId, actor);
       await refresh();
       showToast('Your discussion has been deleted.');
     } catch {
@@ -124,19 +141,22 @@ const CommunityPage = () => {
   };
 
   const handleToggleLikePost = async (postId) => {
-    await toggleLikePost(postId);
+    if (!requireActiveUser()) return;
+    await toggleLikePost(postId, actor);
     await refresh();
   };
 
   const handleToggleLikeComment = async (postId, commentId) => {
-    await toggleLikeComment(postId, commentId);
+    if (!requireActiveUser()) return;
+    await toggleLikeComment(postId, commentId, actor);
     await refresh();
   };
 
   const handleAddComment = async (postId, body) => {
+    if (!requireActiveUser()) return;
     setPendingCommentPostId(postId);
     try {
-      await addComment(postId, body);
+      await addComment(postId, body, actor);
       await refresh();
     } finally {
       setPendingCommentPostId(null);
@@ -176,7 +196,7 @@ const CommunityPage = () => {
             life across Sabah, Sarawak, Brunei and Kalimantan.
           </p>
         </div>
-        <Button variant="primary" onClick={openComposer}>
+        <Button variant="primary" onClick={() => requireActiveUser() && openComposer()}>
           <Icons.Plus size={18} style={{ marginRight: 6, verticalAlign: -3 }} />
           Start a discussion
         </Button>

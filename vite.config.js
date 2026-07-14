@@ -10,5 +10,16 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.js'],
     globals: true,
+    include: ['src/**/*.test.{js,jsx}'],
+  },
+  build: {
+    // The checked-in Windows development environment cannot load Lightning CSS's
+    // native binary reliably; Vite's supported esbuild minifier is deterministic here.
+    cssMinify: 'esbuild',
+  },
+  server: {
+    proxy: {
+      '/api': 'http://localhost:3001',
+    },
   },
 })

@@ -5,11 +5,11 @@ import MiniTopBar from './MiniTopBar';
 import Footer from './footer';
 import { COLORS, FONT, RADII, SHADOWS } from '../theme';
 
-const AuthLayout = ({ children }) => (
+const AuthLayout = ({ children, minimal = false }) => (
   <div style={styles.page}>
-    <MiniTopBar onMenuClick={() => {}} notifCount={0} />
-    <main style={styles.main}>{children}</main>
-    <Footer />
+    {!minimal && <MiniTopBar onMenuClick={() => {}} notifCount={0} />}
+    <main style={{ ...styles.main, paddingTop: minimal ? 48 : 92 }}>{children}</main>
+    {!minimal && <Footer />}
   </div>
 );
 

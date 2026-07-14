@@ -18,9 +18,10 @@ import { saveAttachment, deleteAttachments } from './communityAttachmentStore';
 const NETWORK_DELAY_MS = 200;
 const STORAGE_KEY = 'borneo-tracker:community:v1';
 
-// No auth in this app yet (see sidebar/MiniTopBar logout — authToken is never
-// actually set). Every like/comment is attributed to this fixed demo identity.
+// Community persistence has not yet been connected to the authenticated API.
+// Until that separate phase lands, seed likes/comments use this demo label.
 export const CURRENT_USER = 'You';
+const DEFAULT_ACTOR = { id: 'local-demo-user', name: CURRENT_USER };
 
 const emptyOverlay = () => ({ posts: [], postLikes: {}, comments: {}, commentLikes: {} });
 
@@ -91,29 +92,34 @@ function findBaseComment(postId, commentId, overlay) {
   return createdComments.find((comment) => comment.id === commentId) || null;
 }
 
-function hydrateComment(comment, postId, overlay) {
+const actorOrDefault = (actor) => actor?.id ? actor : DEFAULT_ACTOR;
+const likedByActor = (state, actorId) => Array.isArray(state?.likedByUserIds)
+  ? state.likedByUserIds.includes(actorId)
+  : Boolean(state?.likedByMe && actorId === DEFAULT_ACTOR.id);
+
+function hydrateComment(comment, postId, overlay, actorId) {
   const likeState = overlay.commentLikes[comment.id];
   return {
     ...comment,
     likeCount: likeState ? likeState.likeCount : comment.likeCount,
-    likedByMe: likeState ? likeState.likedByMe : false,
+    likedByMe: likedByActor(likeState, actorId),
   };
 }
 
 // `canDelete` marks a user-created (overlay) post so the UI can offer Delete
 // without guessing from the author string. Seed posts are read-only.
-function hydratePost(post, overlay, canDelete = false) {
+function hydratePost(post, overlay, actorId, canDelete = false) {
   const likeState = overlay.postLikes[post.id];
   const createdComments = overlay.comments[post.id] || [];
   const comments = [...post.comments, ...createdComments]
-    .map((comment) => hydrateComment(comment, post.id, overlay))
+    .map((comment) => hydrateComment(comment, post.id, overlay, actorId))
     .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
   return {
     ...post,
     attachments: normalizeAttachments(post.attachments),
     likeCount: likeState ? likeState.likeCount : post.likeCount,
-    likedByMe: likeState ? likeState.likedByMe : false,
+    likedByMe: likedByActor(likeState, actorId),
     comments,
     commentCount: comments.length,
     canDelete,
@@ -121,11 +127,17 @@ function hydratePost(post, overlay, canDelete = false) {
 }
 
 /** All posts (user-created first, then seed), newest first, fully hydrated with live like/comment state. */
-export async function getPosts() {
+export async function getPosts(actor = DEFAULT_ACTOR) {
   await wait();
+  const currentActor = actor === null ? { id: null, name: '' } : actorOrDefault(actor);
   const overlay = loadOverlay();
-  const userPosts = overlay.posts.map((post) => hydratePost(post, overlay, true));
-  const seedPosts = mockCommunityPosts.map((post) => hydratePost(post, overlay, false));
+  const userPosts = overlay.posts.map((post) => {
+    const isOwner = post.authorId
+      ? post.authorId === currentActor.id
+      : currentActor.id === DEFAULT_ACTOR.id && post.author === CURRENT_USER;
+    return hydratePost(post, overlay, currentActor.id, isOwner);
+  });
+  const seedPosts = mockCommunityPosts.map((post) => hydratePost(post, overlay, currentActor.id, false));
   return [...userPosts, ...seedPosts].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 }
 
@@ -135,8 +147,9 @@ export async function getPosts() {
  * overlay. Any failure best-effort rolls back this call's blobs so we never
  * leave a broken post or orphaned files.
  */
-export async function createPost({ title, body, topic, territory, attachments = [] }) {
+export async function createPost({ title, body, topic, territory, attachments = [], actor = DEFAULT_ACTOR, author }) {
   await wait();
+  const currentActor = actorOrDefault(actor);
 
   const postId = makeId('post');
   const createdAt = new Date().toISOString();
@@ -176,7 +189,8 @@ export async function createPost({ title, body, topic, territory, attachments = 
   const overlay = loadOverlay();
   const post = {
     id: postId,
-    author: CURRENT_USER,
+    authorId: currentActor.id,
+    author: author || currentActor.name || CURRENT_USER,
     title: title.trim(),
     body: body.trim(),
     topic,
@@ -195,7 +209,7 @@ export async function createPost({ title, body, topic, territory, attachments = 
     throw err;
   }
 
-  return hydratePost(post, overlay, true);
+  return hydratePost(post, overlay, currentActor.id, true);
 }
 
 /**
@@ -203,13 +217,20 @@ export async function createPost({ title, body, topic, territory, attachments = 
  * "deleted"; the attachment blobs are then cleaned up best-effort. Seed posts
  * are read-only and cannot be deleted.
  */
-export async function deletePost(postId) {
+export async function deletePost(postId, actor = DEFAULT_ACTOR) {
   await wait();
+  const currentActor = actorOrDefault(actor);
   const overlay = loadOverlay();
   const index = overlay.posts.findIndex((post) => post.id === postId);
   if (index === -1) {
     throw new Error(`Cannot delete post: ${postId} is not a user-created post.`);
   }
+
+  const candidate = overlay.posts[index];
+  const isOwner = candidate.authorId
+    ? candidate.authorId === currentActor.id
+    : currentActor.id === DEFAULT_ACTOR.id && candidate.author === CURRENT_USER;
+  if (!isOwner) throw new Error('Cannot delete a post owned by another account.');
 
   const [removed] = overlay.posts.splice(index, 1);
   // Drop this post's like/comment overlay state too, so nothing dangles.
@@ -223,42 +244,52 @@ export async function deletePost(postId) {
   await safeDeleteAttachments(storageKeys);
 }
 
-export async function toggleLikePost(postId) {
+export async function toggleLikePost(postId, actor = DEFAULT_ACTOR) {
   await wait();
+  const currentActor = actorOrDefault(actor);
   const overlay = loadOverlay();
   const base = findBasePost(postId, overlay);
   if (!base) throw new Error(`Post not found: ${postId}`);
 
   const existing = overlay.postLikes[postId];
   const baseLikeCount = existing ? existing.likeCount : base.likeCount;
-  const likedByMe = !(existing ? existing.likedByMe : false);
+  const wasLiked = likedByActor(existing, currentActor.id);
+  const likedByMe = !wasLiked;
+  const likedByUserIds = new Set(Array.isArray(existing?.likedByUserIds) ? existing.likedByUserIds : []);
+  if (likedByMe) likedByUserIds.add(currentActor.id); else likedByUserIds.delete(currentActor.id);
 
-  overlay.postLikes[postId] = { likeCount: baseLikeCount + (likedByMe ? 1 : -1), likedByMe };
+  overlay.postLikes[postId] = { likeCount: baseLikeCount + (likedByMe ? 1 : -1), likedByUserIds: [...likedByUserIds] };
   saveOverlay(overlay);
   return overlay.postLikes[postId];
 }
 
-export async function toggleLikeComment(postId, commentId) {
+export async function toggleLikeComment(postId, commentId, actor = DEFAULT_ACTOR) {
   await wait();
+  const currentActor = actorOrDefault(actor);
   const overlay = loadOverlay();
   const base = findBaseComment(postId, commentId, overlay);
   if (!base) throw new Error(`Comment not found: ${commentId}`);
 
   const existing = overlay.commentLikes[commentId];
   const baseLikeCount = existing ? existing.likeCount : base.likeCount;
-  const likedByMe = !(existing ? existing.likedByMe : false);
+  const wasLiked = likedByActor(existing, currentActor.id);
+  const likedByMe = !wasLiked;
+  const likedByUserIds = new Set(Array.isArray(existing?.likedByUserIds) ? existing.likedByUserIds : []);
+  if (likedByMe) likedByUserIds.add(currentActor.id); else likedByUserIds.delete(currentActor.id);
 
-  overlay.commentLikes[commentId] = { likeCount: baseLikeCount + (likedByMe ? 1 : -1), likedByMe };
+  overlay.commentLikes[commentId] = { likeCount: baseLikeCount + (likedByMe ? 1 : -1), likedByUserIds: [...likedByUserIds] };
   saveOverlay(overlay);
   return overlay.commentLikes[commentId];
 }
 
-export async function addComment(postId, body) {
+export async function addComment(postId, body, actor = DEFAULT_ACTOR) {
   await wait();
+  const currentActor = typeof actor === 'string' ? { ...DEFAULT_ACTOR, name: actor } : actorOrDefault(actor);
   const overlay = loadOverlay();
   const comment = {
     id: makeId('comment'),
-    author: CURRENT_USER,
+    authorId: currentActor.id,
+    author: currentActor.name || CURRENT_USER,
     body: body.trim(),
     createdAt: new Date().toISOString(),
     likeCount: 0,

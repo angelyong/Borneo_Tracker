@@ -7,9 +7,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoImg from '../assets/logo.png';
 import AIbotButton from './AIbotButton';
+import { useAuth } from '../auth/useAuth';
 
 const MiniTopBar = ({ onMenuClick, notifCount = 0 }) => {
   const navigate = useNavigate();
+  const { status, user, logout, refresh } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const closeDropdown = () => setDropdownOpen(false);
@@ -19,12 +21,18 @@ const MiniTopBar = ({ onMenuClick, notifCount = 0 }) => {
     navigate(path);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     closeDropdown();
-    localStorage.removeItem('authToken');
-    sessionStorage.clear();
-    navigate('/login');
+    try {
+      await logout();
+      navigate('/login', { replace: true });
+    } catch {
+      // AuthProvider exposes an unavailable state and keeps the server session honest.
+    }
   };
+
+  const fullName = user ? `${user.firstName} ${user.lastName}` : '';
+  const initial = user?.firstName?.charAt(0).toUpperCase() || '?';
 
   return (
     <div style={styles.bar}>
@@ -65,7 +73,14 @@ const MiniTopBar = ({ onMenuClick, notifCount = 0 }) => {
           </div>
         </button>
 
-        {/* Avatar */}
+        {/* Authentication */}
+        {status === 'loading' ? (
+          <span role="status" style={styles.authStatus}>Checking…</span>
+        ) : status === 'unavailable' ? (
+          <button style={styles.loginBtn} onClick={() => void refresh()}>Retry authentication</button>
+        ) : status !== 'authenticated' ? (
+          <button style={styles.loginBtn} onClick={() => navigate('/login')}>Login</button>
+        ) : (
         <div style={styles.avatarWrap}>
           <button
             style={styles.avatarCircle}
@@ -85,10 +100,10 @@ const MiniTopBar = ({ onMenuClick, notifCount = 0 }) => {
             <div style={styles.dropdown}>
               {/* User info header */}
               <div style={styles.dropdownTop}>
-                <div style={styles.dropdownAvatar}>A</div>
+                <div style={styles.dropdownAvatar}>{initial}</div>
                 <div>
-                  <div style={styles.dropdownName}>Admin User</div>
-                  <div style={styles.dropdownEmail}>admin@borneotracker.org</div>
+                  <div style={styles.dropdownName}>{fullName}</div>
+                  <div style={styles.dropdownEmail}>{user.email}</div>
                 </div>
               </div>
               <div style={styles.dropdownDivider} />
@@ -96,10 +111,6 @@ const MiniTopBar = ({ onMenuClick, notifCount = 0 }) => {
               <button style={styles.dropdownItem} onClick={() => goTo('/profile')}>
                 My Profile
               </button>
-              <button style={styles.dropdownItem} onClick={() => goTo('/settings')}>
-                Settings
-              </button>
-
               <div style={styles.dropdownDivider} />
               <button
                 style={{ ...styles.dropdownItem, color: '#dc2626' }}
@@ -110,6 +121,7 @@ const MiniTopBar = ({ onMenuClick, notifCount = 0 }) => {
             </div>
           )}
         </div>
+        )}
       </div>
     </div>
   );
@@ -305,6 +317,11 @@ avatarCircle: {
     color:           '#374151',
     cursor:          'pointer',
   },
+  loginBtn: {
+    border: 'none', backgroundColor: '#0d3b2b', color: '#fff', borderRadius: '18px',
+    padding: '8px 18px', fontWeight: 700, cursor: 'pointer',
+  },
+  authStatus: { color: '#4b5563', fontSize: 13, fontWeight: 600 },
 
   // Logo in the center
   logoImage: {

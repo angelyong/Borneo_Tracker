@@ -68,6 +68,21 @@ describe('deletePost', () => {
 });
 
 describe('backward compatibility & isolation', () => {
+  it('keeps ownership and likes isolated when two authenticated accounts share a browser', async () => {
+    const alice = { id: 'user-alice', name: 'Alice' };
+    const bob = { id: 'user-bob', name: 'Bob' };
+    const created = await createPost({ title: 'Alice post', body: 'b', topic: 'General', territory: 'Sabah', actor: alice });
+
+    expect((await getPosts(alice)).find((post) => post.id === created.id).canDelete).toBe(true);
+    expect((await getPosts(bob)).find((post) => post.id === created.id).canDelete).toBe(false);
+    await expect(deletePost(created.id, bob)).rejects.toThrow(/another account/i);
+
+    await toggleLikePost(created.id, alice);
+    expect((await getPosts(bob)).find((post) => post.id === created.id)).toMatchObject({ likedByMe: false, likeCount: 1 });
+    await toggleLikePost(created.id, bob);
+    expect((await getPosts(alice)).find((post) => post.id === created.id)).toMatchObject({ likedByMe: true, likeCount: 2 });
+  });
+
   it('normalizes old overlay posts that have no attachments field', async () => {
     localStorage.setItem(
       STORAGE_KEY,

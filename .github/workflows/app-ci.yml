@@ -1,0 +1,57 @@
+name: Application CI
+
+on:
+  pull_request:
+  push:
+    branches: [master, main]
+
+jobs:
+  application:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: borneo_tracker_app
+          POSTGRES_USER: borneo_app
+          POSTGRES_PASSWORD: ci_borneo_password
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U borneo_app -d borneo_tracker_app"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+      mailpit:
+        image: axllent/mailpit:v1.27
+        ports: ["1025:1025"]
+    env:
+      NODE_ENV: test
+      DATABASE_URL: postgresql://borneo_app:ci_borneo_password@localhost:5432/borneo_tracker_app?schema=public
+      TEST_DATABASE_URL: postgresql://borneo_app:ci_borneo_password@localhost:5432/borneo_tracker_test?schema=public
+      APP_PUBLIC_URL: http://localhost:5173
+      ALLOWED_ORIGINS: http://localhost:5173
+      CSRF_SECRET: ci-only-csrf-secret-with-at-least-32-characters
+      OUTBOX_ENCRYPTION_KEYRING: '{"active":"v1","keys":{"v1":"MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY="}}'
+      FINGERPRINT_HMAC_KEY: MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
+      SUPPRESSION_LOOKUP_HMAC_KEYRING: '{"active":"v1","keys":{"v1":"MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY="}}'
+      PII_ENCRYPTION_KEYRING: '{"active":"v1","keys":{"v1":"MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY="}}'
+      EMAIL_PROVIDER: smtp
+      EMAIL_FROM: Borneo Tracker CI <no-reply@borneotracker.local>
+      SMTP_HOST: localhost
+      SMTP_PORT: 1025
+      PUBLIC_REGISTRATION_ENABLED: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run db:generate
+      - run: npm run db:deploy --workspace server
+      - run: npm run lint
+      - run: npm run typecheck:server
+      - run: npm run build:all
+      - run: npm test
+      - run: npm run db:check-drift
+      - run: npm audit --audit-level=high

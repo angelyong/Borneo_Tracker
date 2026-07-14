@@ -201,7 +201,7 @@ const NewsReview = () => {
         <header className="admin-news-header">
           <h1>News Review Queue</h1>
           <p className="admin-news-subtitle">
-            Admin approval view — review AI-generated drafts before they go public. MVP: no login yet.
+            Admin approval view — review AI-generated drafts before they go public. Access is limited to signed-in admins.
           </p>
         </header>
 

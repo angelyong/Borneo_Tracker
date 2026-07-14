@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Icons } from './ui';
+import { useAuth } from '../auth/useAuth';
 
 const Sidebar = ({ collapsed = false }) => {
   const navigate = useNavigate();
+  const { status, user, logout, refresh } = useAuth();
   const [logoutHovered, setLogoutHovered] = useState(false);
 
   const menuItems = [
@@ -13,18 +15,23 @@ const Sidebar = ({ collapsed = false }) => {
     { name: 'SDG Progress',             path: '/sdg',       icon: <Icons.Chart size={20} /> },
   
     { name: 'News & Insights',          path: '/news',      icon: <Icons.Newspaper size={20} /> },
-    { name: 'News Review (Admin)',      path: '/admin/news', icon: <Icons.Newspaper size={20} /> },
+    { name: 'News Review (Admin)',      path: '/admin/news', icon: <Icons.Newspaper size={20} />, adminOnly: true },
     { name: 'Community',                path: '/community', icon: <Icons.Comment size={20} /> },
     { name: 'Generate Report',          path: '/reports',   icon: <Icons.FileArrow size={20} /> },
     { name: 'Data Sources',             path: '/data-sources', icon: <Icons.Frame size={20} /> },
     { name: 'About Borneo Tracker',     path: '/about',     icon: <Icons.Info size={20} />         },
   ];
 
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    sessionStorage.clear();
-    navigate('/login');
+  const handleLogout = async () => {
+    if (status === 'loading') return;
+    if (status === 'unavailable') { await refresh(); return; }
+    if (status === 'authenticated') {
+      try { await logout(); } catch { return; }
+    }
+    navigate('/login', { replace: true });
   };
+
+  const visibleMenuItems = menuItems.filter((item) => !item.adminOnly || user?.role === 'ADMIN');
 
   return (
     <div style={{ ...styles.sidebar, width: collapsed ? 72 : '100%' }}>
@@ -33,7 +40,7 @@ const Sidebar = ({ collapsed = false }) => {
 
       {/* ── Nav links ── */}
       <nav style={styles.nav}>
-        {menuItems.map((item) => (
+        {visibleMenuItems.map((item) => (
           <NavLink
             key={item.name}
             to={item.path}
@@ -69,7 +76,7 @@ const Sidebar = ({ collapsed = false }) => {
           }}
         >
           <span style={styles.logoutIcon}>⎋</span>
-          {!collapsed && 'Log out'}
+          {!collapsed && (status === 'authenticated' ? 'Log out' : status === 'anonymous' ? 'Log in' : status === 'loading' ? 'Checking…' : 'Retry authentication')}
         </button>
 
        

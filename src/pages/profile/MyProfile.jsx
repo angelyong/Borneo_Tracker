@@ -1,288 +1,308 @@
-// pages/profile/MyProfile.jsx
-// Matches screenshot: Personal Details card + Password card, each with Edit button
-// Clicking Edit opens an inline edit form. Saving shows a success toast.
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../auth/useAuth';
+import { authService } from '../../services/authService';
 
-import { useState } from 'react';
-import Sidebar from '../../components/sidebar';
-import MiniTopBar from '../../components/MiniTopBar';
-
-const INITIAL_USER = {
-  firstName:   'Json',
-  lastName:    'Chen',
-  email:       'json@gmail.com',
-  phone:       '1812345678',
-  phoneCode:   '+60',
-  addressLine: '15, Jalan Permas 12/10, Bandar Baru Permas Jaya',
-  city:        'Masai',
-  state:       "Johor Darul Ta'zim",
-  postal:      '81750',
+const EMPTY_PROFILE = {
+  phoneCountryCode: '',
+  phoneNumber: '',
+  addressLine: '',
+  city: '',
+  state: '',
+  postalCode: '',
 };
+const EMPTY_PASSWORDS = { currentPassword: '', password: '', confirmPassword: '' };
+const EMPTY_EMAIL = { newEmail: '', currentPassword: '' };
+
+const nullableToEmpty = (profile) => Object.fromEntries(
+  Object.entries(profile).map(([key, value]) => [key, value ?? '']),
+);
 
 export default function MyProfile() {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [user, setUser]                   = useState(INITIAL_USER);
-  const [editMode, setEditMode]           = useState(null);   // 'details' | 'password' | null
-  const [form, setForm]                   = useState({});
-  const [toast, setToast]                 = useState(false);
-  const [pwForm, setPwForm]               = useState({ current: '', next: '', confirm: '' });
+  const navigate = useNavigate();
+  const { user, updateUser } = useAuth();
+  const [profile, setProfile] = useState(EMPTY_PROFILE);
+  const [names, setNames] = useState({ firstName: user?.firstName || '', lastName: user?.lastName || '' });
+  const [version, setVersion] = useState(1);
+  const [editMode, setEditMode] = useState(null);
+  const [detailsForm, setDetailsForm] = useState({});
+  const [passwords, setPasswords] = useState(EMPTY_PASSWORDS);
+  const [emailForm, setEmailForm] = useState(EMPTY_EMAIL);
+  const [logoutPassword, setLogoutPassword] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [toast, setToast] = useState('');
+  const toastTimer = useRef(null);
 
-  // ── Open edit panels ──────────────────────────────────────────────────────
+  const loadProfile = useCallback(async () => {
+    setLoading(true);
+    setError('');
+    setFieldErrors({});
+    try {
+      const data = await authService.getProfile();
+      setProfile(nullableToEmpty(data.profile));
+      setNames({ firstName: data.user.firstName, lastName: data.user.lastName });
+      setVersion(data.version);
+      updateUser(data.user);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [updateUser]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => void loadProfile(), 0);
+    return () => window.clearTimeout(timer);
+  }, [loadProfile]);
+
+  useEffect(() => () => {
+    if (toastTimer.current) window.clearTimeout(toastTimer.current);
+  }, []);
+
+  const showToast = (message) => {
+    setToast(message);
+    if (toastTimer.current) window.clearTimeout(toastTimer.current);
+    toastTimer.current = window.setTimeout(() => setToast(''), 3000);
+  };
+
   const openDetails = () => {
-    setForm({ ...user });
+    setError('');
+    setFieldErrors({});
+    setDetailsForm({ ...names, ...profile });
     setEditMode('details');
   };
-  const openPassword = () => {
-    setPwForm({ current: '', next: '', confirm: '' });
-    setEditMode('password');
+
+  const saveDetails = async (event) => {
+    event.preventDefault();
+    setSubmitting(true);
+    setError('');
+    setFieldErrors({});
+    try {
+      const data = await authService.updateProfile({ version, ...detailsForm });
+      setProfile(nullableToEmpty(data.profile));
+      setNames({ firstName: data.user.firstName, lastName: data.user.lastName });
+      setVersion(data.version);
+      updateUser(data.user);
+      setEditMode(null);
+      showToast('Your personal details have been updated.');
+    } catch (err) {
+      if (err.code === 'PROFILE_VERSION_CONFLICT') {
+        await loadProfile();
+        setError('Your profile changed in another session. The latest details have been loaded; please try again.');
+      } else {
+        setError(err.message);
+        setFieldErrors(err.fieldErrors || {});
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  // ── Save details ──────────────────────────────────────────────────────────
-  const saveDetails = () => {
-    setUser({ ...form });
-    setEditMode(null);
-    showToast();
-  };
-  const savePassword = () => {
-    setEditMode(null);
-    showToast();
+  const savePassword = async (event) => {
+    event.preventDefault();
+    setSubmitting(true);
+    setError('');
+    setFieldErrors({});
+    try {
+      await authService.changePassword(
+        passwords.currentPassword,
+        passwords.password,
+        passwords.confirmPassword,
+      );
+      setPasswords(EMPTY_PASSWORDS);
+      setEditMode(null);
+      showToast('Your password has been changed. Other sessions were signed out.');
+    } catch (err) {
+      setError(err.message);
+      setFieldErrors(err.fieldErrors || {});
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const showToast = () => {
-    setToast(true);
-    setTimeout(() => setToast(false), 3000);
+  const requestEmailChange = async (event) => {
+    event.preventDefault();
+    setSubmitting(true);
+    setError('');
+    setFieldErrors({});
+    try {
+      const result = await authService.changeEmail(emailForm.newEmail, emailForm.currentPassword);
+      setEmailForm(EMPTY_EMAIL);
+      setEditMode(null);
+      showToast(result.message);
+    } catch (err) {
+      setError(err.message);
+      setFieldErrors(err.fieldErrors || {});
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const fullName    = `${user.firstName} ${user.lastName}`;
-  const fullAddress = `${user.addressLine}, ${user.city}, ${user.postal} ${user.state}`;
+  const signOutEverywhere = async (event) => {
+    event.preventDefault();
+    setSubmitting(true);
+    setError('');
+    setFieldErrors({});
+    try {
+      await authService.logoutAll(logoutPassword);
+      authService.clearMemory();
+      updateUser(null);
+      navigate('/login', { replace: true });
+    } catch (err) {
+      setError(err.message);
+      setFieldErrors(err.fieldErrors || {});
+      setSubmitting(false);
+    }
+  };
+
+  const updateForm = (setter) => (event) => {
+    const { name, value } = event.target;
+    setter((current) => ({ ...current, [name]: value }));
+  };
+
+  const fullName = `${names.firstName} ${names.lastName}`.trim();
+  const phone = `${profile.phoneCountryCode}${profile.phoneNumber}`;
+  const address = [profile.addressLine, profile.city, profile.postalCode, profile.state].filter(Boolean).join(', ');
+
+  if (loading) return <div style={styles.content}>Loading your profile…</div>;
 
   return (
-    <div style={s.root}>
-     
+    <div style={styles.content}>
+      <h1 style={styles.pageTitle}>My Profile</h1>
+      {error && <div role="alert" style={styles.error}>{error}</div>}
 
-      {/* Right column */}
-      <div style={s.rightCol}>
-        <MiniTopBar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} notifCount={2} />
-
-        {/* Scrollable content */}
-        <div style={s.content}>
-          <h1 style={s.pageTitle}>My Profile</h1>
-
-          {/* ── Personal Details card ── */}
-          <div style={s.card}>
-            <div style={s.cardHeader}>
-              <span style={s.cardLabel}>Personal Details</span>
-              <button style={s.editBtn} onClick={openDetails}>
-                <EditIcon /> Edit
-              </button>
+      <Card title="Personal Details" action={editMode !== 'details' && <EditButton onClick={openDetails} />}>
+        {editMode === 'details' ? (
+          <form style={styles.form} onSubmit={saveDetails}>
+            <div style={styles.formGrid}>
+              <Field label="First Name" error={fieldErrors.firstName} name="firstName" value={detailsForm.firstName || ''} onChange={updateForm(setDetailsForm)} required maxLength={100} />
+              <Field label="Last Name" error={fieldErrors.lastName} name="lastName" value={detailsForm.lastName || ''} onChange={updateForm(setDetailsForm)} required maxLength={100} />
             </div>
-
-            {editMode === 'details' ? (
-              /* Edit form */
-              <div style={s.form}>
-                <div style={s.formGrid}>
-                  <div style={s.field}>
-                    <label style={s.label}>First Name</label>
-                    <input style={s.input} value={form.firstName} onChange={e => setForm({ ...form, firstName: e.target.value })} />
-                  </div>
-                  <div style={s.field}>
-                    <label style={s.label}>Last Name</label>
-                    <input style={s.input} value={form.lastName} onChange={e => setForm({ ...form, lastName: e.target.value })} />
-                  </div>
-                </div>
-                <div style={s.field}>
-                  <label style={s.label}>Email</label>
-                  <input style={s.input} type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
-                </div>
-                <div style={s.field}>
-                  <label style={s.label}>Phone Number</label>
-                  <div style={s.phoneRow}>
-                    <select style={s.phoneCode} value={form.phoneCode} onChange={e => setForm({ ...form, phoneCode: e.target.value })}>
-                      {['+60', '+62', '+673', '+65'].map(c => <option key={c}>{c}</option>)}
-                    </select>
-                    <input style={{ ...s.input, flex: 1 }} value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
-                  </div>
-                </div>
-                <div style={s.field}>
-                  <label style={s.label}>Address <span style={s.required}>*</span></label>
-                  <p style={s.hint}>House No., Building, Street name</p>
-                  <input style={s.input} value={form.addressLine} onChange={e => setForm({ ...form, addressLine: e.target.value })} />
-                </div>
-                <div style={s.formGrid}>
-                  <div style={s.field}>
-                    <label style={s.label}>City</label>
-                    <input style={s.input} value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} />
-                  </div>
-                  <div style={s.field}>
-                    <label style={s.label}>State</label>
-                    <input style={s.input} value={form.state} onChange={e => setForm({ ...form, state: e.target.value })} />
-                  </div>
-                </div>
-                <div style={{ ...s.field, maxWidth: '200px' }}>
-                  <label style={s.label}>Postal code</label>
-                  <input style={s.input} value={form.postal} onChange={e => setForm({ ...form, postal: e.target.value })} />
-                </div>
-                <div style={s.formActions}>
-                  <button style={s.cancelBtn} onClick={() => setEditMode(null)}>Cancel</button>
-                  <button style={s.saveBtn} onClick={saveDetails}>Save Changes</button>
-                </div>
-              </div>
-            ) : (
-              /* View mode */
-              <div style={s.detailsGrid}>
-                {[
-                  { label: 'Name',    value: fullName },
-                  { label: 'Email',   value: user.email },
-                  { label: 'Phone',   value: `${user.phoneCode}${user.phone}` },
-                  { label: 'Address', value: fullAddress },
-                ].map(row => (
-                  <div key={row.label} style={s.detailRow}>
-                    <span style={s.detailLabel}>{row.label}</span>
-                    <span style={s.detailValue}>{row.value}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* ── Password card ── */}
-          <div style={{ ...s.card, marginTop: '16px' }}>
-            <div style={s.cardHeader}>
-              <span style={s.cardLabel}>Password</span>
-              <button style={s.editBtn} onClick={openPassword}>
-                <EditIcon /> Edit
-              </button>
+            <Field label="Email" type="email" value={user?.email || ''} readOnly />
+            <div style={styles.formGrid}>
+              <Field label="Phone country code" error={fieldErrors.phoneCountryCode} name="phoneCountryCode" value={detailsForm.phoneCountryCode || ''} onChange={updateForm(setDetailsForm)} maxLength={8} />
+              <Field label="Phone number" error={fieldErrors.phoneNumber} name="phoneNumber" value={detailsForm.phoneNumber || ''} onChange={updateForm(setDetailsForm)} maxLength={32} />
             </div>
-
-            {editMode === 'password' ? (
-              <div style={s.form}>
-                {[
-                  { label: 'Current password', key: 'current' },
-                  { label: 'New password',      key: 'next'    },
-                  { label: 'Confirm password',  key: 'confirm' },
-                ].map(f => (
-                  <div key={f.key} style={s.field}>
-                    <label style={s.label}>{f.label}</label>
-                    <input
-                      style={s.input}
-                      type="password"
-                      value={pwForm[f.key]}
-                      onChange={e => setPwForm({ ...pwForm, [f.key]: e.target.value })}
-                    />
-                  </div>
-                ))}
-                <div style={s.formActions}>
-                  <button style={s.cancelBtn} onClick={() => setEditMode(null)}>Cancel</button>
-                  <button style={s.saveBtn} onClick={savePassword}>Save Changes</button>
-                </div>
-              </div>
-            ) : (
-              <div style={s.detailRow}>
-                <span style={s.detailLabel}>Password</span>
-                <span style={{ ...s.detailValue, letterSpacing: '3px', fontSize: '18px' }}>••••••••</span>
-              </div>
-            )}
+            <Field label="Address" error={fieldErrors.addressLine} name="addressLine" value={detailsForm.addressLine || ''} onChange={updateForm(setDetailsForm)} maxLength={200} />
+            <div style={styles.formGrid}>
+              <Field label="City" error={fieldErrors.city} name="city" value={detailsForm.city || ''} onChange={updateForm(setDetailsForm)} maxLength={100} />
+              <Field label="State" error={fieldErrors.state} name="state" value={detailsForm.state || ''} onChange={updateForm(setDetailsForm)} maxLength={100} />
+            </div>
+            <Field label="Postal code" error={fieldErrors.postalCode} name="postalCode" value={detailsForm.postalCode || ''} onChange={updateForm(setDetailsForm)} maxLength={20} />
+            <FormActions submitting={submitting} onCancel={() => setEditMode(null)} />
+          </form>
+        ) : (
+          <div>
+            <Detail label="Name" value={fullName || '—'} />
+            <Detail label="Email" value={user?.email || '—'} />
+            <Detail label="Phone" value={phone || '—'} />
+            <Detail label="Address" value={address || '—'} />
           </div>
+        )}
+      </Card>
 
-        
-        </div>
-      </div>
+      <Card title="Password" action={editMode !== 'password' && <EditButton onClick={() => { setError(''); setPasswords(EMPTY_PASSWORDS); setEditMode('password'); }} />}>
+        {editMode === 'password' ? (
+          <form style={styles.form} onSubmit={savePassword}>
+            <Field label="Current password" error={fieldErrors.currentPassword} type="password" name="currentPassword" value={passwords.currentPassword} onChange={updateForm(setPasswords)} required maxLength={128} autoComplete="current-password" />
+            <Field label="New password" error={fieldErrors.password} type="password" name="password" value={passwords.password} onChange={updateForm(setPasswords)} required minLength={12} maxLength={128} autoComplete="new-password" />
+            <Field label="Confirm password" error={fieldErrors.confirmPassword} type="password" name="confirmPassword" value={passwords.confirmPassword} onChange={updateForm(setPasswords)} required maxLength={128} autoComplete="new-password" />
+            <FormActions submitting={submitting} onCancel={() => setEditMode(null)} />
+          </form>
+        ) : <Detail label="Password" value="••••••••" secret />}
+      </Card>
 
-      {/* ── Success toast overlay ── */}
+      <Card title="Sign-in Email" action={editMode !== 'email' && <EditButton label="Change" onClick={() => { setError(''); setEmailForm(EMPTY_EMAIL); setEditMode('email'); }} />}>
+        {editMode === 'email' ? (
+          <form style={styles.form} onSubmit={requestEmailChange}>
+            <Field label="New email" error={fieldErrors.newEmail} type="email" name="newEmail" value={emailForm.newEmail} onChange={updateForm(setEmailForm)} required maxLength={254} />
+            <Field label="Current password" error={fieldErrors.currentPassword} type="password" name="currentPassword" value={emailForm.currentPassword} onChange={updateForm(setEmailForm)} required maxLength={128} autoComplete="current-password" />
+            <p style={styles.hint}>The new address replaces your current email only after you confirm it.</p>
+            <FormActions submitting={submitting} onCancel={() => setEditMode(null)} submitLabel="Send Confirmation" />
+          </form>
+        ) : <Detail label="Email" value={user?.email || '—'} />}
+      </Card>
+
+      <Card title="Sign Out All Devices">
+        <p style={styles.hint}>Enter your current password to end every active session, including this one.</p>
+        <form style={styles.form} onSubmit={signOutEverywhere}>
+          <Field label="Current password" error={fieldErrors.currentPassword} type="password" value={logoutPassword} onChange={(event) => setLogoutPassword(event.target.value)} required maxLength={128} autoComplete="current-password" />
+          <div style={styles.formActions}>
+            <button type="submit" style={styles.dangerBtn} disabled={submitting}>{submitting ? 'Please wait…' : 'Sign Out All Devices'}</button>
+          </div>
+        </form>
+      </Card>
+
       {toast && (
-        <div style={s.toastOverlay}>
-          <div style={s.toastBox}>
-            <div style={s.toastIcon}>✓</div>
-            <p style={s.toastText}>Your changes have been updated.</p>
-          </div>
+        <div style={styles.toastOverlay} role="status">
+          <div style={styles.toastBox}><div style={styles.toastIcon}>✓</div><p style={styles.toastText}>{toast}</p></div>
         </div>
       )}
     </div>
   );
 }
 
-// ── Edit icon ─────────────────────────────────────────────────────────────────
+function Card({ title, action, children }) {
+  return <section style={styles.card}>
+    <div style={styles.cardHeader}><span style={styles.cardLabel}>{title}</span>{action}</div>
+    {children}
+  </section>;
+}
+
+function Field({ label, error, ...props }) {
+  return <label style={styles.field}><span style={styles.label}>{label}</span><input style={styles.input} aria-invalid={Boolean(error)} {...props} />{error && <span role="alert" style={styles.fieldError}>{error}</span>}</label>;
+}
+
+function Detail({ label, value, secret = false }) {
+  return <div style={styles.detailRow}><span style={styles.detailLabel}>{label}</span><span style={secret ? styles.secretValue : styles.detailValue}>{value}</span></div>;
+}
+
+function EditButton({ onClick, label = 'Edit' }) {
+  return <button type="button" style={styles.editBtn} onClick={onClick}><EditIcon /> {label}</button>;
+}
+
+function FormActions({ submitting, onCancel, submitLabel = 'Save Changes' }) {
+  return <div style={styles.formActions}>
+    <button type="button" style={styles.cancelBtn} onClick={onCancel} disabled={submitting}>Cancel</button>
+    <button type="submit" style={styles.saveBtn} disabled={submitting}>{submitting ? 'Saving…' : submitLabel}</button>
+  </div>;
+}
+
 const EditIcon = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    style={{ marginRight: 4, verticalAlign: 'middle' }}>
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: 4, verticalAlign: 'middle' }}>
     <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
   </svg>
 );
 
-// ── Styles ────────────────────────────────────────────────────────────────────
-const s = {
-   root: {
-    display: 'flex',
-    width: '100%',
-    minHeight: '100vh',
-    fontFamily: 'Inter, Arial, sans-serif',
-    backgroundColor: '#f5f4f0',
-  },
-   sidebarWrap: {
-    transition: 'width 0.3s ease, min-width 0.3s ease',
-    flexShrink: 0,
-  },
-   rightCol: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    minWidth: 0,
-  },
-   content: {
-    padding: '32px 40px 60px',
-    boxSizing: 'border-box',
-    maxWidth: '860px',
-    width: '100%',
-    margin: '0 auto',
-  },
-
-  pageTitle: { fontSize: '26px', fontWeight: '700', color: '#111827', marginBottom: '24px' },
-
-  // Card
-  card:       { backgroundColor: '#ffffff', borderRadius: '16px', border: '1px solid #e5e7eb', padding: '24px 28px', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' },
-  cardHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
-  cardLabel:  { fontSize: '16px', fontWeight: '700', color: '#111827' },
-
-  editBtn: {
-    display:         'flex', alignItems: 'center',
-    gap:             '4px',
-    background:      'none', border: '1px solid #d1d5db',
-    borderRadius:    '8px', padding: '5px 12px',
-    fontSize:        '13px', fontWeight: '600',
-    color:           '#374151', cursor: 'pointer',
-  },
-
-  // View rows
-  detailsGrid: { display: 'flex', flexDirection: 'column', gap: '0' },
-  detailRow:   { display: 'flex', gap: '16px', padding: '12px 0', borderBottom: '1px solid #f3f4f6', alignItems: 'flex-start' },
-  detailLabel: { minWidth: '90px', fontSize: '14px', fontWeight: '600', color: '#111827' },
-  detailValue: { fontSize: '14px', color: '#374151', flex: 1 },
-
-  // Edit form
-  form:     { display: 'flex', flexDirection: 'column', gap: '16px' },
-  formGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' },
-  field:    { display: 'flex', flexDirection: 'column', gap: '5px' },
-  label:    { fontSize: '13px', fontWeight: '500', color: '#374151' },
-  hint:     { fontSize: '11px', color: '#9ca3af', margin: '-2px 0 0' },
-  required: { color: '#ef4444' },
-  input: {
-    padding: '10px 14px', borderRadius: '10px',
-    border: '1px solid #d1d5db', fontSize: '14px',
-    outline: 'none', color: '#111827', backgroundColor: '#fff',
-    boxSizing: 'border-box', width: '100%',
-  },
-  phoneRow:  { display: 'flex', gap: '8px', alignItems: 'center' },
-  phoneCode: { padding: '10px 10px', borderRadius: '10px', border: '1px solid #d1d5db', fontSize: '14px', outline: 'none', backgroundColor: '#fff', cursor: 'pointer' },
-
-  formActions: { display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '8px' },
-  cancelBtn: { padding: '10px 20px', borderRadius: '10px', border: '1px solid #d1d5db', background: '#fff', fontSize: '14px', fontWeight: '600', color: '#374151', cursor: 'pointer' },
-  saveBtn:   { padding: '10px 28px', borderRadius: '10px', border: 'none', background: '#d97706', color: '#fff', fontSize: '14px', fontWeight: '700', cursor: 'pointer' },
-
-
-  // Toast
+const styles = {
+  content: { padding: '32px 40px 70px', boxSizing: 'border-box', maxWidth: 860, width: '100%', margin: '0 auto' },
+  pageTitle: { fontSize: 26, fontWeight: 700, color: '#111827', marginBottom: 24 },
+  card: { backgroundColor: '#fff', borderRadius: 16, border: '1px solid #e5e7eb', padding: '24px 28px', boxShadow: '0 1px 4px rgba(0,0,0,0.05)', marginBottom: 16 },
+  cardHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  cardLabel: { fontSize: 16, fontWeight: 700, color: '#111827' },
+  editBtn: { display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: '1px solid #d1d5db', borderRadius: 8, padding: '5px 12px', fontSize: 13, fontWeight: 600, color: '#374151', cursor: 'pointer' },
+  detailRow: { display: 'flex', gap: 16, padding: '12px 0', borderBottom: '1px solid #f3f4f6', alignItems: 'flex-start' },
+  detailLabel: { minWidth: 90, fontSize: 14, fontWeight: 600, color: '#111827' },
+  detailValue: { fontSize: 14, color: '#374151', flex: 1 },
+  secretValue: { fontSize: 18, color: '#374151', flex: 1, letterSpacing: 3 },
+  form: { display: 'flex', flexDirection: 'column', gap: 16 },
+  formGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 },
+  field: { display: 'flex', flexDirection: 'column', gap: 5 },
+  label: { fontSize: 13, fontWeight: 500, color: '#374151' },
+  fieldError: { fontSize: 12, color: '#b91c1c' },
+  input: { padding: '10px 14px', borderRadius: 10, border: '1px solid #d1d5db', fontSize: 14, outline: 'none', color: '#111827', backgroundColor: '#fff', boxSizing: 'border-box', width: '100%' },
+  hint: { fontSize: 12, color: '#6b7280', margin: 0 },
+  formActions: { display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 8 },
+  cancelBtn: { padding: '10px 20px', borderRadius: 10, border: '1px solid #d1d5db', background: '#fff', fontSize: 14, fontWeight: 600, color: '#374151', cursor: 'pointer' },
+  saveBtn: { padding: '10px 28px', borderRadius: 10, border: 'none', background: '#d97706', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' },
+  dangerBtn: { padding: '10px 20px', borderRadius: 10, border: 'none', background: '#b91c1c', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer' },
+  error: { padding: 12, background: '#fee2e2', color: '#991b1b', borderRadius: 8, marginBottom: 16 },
   toastOverlay: { position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.35)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  toastBox:     { backgroundColor: '#ffffff', borderRadius: '16px', padding: '36px 48px', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', minWidth: '300px' },
-  toastIcon:    { width: '52px', height: '52px', borderRadius: '50%', backgroundColor: '#22c55e', color: '#fff', fontSize: '24px', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' },
-  toastText:    { fontSize: '18px', fontWeight: '600', color: '#111827', margin: 0 },
+  toastBox: { backgroundColor: '#fff', borderRadius: 16, padding: '36px 48px', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', minWidth: 300 },
+  toastIcon: { width: 52, height: 52, borderRadius: '50%', backgroundColor: '#22c55e', color: '#fff', fontSize: 24, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' },
+  toastText: { fontSize: 18, fontWeight: 600, color: '#111827', margin: 0 },
 };

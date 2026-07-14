@@ -59,15 +59,17 @@ const ResizeMap = () => {
   const map = useMap();
 
   useEffect(() => {
+    const container = map.getContainer();
+    let resizeTimer;
     const resizeMap = () => {
-      setTimeout(() => {
-        map.invalidateSize();
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(() => {
+        if (container.isConnected) map.invalidateSize();
       }, 200);
     };
 
     resizeMap();
 
-    const container = map.getContainer();
     const observer = new ResizeObserver(() => {
       resizeMap();
     });
@@ -76,6 +78,7 @@ const ResizeMap = () => {
     window.addEventListener('resize', resizeMap);
 
     return () => {
+      window.clearTimeout(resizeTimer);
       observer.disconnect();
       window.removeEventListener('resize', resizeMap);
     };
