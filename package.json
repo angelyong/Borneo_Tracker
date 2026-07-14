@@ -12,6 +12,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.110.3",
     "echarts": "^6.1.0",
     "html-to-image": "^1.11.13",
     "jspdf": "^4.2.1",

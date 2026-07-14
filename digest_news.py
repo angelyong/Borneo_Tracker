@@ -92,6 +92,63 @@ Items:
 """
 
 
+def env_val(name):
+    """Read a var from the environment or .env (never printed)."""
+    if os.environ.get(name):
+        return os.environ[name]
+    envf = Path(".env")
+    if envf.exists():
+        for line in envf.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if line.startswith("#") or "=" not in line:
+                continue
+            k, v = line.split("=", 1)
+            if k.strip() == name:
+                return v.strip().strip('"').strip("'")
+    return None
+
+
+def to_supabase_row(it):
+    """Frontend camelCase item -> Supabase news_items row (snake_case). The LIVE
+    pipeline inserts drafts only; a human approves via the dashboard, so status
+    is always 'pending' here."""
+    return {
+        "id": it["id"],
+        "title": it["title"],
+        "body": it.get("body", ""),
+        "image_url": it.get("imageUrl", ""),
+        "beat": it.get("beat"),
+        "beat_label": it.get("beatLabel"),
+        "esg_pillar": it.get("esgPillar"),
+        "sdg": it.get("sdg", []),
+        "country": it.get("country"),
+        "territories": it.get("territories", []),
+        "sources": it.get("sources", []),
+        "source_count": it.get("sourceCount", 1),
+        "original_lang": it.get("originalLang"),
+        "ai_generated": True,
+        "status": "pending",
+        "is_featured": False,
+        "created_at": it.get("createdAt"),
+        "published_at": None,
+    }
+
+
+def upsert_supabase(rows, base_url, service_key):
+    """Upsert rows into news_items via PostgREST — idempotent on id (re-runs
+    don't duplicate). Returns the HTTP status code."""
+    endpoint = base_url.rstrip("/") + "/rest/v1/news_items"
+    body = json.dumps(rows, ensure_ascii=False).encode("utf-8")
+    req = urllib.request.Request(endpoint, data=body, method="POST", headers={
+        "apikey": service_key,
+        "Authorization": f"Bearer {service_key}",
+        "Content-Type": "application/json",
+        "Prefer": "resolution=merge-duplicates,return=minimal",
+    })
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        return resp.status
+
+
 def main():
     # Windows consoles default to cp1252 and choke on '→'/Indonesian text; force UTF-8.
     try:
@@ -162,6 +219,21 @@ def main():
     digested.sort(key=lambda x: x["sources"][0]["publishedAt"], reverse=True)
     digested = digested[:args.limit]
 
+    # --- LIVE path: upsert drafts to Supabase, a human approves via the dashboard ---
+    supa_url = env_val("SUPABASE_URL")
+    supa_key = env_val("SUPABASE_SERVICE_KEY")
+    if supa_url and supa_key:
+        rows = [to_supabase_row(it) for it in digested]
+        try:
+            code = upsert_supabase(rows, supa_url, supa_key)
+        except Exception as e:  # noqa: BLE001
+            print(f"Supabase upsert failed: {type(e).__name__}: {e}", file=sys.stderr)
+            return 1
+        print(f"Upserted {len(rows)} drafts (status=pending) to Supabase news_items [HTTP {code}].")
+        print("Approve them in the Supabase Table Editor (set status=published).")
+        return 0
+
+    # --- LOCAL/demo path: write the mockNews.js seed ---
     # Seed the app: publish the newest 6, leave the rest as pending drafts.
     for i, it in enumerate(digested):
         if i < 6:

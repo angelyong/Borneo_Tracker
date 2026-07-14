@@ -1,27 +1,25 @@
 // PUBLIC news service — what the /news pages read.
 // Only PUBLISHED articles are ever returned here; pending/rejected drafts never
-// reach the public site (this is the "nothing is public until an admin approves"
-// gate, enforced in code today and by Supabase RLS later).
+// reach the public site. In production this comes LIVE from Supabase (anon key +
+// RLS: anon can only read published rows); in local dev it falls back to the mock
+// store. getPublishedArticles() hides which backend is in use.
 
-import { getAllArticles, wait } from './newsStore';
-
-const published = () => getAllArticles().filter((article) => article.status === 'published');
+import { getPublishedArticles } from './newsStore';
 
 export async function getNewsArticles() {
-  await wait();
-  return published();
+  return getPublishedArticles();
 }
 
 export async function getNewsArticleById(id) {
-  await wait();
-  return published().find((article) => article.id === id) || null;
+  const published = await getPublishedArticles();
+  return published.find((article) => article.id === id) || null;
 }
 
 export async function getRelatedNewsArticles(article, limit = 3) {
-  await wait();
   if (!article) return [];
 
-  return published()
+  const published = await getPublishedArticles();
+  return published
     .filter((candidate) => candidate.id !== article.id)
     .filter(
       (candidate) =>
