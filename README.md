@@ -30,6 +30,21 @@ npm run dev          # -> http://localhost:5173
 npm run test         # -> Vitest (Community upload rules, storage & service)
 ```
 
+## Login backend (local development)
+
+The application now includes a PostgreSQL-backed authentication server. Start PostgreSQL and the local Mailpit inbox, apply migrations, then run the API, email worker and frontend:
+
+```powershell
+docker compose up -d
+npm run db:generate
+npm run db:deploy --workspace server
+npm run dev:server
+npm run dev:worker
+npm run dev
+```
+
+The project database uses host port `5433` to avoid conflicts with existing Windows PostgreSQL installations. Mailpit is available at `http://localhost:8025`. Full backend instructions are in [`server/README.md`](server/README.md).
+
 To re-pull fresh data from the live sources you need API keys (`cp .env.example .env` and fill in), then:
 
 ```bash
@@ -93,6 +108,7 @@ The Community feature has **no backend**. Posts, comments, likes and uploaded at
 - Attachments survive a refresh **only while the browser keeps the storage** — browsers can evict IndexedDB under storage pressure (Safari especially). The app requests persistent storage best-effort, but persistence is **not guaranteed**.
 - Front-end file validation (type / size / count) is for UX only — it is **not** a virus scan or content-signature check.
 - A crash between the two storage writes can leave an orphan blob; v1 does best-effort cleanup at create/delete time and does **not** run a background reconciliation pass (that belongs on a future backend).
+- Login integration records the authenticated `user.id` on local posts/comments and isolates ownership/likes between accounts that share a browser. This is still not a server authorization boundary. Local development permits the prototype; production builds keep Community writes disabled unless `VITE_ENABLE_COMMUNITY_WRITES=true` is deliberately set.
 
 A real multi-user version needs a backend (auth, shared DB, object storage, malware scanning, moderation) — the migration path is in `docs/COMMUNITY_UPLOAD_IMPLEMENTATION_PLAN.md`.
 
