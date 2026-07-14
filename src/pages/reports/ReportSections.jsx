@@ -1,18 +1,40 @@
-import { COLORS, FONT, RADII } from '../../theme';
+import { FONT, RADII } from '../../theme';
 import { formatValue } from '../../data/useIndicators';
 
 // Fixed canonical order — every pillar is always shown, scored or not, so a
 // missing score reads as an honest gap rather than being silently dropped.
 const HEXAGON_PILLARS = ['Food', 'Energy', 'Education', 'Shelter', 'Healthcare', 'Entertainment'];
 
+// This report is a fixed white "printed page" — on-screen preview and the
+// exported PDF/PNG must look identical and stay legible regardless of the
+// app's light/dark toggle, so its palette is intentionally literal rather
+// than pointing at the theme-reactive COLORS/CSS vars used elsewhere.
+const PRINT = {
+  ink: '#1f2937',
+  muted: '#6b7280',
+  faint: '#9ca3af',
+  border: '#e5e7eb',
+  pageBg: '#f5f5f2',
+  greySoft: '#e5e7eb',
+  forest: '#1b4532',
+  amberDark: '#e3a32c',
+  green: '#16a34a',
+  greenSoft: '#d9f2e2',
+  yellowSoft: '#fbf3ce',
+  red: '#dc2626',
+  redSoft: '#fbdddd',
+  blue: '#2b7de9',
+  blueSoft: '#dbeafe',
+};
+
 const CONFIDENCE_STYLES = {
-  high: { bg: COLORS.greenSoft, fg: COLORS.green, label: 'High' },
-  medium: { bg: COLORS.blueSoft, fg: COLORS.blue, label: 'Medium' },
-  manual: { bg: COLORS.yellowSoft, fg: '#B7860B', label: 'Manual' },
+  high: { bg: PRINT.greenSoft, fg: PRINT.green, label: 'High' },
+  medium: { bg: PRINT.blueSoft, fg: PRINT.blue, label: 'Medium' },
+  manual: { bg: PRINT.yellowSoft, fg: '#B7860B', label: 'Manual' },
 };
 
 function ConfidenceBadge({ confidence }) {
-  const style = CONFIDENCE_STYLES[confidence] || { bg: COLORS.greySoft, fg: COLORS.muted, label: confidence || 'Unknown' };
+  const style = CONFIDENCE_STYLES[confidence] || { bg: PRINT.greySoft, fg: PRINT.muted, label: confidence || 'Unknown' };
   return (
     <span
       style={{
@@ -32,23 +54,23 @@ function ConfidenceBadge({ confidence }) {
 }
 
 const sectionStyle = { background: '#fff', padding: '28px 32px', fontFamily: FONT };
-const headingStyle = { fontSize: 18, fontWeight: 800, color: COLORS.ink, margin: '0 0 4px' };
-const subheadingStyle = { fontSize: 12.5, color: COLORS.muted, margin: '0 0 20px' };
+const headingStyle = { fontSize: 18, fontWeight: 800, color: PRINT.ink, margin: '0 0 4px' };
+const subheadingStyle = { fontSize: 12.5, color: PRINT.muted, margin: '0 0 20px' };
 
 export function ReportCoverSection({ territory, fromYear, toYear, generatedAt }) {
   return (
     <div style={{ ...sectionStyle, textAlign: 'center', padding: '80px 32px' }}>
-      <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 1.5, color: COLORS.amberDark, textTransform: 'uppercase' }}>
+      <div style={{ fontSize: 13, fontWeight: 700, letterSpacing: 1.5, color: PRINT.amberDark, textTransform: 'uppercase' }}>
         Borneo Tracker
       </div>
-      <h1 style={{ fontSize: 32, fontWeight: 900, color: COLORS.ink, margin: '14px 0 6px' }}>
+      <h1 style={{ fontSize: 32, fontWeight: 900, color: PRINT.ink, margin: '14px 0 6px' }}>
         True Wealth &amp; ESG Report
       </h1>
-      <div style={{ fontSize: 20, fontWeight: 700, color: COLORS.forest, margin: '4px 0' }}>{territory}</div>
-      <div style={{ fontSize: 14, color: COLORS.muted, marginTop: 6 }}>
+      <div style={{ fontSize: 20, fontWeight: 700, color: PRINT.forest, margin: '4px 0' }}>{territory}</div>
+      <div style={{ fontSize: 14, color: PRINT.muted, marginTop: 6 }}>
         Reporting period: {fromYear}&ndash;{toYear}
       </div>
-      <div style={{ fontSize: 12.5, color: COLORS.faint, marginTop: 24 }}>Generated {generatedAt}</div>
+      <div style={{ fontSize: 12.5, color: PRINT.faint, marginTop: 24 }}>Generated {generatedAt}</div>
     </div>
   );
 }
@@ -67,7 +89,7 @@ export function ResilienceSection({ resilienceView }) {
             gap: 24,
             padding: '20px 24px',
             borderRadius: RADII.lg,
-            border: `1px solid ${COLORS.border}`,
+            border: `1px solid ${PRINT.border}`,
             background: RAG_BG[resilienceView.rag],
           }}
         >
@@ -78,23 +100,23 @@ export function ResilienceSection({ resilienceView }) {
             <div style={{ fontSize: 15, fontWeight: 800, color: RAG_FG[resilienceView.rag], textTransform: 'uppercase' }}>
               {RAG_LABEL[resilienceView.rag]}
             </div>
-            <div style={{ fontSize: 13, color: COLORS.ink, marginTop: 4 }}>
+            <div style={{ fontSize: 13, color: PRINT.ink, marginTop: 4 }}>
               Weakest pillar: <strong>{resilienceView.weakestPillar}</strong>
             </div>
-            <div style={{ fontSize: 12.5, color: COLORS.muted, marginTop: 2 }}>
+            <div style={{ fontSize: 12.5, color: PRINT.muted, marginTop: 2 }}>
               {resilienceView.scoredPillars.length} of 6 True Wealth pillars scored
             </div>
           </div>
         </div>
       ) : (
-        <p style={{ fontSize: 13.5, color: COLORS.muted }}>No resilience score is available for this territory.</p>
+        <p style={{ fontSize: 13.5, color: PRINT.muted }}>No resilience score is available for this territory.</p>
       )}
     </div>
   );
 }
 
-const RAG_BG = { green: COLORS.greenSoft, amber: COLORS.yellowSoft, red: COLORS.redSoft };
-const RAG_FG = { green: COLORS.green, amber: '#B7860B', red: COLORS.red };
+const RAG_BG = { green: PRINT.greenSoft, amber: PRINT.yellowSoft, red: PRINT.redSoft };
+const RAG_FG = { green: PRINT.green, amber: '#B7860B', red: PRINT.red };
 const RAG_LABEL = { green: 'Good', amber: 'Moderate', red: 'Poor' };
 
 export function HexagonSection({ pillarScores, unscoredPillars }) {
@@ -112,14 +134,14 @@ export function HexagonSection({ pillarScores, unscoredPillars }) {
           const isScored = Number.isFinite(score);
           return (
             <div key={pillar} style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <div style={{ width: 100, fontSize: 13, fontWeight: 700, color: COLORS.ink, flexShrink: 0 }}>{pillar}</div>
-              <div style={{ flex: 1, height: 16, borderRadius: 8, background: COLORS.greySoft, overflow: 'hidden' }}>
+              <div style={{ width: 100, fontSize: 13, fontWeight: 700, color: PRINT.ink, flexShrink: 0 }}>{pillar}</div>
+              <div style={{ flex: 1, height: 16, borderRadius: 8, background: PRINT.greySoft, overflow: 'hidden' }}>
                 {isScored && (
                   <div
                     style={{
                       width: `${Math.max(0, Math.min(100, score))}%`,
                       height: '100%',
-                      background: COLORS.forest,
+                      background: PRINT.forest,
                       borderRadius: 8,
                     }}
                   />
@@ -127,9 +149,9 @@ export function HexagonSection({ pillarScores, unscoredPillars }) {
               </div>
               <div style={{ width: 96, textAlign: 'right', fontSize: 13, fontWeight: 700, flexShrink: 0 }}>
                 {isScored ? (
-                  <span style={{ color: COLORS.ink }}>{score.toFixed(1)}/100</span>
+                  <span style={{ color: PRINT.ink }}>{score.toFixed(1)}/100</span>
                 ) : (
-                  <span style={{ color: COLORS.faint, fontWeight: 600 }}>Not yet scored</span>
+                  <span style={{ color: PRINT.faint, fontWeight: 600 }}>Not yet scored</span>
                 )}
               </div>
             </div>
@@ -137,7 +159,7 @@ export function HexagonSection({ pillarScores, unscoredPillars }) {
         })}
       </div>
       {unscoredPillars.length > 0 && (
-        <p style={{ fontSize: 12, color: COLORS.faint, marginTop: 16 }}>
+        <p style={{ fontSize: 12, color: PRINT.faint, marginTop: 16 }}>
           {unscoredPillars.join(', ')} {unscoredPillars.length === 1 ? 'has' : 'have'} no scored indicators for this
           territory yet &mdash; excluded from the index rather than estimated.
         </p>
@@ -164,9 +186,9 @@ export function IndicatorTableSection({ rows }) {
                   style={{
                     textAlign: label === 'Value' || label === 'Confidence' ? 'right' : 'left',
                     padding: '8px 10px',
-                    borderBottom: `2px solid ${COLORS.ink}`,
+                    borderBottom: `2px solid ${PRINT.ink}`,
                     fontWeight: 800,
-                    color: COLORS.ink,
+                    color: PRINT.ink,
                   }}
                 >
                   {label}
@@ -177,19 +199,19 @@ export function IndicatorTableSection({ rows }) {
           <tbody>
             {rows.map((row) => (
               <tr key={`${row.territory}-${row.indicator}`}>
-                <td style={{ padding: '8px 10px', borderBottom: `1px solid ${COLORS.border}`, color: COLORS.ink }}>
+                <td style={{ padding: '8px 10px', borderBottom: `1px solid ${PRINT.border}`, color: PRINT.ink }}>
                   {row.indicator}
                 </td>
-                <td style={{ padding: '8px 10px', borderBottom: `1px solid ${COLORS.border}`, textAlign: 'right', fontWeight: 600 }}>
+                <td style={{ padding: '8px 10px', borderBottom: `1px solid ${PRINT.border}`, textAlign: 'right', fontWeight: 600 }}>
                   {formatValue(row)}
                 </td>
-                <td style={{ padding: '8px 10px', borderBottom: `1px solid ${COLORS.border}`, color: COLORS.muted }}>
+                <td style={{ padding: '8px 10px', borderBottom: `1px solid ${PRINT.border}`, color: PRINT.muted }}>
                   {row.year}
                 </td>
-                <td style={{ padding: '8px 10px', borderBottom: `1px solid ${COLORS.border}`, color: COLORS.muted }}>
+                <td style={{ padding: '8px 10px', borderBottom: `1px solid ${PRINT.border}`, color: PRINT.muted }}>
                   {row.source}
                 </td>
-                <td style={{ padding: '8px 10px', borderBottom: `1px solid ${COLORS.border}`, textAlign: 'right' }}>
+                <td style={{ padding: '8px 10px', borderBottom: `1px solid ${PRINT.border}`, textAlign: 'right' }}>
                   <ConfidenceBadge confidence={row.confidence} />
                 </td>
               </tr>
@@ -197,7 +219,7 @@ export function IndicatorTableSection({ rows }) {
           </tbody>
         </table>
       ) : (
-        <p style={{ fontSize: 13.5, color: COLORS.muted }}>No canonical indicators fall within the selected date range.</p>
+        <p style={{ fontSize: 13.5, color: PRINT.muted }}>No canonical indicators fall within the selected date range.</p>
       )}
     </div>
   );
@@ -218,14 +240,14 @@ export function SdgSummarySection({ goalSummaries }) {
               justifyContent: 'space-between',
               padding: '9px 12px',
               borderRadius: RADII.sm,
-              background: count ? COLORS.pageBg : 'transparent',
-              border: `1px solid ${count ? COLORS.border : 'transparent'}`,
+              background: count ? PRINT.pageBg : 'transparent',
+              border: `1px solid ${count ? PRINT.border : 'transparent'}`,
             }}
           >
-            <span style={{ fontSize: 12.5, color: COLORS.ink }}>
+            <span style={{ fontSize: 12.5, color: PRINT.ink }}>
               <strong>{goal}</strong> &middot; {label}
             </span>
-            <span style={{ fontSize: 12.5, color: count ? COLORS.ink : COLORS.faint, fontWeight: 700 }}>
+            <span style={{ fontSize: 12.5, color: count ? PRINT.ink : PRINT.faint, fontWeight: 700 }}>
               {count ? `${count} indicator${count === 1 ? '' : 's'} · ${latestYear}` : 'No data'}
             </span>
           </div>
@@ -247,9 +269,9 @@ export function CommunitySection({ posts }) {
       {posts.length ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {posts.map((post) => (
-            <div key={post.id} style={{ padding: '10px 14px', borderRadius: RADII.sm, border: `1px solid ${COLORS.border}` }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: COLORS.ink }}>{post.title}</div>
-              <div style={{ fontSize: 11.5, color: COLORS.muted, marginTop: 2 }}>
+            <div key={post.id} style={{ padding: '10px 14px', borderRadius: RADII.sm, border: `1px solid ${PRINT.border}` }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: PRINT.ink }}>{post.title}</div>
+              <div style={{ fontSize: 11.5, color: PRINT.muted, marginTop: 2 }}>
                 {post.author} &middot; {new Date(post.createdAt).toLocaleDateString()} &middot; {post.topic} &middot;{' '}
                 {post.likeCount} likes &middot; {post.commentCount} comments
               </div>
@@ -257,7 +279,7 @@ export function CommunitySection({ posts }) {
           ))}
         </div>
       ) : (
-        <p style={{ fontSize: 13.5, color: COLORS.muted }}>No community discussion recorded for this territory yet.</p>
+        <p style={{ fontSize: 13.5, color: PRINT.muted }}>No community discussion recorded for this territory yet.</p>
       )}
     </div>
   );
@@ -271,7 +293,7 @@ export function MethodologySection({ generatedAt, sources, method }) {
         What makes this report citable &mdash; where every number came from and how much to trust it.
       </p>
 
-      <dl style={{ fontSize: 12.5, color: COLORS.ink, lineHeight: 1.7 }}>
+      <dl style={{ fontSize: 12.5, color: PRINT.ink, lineHeight: 1.7 }}>
         <dt style={{ fontWeight: 800, marginTop: 12 }}>Report generated</dt>
         <dd style={{ margin: '2px 0 0' }}>{generatedAt}</dd>
 

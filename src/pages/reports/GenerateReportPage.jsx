@@ -328,6 +328,7 @@ const styles = {
     border: `1px solid ${COLORS.border}`,
     fontSize: 14,
     color: COLORS.ink,
+    background: COLORS.card,
   },
   checkboxGrid: {
     display: 'grid',
