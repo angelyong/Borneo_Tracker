@@ -216,8 +216,8 @@ function RagGauge({ score, thresholds }) {
         );
       })}
 
-      <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="#1f2937" strokeWidth="3" strokeLinecap="round" />
-      <circle cx={cx} cy={cy} r="6" fill="#1f2937" />
+      <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="var(--color-ink)" strokeWidth="3" strokeLinecap="round" />
+      <circle cx={cx} cy={cy} r="6" fill="var(--color-ink)" />
     </svg>
   );
 }
@@ -259,11 +259,11 @@ function HexRadar({ pillars }) {
   return (
     <svg viewBox="0 0 180 180" style={styles.hexSvg}>
       {rings.map((pts, i) => (
-        <polygon key={i} points={pts} fill="none" stroke="#e5e7eb" strokeWidth="0.8" />
+        <polygon key={i} points={pts} fill="none" stroke="var(--color-border)" strokeWidth="0.8" />
       ))}
 
       {axes.map((pt, i) => (
-        <line key={i} x1={cx} y1={cy} x2={pt.x} y2={pt.y} stroke="#e5e7eb" strokeWidth="0.8" />
+        <line key={i} x1={cx} y1={cy} x2={pt.x} y2={pt.y} stroke="var(--color-border)" strokeWidth="0.8" />
       ))}
 
       <polygon points={dataPoints.join(' ')} fill="rgba(61,184,138,0.25)" stroke="#3db88a" strokeWidth="1.5" />
@@ -279,10 +279,10 @@ function HexRadar({ pillars }) {
 
         return (
           <g key={key}>
-            <text x={lx} y={ly - 4} textAnchor="middle" fontSize="10" fontWeight="600" fill="#374151">
+            <text x={lx} y={ly - 4} textAnchor="middle" fontSize="10" fontWeight="600" fill="var(--color-ink)">
               {values[i]}
             </text>
-            <text x={lx} y={ly + 8} textAnchor="middle" fontSize="8" fill="#6b7280">
+            <text x={lx} y={ly + 8} textAnchor="middle" fontSize="8" fill="var(--color-muted)">
               {key}
             </text>
           </g>
@@ -1147,7 +1147,7 @@ const OverviewDashboard = () => {
           </div>
 
           {loading && <div style={styles.stateText}>Loading map data…</div>}
-          {error && <div style={{ ...styles.stateText, color: '#b91c1c' }}>{error}</div>}
+          {error && <div style={{ ...styles.stateText, color: 'var(--color-red)' }}>{error}</div>}
 
           {isDistrict ? (
             districtLayerEntries.length ? (
@@ -1198,7 +1198,7 @@ const styles = {
     height: '100%',
     minHeight: 0,
     overflow: 'hidden',
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--color-page-bg)',
     fontFamily: 'Inter, Arial, sans-serif',
     position: 'relative',
   },
@@ -1233,12 +1233,12 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--color-card)',
     border: 'none',
-    borderBottom: '1px solid #e5e7eb',
+    borderBottom: '1px solid var(--color-border)',
     fontSize: '18px',
     fontWeight: '600',
-    color: '#374151',
+    color: 'var(--color-ink)',
     cursor: 'pointer',
     lineHeight: 1,
     padding: 0,
@@ -1253,8 +1253,8 @@ const styles = {
     position: 'absolute',
     left: '20px',
     bottom: '24px',
-    backgroundColor: 'rgba(255,255,255,0.94)',
-    border: '1px solid rgba(20,40,30,0.12)',
+    backgroundColor: 'var(--color-legend-bg)',
+    border: '1px solid var(--color-glass-border)',
     borderRadius: '10px',
     padding: '9px 11px',
     boxShadow: '0 4px 16px rgba(0,0,0,0.14)',
@@ -1266,12 +1266,12 @@ const styles = {
   mapLegendTitle: {
     fontSize: '12px',
     fontWeight: 700,
-    color: '#1f2937',
+    color: 'var(--color-ink)',
   },
 
   mapLegendSub: {
     fontSize: '10.5px',
-    color: '#6b7280',
+    color: 'var(--color-muted)',
     marginBottom: '5px',
   },
 
@@ -1291,7 +1291,7 @@ const styles = {
 
   mapLegendLabel: {
     fontSize: '11px',
-    color: '#374151',
+    color: 'var(--color-ink)',
   },
 
   searchContainer: {
@@ -1307,17 +1307,17 @@ const styles = {
   searchBox: {
     display: 'flex',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--color-card)',
     borderRadius: '24px',
     padding: '8px 16px',
     boxShadow: '0 2px 10px rgba(0,0,0,0.15)',
-    border: '1px solid #e0e0e0',
+    border: '1px solid var(--color-border)',
   },
 
   searchIcon: {
     marginRight: '10px',
     fontSize: '16px',
-    color: '#888',
+    color: 'var(--color-muted)',
   },
 
   searchInput: {
@@ -1326,14 +1326,14 @@ const styles = {
     outline: 'none',
     fontSize: '14px',
     width: '100%',
-    color: '#333',
+    color: 'var(--color-ink)',
   },
 
   searchClear: {
     border: 'none',
     background: 'transparent',
     cursor: 'pointer',
-    color: '#999',
+    color: 'var(--color-faint)',
     fontSize: '18px',
     lineHeight: 1,
     padding: '0 2px',
@@ -1344,10 +1344,10 @@ const styles = {
     listStyle: 'none',
     margin: '8px 0 0',
     padding: '6px',
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--color-card)',
     borderRadius: '14px',
     boxShadow: '0 6px 22px rgba(0,0,0,0.18)',
-    border: '1px solid #e6e6e6',
+    border: '1px solid var(--color-border)',
     maxHeight: '320px',
     overflowY: 'auto',
   },
@@ -1363,7 +1363,7 @@ const styles = {
   },
 
   searchOptionActive: {
-    backgroundColor: '#f1f5f9',
+    backgroundColor: 'var(--color-grey-soft)',
   },
 
   searchOptionMain: {
@@ -1374,7 +1374,7 @@ const styles = {
 
   searchOptionName: {
     fontSize: '14px',
-    color: '#1f2937',
+    color: 'var(--color-ink)',
     fontWeight: 600,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -1383,7 +1383,7 @@ const styles = {
 
   searchOptionParent: {
     fontSize: '12px',
-    color: '#6b7280',
+    color: 'var(--color-muted)',
   },
 
   searchOptionTag: {
@@ -1408,7 +1408,7 @@ const styles = {
   searchEmpty: {
     padding: '12px',
     fontSize: '13px',
-    color: '#6b7280',
+    color: 'var(--color-muted)',
     textAlign: 'center',
   },
 
@@ -1423,10 +1423,10 @@ const styles = {
   },
 
   panel: {
-    backgroundColor: 'rgba(255, 255, 255, 0.45)',
+    backgroundColor: 'var(--color-glass-bg)',
     backdropFilter: 'blur(4px) saturate(150%)',
     WebkitBackdropFilter: 'blur(4px) saturate(150%)',
-    border: '1px solid rgba(255, 255, 255, 0.55)',
+    border: '1px solid var(--color-glass-border)',
     overflowY: 'auto',
     overflowX: 'hidden',
     flexShrink: 0,
@@ -1443,7 +1443,7 @@ const styles = {
   },
 
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--color-card)',
     borderRadius: '18px',
     boxShadow: '0 10px 28px rgba(15, 23, 42, 0.14)',
     padding: '16px 18px',
@@ -1483,7 +1483,7 @@ const styles = {
 
   levelToggle: {
     display: 'inline-flex',
-    backgroundColor: '#eef2f7',
+    backgroundColor: 'var(--color-grey-soft)',
     borderRadius: '10px',
     padding: '3px',
     gap: '2px',
@@ -1496,14 +1496,14 @@ const styles = {
     borderRadius: '8px',
     fontSize: '12px',
     fontWeight: '600',
-    color: '#64748b',
+    color: 'var(--color-muted)',
     cursor: 'pointer',
     lineHeight: 1,
   },
 
   levelBtnActive: {
-    backgroundColor: '#ffffff',
-    color: '#0f172a',
+    backgroundColor: 'var(--color-card)',
+    color: 'var(--color-ink)',
     boxShadow: '0 1px 3px rgba(15, 23, 42, 0.16)',
   },
 
@@ -1522,11 +1522,11 @@ const styles = {
   panelDropdown: {
     padding: '8px 12px',
     borderRadius: '10px',
-    border: '1px solid #d1d5db',
-    backgroundColor: '#ffffff',
+    border: '1px solid var(--color-border)',
+    backgroundColor: 'var(--color-card)',
     fontSize: '13px',
     fontWeight: '500',
-    color: '#1f2937',
+    color: 'var(--color-ink)',
     cursor: 'pointer',
     outline: 'none',
     minWidth: '150px',
@@ -1535,13 +1535,13 @@ const styles = {
   sectionTitle: {
     fontSize: '13px',
     fontWeight: '700',
-    color: '#1f2937',
+    color: 'var(--color-ink)',
     marginBottom: '2px',
   },
 
   sectionSubtitle: {
     fontSize: '11px',
-    color: '#6b7280',
+    color: 'var(--color-muted)',
     marginBottom: '8px',
   },
 
@@ -1575,7 +1575,7 @@ const styles = {
 
   legendLabel: {
     fontSize: '11px',
-    color: '#374151',
+    color: 'var(--color-ink)',
   },
 
   scoreRow: {
@@ -1586,13 +1586,13 @@ const styles = {
   scoreBig: {
     fontSize: '32px',
     fontWeight: '800',
-    color: '#1f2937',
+    color: 'var(--color-ink)',
   },
 
   scoreCaption: {
     display: 'block',
     fontSize: '11px',
-    color: '#6b7280',
+    color: 'var(--color-muted)',
     marginTop: '-2px',
   },
 
@@ -1602,14 +1602,14 @@ const styles = {
     alignItems: 'center',
     marginTop: '8px',
     padding: '8px 10px',
-    backgroundColor: '#f9fafb',
+    backgroundColor: 'var(--color-grey-soft)',
     borderRadius: '8px',
   },
 
   trendLabel: {
     fontSize: '12px',
     fontWeight: '600',
-    color: '#374151',
+    color: 'var(--color-ink)',
   },
 
   hexSvg: {
@@ -1629,11 +1629,11 @@ const styles = {
   esgDropdown: {
     padding: '5px 10px',
     borderRadius: '8px',
-    border: '1px solid #d1d5db',
-    backgroundColor: '#fff',
+    border: '1px solid var(--color-border)',
+    backgroundColor: 'var(--color-card)',
     fontSize: '12px',
     fontWeight: '500',
-    color: '#1f2937',
+    color: 'var(--color-ink)',
     cursor: 'pointer',
     outline: 'none',
   },
@@ -1645,7 +1645,7 @@ const styles = {
   esgCardTitle: {
     fontSize: '13px',
     fontWeight: '700',
-    color: '#1f2937',
+    color: 'var(--color-ink)',
     marginBottom: '8px',
   },
 
@@ -1654,18 +1654,18 @@ const styles = {
     justifyContent: 'space-between',
     marginBottom: '8px',
     paddingBottom: '6px',
-    borderBottom: '1px solid #e5e7eb',
+    borderBottom: '1px solid var(--color-border)',
   },
 
   esgScoreLabel: {
     fontSize: '12px',
-    color: '#6b7280',
+    color: 'var(--color-muted)',
   },
 
   esgScoreValue: {
     fontSize: '13px',
     fontWeight: '700',
-    color: '#1f2937',
+    color: 'var(--color-ink)',
   },
 
   esgItemRow: {
@@ -1676,18 +1676,18 @@ const styles = {
   },
 
   esgItemKey: {
-    color: '#6b7280',
+    color: 'var(--color-muted)',
   },
 
   esgItemVal: {
     fontWeight: '600',
-    color: '#1f2937',
+    color: 'var(--color-ink)',
   },
 
   liveSectionTitle: {
     fontSize: '12px',
     fontWeight: '600',
-    color: '#1e293b',
+    color: 'var(--color-ink)',
     marginBottom: '8px',
   },
 
@@ -1702,7 +1702,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     fontSize: '12px',
-    color: '#34495e',
+    color: 'var(--color-ink)',
     cursor: 'pointer',
   },
 
@@ -1715,7 +1715,7 @@ const styles = {
 
   stateText: {
     fontSize: '12px',
-    color: '#64748b',
+    color: 'var(--color-muted)',
     padding: '4px 0',
   },
 
@@ -1723,7 +1723,7 @@ const styles = {
     display: 'flex',
     justifyContent: 'space-between',
     gap: '8px',
-    borderTop: '1px solid #e2e8f0',
+    borderTop: '1px solid var(--color-border)',
     paddingTop: '8px',
     marginTop: '4px',
   },
@@ -1731,19 +1731,19 @@ const styles = {
   summaryTerritory: {
     fontSize: '12px',
     fontWeight: '600',
-    color: '#334155',
+    color: 'var(--color-ink)',
   },
 
   summaryMeta: {
     fontSize: '11px',
-    color: '#64748b',
+    color: 'var(--color-muted)',
     marginTop: '1px',
   },
 
   summaryValue: {
     fontSize: '12px',
     fontWeight: '600',
-    color: '#0f172a',
+    color: 'var(--color-ink)',
     textAlign: 'right',
   },
 };

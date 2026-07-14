@@ -217,7 +217,7 @@ const s = {
     width: '100%',
     minHeight: '100vh',
     fontFamily: 'Inter, Arial, sans-serif',
-    backgroundColor: '#f5f4f0',
+    backgroundColor: 'var(--color-topbar-bg)',
   },
    sidebarWrap: {
     transition: 'width 0.3s ease, min-width 0.3s ease',
@@ -237,52 +237,52 @@ const s = {
     margin: '0 auto',
   },
 
-  pageTitle: { fontSize: '26px', fontWeight: '700', color: '#111827', marginBottom: '24px' },
+  pageTitle: { fontSize: '26px', fontWeight: '700', color: 'var(--color-ink)', marginBottom: '24px' },
 
   // Card
-  card:       { backgroundColor: '#ffffff', borderRadius: '16px', border: '1px solid #e5e7eb', padding: '24px 28px', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' },
+  card:       { backgroundColor: 'var(--color-card)', borderRadius: '16px', border: '1px solid var(--color-border)', padding: '24px 28px', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' },
   cardHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' },
-  cardLabel:  { fontSize: '16px', fontWeight: '700', color: '#111827' },
+  cardLabel:  { fontSize: '16px', fontWeight: '700', color: 'var(--color-ink)' },
 
   editBtn: {
     display:         'flex', alignItems: 'center',
     gap:             '4px',
-    background:      'none', border: '1px solid #d1d5db',
+    background:      'none', border: '1px solid var(--color-border)',
     borderRadius:    '8px', padding: '5px 12px',
     fontSize:        '13px', fontWeight: '600',
-    color:           '#374151', cursor: 'pointer',
+    color:           'var(--color-ink)', cursor: 'pointer',
   },
 
   // View rows
   detailsGrid: { display: 'flex', flexDirection: 'column', gap: '0' },
-  detailRow:   { display: 'flex', gap: '16px', padding: '12px 0', borderBottom: '1px solid #f3f4f6', alignItems: 'flex-start' },
-  detailLabel: { minWidth: '90px', fontSize: '14px', fontWeight: '600', color: '#111827' },
-  detailValue: { fontSize: '14px', color: '#374151', flex: 1 },
+  detailRow:   { display: 'flex', gap: '16px', padding: '12px 0', borderBottom: '1px solid var(--color-border)', alignItems: 'flex-start' },
+  detailLabel: { minWidth: '90px', fontSize: '14px', fontWeight: '600', color: 'var(--color-ink)' },
+  detailValue: { fontSize: '14px', color: 'var(--color-ink)', flex: 1 },
 
   // Edit form
   form:     { display: 'flex', flexDirection: 'column', gap: '16px' },
   formGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' },
   field:    { display: 'flex', flexDirection: 'column', gap: '5px' },
-  label:    { fontSize: '13px', fontWeight: '500', color: '#374151' },
-  hint:     { fontSize: '11px', color: '#9ca3af', margin: '-2px 0 0' },
-  required: { color: '#ef4444' },
+  label:    { fontSize: '13px', fontWeight: '500', color: 'var(--color-ink)' },
+  hint:     { fontSize: '11px', color: 'var(--color-faint)', margin: '-2px 0 0' },
+  required: { color: 'var(--color-red)' },
   input: {
     padding: '10px 14px', borderRadius: '10px',
-    border: '1px solid #d1d5db', fontSize: '14px',
-    outline: 'none', color: '#111827', backgroundColor: '#fff',
+    border: '1px solid var(--color-border)', fontSize: '14px',
+    outline: 'none', color: 'var(--color-ink)', backgroundColor: 'var(--color-card)',
     boxSizing: 'border-box', width: '100%',
   },
   phoneRow:  { display: 'flex', gap: '8px', alignItems: 'center' },
-  phoneCode: { padding: '10px 10px', borderRadius: '10px', border: '1px solid #d1d5db', fontSize: '14px', outline: 'none', backgroundColor: '#fff', cursor: 'pointer' },
+  phoneCode: { padding: '10px 10px', borderRadius: '10px', border: '1px solid var(--color-border)', fontSize: '14px', outline: 'none', backgroundColor: 'var(--color-card)', cursor: 'pointer' },
 
   formActions: { display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '8px' },
-  cancelBtn: { padding: '10px 20px', borderRadius: '10px', border: '1px solid #d1d5db', background: '#fff', fontSize: '14px', fontWeight: '600', color: '#374151', cursor: 'pointer' },
+  cancelBtn: { padding: '10px 20px', borderRadius: '10px', border: '1px solid var(--color-border)', background: 'var(--color-card)', fontSize: '14px', fontWeight: '600', color: 'var(--color-ink)', cursor: 'pointer' },
   saveBtn:   { padding: '10px 28px', borderRadius: '10px', border: 'none', background: '#d97706', color: '#fff', fontSize: '14px', fontWeight: '700', cursor: 'pointer' },
 
 
   // Toast
   toastOverlay: { position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.35)', zIndex: 999, display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  toastBox:     { backgroundColor: '#ffffff', borderRadius: '16px', padding: '36px 48px', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', minWidth: '300px' },
+  toastBox:     { backgroundColor: 'var(--color-card)', borderRadius: '16px', padding: '36px 48px', textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,0.2)', minWidth: '300px' },
   toastIcon:    { width: '52px', height: '52px', borderRadius: '50%', backgroundColor: '#22c55e', color: '#fff', fontSize: '24px', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' },
-  toastText:    { fontSize: '18px', fontWeight: '600', color: '#111827', margin: 0 },
+  toastText:    { fontSize: '18px', fontWeight: '600', color: 'var(--color-ink)', margin: 0 },
 };

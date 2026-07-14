@@ -166,7 +166,7 @@ const styles = {
     padding: 10,
     border: `1px solid ${COLORS.border}`,
     borderRadius: RADII.md,
-    background: '#fff',
+    background: COLORS.card,
   },
   docIcon: {
     width: 40,
@@ -194,7 +194,7 @@ const styles = {
     alignItems: 'center',
     gap: 6,
     border: `1px solid ${COLORS.border}`,
-    background: '#fff',
+    background: COLORS.card,
     color: COLORS.navy,
     fontSize: 13,
     fontWeight: 700,

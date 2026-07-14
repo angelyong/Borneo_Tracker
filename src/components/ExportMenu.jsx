@@ -50,7 +50,7 @@ const styles = {
     padding: '10px 16px',
     borderRadius: RADII.md,
     border: `1px solid ${COLORS.border}`,
-    background: '#fff',
+    background: COLORS.card,
     color: COLORS.ink,
     fontSize: 14,
     fontWeight: 600,

@@ -725,3 +725,59 @@
     width: 100%;
   }
 }
+
+/* ============================================================
+   Dark mode — this page is a light marketing/landing surface by
+   design (unlike news.css, which commits permanently to dark
+   green), so it needs an explicit override block rather than a
+   ground-up rewrite to CSS vars.
+   ============================================================ */
+html[data-theme='dark'] .about-page {
+  background:
+    radial-gradient(circle at 76% 7%, rgba(242, 179, 61, 0.1), transparent 34%),
+    linear-gradient(180deg, #0d2118 0%, #0a1a12 100%);
+  color: var(--color-ink);
+}
+
+html[data-theme='dark'] .about-page h1,
+html[data-theme='dark'] .about-page h2,
+html[data-theme='dark'] .about-page h3 {
+  color: var(--color-ink);
+}
+
+html[data-theme='dark'] .about-page p {
+  color: var(--color-muted);
+}
+
+html[data-theme='dark'] .indicator-card,
+html[data-theme='dark'] .about-purpose,
+html[data-theme='dark'] .about-info-card,
+html[data-theme='dark'] .feature-card {
+  background: var(--color-card);
+  border-color: var(--color-border);
+}
+
+html[data-theme='dark'] .scope-grid {
+  background: linear-gradient(90deg, var(--color-card), var(--color-page-bg));
+  border-color: var(--color-border);
+}
+
+html[data-theme='dark'] .scope-item + .scope-item {
+  border-left-color: var(--color-border);
+}
+
+html[data-theme='dark'] .transparent-panel {
+  background: linear-gradient(90deg, var(--color-card), var(--color-page-bg));
+  border-color: var(--color-border);
+}
+
+html[data-theme='dark'] .notice-panel {
+  background: var(--color-yellow-soft);
+  border-color: var(--color-yellow);
+}
+
+html[data-theme='dark'] .about-kicker {
+  background: var(--color-green-soft);
+  border-color: var(--color-border);
+  color: var(--color-green);
+}

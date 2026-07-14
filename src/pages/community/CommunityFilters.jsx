@@ -52,7 +52,7 @@ const styles = {
     minWidth: 240,
     padding: '10px 14px',
     borderRadius: RADII.pill,
-    background: '#fff',
+    background: COLORS.card,
     border: `1px solid ${COLORS.border}`,
     boxShadow: SHADOWS.card,
   },

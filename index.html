@@ -16,6 +16,21 @@
         box-sizing: border-box;
       }
     </style>
+    <script>
+      // Set the theme before first paint so switching themes never flashes
+      // the wrong one on load. Mirrors the logic in src/utils/theme.js.
+      (function () {
+        try {
+          var stored = localStorage.getItem('borneo-tracker:theme');
+          var theme = stored === 'light' || stored === 'dark'
+            ? stored
+            : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

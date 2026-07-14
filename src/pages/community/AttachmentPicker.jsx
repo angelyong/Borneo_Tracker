@@ -191,7 +191,7 @@ const styles = {
     padding: 8,
     border: `1px solid ${COLORS.border}`,
     borderRadius: RADII.md,
-    background: '#fff',
+    background: COLORS.card,
   },
   thumb: { width: 44, height: 44, borderRadius: RADII.sm, objectFit: 'cover', flexShrink: 0 },
   iconBox: {

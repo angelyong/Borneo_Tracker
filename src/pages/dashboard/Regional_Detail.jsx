@@ -16,11 +16,16 @@ import {
   useIndicators,
   useResilience,
 } from '../../data/useIndicators';
+import { THEME_CHANGE_EVENT, cssVar } from '../../utils/theme';
 
 const RegionalDetails = () => {
   const [selectedTerritory,  setSelectedTerritory]  = useState('Sarawak');
   const [selectedConcept,    setSelectedConcept]    = useState('forest_cover');
   const [chartMode,          setChartMode]          = useState('snapshot');
+  // ECharts draws to a canvas, so it can't read CSS vars directly — bump this
+  // on theme change to force the chart-building effects below to re-run and
+  // re-read the current colors via cssVar().
+  const [themeVersion,       setThemeVersion]       = useState(0);
 
   const { data,              loading, error } = useIndicators();
   const { data: resilience }                 = useResilience();
@@ -31,6 +36,12 @@ const RegionalDetails = () => {
   const lineChartInstance  = useRef(null);
   const radarChartInstance = useRef(null);
   const barChartInstance   = useRef(null);
+
+  useEffect(() => {
+    const onThemeChange = () => setThemeVersion((v) => v + 1);
+    window.addEventListener(THEME_CHANGE_EVENT, onThemeChange);
+    return () => window.removeEventListener(THEME_CHANGE_EVENT, onThemeChange);
+  }, []);
 
   // ── Derived data ─────────────────────────────────────────────────────────
   const canonicalRows = useMemo(
@@ -72,12 +83,14 @@ const RegionalDetails = () => {
   const selectedConceptLabel =
     availableConcepts.find((item) => item.concept === activeConcept)?.label || 'Selected indicator';
 
-  const theme = {
+  const theme = useMemo(() => ({
     primary:     '#22c55e',
-    borderLight: '#e5e7eb',
-    textMuted:   '#6b7280',
+    borderLight: cssVar('--color-border', '#e5e7eb'),
+    textMuted:   cssVar('--color-muted', '#6b7280'),
     azure:       '#3b82f6',
-  };
+    ink:         cssVar('--color-ink', '#1f2937'),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- themeVersion isn't read above; it's a deliberate cache-buster forcing a fresh cssVar() read when the theme toggles
+  }), [themeVersion]);
 
   // ── Cross-territory / trend chart ────────────────────────────────────────
   useEffect(() => {
@@ -150,10 +163,10 @@ const RegionalDetails = () => {
       radar: {
         indicator: Object.keys(hexagonCoverage).map((name) => ({ name, max: 4 })),
         center: ['50%', '50%'], radius: '70%',
-        axisName:  { color: '#374151', fontSize: 12, fontWeight: 500 },
+        axisName:  { color: theme.ink, fontSize: 12, fontWeight: 500 },
         splitArea: { areaStyle: { color: ['rgba(34,197,94,0.02)', 'rgba(34,197,94,0.02)'] } },
-        axisLine:  { lineStyle: { color: '#e5e7eb' } },
-        splitLine: { lineStyle: { color: '#e5e7eb' } },
+        axisLine:  { lineStyle: { color: theme.borderLight } },
+        splitLine: { lineStyle: { color: theme.borderLight } },
       },
       series: [{
         type: 'radar',
@@ -168,7 +181,7 @@ const RegionalDetails = () => {
     const onResize = () => radarChartInstance.current?.resize();
     window.addEventListener('resize', onResize);
     return () => { window.removeEventListener('resize', onResize); radarChartInstance.current?.dispose(); };
-  }, [hexagonCoverage]);
+  }, [hexagonCoverage, theme.borderLight, theme.ink]);
 
   // ── ESG pillar bar chart ─────────────────────────────────────────────────
   useEffect(() => {
@@ -195,18 +208,18 @@ const RegionalDetails = () => {
         axisLabel: { color: theme.textMuted, fontSize: 10 },
         axisLine: { show: false }, axisTick: { show: false },
       },
-      legend: { data: ['Indicators'], bottom: 0, left: 'center', icon: 'circle', textStyle: { color: '#374151', fontSize: 11 }, itemWidth: 10, itemHeight: 10 },
+      legend: { data: ['Indicators'], bottom: 0, left: 'center', icon: 'circle', textStyle: { color: theme.ink, fontSize: 11 }, itemWidth: 10, itemHeight: 10 },
       series: [{
         name: 'Indicators', type: 'bar', barWidth: '28%',
         data: Object.values(esgCoverage),
         itemStyle: { color: '#22c55e', borderRadius: [4, 4, 0, 0] },
-        label: { show: true, position: 'top', formatter: '{c}', fontSize: 10, color: '#6b7280' },
+        label: { show: true, position: 'top', formatter: '{c}', fontSize: 10, color: theme.textMuted },
       }],
     });
     const onResize = () => barChartInstance.current?.resize();
     window.addEventListener('resize', onResize);
     return () => { window.removeEventListener('resize', onResize); barChartInstance.current?.dispose(); };
-  }, [confidenceCoverage, esgCoverage, theme.borderLight, theme.textMuted]);
+  }, [confidenceCoverage, esgCoverage, theme.borderLight, theme.ink, theme.textMuted]);
 
   // ── JSX ──────────────────────────────────────────────────────────────────
   return (
@@ -258,10 +271,10 @@ const RegionalDetails = () => {
                     title={`Scored ${territoryResilience.scoredPillars.length}/6 hexagon pillars`}
                   >
                     <span style={styles.summaryChipLabel}>Resilience Index</span>
-                    <strong style={{ color: ragColor[territoryResilience.rag] || '#1f2937' }}>
+                    <strong style={{ color: ragColor[territoryResilience.rag] || 'var(--color-ink)' }}>
                       {territoryResilience.index}
                     </strong>
-                    <span style={{ fontSize: '11px', color: '#6b7280' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--color-muted)' }}>
                       weakest: {territoryResilience.weakestPillar} · {territoryResilience.scoredPillars.length}/6 pillars scored
                     </span>
                   </div>
@@ -297,7 +310,7 @@ const RegionalDetails = () => {
                           : 'Cross-territory snapshot'}
                       </div>
                       <div style={styles.chartStat}>{selectedConceptLabel}</div>
-                      <div style={{ fontSize: '11.5px', color: '#6b7280' }}>
+                      <div style={{ fontSize: '11.5px', color: 'var(--color-muted)' }}>
                         {activeChartMode === 'trend' && trendSeries
                           ? `${trendSeries.points.length} real annual points · ${trendSeries.source}`
                           : 'Latest available canonical value for each territory'}
@@ -352,7 +365,7 @@ const RegionalDetails = () => {
                   <div style={styles.chartHeader}>
                     <div style={styles.chartHeaderLeft}>
                       <div style={styles.cardTitle}>True Wealth Hexagon Coverage</div>
-                      <div style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>
+                      <div style={{ fontSize: '13px', color: 'var(--color-muted)', marginTop: '4px' }}>
                         Count of canonical indicators available per pillar
                       </div>
                     </div>
@@ -380,7 +393,7 @@ const RegionalDetails = () => {
                   <div style={styles.chartHeader}>
                     <div style={styles.chartHeaderLeft}>
                       <div style={styles.cardTitle}>Coverage by ESG pillar</div>
-                      <div style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>
+                      <div style={{ fontSize: '13px', color: 'var(--color-muted)', marginTop: '4px' }}>
                         {trendReadyCount
                           ? 'Real yearly series enabled for selected indicators; the rest remain snapshot-only'
                           : 'Trend charts are held back until the schema stores true yearly series'}
@@ -421,46 +434,46 @@ const RegionalDetails = () => {
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 const styles = {
-  container:      { display: 'flex', minHeight: '100%', width: '100%', backgroundColor: '#f3f4f6', fontFamily: 'Inter, Arial, sans-serif', overflow: 'visible' },
+  container:      { display: 'flex', minHeight: '100%', width: '100%', backgroundColor: 'var(--color-page-bg)', fontFamily: 'Inter, Arial, sans-serif', overflow: 'visible' },
   sidebarWrapper: { overflow: 'visible', transition: 'width 0.3s ease, min-width 0.3s ease', flexShrink: 0, height: '100%' },
   rightCol:       { flex: 1, display: 'flex', flexDirection: 'column', minHeight: '100%', overflow: 'visible' },
   content:        { flex: 1, padding: '24px', overflow: 'visible', boxSizing: 'border-box' },
 
   topToolbar:   { display: 'flex', gap: '16px', flexWrap: 'wrap', marginBottom: '20px' },
   toolbarGroup: { display: 'flex', flexDirection: 'column', gap: '6px' },
-  toolbarLabel: { fontSize: '12px', fontWeight: '600', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' },
-  toolbarSelect: { minWidth: '220px', border: '1px solid #d1d5db', borderRadius: '10px', padding: '10px 12px', backgroundColor: '#ffffff', fontSize: '14px', color: '#0f172a' },
+  toolbarLabel: { fontSize: '12px', fontWeight: '600', color: 'var(--color-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' },
+  toolbarSelect: { minWidth: '220px', border: '1px solid var(--color-border)', borderRadius: '10px', padding: '10px 12px', backgroundColor: 'var(--color-card)', fontSize: '14px', color: 'var(--color-ink)' },
 
   summaryStrip:     { display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '12px' },
-  summaryChip:      { backgroundColor: '#ffffff', border: '1px solid #e5e7eb', borderRadius: '999px', padding: '10px 14px', display: 'flex', gap: '8px', alignItems: 'center', color: '#0f172a' },
-  summaryChipLabel: { fontSize: '12px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' },
+  summaryChip:      { backgroundColor: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: '999px', padding: '10px 14px', display: 'flex', gap: '8px', alignItems: 'center', color: 'var(--color-ink)' },
+  summaryChipLabel: { fontSize: '12px', color: 'var(--color-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' },
 
   chartRow: { display: 'flex', gap: '20px', flexWrap: 'wrap' },
   barRow:   { marginTop: '20px', width: '100%' },
-  card:     { flex: 1, minWidth: '300px', backgroundColor: '#ffffff', borderRadius: '12px', padding: '20px 20px 16px', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.05)', border: '1px solid #e5e7eb', display: 'flex', flexDirection: 'column' },
+  card:     { flex: 1, minWidth: '300px', backgroundColor: 'var(--color-card)', borderRadius: '12px', padding: '20px 20px 16px', boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.05)', border: '1px solid var(--color-border)', display: 'flex', flexDirection: 'column' },
 
   chartHeader:     { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' },
   chartHeaderLeft: { flex: 1 },
-  cardTitle:       { fontSize: '18px', fontWeight: '600', color: '#1f2937', marginBottom: '2px' },
-  chartStat:       { fontSize: '24px', fontWeight: '700', color: '#1f2937', marginTop: '4px' },
-  chartTabs:       { display: 'flex', gap: '4px', background: '#f3f4f6', padding: '4px', borderRadius: '8px' },
-  chartTab:        { background: 'transparent', border: 'none', padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: '500', color: '#6b7280', cursor: 'pointer' },
-  chartTabActive:  { background: '#ffffff', color: '#1f2937', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' },
+  cardTitle:       { fontSize: '18px', fontWeight: '600', color: 'var(--color-ink)', marginBottom: '2px' },
+  chartStat:       { fontSize: '24px', fontWeight: '700', color: 'var(--color-ink)', marginTop: '4px' },
+  chartTabs:       { display: 'flex', gap: '4px', background: 'var(--color-page-bg)', padding: '4px', borderRadius: '8px' },
+  chartTab:        { background: 'transparent', border: 'none', padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: '500', color: 'var(--color-muted)', cursor: 'pointer' },
+  chartTabActive:  { background: 'var(--color-amber)', color: '#1f2937', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' },
   chartArea:       { width: '100%', height: '240px', marginTop: '4px', flexShrink: 0 },
-  cardFooter:      { marginTop: '16px', paddingTop: '14px', borderTop: '1px solid #e5e7eb', display: 'flex', flexWrap: 'wrap', gap: '16px', fontSize: '13px', color: '#6b7280' },
-  footerLabel:     { fontWeight: '500', color: '#374151', marginRight: '4px' },
+  cardFooter:      { marginTop: '16px', paddingTop: '14px', borderTop: '1px solid var(--color-border)', display: 'flex', flexWrap: 'wrap', gap: '16px', fontSize: '13px', color: 'var(--color-muted)' },
+  footerLabel:     { fontWeight: '500', color: 'var(--color-ink)', marginRight: '4px' },
   footerItem:      { display: 'flex', alignItems: 'center', gap: '6px' },
 
   metricsGrid:           { marginTop: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' },
-  metricCard:            { borderRadius: '10px', border: '1px solid #e5e7eb', padding: '12px', backgroundColor: '#f8fafc' },
-  metricTitle:           { fontSize: '13px', fontWeight: '600', color: '#334155' },
-  metricValue:           { fontSize: '18px', fontWeight: '700', color: '#0f172a', marginTop: '8px' },
-  metricMeta:            { marginTop: '6px', fontSize: '12px', color: '#64748b' },
-  confidenceSummary:     { display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '12px', color: '#475569', fontSize: '13px' },
-  confidenceSummaryItem: { backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '999px', padding: '6px 10px' },
+  metricCard:            { borderRadius: '10px', border: '1px solid var(--color-border)', padding: '12px', backgroundColor: 'var(--color-grey-soft)' },
+  metricTitle:           { fontSize: '13px', fontWeight: '600', color: 'var(--color-ink)' },
+  metricValue:           { fontSize: '18px', fontWeight: '700', color: 'var(--color-ink)', marginTop: '8px' },
+  metricMeta:            { marginTop: '6px', fontSize: '12px', color: 'var(--color-muted)' },
+  confidenceSummary:     { display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '12px', color: 'var(--color-muted)', fontSize: '13px' },
+  confidenceSummaryItem: { backgroundColor: 'var(--color-grey-soft)', border: '1px solid var(--color-border)', borderRadius: '999px', padding: '6px 10px' },
 
-  noticeCard: { backgroundColor: '#ffffff', borderRadius: '12px', padding: '18px 20px', border: '1px solid #e5e7eb', color: '#334155' },
-  errorCard:  { backgroundColor: '#fef2f2', borderRadius: '12px', padding: '18px 20px', border: '1px solid #fecaca', color: '#b91c1c' },
+  noticeCard: { backgroundColor: 'var(--color-card)', borderRadius: '12px', padding: '18px 20px', border: '1px solid var(--color-border)', color: 'var(--color-ink)' },
+  errorCard:  { backgroundColor: 'var(--color-red-soft)', borderRadius: '12px', padding: '18px 20px', border: '1px solid var(--color-red)', color: 'var(--color-red)' },
 };
 
 export default RegionalDetails;

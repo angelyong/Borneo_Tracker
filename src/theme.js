@@ -1,46 +1,55 @@
-// Borneo Tracker design tokens — sampled from the Figma design (design/Borneo Tracker.png)
+// Borneo Tracker design tokens — sampled from the Figma design (design/Borneo Tracker.png).
+// Values point at CSS custom properties (theme.css) so every consumer of
+// COLORS becomes light/dark-theme-reactive automatically — see ThemeToggle.
 export const COLORS = {
   // Brand palette
-  teal: '#003641', // dark teal
-  forest: '#1B4532', // dark forest green (sidebar / footer)
-  forestDark: '#143526',
-  orange: '#FBA36A',
-  cream: '#F6F3E1', // top bar
-  offWhite: '#F7F4EB',
-  pageBg: '#F5F5F2',
+  teal: 'var(--color-teal)', // dark teal
+  forest: 'var(--color-forest)', // dark forest green (sidebar / footer)
+  forestDark: 'var(--color-forest-dark)',
+  orange: 'var(--color-orange)',
+  cream: 'var(--color-cream)', // top bar
+  offWhite: 'var(--color-off-white)',
+  pageBg: 'var(--color-page-bg)',
 
   // Accents
-  amber: '#F2B33D', // primary action buttons (Sign In / Register / Submit)
-  amberDark: '#E3A32C',
-  leaf: '#9CBF88', // active sidebar item
-  navy: '#0E3A5D', // secondary buttons (Find your account submit)
+  amber: 'var(--color-amber)', // primary action buttons (Sign In / Register / Submit)
+  amberDark: 'var(--color-amber-dark)',
+  leaf: 'var(--color-leaf)', // active sidebar item
+  navy: 'var(--color-navy)', // secondary buttons (Find your account submit)
 
   // Text
-  ink: '#1F2937',
-  muted: '#6B7280',
-  faint: '#9CA3AF',
-  onDark: '#F3F6F1',
+  ink: 'var(--color-ink)',
+  muted: 'var(--color-muted)',
+  faint: 'var(--color-faint)',
+  onDark: 'var(--color-on-dark)',
 
   // Status / RAG
-  green: '#16A34A',
-  greenSoft: '#D9F2E2',
-  yellow: '#F4C542',
-  yellowSoft: '#FBF3CE',
-  red: '#DC2626',
-  redSoft: '#FBDDDD',
-  blue: '#2B7DE9',
-  blueSoft: '#DBEAFE',
-  grey: '#9CA3AF',
-  greySoft: '#E5E7EB',
+  green: 'var(--color-green)',
+  greenSoft: 'var(--color-green-soft)',
+  yellow: 'var(--color-yellow)',
+  yellowSoft: 'var(--color-yellow-soft)',
+  red: 'var(--color-red)',
+  redSoft: 'var(--color-red-soft)',
+  blue: 'var(--color-blue)',
+  blueSoft: 'var(--color-blue-soft)',
+  grey: 'var(--color-grey)',
+  greySoft: 'var(--color-grey-soft)',
 
-  // Map region fills (from design)
+  // Map region fills (from design) — deliberately not theme-reactive; a
+  // territory's map color should stay identifiable in either theme.
   regionTeal: '#2A9D8F', // Sarawak
   regionGreen: '#57A05C', // Sabah
   regionOrange: '#F49E4C', // Kalimantan
   regionYellow: '#F4C542', // Brunei
 
-  border: '#E5E7EB',
-  card: '#FFFFFF',
+  border: 'var(--color-border)',
+  card: 'var(--color-card)',
+
+  // App shell — top bar and page canvas behind the routed content.
+  topbarBg: 'var(--color-topbar-bg)',
+  topbarBorder: 'var(--color-topbar-border)',
+  shellBg: 'var(--color-shell-bg)',
+  mainBg: 'var(--color-main-bg)',
 };
 
 export const REGION_COLORS = {

@@ -1,0 +1,79 @@
+/* Theme tokens as CSS custom properties. theme.js's COLORS export points at
+   these vars, so every component that already consumes COLORS becomes
+   light/dark-theme-reactive automatically — see ThemeToggle. Pages that use
+   raw inline hex (not theme.js) are converted to reference these same vars
+   directly so the whole app — not just the shell — responds to the toggle. */
+
+:root {
+  --color-teal: #003641;
+  --color-forest: #1b4532;
+  --color-forest-dark: #143526;
+  --color-orange: #fba36a;
+  --color-cream: #f6f3e1;
+  --color-off-white: #f7f4eb;
+  --color-page-bg: #f5f5f2;
+
+  --color-amber: #f2b33d;
+  --color-amber-dark: #e3a32c;
+  --color-leaf: #9cbf88;
+  --color-navy: #0e3a5d;
+
+  --color-ink: #1f2937;
+  --color-muted: #6b7280;
+  --color-faint: #9ca3af;
+  --color-on-dark: #f3f6f1;
+
+  --color-green: #16a34a;
+  --color-green-soft: #d9f2e2;
+  --color-yellow: #f4c542;
+  --color-yellow-soft: #fbf3ce;
+  --color-red: #dc2626;
+  --color-red-soft: #fbdddd;
+  --color-blue: #2b7de9;
+  --color-blue-soft: #dbeafe;
+  --color-grey: #9ca3af;
+  --color-grey-soft: #e5e7eb;
+
+  --color-border: #e5e7eb;
+  --color-card: #ffffff;
+
+  /* App shell + every page canvas. */
+  --color-topbar-bg: #f5f4f0;
+  --color-topbar-border: #e5e5df;
+  --color-shell-bg: #f5f7f8;
+  --color-main-bg: #ffffff;
+
+  /* Translucent "frosted glass" surfaces (Overview map panel/legend). */
+  --color-glass-bg: rgba(255, 255, 255, 0.45);
+  --color-glass-border: rgba(255, 255, 255, 0.55);
+  --color-legend-bg: rgba(255, 255, 255, 0.94);
+}
+
+/* Dark mode: the same dark green as the sidebar (#0d2118) everywhere — top
+   bar, page canvas, and every page's own background, not just the shell. */
+html[data-theme='dark'] {
+  --color-page-bg: #0d2118;
+  --color-card: #143526;
+
+  --color-ink: #f3f6f1;
+  --color-muted: #9bb3a6;
+  --color-faint: #6c8577;
+  --color-border: #23412f;
+
+  --color-green-soft: #173425;
+  --color-yellow-soft: #34290f;
+  --color-red-soft: #3a1e1e;
+  --color-blue-soft: #1a2a3c;
+  --color-grey-soft: #1c3327;
+
+  --color-navy: #6fa9e0;
+
+  --color-topbar-bg: #0d2118;
+  --color-topbar-border: #2d5a42;
+  --color-shell-bg: #0d2118;
+  --color-main-bg: #0d2118;
+
+  --color-glass-bg: rgba(13, 33, 24, 0.55);
+  --color-glass-border: rgba(45, 90, 66, 0.5);
+  --color-legend-bg: rgba(13, 33, 24, 0.92);
+}

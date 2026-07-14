@@ -141,13 +141,13 @@ const SDGProgress = () => {
   );
 };
 
-// ---- Light mode styles (matches esg_indicator.jsx) ----
+// ---- Theme-reactive styles (matches esg_indicator.jsx) ----
 const styles = {
   container: {
     display: 'flex',
     minHeight: '100%',
     width: '100%',
-    backgroundColor: '#f3f4f6',
+    backgroundColor: 'var(--color-page-bg)',
     fontFamily: 'Inter, Arial, sans-serif',
     overflow: 'visible',
   },
@@ -184,12 +184,12 @@ const styles = {
   pageTitle: {
     fontSize: '24px',
     fontWeight: '700',
-    color: '#1f2937',
+    color: 'var(--color-ink)',
     margin: 0,
   },
   pageSubtitle: {
     fontSize: '14px',
-    color: '#6b7280',
+    color: 'var(--color-muted)',
     margin: '4px 0 0 0',
   },
   headerRight: {
@@ -201,11 +201,11 @@ const styles = {
   dropdown: {
     padding: '10px 16px',
     borderRadius: '8px',
-    border: '1px solid #e5e7eb',
-    backgroundColor: '#ffffff',
+    border: '1px solid var(--color-border)',
+    backgroundColor: 'var(--color-card)',
     fontSize: '14px',
     fontWeight: '500',
-    color: '#1f2937',
+    color: 'var(--color-ink)',
     cursor: 'pointer',
     outline: 'none',
     minWidth: '150px',
@@ -214,10 +214,10 @@ const styles = {
     display: 'flex',
     gap: '8px',
     marginBottom: '24px',
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--color-card)',
     padding: '6px',
     borderRadius: '12px',
-    border: '1px solid #e5e7eb',
+    border: '1px solid var(--color-border)',
     width: 'fit-content',
     flexWrap: 'wrap',
   },
@@ -227,14 +227,14 @@ const styles = {
     border: 'none',
     fontSize: '14px',
     fontWeight: '500',
-    color: '#6b7280',
+    color: 'var(--color-muted)',
     cursor: 'pointer',
     transition: 'all 0.2s ease',
     backgroundColor: 'transparent',
   },
   tabActive: {
-    backgroundColor: '#1f2937',
-    color: '#ffffff',
+    backgroundColor: 'var(--color-amber)',
+    color: '#1f2937',
   },
   dashboardGrid: {
     display: 'grid',
@@ -242,11 +242,11 @@ const styles = {
     gap: '20px',
   },
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--color-card)',
     borderRadius: '12px',
     padding: '24px',
     boxShadow: '0 1px 3px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.05)',
-    border: '1px solid #e5e7eb',
+    border: '1px solid var(--color-border)',
   },
   scoreCard: {
     display: 'flex',
@@ -261,7 +261,7 @@ const styles = {
   scoreLabel: {
     fontSize: '16px',
     fontWeight: '600',
-    color: '#1f2937',
+    color: 'var(--color-ink)',
   },
   statusBadge: {
     padding: '4px 12px',
@@ -272,12 +272,12 @@ const styles = {
   scoreNumber: {
     fontSize: '48px',
     fontWeight: '700',
-    color: '#1f2937',
+    color: 'var(--color-ink)',
     lineHeight: 1.2,
   },
   scoreCaption: {
     fontSize: '13px',
-    color: '#6b7280',
+    color: 'var(--color-muted)',
     marginTop: '-8px',
   },
   trendContainer: {
@@ -285,17 +285,17 @@ const styles = {
     alignItems: 'center',
     gap: '12px',
     padding: '8px 0',
-    borderTop: '1px solid #f3f4f6',
-    borderBottom: '1px solid #f3f4f6',
+    borderTop: '1px solid var(--color-border)',
+    borderBottom: '1px solid var(--color-border)',
   },
   trendLabel: {
     fontSize: '14px',
-    color: '#6b7280',
+    color: 'var(--color-muted)',
   },
   trendValue: {
     fontSize: '16px',
     fontWeight: '600',
-    color: '#1f2937',
+    color: 'var(--color-ink)',
   },
   bestRiskGrid: {
     display: 'grid',
@@ -303,14 +303,14 @@ const styles = {
     gap: '16px',
   },
   bestRiskItem: {
-    backgroundColor: '#f9fafb',
+    backgroundColor: 'var(--color-grey-soft)',
     padding: '12px 16px',
     borderRadius: '8px',
   },
   bestRiskLabel: {
     fontSize: '12px',
     fontWeight: '500',
-    color: '#6b7280',
+    color: 'var(--color-muted)',
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
     marginBottom: '4px',
@@ -318,7 +318,7 @@ const styles = {
   bestRiskValue: {
     fontSize: '16px',
     fontWeight: '600',
-    color: '#1f2937',
+    color: 'var(--color-ink)',
   },
   metricsList: {
     display: 'flex',
@@ -326,10 +326,10 @@ const styles = {
     gap: '12px',
   },
   metricCard: {
-    border: '1px solid #e5e7eb',
+    border: '1px solid var(--color-border)',
     borderRadius: '10px',
     padding: '14px 16px',
-    backgroundColor: '#f9fafb',
+    backgroundColor: 'var(--color-grey-soft)',
   },
   metricHeader: {
     display: 'flex',
@@ -339,13 +339,13 @@ const styles = {
   },
   metricLabel: {
     fontSize: '15px',
-    color: '#4b5563',
+    color: 'var(--color-ink)',
     fontWeight: '500',
   },
   metricValue: {
     fontSize: '16px',
     fontWeight: '600',
-    color: '#1f2937',
+    color: 'var(--color-ink)',
     display: 'block',
     marginTop: '8px',
   },
@@ -353,7 +353,7 @@ const styles = {
     display: 'block',
     marginTop: '8px',
     fontSize: '12px',
-    color: '#6b7280',
+    color: 'var(--color-muted)',
     lineHeight: 1.5,
   },
   confidenceBadge: {
@@ -366,22 +366,22 @@ const styles = {
     whiteSpace: 'nowrap',
   },
   messageCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--color-card)',
     borderRadius: '12px',
     padding: '24px',
-    border: '1px solid #e5e7eb',
-    color: '#374151',
+    border: '1px solid var(--color-border)',
+    color: 'var(--color-ink)',
   },
   errorCard: {
-    backgroundColor: '#fef2f2',
+    backgroundColor: 'var(--color-red-soft)',
     borderRadius: '12px',
     padding: '24px',
-    border: '1px solid #fecaca',
-    color: '#b91c1c',
+    border: '1px solid var(--color-red)',
+    color: 'var(--color-red)',
   },
   emptyState: {
     fontSize: '14px',
-    color: '#6b7280',
+    color: 'var(--color-muted)',
     padding: '12px 0',
   },
 };

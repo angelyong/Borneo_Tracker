@@ -29,7 +29,7 @@ const styles = {
     justifyContent: 'center',
   },
   card: {
-    background: '#fff',
+    background: COLORS.card,
     borderRadius: RADII.xl,
     boxShadow: SHADOWS.panel,
     padding: '36px 40px',

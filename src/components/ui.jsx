@@ -257,6 +257,21 @@ export const Icons = {
       <path d="m8.3 10.6 7.4-4.2M8.3 13.4l7.4 4.2" />
     </g>
   )),
+  Sun: I((c) => (
+    <g stroke={c} strokeWidth="1.8" fill="none" strokeLinecap="round">
+      <circle cx="12" cy="12" r="4.2" />
+      <path d="M12 2.5v2.4M12 19.1v2.4M4.6 4.6l1.7 1.7M17.7 17.7l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.6 19.4l1.7-1.7M17.7 6.3l1.7-1.7" />
+    </g>
+  )),
+  Moon: I((c) => (
+    <path
+      d="M20.5 14.5A8.5 8.5 0 1 1 9.5 3.5a7 7 0 0 0 11 11Z"
+      stroke={c}
+      strokeWidth="1.8"
+      strokeLinejoin="round"
+      fill="none"
+    />
+  )),
 };
 
 /* ---------- Buttons ---------- */
@@ -355,7 +370,7 @@ const inputBase = {
   borderRadius: RADII.md,
   border: `1px solid ${COLORS.border}`,
   fontSize: 15,
-  background: '#fff',
+  background: COLORS.card,
   color: COLORS.ink,
 };
 
@@ -470,7 +485,7 @@ export function Modal({ open, onClose, width = 560, children, closeButton = true
       <div
         className="bt-fade-in"
         style={{
-          background: '#fff',
+          background: COLORS.card,
           borderRadius: RADII.xl,
           boxShadow: SHADOWS.panel,
           width: '100%',
@@ -550,7 +565,7 @@ export function Menu({ trigger, items, align = 'right' }) {
             position: 'absolute',
             top: 'calc(100% + 6px)',
             [align]: 0,
-            background: '#fff',
+            background: COLORS.card,
             borderRadius: RADII.md,
             boxShadow: SHADOWS.panel,
             minWidth: 190,
@@ -579,7 +594,7 @@ export function Menu({ trigger, items, align = 'right' }) {
                 color: it.danger ? COLORS.red : COLORS.ink,
                 textAlign: 'left',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = '#F3F4F6')}
+              onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--color-grey-soft)')}
               onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
             >
               {it.icon}

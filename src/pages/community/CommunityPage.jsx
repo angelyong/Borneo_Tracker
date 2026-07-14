@@ -266,7 +266,7 @@ const styles = {
   subtitle: { fontSize: 14.5, color: COLORS.muted, margin: '6px 0 0', maxWidth: 520, lineHeight: 1.5 },
   list: { display: 'flex', flexDirection: 'column', gap: 16 },
   stateCard: {
-    background: '#fff',
+    background: COLORS.card,
     border: `1px solid ${COLORS.border}`,
     borderRadius: RADII.lg,
     padding: 28,

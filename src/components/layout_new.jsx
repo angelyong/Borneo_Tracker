@@ -55,7 +55,7 @@ const styles = {
     maxWidth: '100%',
     minWidth: 0,
     height: '100vh',
-    backgroundColor: '#f5f7f8',
+    backgroundColor: 'var(--color-shell-bg)',
     overflow: 'hidden',
   },
 
@@ -68,7 +68,7 @@ const styles = {
     display: 'flex',
     minWidth: 0,
     overflow: 'hidden',
-    backgroundColor: '#f5f7f8',
+    backgroundColor: 'var(--color-shell-bg)',
     zIndex: 1,
   },
 
@@ -87,7 +87,7 @@ const styles = {
     minHeight: 0,
     height: '100%',
     position: 'relative',
-    backgroundColor: '#ffffff',
+    backgroundColor: 'var(--color-main-bg)',
   },
 };
 

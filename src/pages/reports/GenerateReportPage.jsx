@@ -292,7 +292,7 @@ const styles = {
   subtitle: { fontSize: 14, color: COLORS.muted, margin: '6px 0 0', maxWidth: 620, lineHeight: 1.5 },
 
   controlsCard: {
-    background: '#fff',
+    background: COLORS.card,
     border: `1px solid ${COLORS.border}`,
     borderRadius: RADII.lg,
     padding: 24,
@@ -317,7 +317,7 @@ const styles = {
     fontSize: 14,
     fontWeight: 500,
     color: COLORS.ink,
-    background: '#fff',
+    background: COLORS.card,
     minWidth: 180,
   },
   rangeRow: { display: 'flex', alignItems: 'center', gap: 8 },
@@ -339,7 +339,7 @@ const styles = {
   generateRow: { display: 'flex', justifyContent: 'flex-end', paddingTop: 4, borderTop: `1px solid ${COLORS.border}` },
 
   stateCard: {
-    background: '#fff',
+    background: COLORS.card,
     border: `1px solid ${COLORS.border}`,
     borderRadius: RADII.lg,
     padding: 28,
@@ -348,6 +348,8 @@ const styles = {
     fontSize: 14.5,
   },
 
+  // Deliberately literal white — this represents the printed PDF page itself,
+  // not app UI, so it stays the same in both light and dark mode.
   previewWrap: {
     maxWidth: 794,
     margin: '0 auto',

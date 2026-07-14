@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoImg from '../assets/logo.png';
 import AIbotButton from './AIbotButton';
+import ThemeToggle from './ThemeToggle';
 
 const MiniTopBar = ({ onMenuClick, notifCount = 0 }) => {
   const navigate = useNavigate();
@@ -50,6 +51,9 @@ const MiniTopBar = ({ onMenuClick, notifCount = 0 }) => {
 
       {/* ── Right: bell + avatar ── */}
       <div style={styles.rightGroup}>
+
+        {/* Theme toggle */}
+        <ThemeToggle style={styles.iconBtn} />
 
         {/* Bell */}
         <button
@@ -165,8 +169,8 @@ const styles = {
     alignItems:      'center',
     height:          '52px',
     padding:         '0 12px',
-    backgroundColor: '#f5f4f0',   // warm off-white header
-    borderBottom:    '1px solid #e5e5df',
+    backgroundColor: 'var(--color-topbar-bg)',   // warm off-white header (dark-theme reactive)
+    borderBottom:    '1px solid var(--color-topbar-border)',
     flexShrink:      0,
     boxSizing:       'border-box',
     position:        'fixed',
@@ -251,8 +255,8 @@ avatarCircle: {
     position:        'absolute',
     top:             '52px',
     right:           0,
-    backgroundColor: '#ffffff',
-    border:          '1px solid #e5e7eb',
+    backgroundColor: 'var(--color-card)',
+    border:          '1px solid var(--color-border)',
     borderRadius:    '12px',
     boxShadow:       '0 8px 24px rgba(0,0,0,0.12)',
     minWidth:        '200px',
@@ -281,16 +285,16 @@ avatarCircle: {
   dropdownName: {
     fontSize:   '13px',
     fontWeight: '600',
-    color:      '#111827',
+    color:      'var(--color-ink)',
   },
   dropdownEmail: {
     fontSize:  '11px',
-    color:     '#6b7280',
+    color:     'var(--color-muted)',
     marginTop: '1px',
   },
   dropdownDivider: {
     height:          '1px',
-    backgroundColor: '#f3f4f6',
+    backgroundColor: 'var(--color-border)',
     margin:          '4px 0',
   },
   dropdownItem: {
@@ -302,7 +306,7 @@ avatarCircle: {
     textAlign:       'left',
     fontSize:        '13px',
     fontWeight:      '500',
-    color:           '#374151',
+    color:           'var(--color-ink)',
     cursor:          'pointer',
   },
 
