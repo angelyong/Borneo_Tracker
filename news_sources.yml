@@ -95,9 +95,10 @@ beats:
       id: ["kebijakan lingkungan", "penegakan hukum", "izin lahan", "korupsi kehutanan", moratorium, "tata kelola"]
 
 # --- Trusted outlet whitelist ----------------------------------------------
-# Only stories from these outlets are kept. Google News RSS aggregates them by
-# query (keyless). Outlets with `rss:` ALSO get their native feed pulled for
-# fuller summaries + real publisher links + images (better input = less AI guessing).
+# PUBLISHER-ONLY (2026-07-15): the pipeline pulls the native `rss:` feeds below —
+# fuller article text + real publisher links + images. Google News RSS is now OFF
+# by default (`fetch_news.py --google` to re-enable); it was headline-only and
+# noisy. Outlets WITHOUT a working `rss:` are kept for reference / future feeds.
 #
 # VERIFIED 2026-07-14 (fetch_news.py --publisher). Live feeds carry a real
 # <description> (fuller than Google News, which only echoes the headline) and
@@ -119,11 +120,14 @@ outlets:
     - {name: New Sabah Times}
   Sarawak:
     - {name: The Borneo Post, rss: "https://www.theborneopost.com/feed/", verify: true}
-    - {name: New Sarawak Tribune}
-    - {name: Utusan Borneo}
+    - {name: Dayak Daily, rss: "https://dayakdaily.com/feed/", verify: true}   # added 2026-07-15
+    - {name: New Sarawak Tribune}                                              # feed 404
+    - {name: Utusan Borneo}                                                    # feed 404
     - {name: See Hua Daily News}
   Brunei:
-    - {name: Borneo Bulletin}
+    - {name: The Scoop,    rss: "https://thescoop.co/feed/",          verify: true}   # added 2026-07-15
+    - {name: The Bruneian, rss: "https://www.thebruneian.news/feed/", verify: true}   # added 2026-07-15 (rich feed)
+    - {name: Borneo Bulletin}                                             # feed 403
     - {name: BruDirect}
     - {name: Media Permata}
     - {name: RTB}
@@ -139,6 +143,14 @@ outlets:
     - {name: Tempo}
     - {name: Mongabay Indonesia, rss: "https://www.mongabay.co.id/feed/", verify: true}  # needs browser UA
     - {name: Mongabay (English), rss: "https://news.mongabay.com/feed/",  verify: true}  # needs browser UA
+
+  # Regional / national feeds — kept ONLY when a Borneo territory is named in the story.
+  Regional:
+    - {name: Free Malaysia Today, rss: "https://www.freemalaysiatoday.com/feed/", verify: true}   # added 2026-07-15
+    - {name: The Vibes,           rss: "https://www.thevibes.com/rss/",           verify: true}   # added 2026-07-15
+    - {name: The Rakyat Post,     rss: "https://www.therakyatpost.com/feed/",     verify: true}   # added 2026-07-15
+    - {name: Eco-Business,        rss: "https://www.eco-business.com/feeds/news/", verify: true}   # added 2026-07-15
+    - {name: CIFOR Forests News,  rss: "https://forestsnews.cifor.org/feed/",      verify: true}   # added 2026-07-15
 
 # --- Exclusions (hard filter, enforced again by the AI relevance step) ------
 exclude_topics: [sports, entertainment, celebrity, "general crime", elections, "party politics"]

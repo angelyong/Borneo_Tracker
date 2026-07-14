@@ -11,6 +11,7 @@
 // adminNewsService.js (admin) keep their signatures, so no UI change is needed.
 
 import { mockNewsArticles } from '../data/mockNews';
+import { supabase } from './supabaseClient';
 
 const STORAGE_KEY = 'borneo-tracker:news:v1';
 const NETWORK_DELAY_MS = 150;
@@ -57,4 +58,52 @@ export function patchArticle(id, patch) {
   saveOverlay(overlay);
   const base = mockNewsArticles.find((article) => article.id === id);
   return base ? applyOverlay(base, overlay) : null;
+}
+
+// --- Supabase (live) read path ------------------------------------------------
+// Map a Supabase row (snake_case columns) to the frontend article shape.
+function mapRow(row) {
+  return {
+    id: row.id,
+    title: row.title,
+    body: row.body || '',
+    imageUrl: row.image_url || '',
+    beat: row.beat,
+    beatLabel: row.beat_label,
+    esgPillar: row.esg_pillar,
+    sdg: row.sdg || [],
+    country: row.country,
+    territories: row.territories || [],
+    sources: row.sources || [],
+    sourceCount: row.source_count ?? (row.sources ? row.sources.length : 0),
+    originalLang: row.original_lang,
+    aiGenerated: row.ai_generated,
+    status: row.status,
+    isFeatured: row.is_featured,
+    createdAt: row.created_at,
+    publishedAt: row.published_at,
+  };
+}
+
+/**
+ * Published articles for the public /news page. Reads LIVE from Supabase when
+ * configured (production), else from the local mock store (dev/demo). Async so
+ * one function serves both backends; RLS already limits anon to published rows,
+ * and we filter defensively too.
+ */
+export async function getPublishedArticles() {
+  if (supabase) {
+    const { data, error } = await supabase
+      .from('news_items')
+      .select('*')
+      .eq('status', 'published')
+      .order('published_at', { ascending: false });
+    if (error) {
+      console.error('Supabase news read failed:', error.message);
+      return [];
+    }
+    return (data || []).map(mapRow);
+  }
+  await wait();
+  return getAllArticles().filter((article) => article.status === 'published');
 }

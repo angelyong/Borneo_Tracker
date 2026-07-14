@@ -29,6 +29,7 @@ import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
 from collections import Counter
+from html.parser import HTMLParser
 
 # --- Minimal config (subset of news_sources.yml; inlined to avoid a YAML dep) ---
 BEATS = {
@@ -75,6 +76,24 @@ PUBLISHER_FEEDS = [
      "lang": "id", "default_territory": "Kalimantan", "national": True},
     {"name": "Mongabay",           "url": "https://news.mongabay.com/feed/",
      "lang": "en", "default_territory": "Kalimantan", "national": True},
+    # Added 2026-07-15 to balance coverage (Malaysia + Brunei were thin).
+    {"name": "Dayak Daily",        "url": "https://dayakdaily.com/feed/",
+     "lang": "en", "default_territory": "Sarawak",    "national": False},
+    {"name": "The Scoop",          "url": "https://thescoop.co/feed/",
+     "lang": "en", "default_territory": "Brunei",     "national": False},
+    {"name": "Free Malaysia Today", "url": "https://www.freemalaysiatoday.com/feed/",
+     "lang": "en", "default_territory": "Sarawak",    "national": True},
+    {"name": "Eco-Business",       "url": "https://www.eco-business.com/feeds/news/",
+     "lang": "en", "default_territory": "Kalimantan", "national": True},
+    {"name": "CIFOR Forests News", "url": "https://forestsnews.cifor.org/feed/",
+     "lang": "en", "default_territory": "Kalimantan", "national": True},
+    # Sabah/Brunei boost 2026-07-15
+    {"name": "The Bruneian",       "url": "https://www.thebruneian.news/feed/",
+     "lang": "en", "default_territory": "Brunei",     "national": False},
+    {"name": "The Vibes",          "url": "https://www.thevibes.com/rss/",
+     "lang": "en", "default_territory": "Sarawak",    "national": True},
+    {"name": "The Rakyat Post",    "url": "https://www.therakyatpost.com/feed/",
+     "lang": "en", "default_territory": "Sarawak",    "national": True},
 ]
 
 # Ordered beat keyword map (first match wins). Lowercase substring match; the
@@ -119,6 +138,66 @@ def slugify(text):
 
 def strip_html(text):
     return html.unescape(re.sub(r"<[^>]+>", "", text or "")).strip()
+
+
+# --- Full article text (stdlib, no deps) ------------------------------------
+# Pull the main <p> text from an article page so the AI can summarize the REAL
+# story (fuller + grounded) instead of just the headline. Skips nav/related/
+# comment boilerplate; the AI is also told to ignore any that slips through.
+_SKIP_TAGS = {"script", "style", "nav", "header", "footer", "aside", "form",
+              "figure", "figcaption", "noscript"}
+
+
+class _ArticleParser(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.skip = 0
+        self.in_p = 0
+        self.cur = []
+        self.parts = []
+
+    def handle_starttag(self, tag, attrs):
+        if tag in _SKIP_TAGS:
+            self.skip += 1
+        elif tag == "p" and not self.skip:
+            self.in_p += 1
+            self.cur = []
+
+    def handle_endtag(self, tag):
+        if tag in _SKIP_TAGS and self.skip:
+            self.skip -= 1
+        elif tag == "p" and self.in_p:
+            self.in_p -= 1
+            t = "".join(self.cur).strip()
+            if len(t) >= 40:
+                self.parts.append(t)
+            self.cur = []
+
+    def handle_data(self, data):
+        if self.in_p and not self.skip:
+            self.cur.append(data)
+
+
+def extract_article_text(page_html, cap=4000):
+    p = _ArticleParser()
+    try:
+        p.feed(page_html)
+    except Exception:  # noqa: BLE001 — malformed HTML must not crash the run
+        pass
+    return re.sub(r"\s+", " ", " ".join(p.parts)).strip()[:cap]
+
+
+def fetch_article_text(url, cap=4000):
+    """Fetch an article page and return its main text, or '' on any failure
+    (paywall / bot-block / timeout). Worth calling only on real publisher URLs
+    (not Google redirects)."""
+    try:
+        req = urllib.request.Request(url, headers={
+            "User-Agent": BROWSER_UA, "Accept-Language": "en,id;q=0.8"})
+        page = urllib.request.urlopen(req, timeout=20).read().decode("utf-8", "replace")
+        return extract_article_text(page, cap)
+    except Exception:  # noqa: BLE001
+        return ""
 
 
 def fetch_rss(query, ceid, days):
@@ -277,7 +356,14 @@ def main():
     ap.add_argument("--per-query", type=int, default=6, help="max items kept per Google query")
     ap.add_argument("--per-feed", type=int, default=8, help="max in-scope items kept per publisher feed")
     ap.add_argument("--publisher", action=argparse.BooleanOptionalAction, default=True,
-                    help="also pull confirmed-live publisher RSS feeds (default on)")
+                    help="pull confirmed-live publisher RSS feeds (default on)")
+    ap.add_argument("--google", action=argparse.BooleanOptionalAction, default=False,
+                    help="also pull Google News RSS (noisy, headline-only; OFF by default)")
+    ap.add_argument("--full-text", action=argparse.BooleanOptionalAction, default=True,
+                    help="fetch article pages (real publisher links) so the AI can "
+                         "summarize the full story, not just the headline (default on)")
+    ap.add_argument("--full-text-limit", type=int, default=45,
+                    help="max article pages to fetch")
     ap.add_argument("--out", default="news_fetched.json")
     args = ap.parse_args()
 
@@ -293,8 +379,8 @@ def main():
         n_pub = len(pub)
         print(f"Publisher RSS: {n_pub} in-scope items from {len(PUBLISHER_FEEDS)} feeds.")
 
-    # 2) Google News RSS — broad aggregate; headline-only bodies, redirect links.
-    for beat_id, beat in BEATS.items():
+    # 2) Google News RSS (opt-in via --google) — broad aggregate; noisy & headline-only.
+    for beat_id, beat in (BEATS.items() if args.google else []):
         for terr in TERRITORIES:
             kw = beat[terr["lang"]]
             query = f'{terr["name"]} ({kw})'
@@ -344,6 +430,21 @@ def main():
                     "isFeatured": False,
                 })
 
+    # 3) Full article text for real (non-Google) links so the AI summarizes the
+    #    actual story, not just the headline. Bounded to keep runtime sane.
+    n_ft = 0
+    if args.full_text:
+        for it in items:
+            if n_ft >= args.full_text_limit:
+                break
+            url = it["sources"][0]["url"]
+            if "news.google.com" in url:
+                continue  # Google redirect — can't reach the real article reliably
+            text = fetch_article_text(url)
+            if len(text) > 200:
+                it["full_text"] = text
+                n_ft += 1
+
     items.sort(key=lambda x: x["sources"][0]["publishedAt"], reverse=True)
     with open(args.out, "w", encoding="utf-8") as f:
         json.dump(items, f, ensure_ascii=False, indent=2)
@@ -355,6 +456,7 @@ def main():
           f"{len(items) - n_pub} google) -> {args.out}")
     print(f"  with image:   {n_img}")
     print(f"  fuller body:  {n_rich}  (body materially longer than headline)")
+    print(f"  full text:    {n_ft} items (real publisher article pages fetched)")
     print("  by territory:", dict(Counter(i["territories"][0] for i in items)))
     print("  by beat:     ", dict(Counter(i["beat"] for i in items)))
     days = Counter(i["sources"][0]["publishedAt"][:10] for i in items)

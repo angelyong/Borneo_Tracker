@@ -132,7 +132,15 @@ const NewsDetailPage = () => {
                 </p>
 
                 <div className="news-ai-label">AI-generated Summary</div>
-                <p className="news-detail-summary">{article.body}</p>
+                <div className="news-detail-summary">
+                  {(article.body || '')
+                    .split(/\n{2,}/)
+                    .map((para) => para.trim())
+                    .filter(Boolean)
+                    .map((para, index) => (
+                      <p key={index}>{para}</p>
+                    ))}
+                </div>
 
                 <div className="news-source-block">
                   <span className="news-source-badge">{formatSourceCount(article.sourceCount)}</span>
