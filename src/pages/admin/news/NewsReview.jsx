@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import DraftCard from './DraftCard';
 import {
   approveNews,
@@ -8,7 +9,11 @@ import {
   rejectNews,
   updateNews,
 } from '../../../services/adminNewsService';
+import { getSession, isAuthEnabled, onAuthChange, signOut } from '../../../services/authService';
 import './adminNews.css';
+
+const LOGIN_PATH = '/admin/login';
+const LOGIN_STATE = { state: { from: '/admin/news' } };
 
 const COUNTRY_FLAGS = {
   Malaysia: '🇲🇾',
@@ -54,12 +59,52 @@ const ReadOnlyCard = ({ article }) => (
 );
 
 const NewsReview = () => {
+  const navigate = useNavigate();
   const [tab, setTab] = useState('pending');
   const [drafts, setDrafts] = useState([]);
   const [others, setOthers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  // When auth is disabled (mock mode) the gate is a no-op and we render at once.
+  const [authChecked, setAuthChecked] = useState(!isAuthEnabled);
+  const [adminEmail, setAdminEmail] = useState('');
+
+  // Auth gate: require a session when Supabase is configured; redirect to the
+  // login page if there is none, and again if the session is later cleared.
+  useEffect(() => {
+    if (!isAuthEnabled) return undefined;
+    let active = true;
+
+    getSession().then((session) => {
+      if (!active) return;
+      if (!session) {
+        navigate(LOGIN_PATH, LOGIN_STATE);
+        return;
+      }
+      setAdminEmail(session.user?.email || '');
+      setAuthChecked(true);
+    });
+
+    const unsubscribe = onAuthChange((session) => {
+      if (!active) return;
+      if (!session) {
+        navigate(LOGIN_PATH, LOGIN_STATE);
+      } else {
+        setAdminEmail(session.user?.email || '');
+      }
+    });
+
+    return () => {
+      active = false;
+      unsubscribe();
+    };
+  }, [navigate]);
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate(LOGIN_PATH, LOGIN_STATE);
+  };
 
   const loadPending = () => {
     setLoading(true);
@@ -80,6 +125,7 @@ const NewsReview = () => {
   };
 
   useEffect(() => {
+    if (!authChecked) return undefined;
     let cancelled = false;
 
     Promise.resolve()
@@ -107,7 +153,7 @@ const NewsReview = () => {
     return () => {
       cancelled = true;
     };
-  }, [tab]);
+  }, [tab, authChecked]);
 
   const handleRemove = (id) => {
     setDrafts((current) => current.filter((draft) => draft.id !== id));
@@ -195,13 +241,41 @@ const NewsReview = () => {
     );
   };
 
+  if (!authChecked) {
+    return (
+      <div className="admin-news-page">
+        <div className="admin-news-inner">
+          <div className="admin-news-state">Checking access…</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="admin-news-page">
       <div className="admin-news-inner">
         <header className="admin-news-header">
-          <h1>News Review Queue</h1>
-          <p className="admin-news-subtitle">
-            Admin approval view — review AI-generated drafts before they go public. MVP: no login yet.
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: '12px',
+              flexWrap: 'wrap',
+            }}
+          >
+            <h1 style={{ margin: 0 }}>News Review Queue</h1>
+            {isAuthEnabled && adminEmail ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '0.85rem', color: '#4c5a52' }}>{adminEmail}</span>
+                <button type="button" className="admin-news-tab" onClick={handleLogout}>
+                  Log out
+                </button>
+              </div>
+            ) : null}
+          </div>
+          <p className="admin-news-subtitle" style={{ marginTop: '6px' }}>
+            Admin approval view — review AI-generated drafts before they go public.
           </p>
         </header>
 

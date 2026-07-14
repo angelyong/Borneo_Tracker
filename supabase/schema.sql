@@ -46,7 +46,25 @@ create policy "public reads published"
 --  • The daily pipeline (digest_news.py) uses the SERVICE_ROLE key, which
 --    BYPASSES RLS, to upsert drafts as status='pending'. That key is secret and
 --    lives only in GitHub Actions secrets / a local .env — never in the frontend.
---  • Admin approval (for now): open the Supabase Table Editor and change a row's
---    `status` to 'published' (optionally set published_at = now()). No in-app
---    admin auth yet — that's a later enhancement (a real login + an UPDATE policy
---    for an admins allow-list).
+--  • Admin approval: either the Supabase Table Editor, OR the in-app /admin/news
+--    page (logged-in admins) — see the admin policies below.
+
+-- Admin access (in-app approval) ----------------------------------------------
+-- Authenticated users (your admin accounts) may see ALL rows and UPDATE them
+-- (approve / edit / reject). Set this up:
+--   1. Run this whole file (it's idempotent — drop-if-exists + create).
+--   2. Authentication -> Providers -> Email: turn OFF "Allow new users to sign up"
+--      (so ONLY accounts you create can log in — every logged-in user is an admin).
+--   3. Authentication -> Users -> Add user: create your admin account(s).
+drop policy if exists "authenticated reads all" on public.news_items;
+create policy "authenticated reads all"
+  on public.news_items for select
+  to authenticated
+  using (true);
+
+drop policy if exists "authenticated updates" on public.news_items;
+create policy "authenticated updates"
+  on public.news_items for update
+  to authenticated
+  using (true)
+  with check (true);
