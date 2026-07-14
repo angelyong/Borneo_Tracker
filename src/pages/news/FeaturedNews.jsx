@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import NewsImage from './NewsImage';
-import { formatCountryLabel, formatNewsDate, formatSourceCount } from './newsUtils';
+import { formatCountryLabel, formatNewsDate, formatSourceCount, truncateText } from './newsUtils';
 
 const FeaturedNews = ({ article, onUnavailableSource }) => {
   if (!article) return null;
@@ -32,7 +32,7 @@ const FeaturedNews = ({ article, onUnavailableSource }) => {
         </div>
 
         <h2 id="featured-news-title">{article.title}</h2>
-        <p>{article.body}</p>
+        <p>{truncateText(article.body, 260)}</p>
         <div className="news-ai-label">AI Summary</div>
 
         <div className="news-card-meta">
