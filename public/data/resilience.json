@@ -256,6 +256,15 @@
             "confidence": "high",
             "source": "World Bank",
             "year": "2024"
+          },
+          {
+            "indicator": "Clean water access",
+            "value": 100.0,
+            "unit": "%",
+            "score": 100.0,
+            "confidence": "high",
+            "source": "World Bank",
+            "year": "2024"
           }
         ],
         "Healthcare": [
@@ -283,16 +292,16 @@
       }
     },
     "Kalimantan": {
-      "index": 70.7,
-      "rag": "green",
-      "indexStrict": 68.7,
+      "index": 68.5,
+      "rag": "amber",
+      "indexStrict": 66.7,
       "ragStrict": "amber",
       "weakestPillar": "Education",
       "pillarScores": {
         "Food": 93.9,
         "Energy": 86.2,
         "Education": 51.3,
-        "Shelter": 78.8,
+        "Shelter": 66.0,
         "Healthcare": 61.6,
         "Entertainment": 52.2
       },
@@ -342,9 +351,9 @@
         "Shelter": [
           {
             "indicator": "Clean water access",
-            "value": 89.41,
+            "value": 82.98,
             "unit": "%",
-            "score": 78.8,
+            "score": 66.0,
             "confidence": "high",
             "source": "BPS Indonesia (national by-province) (unweighted mean of 5/5 provinces, approx)",
             "year": "2025"

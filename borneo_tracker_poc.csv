@@ -17,8 +17,9 @@ Sabah,Households,2024,806300,households,data.gov.my / OpenDOSM,state
 Sarawak,Households,2024,656300,households,data.gov.my / OpenDOSM,state
 Sabah,Poverty rate (absolute),2024,17.7,%,data.gov.my / OpenDOSM,state
 Sarawak,Poverty rate (absolute),2024,8.4,%,data.gov.my / OpenDOSM,state
-Sabah,Electricity access (households),2021,544186,households,data.gov.my / OpenDOSM,state
-Sarawak,Electricity access (households),2021,617255,households,data.gov.my / OpenDOSM,state
+Sabah,Electricity access,2021,544186,households,data.gov.my / OpenDOSM,state
+Sarawak,Electricity access,2021,617255,households,data.gov.my / OpenDOSM,state
+Brunei,Clean water access,2024,100,%,World Bank,national
 Brunei,Unemployment rate,2025,5.277,%,World Bank,national
 Brunei,GDP growth,2025,0.66956214816436,%,World Bank,national
 Brunei,GDP (current US$),2025,15031980994.1121,US$,World Bank,national
@@ -40,6 +41,7 @@ Sabah,Renewable electricity (% output),2021,17.0,%,World Bank,national
 Sarawak,Renewable electricity (% output),2021,17.0,%,World Bank,national
 Brunei,Renewable electricity (% output),2021,0.02,%,World Bank,national
 Kalimantan,Renewable electricity (% output),2021,15.53,%,World Bank,national
+Malaysia,Poverty headcount <$2.15/day (SDG1),2021,0,%,UN SDG API,national
 Indonesia,Poverty headcount <$2.15/day (SDG1),2025,4,%,UN SDG API,national
 Kalimantan Barat,Unemployment rate,2025,4.82,%,BPS Indonesia,province
 Kalimantan Barat,Mean years schooling (RLS),2025,8.07,years,BPS Indonesia,province
@@ -76,8 +78,8 @@ Kalimantan Utara,Crop production (paddy),2023,6632.07,tonnes,BPS Indonesia,provi
 Kalimantan Utara,Tourist trips (domestic),2025,122028,trips,BPS Indonesia,province
 Kalimantan Utara,Life expectancy,2024,72.73,years,BPS Indonesia,province
 Kalimantan Barat,Clean water access,2025,79.47,%,BPS Indonesia (national by-province),province
-Kalimantan Tengah,Clean water access,2025,92.14,%,BPS Indonesia (national by-province),province
-Kalimantan Selatan,Clean water access,2025,89.64,%,BPS Indonesia (national by-province),province
+Kalimantan Tengah,Clean water access,2025,71.36,%,BPS Indonesia (national by-province),province
+Kalimantan Selatan,Clean water access,2025,78.27,%,BPS Indonesia (national by-province),province
 Kalimantan Timur,Clean water access,2025,94.23,%,BPS Indonesia (national by-province),province
 Kalimantan Utara,Clean water access,2025,91.59,%,BPS Indonesia (national by-province),province
 Sabah,Forest extent (2000),2000,6684138,ha,Global Forest Watch,satellite
@@ -103,14 +105,14 @@ Kalimantan Barat,"Fire alerts (VIIRS, annual)",2025,21611,count,Global Forest Wa
 Kalimantan Selatan,"Fire alerts (VIIRS, annual)",2025,1987,count,Global Forest Watch (VIIRS),satellite
 Kalimantan Tengah,"Fire alerts (VIIRS, annual)",2025,3895,count,Global Forest Watch (VIIRS),satellite
 Kalimantan Utara,"Fire alerts (VIIRS, annual)",2025,159,count,Global Forest Watch (VIIRS),satellite
-Borneo (all),Active fire hotspots (1d),2026,733,count,"NASA FIRMS (VIIRS, regional CSV)",satellite
-Sabah,"Air quality (AQI, live)",2026,59,AQI,WAQI / aqicn,city
-Sarawak,"Air quality (AQI, live)",2026,63,AQI,WAQI / aqicn,city
-Brunei,"Air quality (AQI, live)",2026,12,AQI,WAQI / aqicn,city
+Borneo (all),Active fire hotspots (1d),2026,745,count,"NASA FIRMS (VIIRS, regional CSV)",satellite
+Sabah,"Air quality (AQI, live)",2026,55,AQI,WAQI / aqicn,city
+Sarawak,"Air quality (AQI, live)",2026,58,AQI,WAQI / aqicn,city
+Brunei,"Air quality (AQI, live)",2026,11,AQI,WAQI / aqicn,city
 Kalimantan Barat,"Air quality (AQI, live)",2023,62,AQI,WAQI / aqicn,city
-Kalimantan Timur,"Air quality (AQI, live)",2026,65,AQI,WAQI / aqicn,city
-Kalimantan Tengah,"Air quality (AQI, live)",2026,52,AQI,WAQI / aqicn,city
-Kalimantan,"Air quality (AQI, live)",2026,60,AQI,WAQI / aqicn (mean of 3 Kalimantan cities),city
+Kalimantan Timur,"Air quality (AQI, live)",2026,44,AQI,WAQI / aqicn,city
+Kalimantan Tengah,"Air quality (AQI, live)",2026,143,AQI,WAQI / aqicn,city
+Kalimantan,"Air quality (AQI, live)",2026,83,AQI,WAQI / aqicn (mean of 3 Kalimantan cities),city
 Sabah,UNESCO World Heritage Sites,2026,1,count,UNESCO World Heritage List (whc.unesco.org),state
 Sarawak,UNESCO World Heritage Sites,2026,2,count,UNESCO World Heritage List (whc.unesco.org),state
 Brunei,UNESCO World Heritage Sites,2026,0,count,UNESCO World Heritage List (whc.unesco.org),national
@@ -125,7 +127,7 @@ Kalimantan,Life expectancy,2025,72.31,years,"BPS Indonesia (unweighted mean of 5
 Kalimantan,Poverty rate (P0),2025,5.13,%,"BPS Indonesia (unweighted mean of 4/5 provinces, approx)",territory
 Kalimantan,Households,2019,1629776.0,households,BPS Indonesia (sum of 2/5 provinces),territory
 Kalimantan,Electrification ratio,2022,93.09,%,"BPS Indonesia (unweighted mean of 1/5 provinces, approx)",territory
-Kalimantan,Clean water access,2025,89.41,%,"BPS Indonesia (national by-province) (unweighted mean of 5/5 provinces, approx)",territory
+Kalimantan,Clean water access,2025,82.98,%,"BPS Indonesia (national by-province) (unweighted mean of 5/5 provinces, approx)",territory
 Kalimantan,Forest extent (2000),2000,49925040.0,ha,Global Forest Watch (sum of 5/5 provinces),territory
 Kalimantan,Tree cover loss (cumulative),2001-2023,12059800.0,ha,Global Forest Watch (sum of 5/5 provinces),territory
 Kalimantan,"Fire alerts (VIIRS, annual)",2025,27652.0,count,Global Forest Watch (VIIRS) (sum of 4/5 provinces),territory
