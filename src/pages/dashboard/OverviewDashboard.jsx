@@ -263,7 +263,7 @@ function HexRadar({ pillars, max, weakest }) {
   });
 
   return (
-    <svg viewBox="0 0 180 180" style={styles.hexSvg}>
+    <svg viewBox="-26 -14 232 208" style={{ ...styles.hexSvg, overflow: 'visible' }}>
       {rings.map((pts, i) => (
         <polygon key={i} points={pts} fill="none" stroke="var(--color-border)" strokeWidth="0.8" />
       ))}

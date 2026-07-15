@@ -156,6 +156,42 @@ export default function AboutPage() {
         </div>
       </Section>
 
+      <Section title="The Resilience Score">
+        <p style={{ maxWidth: '72ch', color: 'var(--color-muted)', lineHeight: 1.65, margin: '0 0 22px' }}>
+          Beyond the individual indicators, Borneo Tracker rolls the data up into one Resilience Score
+          for each territory — a 0–100 measure of how well a place can sustain its people across the six
+          essentials of daily life, instead of judging progress by income alone.
+        </p>
+        <div className="monitor-grid">
+          <InfoCard
+            item={{
+              title: 'Resilience Status',
+              body: 'A single 0–100 score with a traffic-light status — green (resilient), amber (at risk) or red (critical) — so a territory’s overall standing reads at a glance.',
+              icon: GrowthIcon,
+              tone: 'green',
+            }}
+          />
+          <InfoCard
+            item={{
+              title: 'Resilience by Pillar',
+              body: 'The score split into six survival pillars — Food, Energy, Education, Shelter, Healthcare and Entertainment — shown as a hexagon and a weakest-first list, so you can see which essential is holding a territory back.',
+              icon: HexagonIcon,
+              tone: 'amber',
+            }}
+          />
+        </div>
+        <p style={{ marginTop: 22 }}>
+          <Link
+            className="about-button about-button-secondary"
+            to="/methodology"
+            aria-label="Read the resilience methodology"
+          >
+            See how the score is calculated
+            <span aria-hidden="true">↗</span>
+          </Link>
+        </p>
+      </Section>
+
       <Section title="What You Can Explore">
         <div className="explore-grid">
           {exploreItems.map((item) => (
@@ -406,6 +442,15 @@ function ShieldIcon({ size = 24 }) {
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M12 3.5 19 6v5.5c0 4.7-2.7 7.7-7 9-4.3-1.3-7-4.3-7-9V6l7-2.5Z" stroke="currentColor" strokeWidth="2" />
       <path d="M8.5 12.2 11 14.7l4.7-5.2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function HexagonIcon({ size = 24 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 2.6 20 7.3v9.4L12 21.4 4 16.7V7.3L12 2.6Z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+      <path d="M12 7.2v5l4.1 2.4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" opacity=".65" />
     </svg>
   );
 }
