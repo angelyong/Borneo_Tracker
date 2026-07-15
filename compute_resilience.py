@@ -58,8 +58,13 @@ BOUNDS = {
     "School enrolment (secondary, gross)": {"unit": "%",    "best": 100, "worst": 70},
     # Food
     "Agricultural land":                  {"unit": "% land", "best": 25, "worst": 0},
-    # 2026-07-15 (Phase 1, C1): comparable food self-sufficiency proxy. target = 100
-    # kg paddy/capita/yr (adequacy placeholder — refine with supervisor); floor = 0.
+    # Food self-sufficiency proxy (measures domestic staple PRODUCTION, not food access —
+    # a place can import its way to food security yet score low, which is the point, per
+    # the book's "Brunei money-rich / ~8.4% food self-sufficient = fragile" thesis).
+    # target = 100 kg paddy/capita/yr, NOT full rice self-sufficiency (~150): paddy is a
+    # rice-only proxy that under-counts non-rice food, so a lenient target offsets that
+    # and better approximates TOTAL food self-sufficiency — and lands Brunei ≈ 8, in line
+    # with the book's cited 8.4%. (Exact target is the supervisor's to fine-tune.) floor = 0.
     "Paddy production per capita":         {"unit": "kg/capita", "best": 100, "worst": 0},
     # Entertainment (Phase 1, C2=B): internet use %, same 100/50 band as other access
     # indicators. Multi-agency proxy — carries medium confidence.
