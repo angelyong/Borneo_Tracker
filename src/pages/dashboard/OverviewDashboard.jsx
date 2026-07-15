@@ -1118,7 +1118,8 @@ const OverviewDashboard = () => {
                     <b style={{ color: RAG_COLORS[resilienceView.ragStrict] || 'inherit' }}>
                       {resilienceView.indexStrict}
                     </b>{' '}
-                    · fragility gap −{Math.round((resilienceView.index - resilienceView.indexStrict) * 10) / 10}
+                    · fragility gap {resilienceView.index >= resilienceView.indexStrict ? '−' : '+'}
+                    {Math.abs(Math.round((resilienceView.index - resilienceView.indexStrict) * 10) / 10)}
                   </span>
                 </div>
               )}

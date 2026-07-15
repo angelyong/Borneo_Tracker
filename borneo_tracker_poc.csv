@@ -17,8 +17,8 @@ Sabah,Households,2024,806300,households,data.gov.my / OpenDOSM,state
 Sarawak,Households,2024,656300,households,data.gov.my / OpenDOSM,state
 Sabah,Poverty rate (absolute),2024,17.7,%,data.gov.my / OpenDOSM,state
 Sarawak,Poverty rate (absolute),2024,8.4,%,data.gov.my / OpenDOSM,state
-Sabah,Electricity access,2021,544186,households,data.gov.my / OpenDOSM,state
-Sarawak,Electricity access,2021,617255,households,data.gov.my / OpenDOSM,state
+Sabah,Electricity access (households),2021,544186,households,data.gov.my / OpenDOSM,state
+Sarawak,Electricity access (households),2021,617255,households,data.gov.my / OpenDOSM,state
 Brunei,Unemployment rate,2025,5.277,%,World Bank,national
 Brunei,GDP growth,2025,0.66956214816436,%,World Bank,national
 Brunei,GDP (current US$),2025,15031980994.1121,US$,World Bank,national

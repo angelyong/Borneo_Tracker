@@ -45,7 +45,8 @@ export const INDICATOR_EXPLANATIONS = {
   'Households': 'Total number of households — the denominator for household-level access figures.',
 
   // Social — energy
-  'Electricity access': 'Access to electricity — shown as the share of households with supply where a rate is available (SDG 7), or a household count where only counts are reported.',
+  'Electricity access': 'Share of households with access to electricity, as a percentage (SDG 7).',
+  'Electricity access (households)': 'Number of households connected to electricity — an absolute count; read against total households, or see the percentage figure where available.',
   'Electrification ratio': 'Share of households with electricity access (SDG 7).',
 
   // Social — economy

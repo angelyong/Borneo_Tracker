@@ -152,7 +152,12 @@ def dashboard_concept(indicator):
         return "food_percapita"
     if indicator == "Internet use":
         return "internet_use"
-    if indicator in ("Electricity access", "Electrification ratio", "Renewable electricity (% output)"):
+    if indicator in (
+        "Electricity access",
+        "Electricity access (households)",
+        "Electrification ratio",
+        "Renewable electricity (% output)",
+    ):
         return "energy"
     if indicator in ("Households", "Basic sanitation access"):
         return "shelter"
