@@ -163,7 +163,10 @@ def hexagon_pillar(indicator):
         "education": "Education",
         "shelter": "Shelter",
         "healthcare": "Healthcare",
-        "clean_water_access": "Healthcare",
+        # 2026-07-15 (Phase 0.1): clean water is a Shelter/WASH adequacy indicator, not
+        # Healthcare. Re-tagged so the Shelter pillar lights up instead of Healthcare
+        # double-counting. Life expectancy stays Healthcare. See docs/ABCDE_HEXAGON_REFRAME_PLAN.md.
+        "clean_water_access": "Shelter",
         "entertainment": "Entertainment",
         "heritage": "Entertainment",
     }

@@ -1,37 +1,40 @@
 {
-  "generatedAt": "2026-07-13",
+  "generatedAt": "2026-07-15",
   "method": "linear 0-100 vs documented bounds; pillar = mean of scored indicators; index = mean of scored pillars; unscored pillars excluded, never imputed",
   "ragThresholds": {
-    "green": 67,
-    "amber": 34
+    "green": 70,
+    "amber": 40
   },
   "territories": {
     "Sabah": {
       "index": 68.8,
-      "rag": "green",
-      "weakestPillar": "Healthcare",
+      "rag": "amber",
+      "weakestPillar": "Shelter",
       "pillarScores": {
-        "Healthcare": 68.8
+        "Shelter": 61.0,
+        "Healthcare": 76.5
       },
       "scoredPillars": [
-        "Healthcare"
+        "Healthcare",
+        "Shelter"
       ],
       "unscoredPillars": [
         "Food",
         "Energy",
         "Education",
-        "Shelter",
         "Entertainment"
       ],
       "detail": {
-        "Healthcare": [
+        "Shelter": [
           {
             "indicator": "Clean water access",
             "value": 80.5,
             "unit": "%",
             "score": 61.0,
             "confidence": "high"
-          },
+          }
+        ],
+        "Healthcare": [
           {
             "indicator": "Life expectancy",
             "value": 75.3,
@@ -45,29 +48,32 @@
     "Sarawak": {
       "index": 72.2,
       "rag": "green",
-      "weakestPillar": "Healthcare",
+      "weakestPillar": "Shelter",
       "pillarScores": {
-        "Healthcare": 72.2
+        "Shelter": 67.4,
+        "Healthcare": 77.0
       },
       "scoredPillars": [
-        "Healthcare"
+        "Healthcare",
+        "Shelter"
       ],
       "unscoredPillars": [
         "Food",
         "Energy",
         "Education",
-        "Shelter",
         "Entertainment"
       ],
       "detail": {
-        "Healthcare": [
+        "Shelter": [
           {
             "indicator": "Clean water access",
             "value": 83.7,
             "unit": "%",
             "score": 67.4,
             "confidence": "high"
-          },
+          }
+        ],
+        "Healthcare": [
           {
             "indicator": "Life expectancy",
             "value": 75.4,
@@ -128,22 +134,23 @@
       }
     },
     "Kalimantan": {
-      "index": 69.2,
-      "rag": "green",
+      "index": 69.5,
+      "rag": "amber",
       "weakestPillar": "Education",
       "pillarScores": {
         "Energy": 86.2,
         "Education": 51.3,
-        "Healthcare": 70.2
+        "Shelter": 78.8,
+        "Healthcare": 61.6
       },
       "scoredPillars": [
         "Education",
         "Energy",
-        "Healthcare"
+        "Healthcare",
+        "Shelter"
       ],
       "unscoredPillars": [
         "Food",
-        "Shelter",
         "Entertainment"
       ],
       "detail": {
@@ -165,14 +172,16 @@
             "confidence": "high"
           }
         ],
-        "Healthcare": [
+        "Shelter": [
           {
             "indicator": "Clean water access",
             "value": 89.41,
             "unit": "%",
             "score": 78.8,
             "confidence": "high"
-          },
+          }
+        ],
+        "Healthcare": [
           {
             "indicator": "Life expectancy",
             "value": 72.31,

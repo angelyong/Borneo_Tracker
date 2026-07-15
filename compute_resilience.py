@@ -11,7 +11,7 @@ editable table):
   2. Pillar score = mean of its scored indicators (True Wealth Hexagon pillars).
   3. Resilience Index = mean of the pillars that HAVE a score. Pillars with no
      scorable indicator are excluded and listed — never imputed (no fake data).
-  4. Weakest pillar + RAG status (>=67 green, >=34 amber, else red).
+  4. Weakest pillar + RAG status (>=70 green, >=40 amber, else red).
 
 Only ratio/percent/years indicators are scored. Absolute counts (households,
 crop tonnes, enrolment headcounts, tourist trips…) are size-dependent and
@@ -64,8 +64,9 @@ BOUNDS = {
     "Poverty headcount <$2.15/day (SDG1)": {"unit": "%", "best": 0, "worst": 25},
 }
 
-RAG_GREEN = 67
-RAG_AMBER = 34
+# 2026-07-15 (Phase 0.5): unified on the methodology doc's 70/40 bands (was 67/34).
+RAG_GREEN = 70
+RAG_AMBER = 40
 
 
 def score_value(indicator, unit, value):
