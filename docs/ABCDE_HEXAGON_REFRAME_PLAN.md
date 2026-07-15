@@ -39,9 +39,16 @@
 > pillar in red; new `WeakestLinkBars` component (pillars ranked weakest-first, bars fill toward the 100
 > target) is the honest hero; the strict (geometric) index + fragility gap now render under the headline
 > index; `resilienceView` enriched with strict/weakest/pillarScores incl. an All-Borneo per-pillar
-> average. Build verified (`npm run build` ✓). **Remaining Phase 3 (optional):** GDP-vs-Resilience
-> juxtaposition; 4-territory small-multiples; apply the same score-radar to Regional_Detail (still
-> uses count-based `getHexagonCoverage`).
+> average. Build verified (`npm run build` ✓).
+>
+> **Phase 3 optional DONE:** extracted a shared `HexRadar` component; new `SmallMultiples` (4 mini
+> hexagons side-by-side for cross-territory shape comparison) + `MoneyVsResilience` (SVG scatter: GDP
+> per capita × resilience index, Brunei flagged far-right-on-money but food-fragile — the paper-vs-true
+> wealth thesis), both wired into the Overview; `GDP_PER_CAPITA_USD` constant added to useIndicators
+> (illustrative, sourced). Regional_Detail's count-based ECharts radar replaced with the score `HexRadar`
+> ("Resilience by Pillar 0–100"). All theme-aware; build verified. **The reframe (D+E + a truthful,
+> comparable, thesis-carrying hexagon) is now feature-complete on the branch.** Next housekeeping: merge
+> `feature/hexagon-reframe` → master (user's call); confirm methodology defaults with the supervisor.
 > **Purpose:** Tighten the product's link to the supervisor's **ABCDE Framework**, and make the
 > **True Wealth Hexagon + Resilience Index** (the hero) *credible, capable, and valuable*.
 > **Pairs with:** the `borneo-abcde-framework` skill (thinking lens),

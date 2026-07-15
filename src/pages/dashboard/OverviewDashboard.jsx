@@ -12,6 +12,7 @@ import {
   getDistrictNameByKey,
   getDistrictParents,
   getDistrictsForParent,
+  GDP_PER_CAPITA_USD,
   getHexagonCoverage,
   getLayerRows,
   getRowsForPillar,
@@ -31,6 +32,8 @@ import L from 'leaflet';
 import PillarCoverage from '../../components/PillarCoverage';
 import ProvenanceChip from '../../components/ProvenanceChip';
 import WeakestLinkBars from '../../components/WeakestLinkBars';
+import SmallMultiples from '../../components/SmallMultiples';
+import MoneyVsResilience from '../../components/MoneyVsResilience';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -1165,6 +1168,20 @@ const OverviewDashboard = () => {
             </div>
           )}
         </div>
+
+        {!isDistrict && resilience?.territories && (
+          <div style={styles.card}>
+            <SmallMultiples territories={resilience.territories} />
+          </div>
+        )}
+
+        {!isDistrict && resilience?.territories && (
+          <div style={styles.card}>
+            <div style={styles.sectionTitle}>Money vs Resilience</div>
+            <div style={styles.sectionSubtitle}>(paper wealth vs true wealth)</div>
+            <MoneyVsResilience gdpPerCapita={GDP_PER_CAPITA_USD} territories={resilience.territories} />
+          </div>
+        )}
 
         <div style={styles.card}>
           <div style={styles.esgHeader}>

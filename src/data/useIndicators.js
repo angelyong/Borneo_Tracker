@@ -286,6 +286,16 @@ export const SDG_GOALS = [
   { goal: 'SDG16', label: 'Peace & Justice' },
 ];
 
+// Approximate GDP per capita (US$) for the four territories — used only for the
+// "paper wealth vs true wealth" comparison. Mixed official sources/years, FX-converted,
+// so treat as illustrative, not exact.
+export const GDP_PER_CAPITA_USD = {
+  Brunei: 33000, // World Bank GDP (current US$) 2023 ÷ population (~15.0B / 0.46M)
+  Sarawak: 15700, // DOSM GDP per capita RM 72,411 (2023) at ~RM 4.6/US$
+  Sabah: 4900, // DOSM GDP per capita ~RM 22,400 (2024) at ~RM 4.6/US$ — lowest Malaysian state
+  Kalimantan: 6500, // BPS PDRB per capita (2023), 5-province approx (E. Kalimantan ~US$16k, others ~US$3–4k)
+};
+
 export function getSeries(data, territory, concept) {
   return data?.series?.[territory]?.[concept] || null;
 }

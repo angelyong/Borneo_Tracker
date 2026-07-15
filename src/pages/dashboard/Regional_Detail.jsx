@@ -9,7 +9,6 @@ import {
   getComparisonRows,
   getConfidenceCoverage,
   getEsgCoverage,
-  getHexagonCoverage,
   getSeries,
   summarizeRows,
   titleCaseConfidence,
@@ -18,6 +17,7 @@ import {
 } from '../../data/useIndicators';
 import { THEME_CHANGE_EVENT, cssVar } from '../../utils/theme';
 import ProvenanceChip from '../../components/ProvenanceChip';
+import HexRadar from '../../components/HexRadar';
 
 const RegionalDetails = () => {
   const [selectedTerritory,  setSelectedTerritory]  = useState('Sarawak');
@@ -32,10 +32,8 @@ const RegionalDetails = () => {
   const { data: resilience }                 = useResilience();
 
   const lineChartRef       = useRef(null);
-  const radarChartRef      = useRef(null);
   const barChartRef        = useRef(null);
   const lineChartInstance  = useRef(null);
-  const radarChartInstance = useRef(null);
   const barChartInstance   = useRef(null);
 
   useEffect(() => {
@@ -64,7 +62,6 @@ const RegionalDetails = () => {
     [activeConcept, data]
   );
 
-  const hexagonCoverage    = useMemo(() => getHexagonCoverage(data?.rows || [], selectedTerritory),    [data, selectedTerritory]);
   const esgCoverage        = useMemo(() => getEsgCoverage(data?.rows || [], selectedTerritory),        [data, selectedTerritory]);
   const confidenceCoverage = useMemo(() => getConfidenceCoverage(data?.rows || [], selectedTerritory), [data, selectedTerritory]);
 
@@ -78,6 +75,10 @@ const RegionalDetails = () => {
   const activeChartMode     = chartMode === 'trend' && trendSeries ? 'trend' : 'snapshot';
   const trendReadyCount     = countTrendReadyConcepts(data, selectedTerritory);
   const territoryResilience = resilience?.territories?.[selectedTerritory] || null;
+  // Real 0–100 resilience scores per hexagon pillar (only exists for the four
+  // territories). Null for unsupported scopes or while loading — the radar card
+  // falls back to an honest note in that case.
+  const pillarScores        = territoryResilience?.pillarScores || null;
 
   const ragColor = { green: '#16a34a', amber: '#d97706', red: '#dc2626' };
 
@@ -154,35 +155,6 @@ const RegionalDetails = () => {
     window.addEventListener('resize', onResize);
     return () => { window.removeEventListener('resize', onResize); lineChartInstance.current?.dispose(); };
   }, [activeChartMode, comparisonRows, selectedConceptLabel, theme.azure, theme.borderLight, theme.primary, theme.textMuted, trendSeries]);
-
-  // ── Radar chart ──────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!radarChartRef.current) return;
-    radarChartInstance.current = echarts.init(radarChartRef.current);
-    radarChartInstance.current.setOption({
-      tooltip: { trigger: 'item', formatter: (p) => `<strong>${p.name}</strong><br/>Score: ${p.value}` },
-      radar: {
-        indicator: Object.keys(hexagonCoverage).map((name) => ({ name, max: 4 })),
-        center: ['50%', '50%'], radius: '70%',
-        axisName:  { color: theme.ink, fontSize: 12, fontWeight: 500 },
-        splitArea: { areaStyle: { color: ['rgba(34,197,94,0.02)', 'rgba(34,197,94,0.02)'] } },
-        axisLine:  { lineStyle: { color: theme.borderLight } },
-        splitLine: { lineStyle: { color: theme.borderLight } },
-      },
-      series: [{
-        type: 'radar',
-        data: [{
-          value: Object.values(hexagonCoverage), name: 'Coverage',
-          areaStyle: { color: 'rgba(34,197,94,0.3)' },
-          lineStyle: { color: '#22c55e', width: 2 },
-          itemStyle: { color: '#22c55e' },
-        }],
-      }],
-    });
-    const onResize = () => radarChartInstance.current?.resize();
-    window.addEventListener('resize', onResize);
-    return () => { window.removeEventListener('resize', onResize); radarChartInstance.current?.dispose(); };
-  }, [hexagonCoverage, theme.borderLight, theme.ink]);
 
   // ── ESG pillar bar chart ─────────────────────────────────────────────────
   useEffect(() => {
@@ -361,29 +333,46 @@ const RegionalDetails = () => {
                   </div>
                 </div>
 
-                {/* Radar chart */}
+                {/* True Wealth Hexagon — real 0–100 resilience scores per pillar */}
                 <div style={styles.card}>
                   <div style={styles.chartHeader}>
                     <div style={styles.chartHeaderLeft}>
-                      <div style={styles.cardTitle}>True Wealth Hexagon Coverage</div>
+                      <div style={styles.cardTitle}>Resilience by Pillar (0–100)</div>
                       <div style={{ fontSize: '13px', color: 'var(--color-muted)', marginTop: '4px' }}>
-                        Count of canonical indicators available per pillar
+                        {pillarScores
+                          ? 'True Wealth Hexagon — real resilience scores per pillar'
+                          : 'Resilience scores are computed at territory level'}
                       </div>
                     </div>
                     <div style={styles.chartTabs}>
-                      <button style={{ ...styles.chartTab, ...styles.chartTabActive }}>Current</button>
+                      <button style={{ ...styles.chartTab, ...styles.chartTabActive }}>Scores</button>
                     </div>
                   </div>
-                  <div style={styles.chartArea}>
-                    <div ref={radarChartRef} style={{ width: '100%', height: '100%' }} />
+                  <div style={{ ...styles.chartArea, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {pillarScores ? (
+                      <HexRadar
+                        pillars={pillarScores}
+                        max={100}
+                        weakest={territoryResilience.weakestPillar}
+                        maxWidth={230}
+                      />
+                    ) : (
+                      <div style={{ textAlign: 'center', fontSize: '13px', color: 'var(--color-muted)', padding: '0 16px' }}>
+                        Resilience scores are computed at territory level (Sabah, Sarawak, Brunei, Kalimantan).
+                      </div>
+                    )}
                   </div>
                   <div style={styles.cardFooter}>
-                    {Object.entries(hexagonCoverage).map(([name, value], idx) => (
-                      <span key={name} style={styles.footerItem}>
-                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: ['#22c55e','#3b82f6','#eab308','#a855f7','#ec4899'][idx % 5], display: 'inline-block' }} />
-                        {name}: <strong>{value}</strong>
-                      </span>
-                    ))}
+                    {pillarScores ? (
+                      Object.entries(pillarScores).map(([name, value]) => (
+                        <span key={name} style={styles.footerItem}>
+                          <span style={{ width: 8, height: 8, borderRadius: '50%', background: name === territoryResilience.weakestPillar ? 'var(--color-red)' : theme.primary, display: 'inline-block' }} />
+                          {name}: <strong>{value}</strong>
+                        </span>
+                      ))
+                    ) : (
+                      <span style={styles.footerItem}>No territory-level resilience scores for this scope.</span>
+                    )}
                   </div>
                 </div>
               </div>
