@@ -122,7 +122,7 @@ export default function MoneyVsResilience({ gdpPerCapita, territories }) {
             y={PLOT_BOTTOM + 15}
             textAnchor="middle"
             fill="var(--color-muted)"
-            fontSize="10"
+            fontSize="12"
             style={{ fontVariantNumeric: 'tabular-nums' }}
           >
             {fmtXTick(v)}
@@ -138,7 +138,7 @@ export default function MoneyVsResilience({ gdpPerCapita, territories }) {
             textAnchor="end"
             dominantBaseline="central"
             fill="var(--color-muted)"
-            fontSize="10"
+            fontSize="12"
             style={{ fontVariantNumeric: 'tabular-nums' }}
           >
             {v}
@@ -151,7 +151,7 @@ export default function MoneyVsResilience({ gdpPerCapita, territories }) {
           y={VB_H - 8}
           textAnchor="middle"
           fill="var(--color-muted)"
-          fontSize="11"
+          fontSize="13"
           fontWeight="600"
         >
           GDP per capita (US$)
@@ -161,7 +161,7 @@ export default function MoneyVsResilience({ gdpPerCapita, territories }) {
           y={PLOT_TOP + PLOT_H / 2}
           textAnchor="middle"
           fill="var(--color-muted)"
-          fontSize="11"
+          fontSize="13"
           fontWeight="600"
           transform={`rotate(-90 14 ${PLOT_TOP + PLOT_H / 2})`}
         >
@@ -185,7 +185,7 @@ export default function MoneyVsResilience({ gdpPerCapita, territories }) {
               <circle
                 cx={cx}
                 cy={cy}
-                r="6"
+                r="7"
                 fill={color}
                 stroke="var(--color-card)"
                 strokeWidth="1.5"
@@ -198,7 +198,7 @@ export default function MoneyVsResilience({ gdpPerCapita, territories }) {
                     textAnchor={textAnchor}
                     dominantBaseline="central"
                     fill="var(--color-ink)"
-                    fontSize="12"
+                    fontSize="14"
                     fontWeight="700"
                   >
                     {p.name}
@@ -209,7 +209,7 @@ export default function MoneyVsResilience({ gdpPerCapita, territories }) {
                     textAnchor={textAnchor}
                     dominantBaseline="central"
                     fill="var(--color-muted)"
-                    fontSize="10.5"
+                    fontSize="12"
                   >
                     · weakest: {p.weakestPillar}
                   </text>
@@ -221,7 +221,7 @@ export default function MoneyVsResilience({ gdpPerCapita, territories }) {
                   textAnchor={textAnchor}
                   dominantBaseline="central"
                   fill="var(--color-ink)"
-                  fontSize="12"
+                  fontSize="14"
                   fontWeight="600"
                 >
                   {p.name}

@@ -32,7 +32,6 @@ import L from 'leaflet';
 import PillarCoverage from '../../components/PillarCoverage';
 import ProvenanceChip from '../../components/ProvenanceChip';
 import WeakestLinkBars from '../../components/WeakestLinkBars';
-import SmallMultiples from '../../components/SmallMultiples';
 import MoneyVsResilience from '../../components/MoneyVsResilience';
 
 delete L.Icon.Default.prototype._getIconUrl;
@@ -315,7 +314,7 @@ const OverviewDashboard = () => {
   const [activeLayer, setActiveLayer] = useState('deforestation');
   const [panelTerritory, setPanelTerritory] = useState('Overall Borneo');
   const [esgCategory, setEsgCategory] = useState('Environment');
-  const [panelWidth, setPanelWidth] = useState(360);
+  const [panelWidth, setPanelWidth] = useState(460);
 
   // Region vs District drill-down. `level` toggles the whole panel between the
   // 4-territory view (indicators.json) and the ADM2 district view (districts.json).
@@ -398,7 +397,7 @@ const OverviewDashboard = () => {
         if (!isDragging.current) return;
 
         const delta = startX.current - ev.clientX;
-        const newWidth = Math.min(520, Math.max(300, startW.current + delta));
+        const newWidth = Math.min(640, Math.max(300, startW.current + delta));
         setPanelWidth(newWidth);
       };
 
@@ -1168,12 +1167,6 @@ const OverviewDashboard = () => {
             </div>
           )}
         </div>
-
-        {!isDistrict && resilience?.territories && (
-          <div style={styles.card}>
-            <SmallMultiples territories={resilience.territories} />
-          </div>
-        )}
 
         {!isDistrict && resilience?.territories && (
           <div style={styles.card}>
