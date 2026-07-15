@@ -9,11 +9,11 @@ import {
   rejectNews,
   updateNews,
 } from '../../../services/adminNewsService';
-import { getSession, isAuthEnabled, onAuthChange, signOut } from '../../../services/authService';
+import { useAuth } from '../../../auth/useAuth';
 import './adminNews.css';
 
-const LOGIN_PATH = '/admin/login';
-const LOGIN_STATE = { state: { from: '/admin/news' } };
+// The route is gated by <RequireAdmin> (session + profile.role === 'admin'), so
+// this page can assume an authenticated admin and just does the queue work.
 
 const COUNTRY_FLAGS = {
   Malaysia: '🇲🇾',
@@ -60,50 +60,18 @@ const ReadOnlyCard = ({ article }) => (
 
 const NewsReview = () => {
   const navigate = useNavigate();
+  const { user, isAuthEnabled, signOut } = useAuth();
+  const adminEmail = user?.email || '';
   const [tab, setTab] = useState('pending');
   const [drafts, setDrafts] = useState([]);
   const [others, setOthers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
-  // When auth is disabled (mock mode) the gate is a no-op and we render at once.
-  const [authChecked, setAuthChecked] = useState(!isAuthEnabled);
-  const [adminEmail, setAdminEmail] = useState('');
-
-  // Auth gate: require a session when Supabase is configured; redirect to the
-  // login page if there is none, and again if the session is later cleared.
-  useEffect(() => {
-    if (!isAuthEnabled) return undefined;
-    let active = true;
-
-    getSession().then((session) => {
-      if (!active) return;
-      if (!session) {
-        navigate(LOGIN_PATH, LOGIN_STATE);
-        return;
-      }
-      setAdminEmail(session.user?.email || '');
-      setAuthChecked(true);
-    });
-
-    const unsubscribe = onAuthChange((session) => {
-      if (!active) return;
-      if (!session) {
-        navigate(LOGIN_PATH, LOGIN_STATE);
-      } else {
-        setAdminEmail(session.user?.email || '');
-      }
-    });
-
-    return () => {
-      active = false;
-      unsubscribe();
-    };
-  }, [navigate]);
 
   const handleLogout = async () => {
     await signOut();
-    navigate(LOGIN_PATH, LOGIN_STATE);
+    navigate('/login');
   };
 
   const loadPending = () => {
@@ -125,7 +93,6 @@ const NewsReview = () => {
   };
 
   useEffect(() => {
-    if (!authChecked) return undefined;
     let cancelled = false;
 
     Promise.resolve()
@@ -153,7 +120,7 @@ const NewsReview = () => {
     return () => {
       cancelled = true;
     };
-  }, [tab, authChecked]);
+  }, [tab]);
 
   const handleRemove = (id) => {
     setDrafts((current) => current.filter((draft) => draft.id !== id));
@@ -240,16 +207,6 @@ const NewsReview = () => {
       </div>
     );
   };
-
-  if (!authChecked) {
-    return (
-      <div className="admin-news-page">
-        <div className="admin-news-inner">
-          <div className="admin-news-state">Checking access…</div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="admin-news-page">

@@ -3,8 +3,8 @@
 // Clicking Edit opens an inline edit form. Saving shows a success toast.
 
 import { useState } from 'react';
-import Sidebar from '../../components/sidebar';
 import MiniTopBar from '../../components/MiniTopBar';
+import { useAuth } from '../../auth/useAuth';
 
 const INITIAL_USER = {
   firstName:   'Json',
@@ -19,8 +19,14 @@ const INITIAL_USER = {
 };
 
 export default function MyProfile() {
+  const { user: authUser, profile } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [user, setUser]                   = useState(INITIAL_USER);
+  const [user, setUser] = useState(() => ({
+    ...INITIAL_USER,
+    firstName: profile?.first_name || INITIAL_USER.firstName,
+    lastName: profile?.last_name || INITIAL_USER.lastName,
+    email: authUser?.email || INITIAL_USER.email,
+  }));
   const [editMode, setEditMode]           = useState(null);   // 'details' | 'password' | null
   const [form, setForm]                   = useState({});
   const [toast, setToast]                 = useState(false);

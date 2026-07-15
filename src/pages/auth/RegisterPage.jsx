@@ -1,33 +1,56 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../auth/useAuth';
 import AuthLayout, { AuthCard } from '../../components/AuthLayout';
 import { Button, Field, PasswordInput, TextInput } from '../../components/ui';
 import { COLORS, FONT } from '../../theme';
 
 const EMPTY_FORM = { firstName: '', lastName: '', email: '', password: '', confirm: '' };
 
-// Same honesty scope as LoginPage: no backend to actually store an account
-// against, so this validates the fields and logs the demo session straight
-// in, matching how the rest of the app treats "auth" as a token flag only.
+// Real Supabase sign-up. First/last name ride along in user metadata; a DB
+// trigger (handle_new_user) turns that into a public.profiles row. Email
+// verification is ON, so we send the user to /check-email afterwards.
 const RegisterPage = () => {
+  const { signUp } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState(EMPTY_FORM);
   const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
 
   const setField = (key) => (e) => setForm({ ...form, [key]: e.target.value });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.firstName.trim() || !form.lastName.trim() || !form.email.trim() || !form.password) {
       setError('Fill in every field to create an account.');
+      return;
+    }
+    if (form.password.length < 12) {
+      setError('Password must be at least 12 characters.');
       return;
     }
     if (form.password !== form.confirm) {
       setError('Passwords do not match.');
       return;
     }
-    localStorage.setItem('authToken', 'demo-session');
-    navigate('/');
+    setError('');
+    setBusy(true);
+    try {
+      await signUp({
+        email: form.email.trim(),
+        password: form.password,
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+      });
+      navigate('/check-email', {
+        replace: true,
+        state: { purpose: 'verify', email: form.email.trim(), cooldown: 60 },
+      });
+    } catch (err) {
+      setError(err.message || 'Could not create your account.');
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -41,29 +64,29 @@ const RegisterPage = () => {
         <form onSubmit={handleSubmit}>
           <div style={styles.row}>
             <Field label="First name" required style={styles.rowField}>
-              <TextInput value={form.firstName} onChange={setField('firstName')} placeholder="Json" />
+              <TextInput autoComplete="given-name" value={form.firstName} onChange={setField('firstName')} placeholder="Json" />
             </Field>
             <Field label="Last name" required style={styles.rowField}>
-              <TextInput value={form.lastName} onChange={setField('lastName')} placeholder="Chen" />
+              <TextInput autoComplete="family-name" value={form.lastName} onChange={setField('lastName')} placeholder="Chen" />
             </Field>
           </div>
 
           <Field label="Email" required>
-            <TextInput type="email" value={form.email} onChange={setField('email')} placeholder="you@example.com" />
+            <TextInput type="email" autoComplete="email" value={form.email} onChange={setField('email')} placeholder="you@example.com" />
           </Field>
 
-          <Field label="Password" required>
-            <PasswordInput value={form.password} onChange={setField('password')} placeholder="Create a password" />
+          <Field label="Password" required hint="At least 12 characters">
+            <PasswordInput autoComplete="new-password" value={form.password} onChange={setField('password')} placeholder="Create a password" />
           </Field>
 
           <Field label="Confirm password" required>
-            <PasswordInput value={form.confirm} onChange={setField('confirm')} placeholder="Re-enter your password" />
+            <PasswordInput autoComplete="new-password" value={form.confirm} onChange={setField('confirm')} placeholder="Re-enter your password" />
           </Field>
 
           {error && <p style={styles.error}>{error}</p>}
 
-          <Button type="submit" variant="primary" style={styles.submitBtn}>
-            Register
+          <Button type="submit" variant="primary" disabled={busy} style={styles.submitBtn}>
+            {busy ? 'Creating account…' : 'Register'}
           </Button>
         </form>
       </AuthCard>

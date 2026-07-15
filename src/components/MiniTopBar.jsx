@@ -1,29 +1,37 @@
 // components/MiniTopBar.jsx
-// Lightweight top bar: hamburger ☰ | spacer | bell (with badge) | avatar circle
-// Clicking avatar opens a small dropdown with "My Profile" and "Log out"
-// No logo — matches the screenshot design exactly
+// Lightweight top bar: hamburger ☰ | logo | spacer | theme | bell | account
+// When signed in, the avatar opens a dropdown (profile / admin / log out).
+// When signed out, it shows a "Log in" button instead.
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoImg from '../assets/logo.png';
+import { useAuth } from '../auth/useAuth';
 import AIbotButton from './AIbotButton';
 import ThemeToggle from './ThemeToggle';
 
 const MiniTopBar = ({ onMenuClick, notifCount = 0 }) => {
   const navigate = useNavigate();
+  const { isAuthenticated, isAdmin, user, profile, signOut } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const closeDropdown = () => setDropdownOpen(false);
+
+  const displayName =
+    [profile?.first_name, profile?.last_name].filter(Boolean).join(' ').trim() ||
+    user?.email ||
+    'Account';
+  const email = user?.email || '';
+  const avatarLetter = (displayName || email || '?').charAt(0).toUpperCase();
 
   const goTo = (path) => {
     closeDropdown();
     navigate(path);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     closeDropdown();
-    localStorage.removeItem('authToken');
-    sessionStorage.clear();
+    await signOut();
     navigate('/login');
   };
 
@@ -47,9 +55,9 @@ const MiniTopBar = ({ onMenuClick, notifCount = 0 }) => {
 
       {/* ── Spacer ── */}
       <div style={{ flex: 1 }} />
-      
 
-      {/* ── Right: bell + avatar ── */}
+
+      {/* ── Right: theme + bell + account ── */}
       <div style={styles.rightGroup}>
 
         {/* Theme toggle */}
@@ -69,51 +77,56 @@ const MiniTopBar = ({ onMenuClick, notifCount = 0 }) => {
           </div>
         </button>
 
-        {/* Avatar */}
-        <div style={styles.avatarWrap}>
-          <button
-            style={styles.avatarCircle}
-            onClick={() => setDropdownOpen(!dropdownOpen)}
-            aria-label="User menu"
-          >
-            <PersonIcon />
-          </button>
+        {/* Account: avatar menu when signed in, else a Log in button */}
+        {isAuthenticated ? (
+          <div style={styles.avatarWrap}>
+            <button
+              style={styles.avatarCircle}
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              aria-label="User menu"
+            >
+              <PersonIcon />
+            </button>
 
-          {/* Click-away */}
-          {dropdownOpen && (
-            <div style={styles.overlay} onClick={closeDropdown} />
-          )}
+            {dropdownOpen && (
+              <div style={styles.overlay} onClick={closeDropdown} />
+            )}
 
-          {/* Dropdown */}
-          {dropdownOpen && (
-            <div style={styles.dropdown}>
-              {/* User info header */}
-              <div style={styles.dropdownTop}>
-                <div style={styles.dropdownAvatar}>A</div>
-                <div>
-                  <div style={styles.dropdownName}>Admin User</div>
-                  <div style={styles.dropdownEmail}>admin@borneotracker.org</div>
+            {dropdownOpen && (
+              <div style={styles.dropdown}>
+                <div style={styles.dropdownTop}>
+                  <div style={styles.dropdownAvatar}>{avatarLetter}</div>
+                  <div>
+                    <div style={styles.dropdownName}>{displayName}</div>
+                    {email && <div style={styles.dropdownEmail}>{email}</div>}
+                  </div>
                 </div>
+                <div style={styles.dropdownDivider} />
+
+                <button style={styles.dropdownItem} onClick={() => goTo('/profile')}>
+                  My Profile
+                </button>
+                {isAdmin && (
+                  <button style={styles.dropdownItem} onClick={() => goTo('/admin/news')}>
+                    News Review (Admin)
+                  </button>
+                )}
+
+                <div style={styles.dropdownDivider} />
+                <button
+                  style={{ ...styles.dropdownItem, color: '#dc2626' }}
+                  onClick={handleLogout}
+                >
+                  Log out
+                </button>
               </div>
-              <div style={styles.dropdownDivider} />
-
-              <button style={styles.dropdownItem} onClick={() => goTo('/profile')}>
-                My Profile
-              </button>
-              <button style={styles.dropdownItem} onClick={() => goTo('/settings')}>
-                Settings
-              </button>
-
-              <div style={styles.dropdownDivider} />
-              <button
-                style={{ ...styles.dropdownItem, color: '#dc2626' }}
-                onClick={handleLogout}
-              >
-                Log out
-              </button>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        ) : (
+          <button style={styles.loginBtn} onClick={() => navigate('/login')}>
+            Log in
+          </button>
+        )}
       </div>
     </div>
   );
@@ -243,6 +256,18 @@ avatarCircle: {
   boxShadow: '0 6px 12px rgba(13,33,24,0.16)',
 },
 
+  loginBtn: {
+    padding:         '8px 20px',
+    borderRadius:    '999px',
+    border:          'none',
+    backgroundColor: '#0d3b2b',
+    color:           '#ffffff',
+    fontSize:        '13.5px',
+    fontWeight:      700,
+    cursor:          'pointer',
+    boxShadow:       '0 6px 12px rgba(13,33,24,0.16)',
+  },
+
   // Click-away invisible overlay
   overlay: {
     position: 'fixed',
@@ -327,19 +352,6 @@ logoCenter: {
   justifyContent: 'center',
   cursor: 'pointer',
   zIndex: 301,
-},
-bellBtn: {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: '58px',
-  height: '58px',
-  borderRadius: '50%',
-  border: 'none',
-  backgroundColor: '#0d3b2b',
-  color: '#ffffff',
-  cursor: 'pointer',
-  boxShadow: '0 6px 12px rgba(13,33,24,0.16)',
 },
 };
 

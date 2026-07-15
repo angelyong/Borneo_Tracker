@@ -1,27 +1,37 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../auth/useAuth';
 import AuthLayout, { AuthCard } from '../../components/AuthLayout';
 import { Button, Field, PasswordInput, TextInput } from '../../components/ui';
 import { COLORS, FONT } from '../../theme';
 
-// There's no backend anywhere in this app yet (see sidebar/MiniTopBar logout,
-// which clears an authToken that was never actually set). Signing in just
-// validates the fields and sets that same token, so logout finally has
-// something real to undo — it does not check credentials against anything.
+// Real Supabase email + password sign-in. On success we return the user to
+// wherever a ProtectedRoute/RequireAdmin bounced them from (location.state.from).
 const LoginPage = () => {
+  const { signIn } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) {
       setError('Enter your email and password to sign in.');
       return;
     }
-    localStorage.setItem('authToken', 'demo-session');
-    navigate('/');
+    setError('');
+    setBusy(true);
+    try {
+      await signIn({ email: email.trim(), password });
+      navigate(location.state?.from || '/', { replace: true });
+    } catch (err) {
+      setError(err.message || 'Sign in failed. Check your email and password.');
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -36,6 +46,7 @@ const LoginPage = () => {
           <Field label="Email" required>
             <TextInput
               type="email"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
@@ -44,6 +55,7 @@ const LoginPage = () => {
 
           <Field label="Password" required>
             <PasswordInput
+              autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter your password"
@@ -52,8 +64,8 @@ const LoginPage = () => {
 
           {error && <p style={styles.error}>{error}</p>}
 
-          <Button type="submit" variant="primary" style={styles.submitBtn}>
-            Sign In
+          <Button type="submit" variant="primary" disabled={busy} style={styles.submitBtn}>
+            {busy ? 'Signing in…' : 'Sign In'}
           </Button>
         </form>
 

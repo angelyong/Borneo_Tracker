@@ -1,35 +1,37 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../auth/useAuth';
 import { Icons } from './ui';
 
 const Sidebar = ({ collapsed = false }) => {
   const navigate = useNavigate();
+  const { isAuthenticated, isAdmin, signOut } = useAuth();
   const [logoutHovered, setLogoutHovered] = useState(false);
 
+  // The admin queue is only shown to admins; everything else is public.
   const menuItems = [
     { name: 'Dashboard',                path: '/'       ,   icon: <Icons.Grid size={20} />     },
     { name: 'Regional Details',         path: '/regions',   icon: <Icons.Table size={20} /> },
     { name: 'ESG Indicators',           path: '/esg',       icon: <Icons.Gauge size={20} /> },
     { name: 'SDG Progress',             path: '/sdg',       icon: <Icons.Chart size={20} /> },
-  
+
     { name: 'News & Insights',          path: '/news',      icon: <Icons.Newspaper size={20} /> },
-    { name: 'News Review (Admin)',      path: '/admin/news', icon: <Icons.Newspaper size={20} /> },
+    ...(isAdmin
+      ? [{ name: 'News Review (Admin)', path: '/admin/news', icon: <Icons.Newspaper size={20} /> }]
+      : []),
     { name: 'Community',                path: '/community', icon: <Icons.Comment size={20} /> },
     { name: 'Generate Report',          path: '/reports',   icon: <Icons.FileArrow size={20} /> },
     { name: 'Data Sources',             path: '/data-sources', icon: <Icons.Frame size={20} /> },
     { name: 'About Borneo Tracker',     path: '/about',     icon: <Icons.Info size={20} />         },
   ];
 
-  const handleLogout = () => {
-    localStorage.removeItem('authToken');
-    sessionStorage.clear();
+  const handleLogout = async () => {
+    await signOut();
     navigate('/login');
   };
 
   return (
     <div style={{ ...styles.sidebar, width: collapsed ? 72 : '100%' }}>
-
-      
 
       {/* ── Nav links ── */}
       <nav style={styles.nav}>
@@ -53,28 +55,35 @@ const Sidebar = ({ collapsed = false }) => {
       {/* ── Bottom section ── */}
       <div style={styles.bottom}>
 
-        
-
         {/* Divider */}
         <div style={styles.divider} />
 
-        {/* Logout button */}
-        <button
-          onClick={handleLogout}
-          onMouseEnter={() => setLogoutHovered(true)}
-          onMouseLeave={() => setLogoutHovered(false)}
-          style={{
-            ...styles.logoutBtn,
-            backgroundColor: logoutHovered ? 'rgba(248,113,113,0.1)' : 'transparent',
-          }}
-        >
-          <span style={styles.logoutIcon}>⎋</span>
-          {!collapsed && 'Log out'}
-        </button>
+        {/* Log out (signed in) / Log in (signed out) */}
+        {isAuthenticated ? (
+          <button
+            onClick={handleLogout}
+            onMouseEnter={() => setLogoutHovered(true)}
+            onMouseLeave={() => setLogoutHovered(false)}
+            style={{
+              ...styles.logoutBtn,
+              backgroundColor: logoutHovered ? 'rgba(248,113,113,0.1)' : 'transparent',
+            }}
+          >
+            <span style={styles.logoutIcon}>⎋</span>
+            {!collapsed && 'Log out'}
+          </button>
+        ) : (
+          <button
+            onClick={() => navigate('/login')}
+            style={{ ...styles.logoutBtn, color: '#c8ddd2' }}
+          >
+            <span style={styles.logoutIcon}>⎋</span>
+            {!collapsed && 'Log in'}
+          </button>
+        )}
 
-       
       </div>
-      
+
     </div>
   );
 };

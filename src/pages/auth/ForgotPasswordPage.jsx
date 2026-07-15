@@ -1,24 +1,36 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../auth/useAuth';
 import AuthLayout, { AuthCard } from '../../components/AuthLayout';
 import { Button, Icons, TextInput } from '../../components/ui';
 import { COLORS, FONT } from '../../theme';
 
-// No email service exists in this app, so there's nothing to actually send.
-// Submitting takes you straight to Reset Password — standing in for "the
-// user clicked the link we would have emailed them."
+// Real Supabase password-reset request. Supabase emails a recovery link that
+// redirects back to /reset-password; we always show the neutral "check your
+// email" screen so the form never reveals whether an account exists.
 const ForgotPasswordPage = () => {
+  const { resetPasswordForEmail } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email.trim()) {
       setError('Enter the email address you signed up with.');
       return;
     }
-    navigate('/reset-password');
+    setError('');
+    setBusy(true);
+    try {
+      await resetPasswordForEmail(email.trim());
+      navigate('/check-email', { replace: true, state: { purpose: 'reset', email: email.trim() } });
+    } catch (err) {
+      setError(err.message || 'Could not send the reset email.');
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -42,6 +54,7 @@ const ForgotPasswordPage = () => {
         <form onSubmit={handleSubmit}>
           <TextInput
             type="email"
+            autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Email address"
@@ -51,8 +64,8 @@ const ForgotPasswordPage = () => {
 
           {error && <p style={styles.error}>{error}</p>}
 
-          <Button type="submit" variant="navy" style={styles.submitBtn}>
-            Submit
+          <Button type="submit" variant="navy" disabled={busy} style={styles.submitBtn}>
+            {busy ? 'Submitting…' : 'Submit'}
           </Button>
         </form>
       </AuthCard>
