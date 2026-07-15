@@ -1,144 +1,64 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  SDG_GOALS,
-  TERRITORIES,
-  extractYear,
-  getCanonicalRows,
-  getRowsForSdg,
-  summarizeRows,
-  useIndicators,
-  useResilience,
-} from '../../data/useIndicators';
-import { getPosts } from '../../services/communityService';
+import { useMemo, useRef, useState } from 'react';
+import { TERRITORIES, useIndicators } from '../../data/useIndicators';
+import { buildProfile } from './reportContent';
 import { generatePdfFromSections } from '../../utils/pdfReport';
 import { Button } from '../../components/ui';
 import { COLORS, FONT, RADII, SHADOWS } from '../../theme';
 import {
-  CommunitySection,
-  HexagonSection,
-  IndicatorTableSection,
+  ReportMasthead,
+  ExecutiveSummarySection,
+  EsgIndicatorSection,
+  SdgCoverageSection,
+  CoverageLimitationsSection,
   MethodologySection,
-  ReportCoverSection,
-  ResilienceSection,
-  SdgSummarySection,
 } from './ReportSections';
 
-const HEXAGON_PILLARS = ['Food', 'Energy', 'Education', 'Shelter', 'Healthcare', 'Entertainment'];
+const ALL_BORNEO = 'All Borneo';
+const TERRITORY_OPTIONS = [...TERRITORIES, ALL_BORNEO];
 
 const DEFAULT_SECTIONS = {
-  resilience: true,
-  hexagon: true,
-  table: true,
+  summary: true,
   sdg: true,
-  community: false,
+  coverage: true,
   methodology: true,
 };
 
 const SECTION_TOGGLES = [
-  { key: 'resilience', label: 'Resilience Index & RAG Status' },
-  { key: 'hexagon', label: 'True Wealth Hexagon Pillar Scores' },
-  { key: 'table', label: 'Canonical Indicator Table' },
-  { key: 'sdg', label: 'SDG Progress Summary' },
-  { key: 'community', label: 'Community Reports' },
-  { key: 'methodology', label: 'Methodology & Provenance Footer' },
+  { key: 'summary', label: 'Executive Summary' },
+  { key: 'sdg', label: 'SDG Coverage' },
+  { key: 'coverage', label: 'Coverage & Limitations' },
+  { key: 'methodology', label: 'Methodology & Sources' },
 ];
 
 const GenerateReportPage = () => {
   const { data, loading, error } = useIndicators();
-  const { data: resilienceData } = useResilience();
 
   const [territory, setTerritory] = useState(TERRITORIES[0]);
-  const [fromYear, setFromYear] = useState(null);
-  const [toYear, setToYear] = useState(null);
   const [sections, setSections] = useState(DEFAULT_SECTIONS);
-  const [communityPosts, setCommunityPosts] = useState([]);
   const [generating, setGenerating] = useState(false);
 
-  const coverRef = useRef(null);
-  const resilienceRef = useRef(null);
-  const hexagonRef = useRef(null);
-  const tableRef = useRef(null);
+  const mastheadRef = useRef(null);
+  const summaryRef = useRef(null);
+  const esgRef = useRef(null);
   const sdgRef = useRef(null);
-  const communityRef = useRef(null);
+  const coverageRef = useRef(null);
   const methodologyRef = useRef(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    getPosts().then((posts) => {
-      if (!cancelled) setCommunityPosts(posts);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const allTerritories = territory === ALL_BORNEO;
 
-  const allTerritoryRows = useMemo(
-    () => (data?.rows ? getCanonicalRows(data.rows, territory) : []),
-    [data, territory]
+  const rows = useMemo(() => {
+    const all = data?.rows || [];
+    return allTerritories ? all : all.filter((row) => row.territory === territory);
+  }, [data, territory, allTerritories]);
+
+  const profile = useMemo(
+    () => buildProfile(rows, { territory, allTerritories }),
+    [rows, territory, allTerritories]
   );
 
-  // Defaults span exactly the years this territory actually has data for, so
-  // nothing is silently hidden the first time a territory is opened.
-  const yearBounds = useMemo(() => {
-    const years = allTerritoryRows.map((row) => extractYear(row.year)).filter(Number.isFinite);
-    const currentYear = new Date().getFullYear();
-    return years.length ? { min: Math.min(...years), max: Math.max(...years) } : { min: currentYear, max: currentYear };
-  }, [allTerritoryRows]);
-
-  // Re-sync the range whenever the applicable bounds change (territory switch,
-  // or data finishing its initial load) — done during render, not an effect,
-  // per React's guidance for resetting state when a dependency changes.
-  const boundsKey = `${territory}:${yearBounds.min}:${yearBounds.max}`;
-  const [appliedBoundsKey, setAppliedBoundsKey] = useState(null);
-  if (boundsKey !== appliedBoundsKey) {
-    setAppliedBoundsKey(boundsKey);
-    setFromYear(yearBounds.min);
-    setToYear(yearBounds.max);
-  }
-
-  const withinRange = (yearValue) => {
-    const year = extractYear(yearValue);
-    // Rows without a parseable year are kept rather than silently dropped.
-    return Number.isFinite(year) ? year >= fromYear && year <= toYear : true;
-  };
-
-  const filteredRows = useMemo(
-    () => allTerritoryRows.filter((row) => withinRange(row.year)).sort((a, b) => a.indicator.localeCompare(b.indicator)),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [allTerritoryRows, fromYear, toYear]
-  );
-
-  const goalSummaries = useMemo(
-    () =>
-      SDG_GOALS.map(({ goal, label }) => {
-        const rows = getRowsForSdg(data?.rows || [], territory, goal).filter((row) => withinRange(row.year));
-        const summary = summarizeRows(rows);
-        return { goal, label, count: summary.count, latestYear: summary.latestYear };
-      }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [data, territory, fromYear, toYear]
-  );
-
-  const communityPostsForTerritory = useMemo(
-    () =>
-      communityPosts
-        .filter((post) => post.territory === territory || post.territory === 'All Borneo')
-        .filter((post) => {
-          const year = new Date(post.createdAt).getFullYear();
-          return Number.isFinite(fromYear) ? year >= fromYear && year <= toYear : true;
-        }),
-    [communityPosts, territory, fromYear, toYear]
-  );
-
-  const sources = useMemo(
-    () => [...new Set(filteredRows.map((row) => row.source).filter(Boolean))].sort(),
-    [filteredRows]
-  );
-
-  const resilienceView = resilienceData?.territories?.[territory] || null;
-
-  const generatedAt = useMemo(
-    () => `${new Date().toLocaleString('en-MY', { dateStyle: 'long', timeStyle: 'short' })} (local time)`,
+  // Generated on first render; a report is a point-in-time snapshot.
+  const generatedShort = useMemo(
+    () => new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }),
     []
   );
 
@@ -148,17 +68,14 @@ const GenerateReportPage = () => {
     setGenerating(true);
     try {
       const orderedSections = [
-        coverRef.current,
-        sections.resilience ? resilienceRef.current : null,
-        sections.hexagon ? hexagonRef.current : null,
-        sections.table ? tableRef.current : null,
+        mastheadRef.current,
+        sections.summary ? summaryRef.current : null,
+        esgRef.current,
         sections.sdg ? sdgRef.current : null,
-        sections.community ? communityRef.current : null,
+        sections.coverage ? coverageRef.current : null,
         sections.methodology ? methodologyRef.current : null,
       ];
-      const filename = `borneo-tracker-report-${territory}-${fromYear}-${toYear}`
-        .toLowerCase()
-        .replace(/\s+/g, '-');
+      const filename = `esg-sdg-profile-${territory}`.toLowerCase().replace(/\s+/g, '-');
       await generatePdfFromSections(orderedSections, `${filename}.pdf`);
     } finally {
       setGenerating(false);
@@ -170,8 +87,9 @@ const GenerateReportPage = () => {
       <header style={styles.header}>
         <h1 style={styles.title}>Generate Report</h1>
         <p style={styles.subtitle}>
-          A citable PDF snapshot of one territory&rsquo;s True Wealth and ESG data &mdash; built for compliance
-          buyers, suppliers, and investors, not just internal dashboards.
+          A citable ESG &amp; SDG data profile for one territory &mdash; every indicator we&rsquo;ve gathered,
+          explained in plain language and downloadable as a PDF. Built for compliance buyers, suppliers and
+          investors, not just internal dashboards.
         </p>
       </header>
 
@@ -180,7 +98,7 @@ const GenerateReportPage = () => {
           <label style={styles.controlLabel}>
             1. Select Territory
             <select value={territory} onChange={(e) => setTerritory(e.target.value)} style={styles.select}>
-              {TERRITORIES.map((t) => (
+              {TERRITORY_OPTIONS.map((t) => (
                 <option key={t} value={t}>
                   {t}
                 </option>
@@ -188,35 +106,16 @@ const GenerateReportPage = () => {
             </select>
           </label>
 
-          <label style={styles.controlLabel}>
-            2. Select Date Range
-            <div style={styles.rangeRow}>
-              <input
-                type="number"
-                value={fromYear ?? ''}
-                onChange={(e) => setFromYear(Number(e.target.value))}
-                style={styles.yearInput}
-              />
-              <span style={{ color: COLORS.muted }}>to</span>
-              <input
-                type="number"
-                value={toYear ?? ''}
-                onChange={(e) => setToYear(Number(e.target.value))}
-                style={styles.yearInput}
-              />
+          <div style={styles.controlLabel}>
+            2. Include Sections
+            <div style={styles.checkboxGrid}>
+              {SECTION_TOGGLES.map(({ key, label }) => (
+                <label key={key} style={styles.checkboxRow}>
+                  <input type="checkbox" checked={sections[key]} onChange={() => toggleSection(key)} />
+                  {label}
+                </label>
+              ))}
             </div>
-          </label>
-        </div>
-
-        <div style={styles.controlLabel}>
-          3. Include Sections
-          <div style={styles.checkboxGrid}>
-            {SECTION_TOGGLES.map(({ key, label }) => (
-              <label key={key} style={styles.checkboxRow}>
-                <input type="checkbox" checked={sections[key]} onChange={() => toggleSection(key)} />
-                {label}
-              </label>
-            ))}
           </div>
         </div>
 
@@ -224,7 +123,7 @@ const GenerateReportPage = () => {
           <Button
             variant="primary"
             onClick={handleGenerate}
-            disabled={generating || loading || !!error}
+            disabled={generating || loading || !!error || !profile.pillars.length}
             style={{ minWidth: 220 }}
           >
             {generating ? 'Generating PDF…' : 'Generate & Download PDF'}
@@ -234,49 +133,46 @@ const GenerateReportPage = () => {
 
       {loading && <div style={styles.stateCard}>Loading real indicator data…</div>}
       {error && <div style={{ ...styles.stateCard, color: COLORS.red }}>{error}</div>}
+      {!loading && !error && !profile.pillars.length && (
+        <div style={styles.stateCard}>No indicators are available for this selection.</div>
+      )}
 
-      {!loading && !error && (
+      {!loading && !error && profile.pillars.length > 0 && (
         <div style={styles.previewWrap}>
-          <div ref={coverRef}>
-            <ReportCoverSection territory={territory} fromYear={fromYear} toYear={toYear} generatedAt={generatedAt} />
+          <div ref={mastheadRef}>
+            <ReportMasthead
+              territory={territory}
+              allTerritories={allTerritories}
+              glance={profile.glance}
+              generatedShort={generatedShort}
+            />
           </div>
 
-          {sections.resilience && (
-            <div ref={resilienceRef} style={styles.sectionDivider}>
-              <ResilienceSection resilienceView={resilienceView} />
+          {sections.summary && (
+            <div ref={summaryRef}>
+              <ExecutiveSummarySection summaryText={profile.summaryText} takeaways={profile.takeaways} />
             </div>
           )}
 
-          {sections.hexagon && (
-            <div ref={hexagonRef} style={styles.sectionDivider}>
-              <HexagonSection
-                pillarScores={resilienceView?.pillarScores || {}}
-                unscoredPillars={resilienceView?.unscoredPillars || HEXAGON_PILLARS}
-              />
-            </div>
-          )}
-
-          {sections.table && (
-            <div ref={tableRef} style={styles.sectionDivider}>
-              <IndicatorTableSection rows={filteredRows} />
-            </div>
-          )}
+          <div ref={esgRef}>
+            <EsgIndicatorSection pillars={profile.pillars} multiTerritory={profile.multiTerritory} />
+          </div>
 
           {sections.sdg && (
-            <div ref={sdgRef} style={styles.sectionDivider}>
-              <SdgSummarySection goalSummaries={goalSummaries} />
+            <div ref={sdgRef}>
+              <SdgCoverageSection sdg={profile.sdg} />
             </div>
           )}
 
-          {sections.community && (
-            <div ref={communityRef} style={styles.sectionDivider}>
-              <CommunitySection posts={communityPostsForTerritory} />
+          {sections.coverage && (
+            <div ref={coverageRef}>
+              <CoverageLimitationsSection coverage={profile.coverage} />
             </div>
           )}
 
           {sections.methodology && (
-            <div ref={methodologyRef} style={styles.sectionDivider}>
-              <MethodologySection generatedAt={generatedAt} sources={sources} method={resilienceData?.method || ''} />
+            <div ref={methodologyRef}>
+              <MethodologySection sources={profile.sources} />
             </div>
           )}
         </div>
@@ -289,7 +185,7 @@ const styles = {
   page: { padding: 28, maxWidth: 900, margin: '0 auto', fontFamily: FONT },
   header: { marginBottom: 20 },
   title: { fontSize: 26, fontWeight: 800, color: COLORS.ink, margin: 0 },
-  subtitle: { fontSize: 14, color: COLORS.muted, margin: '6px 0 0', maxWidth: 620, lineHeight: 1.5 },
+  subtitle: { fontSize: 14, color: COLORS.muted, margin: '6px 0 0', maxWidth: 640, lineHeight: 1.5 },
 
   controlsCard: {
     background: COLORS.card,
@@ -301,11 +197,11 @@ const styles = {
     flexDirection: 'column',
     gap: 18,
   },
-  controlsRow: { display: 'flex', gap: 32, flexWrap: 'wrap' },
+  controlsRow: { display: 'flex', gap: 40, flexWrap: 'wrap', alignItems: 'flex-start' },
   controlLabel: {
     display: 'flex',
     flexDirection: 'column',
-    gap: 8,
+    gap: 10,
     fontSize: 13,
     fontWeight: 700,
     color: COLORS.ink,
@@ -352,14 +248,13 @@ const styles = {
   // Deliberately literal white — this represents the printed PDF page itself,
   // not app UI, so it stays the same in both light and dark mode.
   previewWrap: {
-    maxWidth: 794,
+    maxWidth: 820,
     margin: '0 auto',
     background: '#fff',
     boxShadow: SHADOWS.panel,
     borderRadius: RADII.sm,
     overflow: 'hidden',
   },
-  sectionDivider: { borderTop: `1px solid ${COLORS.border}` },
 };
 
 export default GenerateReportPage;

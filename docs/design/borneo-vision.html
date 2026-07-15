@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Borneo Tracker — True Wealth</title>
+<meta name="description" content="A vision for Borneo Tracker, built around the ABCDE Framework and the True Wealth Hexagon.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='88'%3E%F0%9F%8C%BF%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --paper:    #F4F7F0;
+    --surface:  #FCFDFA;
+    --surface-2:#F0F4EB;
+    --ink:      #16241C;
+    --ink-soft: #46564C;
+    --ink-faint:#7A887E;
+    --line:     #E1E7DA;
+    --line-soft:#EBEFE5;
+    --canopy:   #1E7A54;
+    --canopy-deep:#134E37;
+    --moss:     #5F9C81;
+    --good:     #2E7D5B;
+    --moderate: #B07E2C;
+    --low:      #B0614A;
+    --glow:     rgba(30,122,84,0.14);
+    --shadow:   0 18px 44px -24px rgba(19,49,34,0.45);
+    --shadow-sm:0 8px 22px -16px rgba(19,49,34,0.4);
+
+    --serif: 'Iowan Old Style','Palatino Linotype','Book Antiqua',Palatino,Georgia,'Times New Roman',serif;
+    --sans: system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --mono: 'Cascadia Code','SF Mono','Consolas','Liberation Mono',monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper:    #0C1611;
+      --surface:  #11201A;
+      --surface-2:#152720;
+      --ink:      #E7EFE6;
+      --ink-soft: #A6B7AB;
+      --ink-faint:#6C7E72;
+      --line:     #203029;
+      --line-soft:#1A2721;
+      --canopy:   #52B487;
+      --canopy-deep:#8FD3B3;
+      --moss:     #7CB89D;
+      --good:     #56C08C;
+      --moderate: #D3A65A;
+      --low:      #D48468;
+      --glow:     rgba(82,180,135,0.16);
+      --shadow:   0 20px 50px -26px rgba(0,0,0,0.7);
+      --shadow-sm:0 10px 26px -18px rgba(0,0,0,0.6);
+    }
+  }
+  :root[data-theme="light"] {
+    --paper:#F4F7F0; --surface:#FCFDFA; --surface-2:#F0F4EB; --ink:#16241C;
+    --ink-soft:#46564C; --ink-faint:#7A887E; --line:#E1E7DA; --line-soft:#EBEFE5;
+    --canopy:#1E7A54; --canopy-deep:#134E37; --moss:#5F9C81;
+    --good:#2E7D5B; --moderate:#B07E2C; --low:#B0614A; --glow:rgba(30,122,84,0.14);
+    --shadow:0 18px 44px -24px rgba(19,49,34,0.45); --shadow-sm:0 8px 22px -16px rgba(19,49,34,0.4);
+  }
+  :root[data-theme="dark"] {
+    --paper:#0C1611; --surface:#11201A; --surface-2:#152720; --ink:#E7EFE6;
+    --ink-soft:#A6B7AB; --ink-faint:#6C7E72; --line:#203029; --line-soft:#1A2721;
+    --canopy:#52B487; --canopy-deep:#8FD3B3; --moss:#7CB89D;
+    --good:#56C08C; --moderate:#D3A65A; --low:#D48468; --glow:rgba(82,180,135,0.16);
+    --shadow:0 20px 50px -26px rgba(0,0,0,0.7); --shadow-sm:0 10px 26px -18px rgba(0,0,0,0.6);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  ::selection { background: var(--glow); }
+
+  .wrap { width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 28px; }
+  .measure { max-width: 62ch; }
+
+  section { padding: clamp(72px, 12vh, 132px) 0; border-top: 1px solid var(--line-soft); }
+  section:first-of-type { border-top: none; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--canopy);
+    margin: 0 0 18px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .eyebrow::before {
+    content: ""; width: 26px; height: 1px; background: var(--canopy); opacity: 0.6;
+  }
+
+  h1, h2, h3 { font-family: var(--serif); font-weight: 500; text-wrap: balance; letter-spacing: -0.01em; }
+  h2 { font-size: clamp(1.9rem, 3.6vw, 2.7rem); line-height: 1.12; margin: 0 0 22px; }
+  h3 { font-size: 1.24rem; line-height: 1.25; margin: 0; }
+  p { margin: 0 0 1.05em; color: var(--ink-soft); }
+  p.lede { font-size: clamp(1.12rem, 1.7vw, 1.32rem); line-height: 1.6; color: var(--ink); }
+  strong { color: var(--ink); font-weight: 600; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* ---------- Hero ---------- */
+  .hero { position: relative; min-height: 92vh; display: flex; align-items: center; overflow: hidden; border-top: none; }
+  .hero .wrap { position: relative; z-index: 2; }
+  .hero-island {
+    position: absolute; inset: 0; z-index: 1; display: flex; align-items: center; justify-content: flex-end;
+    pointer-events: none;
+  }
+  .hero-island svg { width: min(62vw, 680px); height: auto; opacity: 0.9; transform: translateX(8%); }
+  .hero-brand {
+    font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.34em; text-transform: uppercase;
+    color: var(--ink-faint); margin-bottom: 30px;
+  }
+  .hero h1 { font-size: clamp(2.6rem, 6.6vw, 5rem); line-height: 1.02; margin: 0 0 30px; max-width: 15ch; }
+  .hero h1 em { font-style: italic; color: var(--canopy); }
+  .hero p { max-width: 54ch; font-size: clamp(1.08rem, 1.7vw, 1.32rem); color: var(--ink-soft); }
+  .scrollcue { margin-top: 54px; font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--ink-faint); display: flex; align-items: center; gap: 10px; }
+  .scrollcue span.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--canopy);
+    animation: pulse 2.6s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:.35; transform:scale(.8);} 50%{opacity:1; transform:scale(1);} }
+
+  /* ---------- Shift (two columns) ---------- */
+  .shift-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 40px; }
+  .shift-col {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 30px 30px 26px;
+    box-shadow: var(--shadow-sm);
+  }
+  .shift-col h3 { font-family: var(--sans); font-weight: 600; font-size: 0.78rem; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--ink-faint); margin-bottom: 18px; }
+  .shift-col.start h3 { color: var(--canopy); }
+  .shift-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+  .shift-list li { display: flex; gap: 13px; align-items: baseline; font-size: 1.02rem; color: var(--ink); line-height: 1.45; }
+  .shift-list .tick { flex-shrink: 0; width: 8px; height: 8px; border-radius: 2px; margin-top: 7px; }
+  .shift-col.stop .tick { background: var(--line); border: 1px solid var(--ink-faint); }
+  .shift-col.stop li { color: var(--ink-faint); text-decoration: line-through; text-decoration-color: var(--line); text-decoration-thickness: 1px; }
+  .shift-col.start .tick { background: var(--canopy); }
+  .shift-note { font-size: 0.9rem; color: var(--ink-faint); margin: 20px 0 0; }
+
+  /* ---------- Hexagon ---------- */
+  .hex-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr); gap: 48px; align-items: center; margin-top: 30px; }
+  .hex-stage { display: flex; flex-direction: column; align-items: center; }
+  #radar { width: 100%; max-width: 440px; height: auto; }
+  .hex-caption { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.06em; color: var(--ink-faint);
+    margin-top: 6px; text-align: center; }
+  .pillar-legend { display: flex; flex-direction: column; gap: 2px; }
+  .pillar-row { display: flex; align-items: flex-start; gap: 16px; padding: 15px 4px; border-bottom: 1px solid var(--line-soft); }
+  .pillar-row:last-child { border-bottom: none; }
+  .pillar-dot { flex-shrink: 0; width: 11px; height: 11px; border-radius: 50%; margin-top: 6px; }
+  .pillar-dot.on { background: var(--canopy); box-shadow: 0 0 0 4px var(--glow); }
+  .pillar-dot.off { background: transparent; border: 1.5px dashed var(--ink-faint); }
+  .pillar-name { font-weight: 600; color: var(--ink); font-size: 1rem; }
+  .pillar-desc { font-size: 0.86rem; color: var(--ink-faint); margin-top: 1px; }
+  .pillar-score { margin-left: auto; font-family: var(--mono); font-size: 0.92rem; color: var(--canopy); font-variant-numeric: tabular-nums; white-space: nowrap; padding-top: 2px; }
+  .pillar-score.off { color: var(--ink-faint); }
+
+  /* ---------- Resilience ---------- */
+  .res-hero { display: flex; align-items: baseline; gap: 22px; flex-wrap: wrap; margin: 8px 0 6px; }
+  .res-big { font-family: var(--serif); font-size: clamp(4rem, 11vw, 7.5rem); line-height: 0.9; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .res-scale { font-family: var(--mono); font-size: 0.82rem; letter-spacing: 0.1em; color: var(--ink-faint); text-transform: uppercase; }
+  .res-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-top: 44px; }
+  .terr-card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 22px 20px 20px;
+    box-shadow: var(--shadow-sm); display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .terr-name { font-family: var(--serif); font-size: 1.2rem; color: var(--ink); margin-bottom: 12px; }
+  .terr-gauge { width: 132px; height: 78px; }
+  .terr-index { font-family: var(--mono); font-size: 1.5rem; font-weight: 600; font-variant-numeric: tabular-nums; margin-top: -6px; }
+  .terr-meta { font-size: 0.78rem; color: var(--ink-faint); margin-top: 8px; line-height: 1.45; }
+  .chip { display: inline-block; font-family: var(--mono); font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 3px 9px; border-radius: 999px; margin-top: 10px; border: 1px solid var(--line); }
+  .chip.full { color: var(--good); border-color: color-mix(in srgb, var(--good) 40%, transparent); }
+  .chip.partial { color: var(--moderate); border-color: color-mix(in srgb, var(--moderate) 40%, transparent); }
+
+  /* ---------- ABCDE ---------- */
+  .abcde-intro { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,0.8fr); gap: 40px; align-items: end; }
+  .abcde-list { margin-top: 46px; display: flex; flex-direction: column; }
+  .abcde-row { display: grid; grid-template-columns: 74px 1fr auto; gap: 26px; align-items: center;
+    padding: 26px 0; border-top: 1px solid var(--line); }
+  .abcde-row:last-child { border-bottom: 1px solid var(--line); }
+  .abcde-letter { font-family: var(--serif); font-size: 3.2rem; line-height: 1; color: var(--canopy); }
+  .abcde-row.dim .abcde-letter { color: var(--ink-faint); }
+  .abcde-body h3 { font-family: var(--sans); font-weight: 600; font-size: 1.06rem; margin-bottom: 5px; }
+  .abcde-body p { font-size: 0.96rem; margin: 0; max-width: 60ch; }
+  .status { justify-self: end; text-align: right; white-space: nowrap; }
+  .status .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; vertical-align: middle; }
+  .status .label { font-family: var(--mono); font-size: 0.74rem; letter-spacing: 0.06em; text-transform: uppercase; vertical-align: middle; }
+  .status.live .dot { background: var(--good); box-shadow: 0 0 0 4px color-mix(in srgb, var(--good) 22%, transparent); }
+  .status.live .label { color: var(--good); }
+  .status.emerging .dot { background: var(--moderate); }
+  .status.emerging .label { color: var(--moderate); }
+  .status.planned .dot { background: transparent; border: 1.5px solid var(--ink-faint); }
+  .status.planned .label { color: var(--ink-faint); }
+  .abcde-foot { font-size: 0.92rem; color: var(--ink-faint); margin-top: 26px; }
+
+  /* ---------- Why Borneo ---------- */
+  .why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 40px; }
+  .why-card { background: var(--surface); border: 1px solid var(--line); border-radius: 18px; padding: 28px 26px; box-shadow: var(--shadow-sm); }
+  .why-card .k { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--canopy); margin-bottom: 14px; }
+  .why-card h3 { font-size: 1.16rem; margin-bottom: 10px; }
+  .why-card p { font-size: 0.96rem; margin: 0; }
+
+  /* ---------- Promise ---------- */
+  .promise { background: var(--surface-2); border-radius: 24px; padding: clamp(36px, 6vw, 64px); border: 1px solid var(--line); }
+  .promise h2 { margin-bottom: 18px; }
+  .promise-list { list-style: none; margin: 26px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3,1fr); gap: 22px; }
+  .promise-list li { font-size: 0.96rem; color: var(--ink-soft); padding-top: 16px; border-top: 2px solid var(--canopy); }
+  .promise-list li strong { display: block; font-family: var(--serif); font-weight: 500; font-size: 1.1rem; color: var(--ink); margin-bottom: 6px; }
+
+  /* ---------- Close ---------- */
+  .close { text-align: center; }
+  .close h2 { font-size: clamp(2rem, 5vw, 3.4rem); max-width: 20ch; margin: 0 auto 24px; }
+  .close p { max-width: 46ch; margin: 0 auto 34px; }
+  .close .cta { display: inline-flex; align-items: center; gap: 12px; font-family: var(--mono); font-size: 0.82rem;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--paper); background: var(--canopy);
+    padding: 15px 28px; border-radius: 999px; text-decoration: none; box-shadow: var(--shadow); }
+
+  footer { border-top: 1px solid var(--line); padding: 46px 0 70px; }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 30px 60px; justify-content: space-between; }
+  footer p { font-size: 0.8rem; color: var(--ink-faint); max-width: 52ch; margin: 0; line-height: 1.6; }
+  footer .foot-brand { font-family: var(--serif); font-size: 1.05rem; color: var(--ink); }
+
+  /* reveal */
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity 0.8s ease, transform 0.8s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+
+  @media (max-width: 860px) {
+    .shift-grid, .hex-layout, .abcde-intro, .why-grid, .promise-list { grid-template-columns: 1fr; }
+    .res-cards { grid-template-columns: repeat(2, 1fr); }
+    .hero-island svg { opacity: 0.5; }
+    .abcde-row { grid-template-columns: 52px 1fr; grid-template-areas: "letter body" "status status"; row-gap: 12px; }
+    .abcde-letter { font-size: 2.5rem; }
+    .status { justify-self: start; grid-area: status; text-align: left; }
+  }
+  @media (max-width: 520px) {
+    .res-cards { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { transition: none; opacity: 1; transform: none; }
+    .scrollcue span.dot { animation: none; }
+    #radar .draw { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<section class="hero" id="top">
+  <div class="hero-island" aria-hidden="true">
+    <svg viewBox="0 0 600 600" fill="none">
+      <path d="M300 92c46-14 96-6 132 22 30 23 40 60 66 86 24 24 58 34 74 66 15 30 6 66-6 98-10 27-30 48-40 75-11 30-8 66-31 90-25 26-66 26-101 33-38 8-72 30-110 26-40-4-72-33-104-58-27-21-56-40-70-72-13-30-6-66 0-98 5-30 8-62 25-88 16-25 46-36 66-58 22-24 32-58 60-78 12-9 26-14 40-18l1 1z"
+        fill="var(--canopy)" opacity="0.06"/>
+      <path d="M320 150c40-8 82 2 110 30 26 26 30 66 54 94 20 24 52 32 62 62 9 28-2 58-14 84-12 26-32 44-42 71-11 30-14 62-38 82-26 22-64 18-98 22-36 4-70 20-104 10-34-10-58-40-82-66-22-24-46-48-52-80-6-30 6-60 16-88 10-28 12-58 30-82 18-24 48-32 70-52 20-18 30-48 56-60 10-5 22-6 32-9z"
+        stroke="var(--canopy)" stroke-width="1" opacity="0.12"/>
+    </svg>
+  </div>
+  <div class="wrap">
+    <div class="hero-brand reveal">Borneo Tracker</div>
+    <h1 class="reveal">A civilisation isn't measured by its <em>GDP.</em></h1>
+    <p class="reveal">It's measured by the strength of the few things that actually keep people alive — food, energy, education, shelter, healthcare, and the life between them. This is an interface for that kind of wealth, across the island of Borneo.</p>
+    <div class="scrollcue reveal"><span class="dot"></span> Scroll to see how</div>
+  </div>
+</section>
+
+<!-- ============ THE SHIFT ============ -->
+<section>
+  <div class="wrap">
+    <p class="eyebrow reveal">The idea</p>
+    <h2 class="reveal measure">From paper wealth to true wealth</h2>
+    <p class="lede reveal measure">Most of what we call “wealth” is a number on a screen — abstract, volatile, and easily inflated away. True wealth is physical. It is the water, the energy, the harvest, the classroom. Borneo Tracker stops counting the mirage and starts measuring the real.</p>
+    <div class="shift-grid">
+      <div class="shift-col stop reveal">
+        <h3>What we stop counting</h3>
+        <ul class="shift-list">
+          <li><span class="tick"></span> Fiat currency balances</li>
+          <li><span class="tick"></span> Volatile stock portfolios</li>
+          <li><span class="tick"></span> Quarterly GDP as a headline</li>
+          <li><span class="tick"></span> Growth that leaves the ground poorer</li>
+        </ul>
+      </div>
+      <div class="shift-col start reveal">
+        <h3>What we start measuring</h3>
+        <ul class="shift-list">
+          <li><span class="tick"></span> Clean water reaching homes</li>
+          <li><span class="tick"></span> Energy that actually arrives</li>
+          <li><span class="tick"></span> Children who stay in school</li>
+          <li><span class="tick"></span> Forests, biomass, living systems intact</li>
+        </ul>
+      </div>
+    </div>
+    <p class="shift-note reveal">The yardstick changes — and everything downstream changes with it.</p>
+  </div>
+</section>
+
+<!-- ============ THE HEXAGON ============ -->
+<section>
+  <div class="wrap">
+    <p class="eyebrow reveal">The instrument</p>
+    <h2 class="reveal measure">The True Wealth Hexagon</h2>
+    <p class="lede reveal measure">Six pillars, one shape. Each is treated not as a commodity to extract, but as a system to keep strong. The fuller the hexagon, the more resilient the place.</p>
+    <div class="hex-layout">
+      <div class="hex-stage reveal">
+        <svg id="radar" viewBox="0 0 480 400" role="img" aria-label="Radar chart of the six True Wealth pillars for Borneo. Energy, Education and Healthcare are measured; Food, Shelter and Entertainment are not yet measured."></svg>
+        <div class="hex-caption">Borneo today · mean of measured territories</div>
+      </div>
+      <div class="pillar-legend reveal" id="pillar-legend"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RESILIENCE INDEX ============ -->
+<section>
+  <div class="wrap">
+    <p class="eyebrow reveal">The measure</p>
+    <h2 class="reveal measure">One number for asset health</h2>
+    <p class="lede reveal measure">The pillars roll up into a single Resilience Index, 0–100 — the number that stands in for “how are we really doing,” where a stock ticker used to be.</p>
+    <div class="res-hero reveal">
+      <div class="res-big num" id="borneo-index">75.8</div>
+      <div>
+        <div class="res-scale">Borneo Resilience Index</div>
+        <div class="res-scale" style="color:var(--ink-faint);text-transform:none;letter-spacing:0;font-size:0.86rem;margin-top:4px;">Averaged across four territories · 3 of 6 pillars measured so far</div>
+      </div>
+    </div>
+    <div class="res-cards" id="res-cards"></div>
+  </div>
+</section>
+
+<!-- ============ ABCDE ENGINE ============ -->
+<section>
+  <div class="wrap">
+    <div class="abcde-intro">
+      <div>
+        <p class="eyebrow reveal">The engine</p>
+        <h2 class="reveal">How it works — the ABCDE stack</h2>
+      </div>
+      <p class="reveal" style="margin-bottom:6px;">Five layers turn a living island into a measure you can trust — and, one day, act on. We ship a layer only when it's honest. Here's exactly where each one stands today.</p>
+    </div>
+    <div class="abcde-list" id="abcde-list"></div>
+    <p class="abcde-foot reveal">Today the engine runs on <strong>D</strong> and <strong>E</strong>. <strong>A</strong> and <strong>C</strong> are emerging. <strong>B</strong> — self-sovereign, community-owned wealth — is the horizon we're building toward, not a claim we make yet.</p>
+  </div>
+</section>
+
+<!-- ============ WHY BORNEO ============ -->
+<section>
+  <div class="wrap">
+    <p class="eyebrow reveal">The place</p>
+    <h2 class="reveal measure">Why Borneo</h2>
+    <p class="lede reveal measure">The old financial hubs have paper capital but little physical wealth left. Borneo has the opposite — and a rare chance to build the new model first.</p>
+    <div class="why-grid">
+      <div class="why-card reveal">
+        <div class="k">Thermodynamic reality</div>
+        <h3>Real wealth, still intact</h3>
+        <p>Abundant clean water, dense biomass, uncompromised ecosystems, year-round sun. The physical basis of true wealth that legacy hubs traded away.</p>
+      </div>
+      <div class="why-card reveal">
+        <div class="k">Tri-sovereign</div>
+        <h3>Three flags, one island</h3>
+        <p>Malaysia, Indonesia and Brunei — Sabah, Sarawak, Kalimantan and Brunei — share one landmass. Not a complication, but a testbed for new models of governance and value.</p>
+      </div>
+      <div class="why-card reveal">
+        <div class="k">Leapfrog</div>
+        <h3>Skip the old path</h3>
+        <p>No need to repeat the extractive route to development. Borneo can move straight to measuring — and protecting — what really matters.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ THE PROMISE ============ -->
+<section>
+  <div class="wrap">
+    <div class="promise reveal">
+      <p class="eyebrow">The promise about the numbers</p>
+      <h2 class="measure">Honesty is the whole point</h2>
+      <p class="measure">A resilience number is only worth trusting if you can see where it came from. So we hold a hard line: we show what we can verify, and we let the gaps stay visible.</p>
+      <ul class="promise-list">
+        <li><strong>Never imputed</strong>An unmeasured pillar stays blank. We never fill a hole with a guess to make the hexagon look full.</li>
+        <li><strong>Provenance on every figure</strong>Each number carries its source, its year, and a confidence badge — official, modelled, or manual.</li>
+        <li><strong>Gaps in plain sight</strong>Half the hexagon is dark today. That's not hidden — it's the map of the work ahead.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CLOSE ============ -->
+<section class="close">
+  <div class="wrap">
+    <p class="eyebrow reveal" style="justify-content:center;">The invitation</p>
+    <h2 class="reveal">The hexagon is only half-lit. Help us measure the rest.</h2>
+    <p class="reveal">Borneo Tracker is an open instrument for the true wealth of an island. If that matters to you — as a community, a researcher, a partner — there's a place for you in it.</p>
+    <a class="cta reveal" href="#top">Follow the build →</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>
+      <div class="foot-brand">Borneo Tracker</div>
+      <p style="margin-top:8px;">Concept presentation of the platform's direction, built on the ABCDE Framework &amp; True Wealth Hexagon (Koh How Tze, BSYS Solution).</p>
+    </div>
+    <p>The figures shown are real, drawn from the current Borneo Tracker data pipeline (2026): Sabah 68.8 · Sarawak 72.2 · Brunei 93.0 · Kalimantan 69.2. Only Energy, Education and Healthcare are scored today; Food, Shelter and Entertainment await verified sources. A vision mock — not the live product.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- Data (real, from resilience.json) ----------
+  var PILLARS = [
+    { key: "Food",          score: null, desc: "Supply chains, food security" },
+    { key: "Energy",        score: 93,   desc: "Access, microgrids, transition" },
+    { key: "Education",     score: 71,   desc: "Literacy, years of schooling" },
+    { key: "Shelter",       score: null, desc: "Housing, sanitation, net-zero" },
+    { key: "Healthcare",    score: 75,   desc: "Clean water, life expectancy" },
+    { key: "Entertainment", score: null, desc: "Culture, connection, creators" }
+  ];
+
+  var TERRITORIES = [
+    { name: "Sabah",      index: 68.8, measured: 1, weakest: "Healthcare" },
+    { name: "Sarawak",    index: 72.2, measured: 1, weakest: "Healthcare" },
+    { name: "Brunei",     index: 93.0, measured: 3, weakest: "Healthcare" },
+    { name: "Kalimantan", index: 69.2, measured: 3, weakest: "Education" }
+  ];
+
+  var ABCDE = [
+    { letter: "A", name: "Artificial Intelligence", role: "Predicts need, drafts data, optimises yields and microgrids in real time.", status: "emerging", label: "Emerging" },
+    { letter: "B", name: "Blockchain", role: "Trust without institutions. Tokenises real-world assets so wealth — and its data — stays sovereign to the community.", status: "planned", label: "On the horizon" },
+    { letter: "C", name: "Connectivity", role: "A living nervous system of sensors and feeds, so the island is seen in motion, not in snapshots.", status: "emerging", label: "Emerging" },
+    { letter: "D", name: "Data", role: "The measure itself — descriptive to prescriptive. Owned by the place it describes, not extracted from it.", status: "live", label: "Live today" },
+    { letter: "E", name: "Ethics", role: "The compass. Provenance, confidence and governance written into the system — never bolted on after.", status: "live", label: "Live today" }
+  ];
+
+  var css = getComputedStyle(document.documentElement);
+  function v(name) { return css.getPropertyValue(name).trim(); }
+  var SVGNS = "http://www.w3.org/2000/svg";
+  function el(tag, attrs) {
+    var e = document.createElementNS(SVGNS, tag);
+    for (var k in attrs) { if (attrs.hasOwnProperty(k)) e.setAttribute(k, attrs[k]); }
+    return e;
+  }
+  var reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ---------- Radar ----------
+  (function radar() {
+    var svg = document.getElementById("radar");
+    if (!svg) return;
+    var cx = 240, cy = 200, R = 128;
+    var n = PILLARS.length;
+    function ang(i) { return -Math.PI / 2 + i * (2 * Math.PI / n); }
+    function pt(i, frac) { var a = ang(i); return [cx + R * frac * Math.cos(a), cy + R * frac * Math.sin(a)]; }
+
+    var colInk = v("--ink"), colFaint = v("--ink-faint"), colLine = v("--line"),
+        colCanopy = v("--canopy");
+
+    // grid rings
+    [0.25, 0.5, 0.75, 1].forEach(function (frac) {
+      var pts = [];
+      for (var i = 0; i < n; i++) { var p = pt(i, frac); pts.push(p[0] + "," + p[1]); }
+      svg.appendChild(el("polygon", { points: pts.join(" "), fill: "none", stroke: colLine, "stroke-width": frac === 1 ? 1.4 : 0.8 }));
+    });
+
+    // axes
+    for (var i = 0; i < n; i++) {
+      var rim = pt(i, 1);
+      var measured = PILLARS[i].score != null;
+      svg.appendChild(el("line", {
+        x1: cx, y1: cy, x2: rim[0], y2: rim[1],
+        stroke: measured ? colCanopy : colFaint,
+        "stroke-width": measured ? 1.1 : 1,
+        "stroke-opacity": measured ? 0.5 : 0.55,
+        "stroke-dasharray": measured ? "none" : "2 5"
+      }));
+    }
+
+    // measured polygon
+    var measuredPts = [];
+    for (var j = 0; j < n; j++) {
+      if (PILLARS[j].score != null) { var mp = pt(j, PILLARS[j].score / 100); measuredPts.push(mp[0] + "," + mp[1]); }
+    }
+    var poly = el("polygon", {
+      points: measuredPts.join(" "),
+      fill: colCanopy, "fill-opacity": "0.16",
+      stroke: colCanopy, "stroke-width": 2, "stroke-linejoin": "round"
+    });
+    poly.setAttribute("class", "draw");
+    svg.appendChild(poly);
+
+    // nodes + labels
+    for (var k = 0; k < n; k++) {
+      var measured2 = PILLARS[k].score != null;
+      var lp = pt(k, 1.24);
+      var a = ang(k);
+      var anchor = Math.abs(Math.cos(a)) < 0.3 ? "middle" : (Math.cos(a) > 0 ? "start" : "end");
+
+      if (measured2) {
+        var node = pt(k, PILLARS[k].score / 100);
+        svg.appendChild(el("circle", { cx: node[0], cy: node[1], r: 6, fill: colCanopy, stroke: v("--surface"), "stroke-width": 2 }));
+        svg.appendChild(el("circle", { cx: node[0], cy: node[1], r: 11, fill: "none", stroke: colCanopy, "stroke-opacity": 0.25, "stroke-width": 6 }));
+      } else {
+        var rimN = pt(k, 1);
+        svg.appendChild(el("circle", { cx: rimN[0], cy: rimN[1], r: 4.5, fill: "none", stroke: colFaint, "stroke-width": 1.3, "stroke-dasharray": "2 2" }));
+      }
+
+      var name = el("text", { x: lp[0], y: lp[1] - (measured2 ? 4 : 0), "text-anchor": anchor,
+        "font-family": v("--sans"), "font-size": 13, "font-weight": 600, fill: measured2 ? colInk : colFaint });
+      name.textContent = PILLARS[k].key;
+      svg.appendChild(name);
+
+      if (measured2) {
+        var sc = el("text", { x: lp[0], y: lp[1] + 14, "text-anchor": anchor,
+          "font-family": v("--mono"), "font-size": 12, fill: colCanopy });
+        sc.textContent = PILLARS[k].score;
+        svg.appendChild(sc);
+      } else {
+        var na = el("text", { x: lp[0], y: lp[1] + 14, "text-anchor": anchor,
+          "font-family": v("--mono"), "font-size": 10, fill: colFaint, "letter-spacing": "0.04em" });
+        na.textContent = "not yet";
+        svg.appendChild(na);
+      }
+    }
+
+    if (!reduce) {
+      poly.style.transformOrigin = cx + "px " + cy + "px";
+      poly.animate([{ transform: "scale(0.2)", opacity: 0 }, { transform: "scale(1)", opacity: 1 }],
+        { duration: 900, easing: "cubic-bezier(.2,.7,.3,1)", fill: "backwards", delay: 200 });
+    }
+  })();
+
+  // ---------- Pillar legend ----------
+  (function legend() {
+    var host = document.getElementById("pillar-legend");
+    if (!host) return;
+    PILLARS.forEach(function (p) {
+      var on = p.score != null;
+      var row = document.createElement("div");
+      row.className = "pillar-row";
+      row.innerHTML =
+        '<span class="pillar-dot ' + (on ? "on" : "off") + '"></span>' +
+        '<span><span class="pillar-name">' + p.key + '</span>' +
+        '<span class="pillar-desc">' + p.desc + '</span></span>' +
+        '<span class="pillar-score' + (on ? "" : " off") + '">' + (on ? p.score + " / 100" : "awaiting data") + '</span>';
+      host.appendChild(row);
+    });
+  })();
+
+  // ---------- Territory gauges ----------
+  (function cards() {
+    var host = document.getElementById("res-cards");
+    if (!host) return;
+    var good = v("--good"), moderate = v("--moderate"), low = v("--low"), track = v("--line");
+
+    TERRITORIES.forEach(function (t) {
+      var col = t.index >= 67 ? good : (t.index >= 34 ? moderate : low);
+      var card = document.createElement("div");
+      card.className = "terr-card reveal";
+
+      var w = 132, h = 78, cx = 66, cy = 72, r = 54;
+      var L = Math.PI * r;
+      var frac = Math.max(0, Math.min(1, t.index / 100));
+      var g = document.createElementNS(SVGNS, "svg");
+      g.setAttribute("class", "terr-gauge");
+      g.setAttribute("viewBox", "0 0 " + w + " " + h);
+      var d = "M " + (cx - r) + " " + cy + " A " + r + " " + r + " 0 0 1 " + (cx + r) + " " + cy;
+      var track1 = el("path", { d: d, fill: "none", stroke: track, "stroke-width": 9, "stroke-linecap": "round" });
+      var val = el("path", { d: d, fill: "none", stroke: col, "stroke-width": 9, "stroke-linecap": "round",
+        "stroke-dasharray": (frac * L) + " " + L });
+      g.appendChild(track1); g.appendChild(val);
+
+      var nameEl = document.createElement("div");
+      nameEl.className = "terr-name";
+      nameEl.textContent = t.name;
+      card.appendChild(nameEl);
+      card.appendChild(g);
+
+      var idx = document.createElement("div");
+      idx.className = "terr-index num";
+      idx.style.color = col;
+      idx.textContent = t.index.toFixed(1);
+      card.appendChild(idx);
+
+      var meta = document.createElement("div");
+      meta.className = "terr-meta";
+      meta.textContent = "Weakest: " + t.weakest;
+      card.appendChild(meta);
+
+      var chip = document.createElement("span");
+      chip.className = "chip partial";
+      chip.textContent = t.measured + " of 6 pillars";
+      card.appendChild(chip);
+
+      host.appendChild(card);
+
+      if (!reduce) {
+        val.animate([{ strokeDasharray: "0 " + L }, { strokeDasharray: (frac * L) + " " + L }],
+          { duration: 1100, easing: "cubic-bezier(.2,.7,.3,1)", fill: "backwards", delay: 250 });
+      }
+    });
+  })();
+
+  // ---------- ABCDE ----------
+  (function abcde() {
+    var host = document.getElementById("abcde-list");
+    if (!host) return;
+    ABCDE.forEach(function (a) {
+      var row = document.createElement("div");
+      row.className = "abcde-row reveal" + (a.status === "planned" ? " dim" : "");
+      row.innerHTML =
+        '<div class="abcde-letter">' + a.letter + '</div>' +
+        '<div class="abcde-body"><h3>' + a.name + '</h3><p>' + a.role + '</p></div>' +
+        '<div class="status ' + a.status + '"><span class="dot"></span><span class="label">' + a.label + '</span></div>';
+      host.appendChild(row);
+    });
+  })();
+
+  // ---------- Reveal on scroll ----------
+  (function reveals() {
+    var items = document.querySelectorAll(".reveal");
+    if (reduce || !("IntersectionObserver" in window)) {
+      items.forEach(function (node) { node.classList.add("in"); });
+      return;
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.12, rootMargin: "0px 0px -8% 0px" });
+    items.forEach(function (node) { io.observe(node); });
+  })();
+})();
+</script>
+</body>
+</html>

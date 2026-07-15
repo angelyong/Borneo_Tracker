@@ -1,0 +1,155 @@
+Coding Based,,,,,,,,,,,,
+,,,,,,,,,,,,
+Project No,Title,Project Background,Project Brief Overview,Expected Delivery,Pre-project Condition,Expected Learning Outcome,Contact Person,Email Address,Required Students,Student No,Student Name,Contact No
+T001,Simulation-Based Comparison of FIFO and Deferred Commitment Dispatching in Warehouse Automation,"Modern automated warehouses face inefficiencies under high task loads due to immediate FIFO-based dispatching, which ignores real-time system conditions. This often leads to poor resource utilization, congestion, and longer cycle times. The industry challenge is to improve decision quality in task assignment while maintaining operational speed and system responsiveness.
+
+
+Automated Storage and Retrieval Systems (ASRS) are widely used in warehouse and logistics operations to handle storage and retrieval tasks efficiently. In these systems, tasks are continuously generated and must be assigned to available resources such as cranes or shuttles for execution.
+
+In most traditional systems, tasks are assigned immediately when they arrive (e.g., FIFO-based dispatching). However, this early assignment approach may lead to inefficient decisions when the system is busy or congested, because it does not fully consider the current system state.
+
+This project explores a deferred commitment dispatching strategy, where task assignment is delayed until a more suitable decision time. Instead of assigning tasks immediately, the system selects tasks based on current conditions such as queue length, resource availability, and system workload.
+
+
+Objectives:
+1. To develop a simulation model of an Automated Storage and Retrieval System (ASRS).
+2. To implement and compare early assignment (FIFO) and deferred commitment dispatching strategies.","Automated Storage and Retrieval Systems (ASRS) are widely used in warehouse and logistics operations to handle storage and retrieval tasks efficiently. In these systems, tasks are continuously generated and must be assigned to available resources such as cranes or shuttles for execution.
+
+In most traditional systems, tasks are assigned immediately when they arrive (e.g., FIFO-based dispatching). However, this early assignment approach may lead to inefficient decisions when the system is busy or congested, because it does not fully consider the current system state.
+
+This project explores a deferred commitment dispatching strategy, where task assignment is delayed until a more suitable decision time. Instead of assigning tasks immediately, the system selects tasks based on current conditions such as queue length, resource availability, and system workload.
+
+
+Objectives:
+1. To develop a simulation model of an Automated Storage and Retrieval System (ASRS).
+2. To implement and compare early assignment (FIFO) and deferred commitment dispatching strategies.","Testing Report;Documentation;simulation model;
+
+
+Java, MySQL, Linux, PHP, Python",Requires intensive programming efforts in the chosen language (Python/ C++/Java),"1) Develop a functional discrete-event simulation model of an Automated Storage and Retrieval System (ASRS) that represents warehouse operations and resource constraints.
+2) Apply task dispatching strategies, including FIFO-based early assignment and deferred commitment approaches, within a simulated environment.
+3) Analyse system performance metrics such as throughput, waiting time, and resource utilization under different dispatching policies",Dr.Hoo Mei Hao,-,3,2405027,Renee Lee Jie Jing,60194722114
+,,,,,,,,,,2401333,Kwong Jing Yin,60129595810
+,,,,,,,,,,2400861,Maisie Hing Yu Qian,60123285123
+,,,,,,,,,,,,
+T002,Borneo Tracker,How far Borneo is away from becoming world's wealthiest island? How sustainable is the ongoing development for whole Borneo island?,"People been talking about ESG (Environmental, Social, Governance) and the UN's Sustainable Development Goals, is there any open, trustworthy, publicly available dashboard for people to monitor and track related progress or sustainability matters? Can this be done via open website like real time plane tracking etc online open data services?","Front-End Website
+
+Public users can:
+
+1.	Show Borneo map
+•	Sabah
+•	Sarawak
+•	Brunei
+•	Kalimantan
+2.	Track ESG indicators
+•	Forest cover
+•	Deforestation
+•	Air quality
+•	Water quality
+•	Poverty rate
+•	Employment rate
+•	Education
+•	Healthcare
+•	Governance/transparency
+3.	Track SDG progress
+•	No poverty
+•	Clean water
+•	Quality education
+•	Climate action
+•	Life on land
+•	Economic growth
+4.	Show dashboard
+•	Charts
+•	Graphs
+•	Scores
+•	Green/yellow/red status
+5.	Use open data
+•	Government open data
+•	World Bank
+•	UN SDG data
+•	Global Forest Watch
+•	Satellite/forest data
+6.	Allow admin/back office
+•	Add data
+•	Update data
+•	Verify data
+•	Manage users
+•	Generate reports
+7.	Mobile app feature
+•	View latest sustainability status
+•	Receive alerts
+•	Submit report, example: pollution, illegal dumping, flood, forest fire
+","Basic understanding of web applications.
+
+Java, MySQL, Linux, PHP, Python","Problem solving and resource integration skills, communication and team work.",Mr.Koh How Sze,60122733168,4,2205177,Henry Chin Jian Hong,167031182
+,,,,,,,,,,2205137,Tay Yong Sheng,162691946
+,,,,,,,,,,2300955,Tee Zhi Ying,188749158
+,,,,,,,,,,2205499,Angel Yap Yoon Ying,1118682855
+,,,,,,,,,,,,
+,,,,,,,,,,,,
+T003,Ai SEO Engine Optimization,"As AI-powered search engines and chatbots become more popular, businesses face challenges in maintaining online visibility. Many websites are not optimized for AI search, resulting in lower rankings, reduced traffic, and missed opportunities to reach potential customers.
+
+Key Challenges
+*Low visibility in search results
+*Content not optimized for AI search
+*Increasing online competition
+*Reduced website traffic and leads 
+*Solution
+
+Implement AI SEO Optimization to improve website visibility, enhance content discoverability, and increase organic traffic across both traditional and AI-powered search platforms.
+
+
+
+Similar to below website:
+https://trysoro.com/","The AI SEO Optimization project aims to enhance a business's online visibility by optimizing its website, content, and digital presence for both traditional search engines and AI-powered search platforms. Through strategic content optimization, technical SEO improvements, and structured data implementation, the project helps increase search rankings, drive organic traffic, and improve lead generation.",Dashboard System;Web Application;Mobile Application;AI Model;Automation System;,"1. Basic knowledge of web development (HTML, CSS, JavaScript).
+2. Fundamental understanding of databases (MySQL or equivalent).
+3. Basic programming skills (Python preferred).
+4. Understanding of search engines and digital marketing concepts.
+5. Familiarity with AI and machine learning fundamentals (advantageous but not mandatory).
+6. Experience with website management platforms such as WordPress (optional).
+7. Access to a computer with internet connectivity and development tools.","Upon completion of this project, students will be able to:
+
+1. Understand the fundamentals of SEO and AI-powered search technologies.
+2. Design and develop an AI SEO Optimization platform or solution.
+3. Apply AI techniques to analyze and improve website content and search visibility.
+4. Implement keyword research, content optimization, and technical SEO strategies.
+5. Integrate data analytics to measure SEO performance and generate insights.
+6. Develop problem-solving, research, and critical thinking skills in digital marketing and AI applications.
+7. Gain hands-on experience with web technologies, databases, and AI tools.
+8. Present and evaluate the effectiveness of AI-driven SEO recommendations through real-world case studies.",Mr.Charles,60172433405,3,2205184,Loo Ting Hong,175327296
+,,,,,,,,,,2301099,Ting Wai Lam,102705907
+,,,,,,,,,,2205391,Ae Yunn Heng,162279626
+,,,,,,,,,,,,
+T004,EcoPackHub: AI-Enabled E-Commerce Platform for Biodegradable and Paper-Based Packaging Products,"Many food businesses such as restaurants, cafés, hotels and caterers are moving towards eco-friendly packaging, but product information, quotation requests and customer enquiries are often handled manually through brochures, WhatsApp and phone calls. Hybrid Infinity Tech Sdn. Bhd. supplies biodegradable and paper-based packaging items such as corn starch cups, food containers, paper bowls, wooden cutlery, paper bags and trays. A digital platform is required to present product categories clearly, allow customers to search products by code, material, size and usage, and support faster quotation and enquiry management.","EcoPackHub is a web-based e-commerce and quotation platform for biodegradable and paper-based packaging products. The system will include product catalogue management, customer enquiry forms, quotation request workflow, WhatsApp contact integration, product search and filtering, AI-enabled product recommendations, customer account features and an admin dashboard for managing products, categories, enquiries and quotation status. The platform will help the company promote sustainable packaging and improve response time to business customers.
+
+",Working web application; product catalogue module; admin dashboard; customer enquiry and quotation request module; AI product recommendation feature; database design and implementation; testing report; user manual; project report; presentation slides; demonstration video.,"Requires basic knowledge in web programming, database design and AI-supported recommendation logic. Suggested tools include HTML/CSS/JavaScript or React, PHP/Laravel or Node.js, MySQL database, and simple AI/NLP recommendation techniques. 
+
+Students should understand CRUD operations, user interface design, form validation, database relationships and basic software testing.","1) Develop a functional web-based e-commerce and quotation platform for biodegradable packaging products. 
+
+2) Design and implement a structured product database using categories, product codes, descriptions, packing quantity and material type. 
+
+3) Apply CRUD operations for product, customer and enquiry management. 
+
+4) Implement search, filter and AI-based product recommendation features. 
+
+5) Develop an admin dashboard to monitor customer enquiries and quotation requests. 
+
+6) Produce proper documentation, testing, project report and presentation.",Dr.Sugumaran,012-2210442,3,2205390,Lee Siu Hang,60102983133
+,,,,,,,,,,2204263,Chin We Jian,60187840375
+,,,,,,,,,,2204287,Chuah Jun Jie,60124683628
+,,,,,,,,,,,,
+T005,Hiring Intellingence,"Malaysian organisations — particularly SMEs — receive high volumes of job applications but lack the tools to evaluate candidates systematically. HR teams spend an estimated 60–70% of their screening time reading resumes manually, applying inconsistent criteria, and chasing Hiring Manager feedback through WhatsApp. 
+
+The result is slow time-to-hire, poor shortlist quality, and hiring decisions that are difficult to defend or learn from. Existing global HR software is built for Western markets and does not account for the Malaysian talent landscape — local university tiers, BM/English bilingual resumes, or PDPA compliance requirements.","HINT (Hiring Intelligence) is a platform that sits between resume intake and the hiring decision. It evaluates candidate profiles against role-specific criteria, surfaces reasoned recommendations to HR, and captures hiring decisions as structured data — building a company-specific decision profile over time.
+Students will contribute to the development of specific product modules including resume parsing and data extraction pipelines, candidate evaluation UI components, analytics and reporting dashboards, and API integrations. Work will be on a real production codebase with live users, not a simulated environment.",Web Application;UI/UX Prototype;Documentation;,"- Proficient in at least one of: Python or JavaScript/TypeScript
+- Comfortable using Git (clone, commit, push, pull request — basic hygiene)
+- Exposure to any REST API framework (FastAPI, Express, Flask, Django)
+- Familiarity with React or any component-based frontend framework
+- Basic understanding of relational databases and SQL queries
+- Any prior exposure to LLM APIs or prompt engineering is a strong advantage but not required","- Practical experience building and shipping features on a live SaaS product used by real organisations
+- Understanding of how large language models are integrated into production applications beyond chatbot use cases
+- Exposure to product thinking — scoping features against real user needs and business constraints
+- Experience with modern full-stack web development practices including API design, database modelling, and frontend component architecture
+",Mr.Kabilan,601133046715,3,2301366,Loh Zhi Fong,0162184258
+,,,,,,,,,,2302212,Lim Yi Jyun,60172872448
+,,,,,,,,,,2302470,Clement Mok Shao Ming,60105516046
+,,,,,,,,,,,,

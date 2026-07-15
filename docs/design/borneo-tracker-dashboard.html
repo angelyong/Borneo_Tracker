@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Borneo Tracker — Dashboard</title>
+<meta name="description" content="Borneo Tracker: track the True Wealth, ESG indicators and SDG progress of Borneo — one dataset, three lenses, powered by the ABCDE Framework.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='88'%3E%F0%9F%8C%BF%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --paper:#F4F7F0; --surface:#FFFFFF; --surface-2:#F0F4EB;
+    --ink:#16241C; --ink-soft:#46564C; --ink-faint:#7A887E;
+    --line:#E1E7DA; --line-soft:#EBEFE5;
+    --canopy:#1E7A54; --canopy-deep:#134E37; --moss:#5F9C81;
+    --good:#2E7D5B; --moderate:#B07E2C; --low:#B0614A; --grey:#AEB8AF;
+    --glow:rgba(30,122,84,0.12);
+    --shadow-sm:0 8px 22px -16px rgba(19,49,34,0.40);
+    --shadow:0 18px 44px -24px rgba(19,49,34,0.45);
+    --serif:'Iowan Old Style','Palatino Linotype','Book Antiqua',Palatino,Georgia,serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --mono:'Cascadia Code','SF Mono','Consolas','Liberation Mono',monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#0C1611; --surface:#12201A; --surface-2:#152720;
+      --ink:#E7EFE6; --ink-soft:#A6B7AB; --ink-faint:#6C7E72;
+      --line:#213229; --line-soft:#1A2721;
+      --canopy:#52B487; --canopy-deep:#8FD3B3; --moss:#7CB89D;
+      --good:#56C08C; --moderate:#D3A65A; --low:#D48468; --grey:#4A574E;
+      --glow:rgba(82,180,135,0.16);
+      --shadow-sm:0 10px 26px -18px rgba(0,0,0,0.6);
+      --shadow:0 20px 50px -26px rgba(0,0,0,0.7);
+    }
+  }
+  :root[data-theme="light"]{
+    --paper:#F4F7F0; --surface:#FFFFFF; --surface-2:#F0F4EB; --ink:#16241C; --ink-soft:#46564C;
+    --ink-faint:#7A887E; --line:#E1E7DA; --line-soft:#EBEFE5; --canopy:#1E7A54; --canopy-deep:#134E37;
+    --moss:#5F9C81; --good:#2E7D5B; --moderate:#B07E2C; --low:#B0614A; --grey:#AEB8AF; --glow:rgba(30,122,84,0.12);
+    --shadow-sm:0 8px 22px -16px rgba(19,49,34,0.40); --shadow:0 18px 44px -24px rgba(19,49,34,0.45);
+  }
+  :root[data-theme="dark"]{
+    --paper:#0C1611; --surface:#12201A; --surface-2:#152720; --ink:#E7EFE6; --ink-soft:#A6B7AB;
+    --ink-faint:#6C7E72; --line:#213229; --line-soft:#1A2721; --canopy:#52B487; --canopy-deep:#8FD3B3;
+    --moss:#7CB89D; --good:#56C08C; --moderate:#D3A65A; --low:#D48468; --grey:#4A574E; --glow:rgba(82,180,135,0.16);
+    --shadow-sm:0 10px 26px -18px rgba(0,0,0,0.6); --shadow:0 20px 50px -26px rgba(0,0,0,0.7);
+  }
+
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+  h1,h2,h3{font-family:var(--serif);font-weight:500;letter-spacing:-0.01em;margin:0;}
+  .mono{font-family:var(--mono);}
+  .num{font-variant-numeric:tabular-nums;}
+  .wrap{width:100%;max-width:1240px;margin:0 auto;padding:0 24px;}
+
+  /* header */
+  header{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--paper) 86%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);}
+  .head-row{display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:14px 0;}
+  .brand{display:flex;align-items:baseline;gap:10px;margin-right:auto;}
+  .brand .logo{font-size:1.15rem;font-family:var(--serif);color:var(--ink);}
+  .brand .logo b{color:var(--canopy);font-weight:600;}
+  .brand .tag{font-family:var(--mono);font-size:0.66rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink-faint);}
+  .lenswrap{display:inline-flex;background:var(--surface-2);border:1px solid var(--line);border-radius:11px;padding:3px;gap:2px;}
+  .lens{border:none;background:transparent;font-family:var(--sans);font-size:0.82rem;font-weight:600;color:var(--ink-soft);padding:7px 15px;border-radius:8px;cursor:pointer;display:flex;align-items:center;gap:7px;}
+  .lens .d{width:7px;height:7px;border-radius:50%;background:var(--canopy);opacity:0.55;}
+  .lens[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow-sm);}
+  .lens[aria-selected="true"] .d{opacity:1;}
+  select{font-family:var(--sans);font-size:0.85rem;font-weight:600;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:8px 12px;cursor:pointer;outline:none;}
+  select:focus-visible{outline:2px solid var(--canopy);outline-offset:1px;}
+  .banner{font-size:0.82rem;color:var(--ink-soft);padding:0 0 12px;display:flex;gap:9px;align-items:baseline;}
+  .banner b{color:var(--canopy);font-weight:600;}
+
+  /* layout */
+  main{padding:24px 0 40px;}
+  .grid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,0.92fr);gap:20px;align-items:start;}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-sm);padding:18px;}
+  .card-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;}
+  .card-h h2{font-size:1.02rem;}
+  .card-h .sub{font-family:var(--mono);font-size:0.66rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-faint);}
+  .eyebrow{font-family:var(--mono);font-size:0.64rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--canopy);margin-bottom:9px;}
+
+  /* map */
+  .map-card{position:relative;}
+  #map-svg{width:100%;height:auto;display:block;}
+  .disc{cursor:pointer;transition:opacity .15s;}
+  .disc:hover{opacity:0.9;}
+  .chiprow{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+  .chip-l{border:1px solid var(--line);background:var(--surface);color:var(--ink-soft);font-size:0.74rem;font-weight:600;padding:5px 11px;border-radius:999px;cursor:pointer;font-family:var(--sans);}
+  .chip-l[aria-pressed="true"]{background:var(--canopy);border-color:var(--canopy);color:#fff;}
+  .legend{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--line-soft);font-size:0.76rem;color:var(--ink-soft);}
+  .legend .k{display:flex;align-items:center;gap:6px;}
+  .legend .sw{width:11px;height:11px;border-radius:3px;}
+  .maptip{position:absolute;pointer-events:none;background:var(--ink);color:var(--paper);font-size:0.74rem;padding:6px 9px;border-radius:7px;opacity:0;transition:opacity .12s;white-space:nowrap;z-index:5;box-shadow:var(--shadow);}
+  .maptip .v{font-family:var(--mono);font-weight:600;}
+
+  /* resilience / gauge */
+  .res-top{display:flex;align-items:center;gap:18px;}
+  .gauge{width:150px;height:88px;flex-shrink:0;}
+  .res-meta .big{font-family:var(--serif);font-size:3rem;line-height:1;font-variant-numeric:tabular-nums;}
+  .res-meta .cap{font-family:var(--mono);font-size:0.66rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-faint);margin-top:2px;}
+  .res-meta .note{font-size:0.8rem;color:var(--ink-soft);margin-top:8px;}
+  .pill{display:inline-block;font-family:var(--mono);font-size:0.62rem;letter-spacing:0.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;border:1px solid var(--line);}
+  .pill.good{color:var(--good);border-color:color-mix(in srgb,var(--good) 40%,transparent);}
+  .pill.moderate{color:var(--moderate);border-color:color-mix(in srgb,var(--moderate) 40%,transparent);}
+  .pill.low{color:var(--low);border-color:color-mix(in srgb,var(--low) 40%,transparent);}
+
+  .tw-split{display:grid;grid-template-columns:170px 1fr;gap:16px;align-items:center;margin-top:6px;}
+  #hexradar{width:100%;height:auto;}
+  .feed-row{display:flex;align-items:baseline;gap:10px;padding:8px 0;border-bottom:1px solid var(--line-soft);font-size:0.84rem;}
+  .feed-row:last-child{border-bottom:none;}
+  .feed-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;position:relative;top:3px;}
+  .feed-dot.on{background:var(--canopy);}
+  .feed-dot.off{background:transparent;border:1.4px dashed var(--ink-faint);}
+  .feed-name{font-weight:600;color:var(--ink);}
+  .feed-src{color:var(--ink-faint);font-size:0.78rem;}
+  .feed-score{margin-left:auto;font-family:var(--mono);font-weight:600;}
+  .feed-score.off{color:var(--ink-faint);font-weight:400;}
+
+  /* esg */
+  .esg-group{margin-bottom:16px;}
+  .esg-group:last-child{margin-bottom:0;}
+  .esg-gh{display:flex;align-items:center;gap:9px;margin-bottom:8px;}
+  .esg-gh .letter{font-family:var(--serif);font-size:1.3rem;color:var(--canopy);width:22px;}
+  .esg-gh .gname{font-size:0.7rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--ink-faint);}
+  .ind-row{display:grid;grid-template-columns:1fr auto;gap:6px 12px;padding:9px 0;border-top:1px solid var(--line-soft);}
+  .ind-row .name{font-weight:600;color:var(--ink);font-size:0.88rem;}
+  .ind-row .tags{display:flex;gap:6px;margin-top:3px;flex-wrap:wrap;}
+  .tg{font-family:var(--mono);font-size:0.6rem;letter-spacing:0.04em;padding:1px 7px;border-radius:999px;border:1px solid var(--line);color:var(--ink-faint);}
+  .tg.pillar{color:var(--canopy);border-color:color-mix(in srgb,var(--canopy) 35%,transparent);}
+  .ind-row .val{font-family:var(--mono);font-weight:600;font-size:1rem;text-align:right;font-variant-numeric:tabular-nums;}
+  .ind-row .conf{font-family:var(--mono);font-size:0.62rem;text-transform:uppercase;letter-spacing:0.04em;text-align:right;margin-top:2px;}
+  .conf.high{color:var(--good);} .conf.medium{color:var(--moderate);} .conf.manual{color:var(--ink-faint);} .conf.none{color:var(--low);}
+
+  /* sdg */
+  .sdg-row{padding:12px 0;border-top:1px solid var(--line-soft);}
+  .sdg-row:first-child{border-top:none;}
+  .sdg-top{display:flex;align-items:baseline;gap:10px;}
+  .sdg-goal{font-family:var(--mono);font-size:0.66rem;font-weight:700;color:var(--ink-faint);}
+  .sdg-name{font-weight:600;color:var(--ink);font-size:0.92rem;}
+  .sdg-val{margin-left:auto;font-family:var(--mono);font-size:0.8rem;color:var(--ink-soft);}
+  .bar{height:8px;border-radius:999px;background:var(--surface-2);margin-top:8px;overflow:hidden;}
+  .bar > span{display:block;height:100%;border-radius:999px;}
+  .sdg-foot{display:flex;justify-content:space-between;margin-top:6px;font-size:0.72rem;color:var(--ink-faint);}
+
+  /* trends */
+  .trend-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  .chart-title{font-size:0.86rem;font-weight:600;margin-bottom:2px;}
+  .chart-sub{font-family:var(--mono);font-size:0.64rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:12px;}
+  .bars{display:flex;flex-direction:column;gap:9px;}
+  .brow{display:grid;grid-template-columns:74px 1fr auto;gap:10px;align-items:center;font-size:0.8rem;}
+  .brow .bt{color:var(--ink-soft);}
+  .brow .track{height:16px;background:var(--surface-2);border-radius:6px;overflow:hidden;}
+  .brow .fill{height:100%;border-radius:6px;}
+  .brow .bv{font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums;text-align:right;}
+
+  /* abcde engine */
+  .engine{background:var(--surface-2);border:1px solid var(--line);border-radius:18px;padding:24px;margin-top:20px;}
+  .engine h2{font-size:1.1rem;margin-bottom:4px;}
+  .engine .lede{font-size:0.86rem;color:var(--ink-soft);max-width:70ch;margin-bottom:18px;}
+  .chain{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;margin-bottom:22px;}
+  .step{flex:1;min-width:150px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:13px 14px;position:relative;}
+  .step .l{font-family:var(--serif);font-size:1.5rem;color:var(--ink-faint);line-height:1;}
+  .step.on .l{color:var(--canopy);}
+  .step .verb{font-weight:700;font-size:0.82rem;margin:4px 0 2px;}
+  .step .desc{font-size:0.74rem;color:var(--ink-faint);line-height:1.4;}
+  .step .st{font-family:var(--mono);font-size:0.58rem;letter-spacing:0.06em;text-transform:uppercase;margin-top:8px;display:inline-block;}
+  .step.on .st{color:var(--good);} .step.soon .st{color:var(--moderate);} .step.later .st{color:var(--ink-faint);}
+  .biz{font-size:0.84rem;color:var(--ink-soft);border-left:2px solid var(--canopy);padding-left:14px;max-width:78ch;}
+  .biz b{color:var(--ink);}
+
+  footer{border-top:1px solid var(--line);padding:26px 0 60px;margin-top:8px;}
+  footer p{font-size:0.74rem;color:var(--ink-faint);margin:0;max-width:88ch;line-height:1.6;}
+
+  @media (max-width:940px){
+    .grid{grid-template-columns:1fr;}
+    .trend-grid{grid-template-columns:1fr;}
+    .chain{flex-direction:column;}
+  }
+  @media (prefers-reduced-motion: reduce){*{scroll-behavior:auto;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="head-row">
+      <div class="brand">
+        <span class="logo"><b>Borneo</b> Tracker</span>
+        <span class="tag">True Wealth of an island</span>
+      </div>
+      <div class="lenswrap" role="tablist" aria-label="Data lens">
+        <button class="lens" role="tab" data-lens="tw"  aria-selected="true"><span class="d"></span>True Wealth</button>
+        <button class="lens" role="tab" data-lens="esg" aria-selected="false"><span class="d"></span>ESG</button>
+        <button class="lens" role="tab" data-lens="sdg" aria-selected="false"><span class="d"></span>SDG</button>
+      </div>
+      <label>
+        <span class="mono" style="font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-faint);margin-right:6px;">Area</span>
+        <select id="territory">
+          <option>Overall Borneo</option>
+          <option>Sabah</option>
+          <option>Sarawak</option>
+          <option>Brunei</option>
+          <option>Kalimantan</option>
+        </select>
+      </label>
+    </div>
+    <div class="banner">
+      <span>🌿</span>
+      <span>One dataset, three lenses. <b>True Wealth</b> is the native view — the six survival pillars and their Resilience Index. <b>ESG</b> and <b>SDG</b> are the same indicators, reprojected for reporting.</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div class="grid">
+
+      <!-- LEFT: MAP -->
+      <section class="card map-card">
+        <div class="card-h">
+          <h2>Borneo</h2>
+          <span class="sub" id="map-layer-name">Deforestation</span>
+        </div>
+        <div class="chiprow" id="layer-chips"></div>
+        <div style="position:relative;">
+          <svg id="map-svg" viewBox="0 0 440 380" role="img" aria-label="Map of Borneo showing its four territories, coloured by the selected indicator."></svg>
+          <div class="maptip" id="maptip"></div>
+        </div>
+        <div class="legend" id="map-legend"></div>
+      </section>
+
+      <!-- RIGHT: LENS PANEL -->
+      <section class="card" id="panel" aria-live="polite"></section>
+
+    </div>
+
+    <!-- TRENDS / CHARTS -->
+    <section class="card" style="margin-top:20px;">
+      <div class="card-h">
+        <h2>Dashboard — compare across territories</h2>
+        <span class="sub">real values · 2022–2025</span>
+      </div>
+      <div class="trend-grid" id="trends"></div>
+    </section>
+
+    <!-- ABCDE ENGINE + BUSINESS LOGIC -->
+    <section class="engine">
+      <div class="eyebrow">The engine · why it's built this way</div>
+      <h2>Powered by the ABCDE Framework</h2>
+      <p class="lede">Every number on this page rides a five-stage pipeline. The stages are also the business model: measurement is what makes real-world wealth trustworthy — and, in time, ownable by the communities it belongs to.</p>
+      <div class="chain" id="chain"></div>
+      <p class="biz"><b>The business logic:</b> whoever holds the <i>trusted measure</i> of a place's true wealth holds the basis for valuing — and one day tokenising — the real assets behind it, with the yield returning to the community. Borneo Tracker starts at the measure. That's the seat at the table; the rest of the stack is the road ahead.</p>
+    </section>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p id="foot"></p>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* ------------------------------------------------------------------ data */
+var TERR = ["Sabah","Sarawak","Brunei","Kalimantan"];
+
+var GEO = {
+  Sarawak:   {cx:150, cy:180, r:34},
+  Sabah:     {cx:305, cy:120, r:31},
+  Brunei:    {cx:230, cy:150, r:14},
+  Kalimantan:{cx:238, cy:266, r:49}
+};
+
+// real values from indicators.json / resilience.json (2022–2025)
+var IND = {
+  deforestation:{label:"Deforestation (tree-cover loss, cumulative)",short:"Deforestation",unit:"ha",esg:"E",sdg:"SDG15",pillar:null,better:"lower",conf:"high",bounds:[13000000,0],
+    values:{Sabah:1803226,Sarawak:3183066,Brunei:30486,Kalimantan:12059800}},
+  forest_cover:{label:"Forest cover",short:"Forest cover",unit:"% land",esg:"E",sdg:"SDG15",pillar:null,better:"higher",conf:"high",bounds:[0,100],
+    values:{Sabah:null,Sarawak:null,Brunei:72.1,Kalimantan:null}},
+  air_quality:{label:"Air quality (AQI, live)",short:"Air quality",unit:"AQI",esg:"E",sdg:"SDG13",pillar:null,better:"lower",conf:"medium",bounds:[150,0],
+    values:{Sabah:null,Sarawak:null,Brunei:8,Kalimantan:null}},
+  energy:{label:"Energy — electrification",short:"Energy",unit:"%",esg:"E",sdg:"SDG7",pillar:"Energy",better:"higher",conf:"high",bounds:[70,100],
+    values:{Sabah:null,Sarawak:99.4,Brunei:100,Kalimantan:93.09}},
+  clean_water:{label:"Water quality — clean water access",short:"Clean water",unit:"%",esg:"S",sdg:"SDG6",pillar:"Healthcare",better:"higher",conf:"high",bounds:[50,100],
+    values:{Sabah:80.5,Sarawak:83.7,Brunei:100,Kalimantan:89.41}},
+  poverty:{label:"Poverty rate",short:"Poverty",unit:"%",esg:"S",sdg:"SDG1",pillar:null,better:"lower",conf:"high",bounds:[30,0],
+    values:{Sabah:17.7,Sarawak:8.4,Brunei:null,Kalimantan:5.13}},
+  unemployment:{label:"Employment — unemployment rate",short:"Unemployment",unit:"%",esg:"S",sdg:"SDG8",pillar:null,better:"lower",conf:"high",bounds:[15,0],
+    values:{Sabah:5.7,Sarawak:3.1,Brunei:5.28,Kalimantan:4.34}},
+  education:{label:"Education — mean years schooling",short:"Education",unit:"yrs",esg:"S",sdg:"SDG4",pillar:"Education",better:"higher",conf:"medium",bounds:[4,12],
+    values:{Sabah:8.70,Sarawak:8.70,Brunei:9.28,Kalimantan:9.08}},
+  healthcare:{label:"Healthcare — life expectancy",short:"Healthcare",unit:"yrs",esg:"S",sdg:"SDG3",pillar:"Healthcare",better:"higher",conf:"high",bounds:[60,85],
+    values:{Sabah:75.3,Sarawak:75.4,Brunei:75.5,Kalimantan:72.31}},
+  governance:{label:"Governance / transparency",short:"Governance",unit:"",esg:"G",sdg:"SDG16",pillar:null,better:"higher",conf:"none",bounds:null,
+    values:{Sabah:null,Sarawak:null,Brunei:null,Kalimantan:null}}
+};
+
+var LAYER_ORDER = ["deforestation","forest_cover","air_quality","clean_water","poverty","unemployment","education","healthcare","energy"];
+
+// resilience.json (real published scores)
+var RES = {
+  Sabah:     {index:68.8, pillars:{Healthcare:68.8}},
+  Sarawak:   {index:72.2, pillars:{Healthcare:72.2}},
+  Brunei:    {index:93.0, pillars:{Energy:100,Education:90.2,Healthcare:88.8}},
+  Kalimantan:{index:69.2, pillars:{Energy:86.2,Education:51.3,Healthcare:70.2}}
+};
+var HEX = ["Food","Energy","Education","Shelter","Healthcare","Entertainment"];
+var PILLAR_FEEDS = {
+  Food:["Food security, agriculture — no verified source yet"],
+  Energy:["Electrification ratio"],
+  Education:["Mean years schooling · adult literacy"],
+  Shelter:["Housing, sanitation — no verified source yet"],
+  Healthcare:["Clean water access · life expectancy"],
+  Entertainment:["Culture, connectivity — no verified source yet"]
+};
+
+var SDGS = [
+  {goal:"SDG 1",  name:"No Poverty",        ind:"poverty"},
+  {goal:"SDG 6",  name:"Clean Water",       ind:"clean_water"},
+  {goal:"SDG 4",  name:"Quality Education", ind:"education"},
+  {goal:"SDG 8",  name:"Economic Growth",   ind:"unemployment"},
+  {goal:"SDG 13", name:"Climate Action",    ind:"deforestation"},
+  {goal:"SDG 15", name:"Life on Land",      ind:"forest_cover"}
+];
+
+/* ------------------------------------------------------------------ state + helpers */
+var state = {lens:"tw", territory:"Overall Borneo", layer:"deforestation"};
+
+var css = getComputedStyle(document.documentElement);
+function v(n){return css.getPropertyValue(n).trim();}
+var SVGNS="http://www.w3.org/2000/svg";
+function svgel(t,a){var e=document.createElementNS(SVGNS,t);for(var k in a){if(a.hasOwnProperty(k))e.setAttribute(k,a[k]);}return e;}
+function esc(s){return String(s).replace(/[&<>]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;"}[c];});}
+
+function meanVal(key){
+  var vals=TERR.map(function(t){return IND[key].values[t];}).filter(function(x){return x!=null;});
+  if(!vals.length)return null;
+  return vals.reduce(function(a,b){return a+b;},0)/vals.length;
+}
+function valueFor(key,terr){ return terr==="Overall Borneo" ? meanVal(key) : IND[key].values[terr]; }
+
+function norm(key,val){
+  var b=IND[key].bounds; if(!b||val==null)return null;
+  var s=(val-b[0])/(b[1]-b[0])*100;
+  return Math.max(0,Math.min(100,s));
+}
+function ragColor(score){ if(score==null)return v("--grey"); return score>=67?v("--good"):score>=34?v("--moderate"):v("--low"); }
+function ragName(score){ if(score==null)return null; return score>=67?"good":score>=34?"moderate":"low"; }
+
+function fmt(key,val){
+  if(val==null)return "No data";
+  var u=IND[key].unit;
+  if(u==="ha"){ if(val>=1e6)return (val/1e6).toFixed(2)+"M ha"; if(val>=1e3)return (val/1e3).toFixed(0)+"k ha"; return val+" ha"; }
+  var dec = val>=100?0:(val>=10?1:2);
+  return val.toFixed(dec)+(u?(" "+u):"");
+}
+
+function resilienceFor(terr){
+  if(terr!=="Overall Borneo") return {index:RES[terr].index, pillars:RES[terr].pillars};
+  var idx=TERR.reduce(function(a,t){return a+RES[t].index;},0)/TERR.length;
+  var acc={},cnt={};
+  TERR.forEach(function(t){ var p=RES[t].pillars; for(var k in p){ acc[k]=(acc[k]||0)+p[k]; cnt[k]=(cnt[k]||0)+1; } });
+  var pil={}; for(var k in acc){ pil[k]=acc[k]/cnt[k]; }
+  return {index:Math.round(idx*10)/10, pillars:pil};
+}
+
+/* ------------------------------------------------------------------ MAP */
+function renderMap(){
+  var svg=document.getElementById("map-svg");
+  svg.textContent="";
+  // island silhouette
+  svg.appendChild(svgel("path",{d:"M150 70 C210 52 300 58 340 92 C372 118 372 150 360 178 C350 202 366 226 360 258 C352 300 316 332 262 342 C205 352 150 344 112 314 C82 290 74 256 84 226 C92 200 78 176 90 150 C102 122 120 84 150 70 Z",
+    fill:v("--surface-2"),stroke:v("--line"),"stroke-width":1.5}));
+
+  var layer=state.layer;
+  document.getElementById("map-layer-name").textContent=IND[layer].short;
+
+  TERR.forEach(function(t){
+    var g=GEO[t], val=IND[layer].values[t], score=norm(layer,val), col=ragColor(score);
+    var has=val!=null;
+    var sel = state.territory===t;
+    var disc=svgel("circle",{cx:g.cx,cy:g.cy,r:g.r,class:"disc",
+      fill:has?col:v("--grey"),"fill-opacity":has?0.9:0.35,
+      stroke:sel?v("--ink"):"#ffffff","stroke-width":sel?3:1.5,
+      "stroke-dasharray":has?"none":"3 3"});
+    disc.addEventListener("click",function(){ setTerritory(t); });
+    disc.addEventListener("mousemove",function(e){ showTip(e,t,layer,val); });
+    disc.addEventListener("mouseleave",hideTip);
+    svg.appendChild(disc);
+    var lbl=svgel("text",{x:g.cx,y:g.cy-2,"text-anchor":"middle","font-family":v("--sans"),"font-size":g.r>26?12:9,"font-weight":700,fill:has?"#ffffff":v("--ink-faint")});
+    lbl.textContent=t; lbl.style.pointerEvents="none"; svg.appendChild(lbl);
+    var vl=svgel("text",{x:g.cx,y:g.cy+(g.r>26?14:11),"text-anchor":"middle","font-family":v("--mono"),"font-size":g.r>26?11:8.5,fill:has?"#ffffff":v("--ink-faint")});
+    vl.textContent=has?fmt(layer,val):"—"; vl.style.pointerEvents="none"; svg.appendChild(vl);
+  });
+
+  // legend
+  var better=IND[layer].better;
+  var leg=document.getElementById("map-legend");
+  leg.innerHTML='<span class="mono" style="font-size:0.66rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-faint);">'+esc(IND[layer].label)+'</span>'+
+    '<span class="k"><span class="sw" style="background:var(--good)"></span>'+(better==="higher"?"Higher — stronger":"Lower — stronger")+'</span>'+
+    '<span class="k"><span class="sw" style="background:var(--moderate)"></span>Middle</span>'+
+    '<span class="k"><span class="sw" style="background:var(--low)"></span>'+(better==="higher"?"Lower — weaker":"Higher — weaker")+'</span>'+
+    '<span class="k"><span class="sw" style="background:var(--grey);opacity:.5"></span>No data yet</span>';
+}
+function showTip(e,t,layer,val){
+  var tip=document.getElementById("maptip");
+  tip.innerHTML='<div>'+esc(t)+'</div><div class="v">'+esc(fmt(layer,val))+'</div>';
+  var host=tip.parentElement.getBoundingClientRect();
+  tip.style.left=(e.clientX-host.left+12)+"px";
+  tip.style.top=(e.clientY-host.top+12)+"px";
+  tip.style.opacity="1";
+}
+function hideTip(){ document.getElementById("maptip").style.opacity="0"; }
+
+function renderChips(){
+  var host=document.getElementById("layer-chips"); host.innerHTML="";
+  LAYER_ORDER.forEach(function(k){
+    var b=document.createElement("button");
+    b.className="chip-l"; b.setAttribute("aria-pressed", state.layer===k?"true":"false");
+    b.textContent=IND[k].short;
+    b.addEventListener("click",function(){ state.layer=k; renderChips(); renderMap(); });
+    host.appendChild(b);
+  });
+}
+
+/* ------------------------------------------------------------------ PANELS */
+function panel(){ return document.getElementById("panel"); }
+
+function gaugeSVG(score){
+  var w=150,h=88,cx=75,cy=80,r=60,L=Math.PI*r,frac=Math.max(0,Math.min(1,score/100));
+  var col=ragColor(score);
+  var d="M "+(cx-r)+" "+cy+" A "+r+" "+r+" 0 0 1 "+(cx+r)+" "+cy;
+  var s='<svg class="gauge" viewBox="0 0 '+w+' '+h+'">';
+  s+='<path d="'+d+'" fill="none" stroke="'+v("--surface-2")+'" stroke-width="11" stroke-linecap="round"/>';
+  s+='<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="11" stroke-linecap="round" stroke-dasharray="'+(frac*L)+' '+L+'"/>';
+  s+='</svg>'; return s;
+}
+
+function hexRadarSVG(pillars){
+  var cx=85,cy=85,R=58,n=6;
+  function ang(i){return -Math.PI/2 + i*(2*Math.PI/n);}
+  function pt(i,f){var a=ang(i);return [cx+R*f*Math.cos(a), cy+R*f*Math.sin(a)];}
+  var s='<svg id="hexradar" viewBox="0 0 170 170">';
+  [0.33,0.66,1].forEach(function(f){
+    var p=[]; for(var i=0;i<n;i++){var q=pt(i,f);p.push(q[0].toFixed(1)+","+q[1].toFixed(1));}
+    s+='<polygon points="'+p.join(" ")+'" fill="none" stroke="'+v("--line")+'" stroke-width="0.8"/>';
+  });
+  var mpts=[];
+  for(var i=0;i<n;i++){ var sc=pillars[HEX[i]]; if(sc!=null){var q=pt(i,sc/100); mpts.push(q[0].toFixed(1)+","+q[1].toFixed(1));} }
+  for(i=0;i<n;i++){
+    var on=pillars[HEX[i]]!=null; var rim=pt(i,1);
+    s+='<line x1="'+cx+'" y1="'+cy+'" x2="'+rim[0].toFixed(1)+'" y2="'+rim[1].toFixed(1)+'" stroke="'+(on?v("--canopy"):v("--ink-faint"))+'" stroke-width="1" stroke-opacity="'+(on?0.5:0.5)+'" stroke-dasharray="'+(on?"none":"2 4")+'"/>';
+  }
+  if(mpts.length>=2) s+='<polygon points="'+mpts.join(" ")+'" fill="'+v("--canopy")+'" fill-opacity="0.16" stroke="'+v("--canopy")+'" stroke-width="2" stroke-linejoin="round"/>';
+  for(i=0;i<n;i++){ var sc2=pillars[HEX[i]]; if(sc2!=null){var q=pt(i,sc2/100); s+='<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="3.5" fill="'+v("--canopy")+'"/>';} }
+  return s+'</svg>';
+}
+
+function renderTrueWealth(){
+  var r=resilienceFor(state.territory);
+  var measured=Object.keys(r.pillars).length;
+  var rn=ragName(r.index);
+  var html='<div class="card-h"><div><div class="eyebrow">True Wealth · the native view</div><h2>Resilience Index — '+esc(state.territory)+'</h2></div><span class="sub">0–100</span></div>';
+  html+='<div class="res-top">'+gaugeSVG(r.index)+
+    '<div class="res-meta"><div class="big num" style="color:'+ragColor(r.index)+'">'+r.index.toFixed(1)+'</div>'+
+    '<div class="cap">Resilience Index</div>'+
+    '<div class="note"><span class="pill '+rn+'">'+(r.index>=67?"Good":r.index>=34?"Moderate":"At risk")+'</span> &nbsp;'+measured+' of 6 pillars measured</div></div></div>';
+
+  html+='<div class="tw-split">'+hexRadarSVG(r.pillars)+'<div>';
+  HEX.forEach(function(p){
+    var sc=r.pillars[p], on=sc!=null;
+    html+='<div class="feed-row"><span class="feed-dot '+(on?"on":"off")+'"></span>'+
+      '<span><span class="feed-name">'+p+'</span><br><span class="feed-src">'+esc(PILLAR_FEEDS[p][0])+'</span></span>'+
+      '<span class="feed-score '+(on?"":"off")+'">'+(on?sc.toFixed(0):"—")+'</span></div>';
+  });
+  html+='</div></div>';
+  html+='<p style="font-size:0.78rem;color:var(--ink-faint);margin:14px 0 0;">The six pillars are fed by the ESG indicators on the left. Where a pillar has no verified source, it stays dark — never guessed.</p>';
+  panel().innerHTML=html;
+}
+
+function renderESG(){
+  var t=state.territory;
+  var groups=[["E","Environment"],["S","Social"],["G","Governance"]];
+  var html='<div class="card-h"><div><div class="eyebrow">ESG lens · same data, reporting view</div><h2>ESG Indicators — '+esc(t)+'</h2></div><span class="sub">'+(t==="Overall Borneo"?"mean of territories":"territory value")+'</span></div>';
+  groups.forEach(function(g){
+    var keys=Object.keys(IND).filter(function(k){return IND[k].esg===g[0];});
+    html+='<div class="esg-group"><div class="esg-gh"><span class="letter">'+g[0]+'</span><span class="gname">'+g[1]+'</span></div>';
+    keys.forEach(function(k){
+      var val=valueFor(k,t), conf=IND[k].conf||"none";
+      var tags='<span class="tg">'+IND[k].sdg+'</span>'+(IND[k].pillar?'<span class="tg pillar">→ '+IND[k].pillar+'</span>':'<span class="tg">ecology</span>');
+      html+='<div class="ind-row"><div><div class="name">'+esc(IND[k].short)+'</div><div class="tags">'+tags+'</div></div>'+
+        '<div><div class="val">'+esc(fmt(k,val))+'</div><div class="conf '+conf+'">'+(conf==="none"?"not yet":conf)+'</div></div></div>';
+    });
+    html+='</div>';
+  });
+  panel().innerHTML=html;
+}
+
+function renderSDG(){
+  var t=state.territory;
+  var html='<div class="card-h"><div><div class="eyebrow">SDG lens · progress to global goals</div><h2>SDG Progress — '+esc(t)+'</h2></div><span class="sub">derived from indicators</span></div>';
+  SDGS.forEach(function(s){
+    var val=valueFor(s.ind,t), sc=norm(s.ind,val), col=ragColor(sc);
+    var hasBar = IND[s.ind].bounds!=null && sc!=null;
+    html+='<div class="sdg-row"><div class="sdg-top"><span class="sdg-goal">'+s.goal+'</span><span class="sdg-name">'+s.name+'</span>'+
+      '<span class="sdg-val">'+(val!=null?esc(fmt(s.ind,val)):"awaiting data")+'</span></div>';
+    if(hasBar){
+      html+='<div class="bar"><span style="width:'+sc.toFixed(0)+'%;background:'+col+'"></span></div>';
+    }else{
+      html+='<div class="bar"><span style="width:100%;background:repeating-linear-gradient(90deg,var(--line),var(--line) 6px,transparent 6px,transparent 12px)"></span></div>';
+    }
+    html+='<div class="sdg-foot"><span>feeds from '+esc(IND[s.ind].short)+'</span><span>'+(hasBar?sc.toFixed(0)+" / 100":"needs attention")+'</span></div></div>';
+  });
+  html+='<p style="font-size:0.78rem;color:var(--ink-faint);margin:12px 0 0;">Progress is normalised from the same real indicators — no separate SDG dataset, no double counting.</p>';
+  panel().innerHTML=html;
+}
+
+function renderPanel(){
+  if(state.lens==="tw")renderTrueWealth();
+  else if(state.lens==="esg")renderESG();
+  else renderSDG();
+}
+
+/* ------------------------------------------------------------------ TRENDS */
+function barBlock(title,sub,key,better){
+  var rows=TERR.map(function(t){return {t:t,val:IND[key].values[t]};});
+  var have=rows.filter(function(r){return r.val!=null;}).map(function(r){return r.val;});
+  var max=Math.max.apply(null,have.concat([1]));
+  var html='<div><div class="chart-title">'+esc(title)+'</div><div class="chart-sub">'+esc(sub)+'</div><div class="bars">';
+  rows.forEach(function(r){
+    var w = r.val!=null ? Math.max(3,(r.val/max)*100) : 0;
+    var sc=norm(key,r.val), col=ragColor(sc);
+    html+='<div class="brow"><span class="bt">'+r.t+'</span><span class="track"><span class="fill" style="width:'+w+'%;background:'+(r.val!=null?col:"var(--grey)")+'"></span></span>'+
+      '<span class="bv">'+(r.val!=null?esc(fmt(key,r.val)):"—")+'</span></div>';
+  });
+  return html+'</div></div>';
+}
+function barBlockResilience(){
+  var rows=TERR.map(function(t){return {t:t,val:RES[t].index};});
+  var html='<div><div class="chart-title">Resilience Index</div><div class="chart-sub">0–100 · true wealth</div><div class="bars">';
+  rows.forEach(function(r){
+    var col=ragColor(r.val);
+    html+='<div class="brow"><span class="bt">'+r.t+'</span><span class="track"><span class="fill" style="width:'+r.val+'%;background:'+col+'"></span></span><span class="bv">'+r.val.toFixed(1)+'</span></div>';
+  });
+  return html+'</div></div>';
+}
+function renderTrends(){
+  var host=document.getElementById("trends");
+  host.innerHTML = barBlockResilience()
+    + barBlock("Clean water access","% of population · higher better","clean_water","higher")
+    + barBlock("Deforestation","cumulative tree-cover loss · lower better","deforestation","lower");
+}
+
+/* ------------------------------------------------------------------ ENGINE */
+function renderChain(){
+  var steps=[
+    {l:"D",verb:"Measure",desc:"Pull, score and publish the indicators.",cls:"on",st:"Live"},
+    {l:"E",verb:"Verify",desc:"Provenance & confidence on every figure; gaps stay visible.",cls:"on",st:"Live"},
+    {l:"C",verb:"Connect",desc:"Live sensors & feeds — the island seen in motion.",cls:"soon",st:"Emerging"},
+    {l:"A",verb:"Predict",desc:"AI drafts, forecasts and optimises.",cls:"soon",st:"Emerging"},
+    {l:"B",verb:"Return value",desc:"Tokenise real assets; yield to the community.",cls:"later",st:"Horizon"}
+  ];
+  var host=document.getElementById("chain"); host.innerHTML="";
+  steps.forEach(function(s){
+    var d=document.createElement("div");
+    d.className="step "+s.cls;
+    d.innerHTML='<div class="l">'+s.l+'</div><div class="verb">'+s.verb+'</div><div class="desc">'+s.desc+'</div><div class="st">'+s.st+'</div>';
+    host.appendChild(d);
+  });
+}
+
+/* ------------------------------------------------------------------ wire */
+function setTerritory(t){
+  state.territory=t;
+  document.getElementById("territory").value=t;
+  renderMap(); renderPanel();
+}
+function setLens(l){
+  state.lens=l;
+  document.querySelectorAll(".lens").forEach(function(b){ b.setAttribute("aria-selected", b.dataset.lens===l?"true":"false"); });
+  renderPanel();
+}
+
+function init(){
+  document.querySelectorAll(".lens").forEach(function(b){ b.addEventListener("click",function(){ setLens(b.dataset.lens); }); });
+  document.getElementById("territory").addEventListener("change",function(e){ setTerritory(e.target.value); });
+  document.getElementById("foot").textContent =
+    "Real figures from the Borneo Tracker pipeline (2022–2025): deforestation, clean water, poverty, unemployment, schooling, life expectancy, electrification — sources World Bank, data.gov.my/OpenDOSM, BPS Indonesia, Global Forest Watch, WAQI. Resilience Index per resilience.json (Sabah 68.8 · Sarawak 72.2 · Brunei 93.0 · Kalimantan 69.2). Food, Shelter, Entertainment and Governance await verified sources. Design prototype — connects the required Borneo Tracker features to the ABCDE Framework & True Wealth Hexagon (Koh How Tze, BSYS Solution).";
+  renderChips(); renderMap(); renderPanel(); renderTrends(); renderChain();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init); else init();
+})();
+</script>
+</body>
+</html>

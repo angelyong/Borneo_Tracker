@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sabah — ESG &amp; SDG Data Profile (Report Mockup)</title>
+<style>
+  :root {
+    --page:        #EDEDE6;
+    --sheet:       #FFFFFF;
+    --ink:         #1C1E1A;
+    --ink-soft:    #52564E;
+    --ink-faint:   #8B8F86;
+    --line:        #E7E7DF;
+    --line-strong: #D2D3C9;
+
+    --accent:      #23514B;   /* muted pine-teal — structural, used sparingly */
+    --accent-soft: #EAF1EE;
+
+    --c-high: #2F7A4E;   /* confidence: measured / official */
+    --c-med:  #937019;   /* confidence: modelled / national proxy */
+    --c-man:  #7A6B57;   /* confidence: hand-entered from a report */
+
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, "Roboto Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --page:#0B0D0A; --sheet:#141613; --ink:#E9EBE3; --ink-soft:#A2A79B; --ink-faint:#6A6F66;
+      --line:#242721; --line-strong:#343830; --accent:#5FB0A0; --accent-soft:#152521;
+      --c-high:#5CB07C; --c-med:#C8A64E; --c-man:#A29684;
+    }
+  }
+  :root[data-theme="light"] {
+    --page:#EDEDE6; --sheet:#FFFFFF; --ink:#1C1E1A; --ink-soft:#52564E; --ink-faint:#8B8F86;
+    --line:#E7E7DF; --line-strong:#D2D3C9; --accent:#23514B; --accent-soft:#EAF1EE;
+    --c-high:#2F7A4E; --c-med:#937019; --c-man:#7A6B57;
+  }
+  :root[data-theme="dark"] {
+    --page:#0B0D0A; --sheet:#141613; --ink:#E9EBE3; --ink-soft:#A2A79B; --ink-faint:#6A6F66;
+    --line:#242721; --line-strong:#343830; --accent:#5FB0A0; --accent-soft:#152521;
+    --c-high:#5CB07C; --c-med:#C8A64E; --c-man:#A29684;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--page); color: var(--ink);
+    font-family: var(--sans); font-size: 15px; line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .doc { max-width: 900px; margin: 0 auto; padding: 24px 20px 72px; }
+
+  .note {
+    font-size: 12.5px; color: var(--ink-soft); margin: 0 0 18px; padding: 10px 2px;
+    border-bottom: 1px solid var(--line-strong);
+  }
+  .note b { color: var(--ink); }
+
+  .sheet {
+    background: var(--sheet); border: 1px solid var(--line-strong);
+    border-top: 3px solid var(--accent);
+    box-shadow: 0 1px 2px rgba(0,0,0,.05), 0 22px 48px -30px rgba(0,0,0,.45);
+  }
+
+  .eyebrow {
+    font: 600 11px/1 var(--mono); letter-spacing: .16em; text-transform: uppercase;
+    color: var(--accent); margin: 0;
+  }
+
+  /* masthead */
+  .masthead { padding: 34px 40px 26px; }
+  .masthead h1 {
+    font-size: clamp(26px, 4.4vw, 36px); font-weight: 800; letter-spacing: -.015em;
+    margin: 12px 0 0; line-height: 1.08; text-wrap: balance;
+  }
+  .masthead .lead {
+    font-size: 14.5px; color: var(--ink-soft); margin: 12px 0 0; max-width: 64ch; line-height: 1.6;
+  }
+  .glance {
+    display: flex; flex-wrap: wrap; margin-top: 22px; border: 1px solid var(--line);
+    border-radius: 2px;
+  }
+  .glance .g {
+    flex: 1 1 auto; padding: 12px 18px; border-right: 1px solid var(--line);
+  }
+  .glance .g:last-child { border-right: 0; }
+  .glance .gk { font: 600 10.5px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink-faint); }
+  .glance .gv { font-size: 20px; font-weight: 800; margin-top: 6px; font-variant-numeric: tabular-nums; }
+
+  /* blocks */
+  .block { padding: 30px 40px; border-top: 1px solid var(--line); }
+  .block > .eyebrow + h2 { margin-top: 8px; }
+  .block h2 {
+    font-size: 19px; font-weight: 800; letter-spacing: -.01em; margin: 0 0 2px; text-wrap: balance;
+  }
+  .block .desc { font-size: 13px; color: var(--ink-soft); margin: 6px 0 0; max-width: 66ch; }
+
+  /* executive summary */
+  .summary p { font-size: 15px; line-height: 1.72; color: var(--ink); margin: 18px 0 0; max-width: 68ch; }
+  .summary p b { font-weight: 700; }
+  .takeaways {
+    list-style: none; margin: 22px 0 0; padding: 0;
+    display: grid; grid-template-columns: 1fr 1fr; column-gap: 40px;
+    border-top: 1px solid var(--line);
+  }
+  .takeaways li {
+    padding: 13px 0 13px 20px; border-bottom: 1px solid var(--line); position: relative;
+    font-size: 13.5px; color: var(--ink); line-height: 1.55;
+  }
+  .takeaways li::before {
+    content: ""; position: absolute; left: 0; top: 20px; width: 8px; height: 8px;
+    background: var(--accent); border-radius: 1px;
+  }
+  .takeaways b { font-weight: 700; }
+
+  /* pillar sub-groups */
+  .pillar { margin-top: 26px; }
+  .pillar:first-of-type { margin-top: 22px; }
+  .pillar-head {
+    display: flex; align-items: baseline; gap: 10px;
+    padding-bottom: 8px; border-bottom: 2px solid var(--ink);
+  }
+  .pillar-head .pt { font-size: 13px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+  .pillar-head .pc { font: 600 11px/1 var(--mono); color: var(--ink-faint); }
+
+  /* indicator rows — two columns so long groups don't run down the page */
+  .ind-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 40px; }
+  .ind-grid.solo { grid-template-columns: 1fr; max-width: 52ch; }
+  .ind { padding: 13px 0; border-bottom: 1px solid var(--line); }
+  .ind-top { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+  .ind-name { font-size: 14.5px; font-weight: 700; }
+  .ind-val {
+    font-variant-numeric: tabular-nums; font-weight: 800; font-size: 15px; white-space: nowrap; text-align: right;
+  }
+  .ind-val em { font-style: normal; font-weight: 600; color: var(--ink-faint); font-size: 12px; margin-left: 3px; }
+  .ind-meta { font-size: 11.5px; color: var(--ink-faint); margin-top: 4px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .ind-meta .sep { color: var(--line-strong); }
+  .conf { display: inline-flex; align-items: center; gap: 5px; font-weight: 700; }
+  .conf::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .conf.high { color: var(--c-high); }
+  .conf.med  { color: var(--c-med); }
+  .conf.man  { color: var(--c-man); }
+  .ind-exp { font-size: 13px; color: var(--ink-soft); margin: 8px 0 0; line-height: 1.55; max-width: 74ch; }
+
+  /* SDG coverage table */
+  .tscroll { overflow-x: auto; margin-top: 18px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 560px; }
+  thead th {
+    text-align: left; padding: 9px 12px 9px 0; border-bottom: 2px solid var(--ink);
+    font: 700 10.5px/1 var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--ink);
+    white-space: nowrap;
+  }
+  thead th.r, tbody td.r { text-align: right; padding-right: 12px; }
+  tbody td { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tbody td.goal { font-weight: 700; white-space: nowrap; }
+  tbody td.num { font-variant-numeric: tabular-nums; text-align: right; padding-right: 12px; white-space: nowrap; }
+  tbody td.lead { color: var(--ink-soft); }
+
+  /* coverage & limitations */
+  .cov { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 18px; }
+  .cov h4 {
+    margin: 0 0 10px; font: 700 10.5px/1 var(--mono); letter-spacing: .07em; text-transform: uppercase;
+    color: var(--ink-soft); padding-bottom: 7px; border-bottom: 1px solid var(--line);
+  }
+  .cov ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 11px; }
+  .cov li { font-size: 13px; line-height: 1.55; padding-left: 16px; position: relative; color: var(--ink); }
+  .cov li::before { content: "—"; position: absolute; left: 0; color: var(--ink-faint); }
+  .cov li b { font-weight: 700; }
+
+  /* methodology */
+  .meth { font-size: 13px; color: var(--ink-soft); line-height: 1.7; margin-top: 16px; }
+  .meth dt { font-weight: 800; color: var(--ink); margin-top: 13px; }
+  .meth dd { margin: 3px 0 0; }
+  .meth .conf { margin-right: 12px; }
+
+  .colophon {
+    padding: 16px 40px; border-top: 1px solid var(--line);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+    font: 600 11px/1.4 var(--mono); letter-spacing: .03em; color: var(--ink-faint);
+  }
+
+  @media (max-width: 760px) { .ind-grid, .takeaways { grid-template-columns: 1fr; } }
+  @media (max-width: 680px) {
+    .masthead, .block, .colophon { padding-left: 22px; padding-right: 22px; }
+    .cov { grid-template-columns: 1fr; }
+    .glance .g { flex-basis: 50%; border-bottom: 1px solid var(--line); }
+  }
+</style>
+</head>
+<body>
+
+<div class="doc">
+
+  <p class="note">
+    <b>Report redesign — mockup, not the live build.</b> Every figure is real Sabah data compiled from
+    <code>indicators.json</code>. It shows the new direction: all ESG &amp; SDG indicators, each explained, in the
+    style of an official data profile. Switch your OS light/dark theme to check both.
+  </p>
+
+  <div class="sheet">
+
+    <!-- MASTHEAD -->
+    <div class="masthead">
+      <p class="eyebrow">Borneo Tracker · Sabah, Malaysia</p>
+      <h1>ESG &amp; SDG Data Profile</h1>
+      <p class="lead">
+        Every environmental, social and governance indicator we track for Sabah — compiled from official sources
+        and explained in plain language, so you can read the whole picture in one place instead of gathering each
+        figure yourself.
+      </p>
+
+      <div class="glance">
+        <div class="g"><div class="gk">Indicators</div><div class="gv">20</div></div>
+        <div class="g"><div class="gk">SDGs covered</div><div class="gv">11</div></div>
+        <div class="g"><div class="gk">Source families</div><div class="gv">8</div></div>
+        <div class="g"><div class="gk">Latest data</div><div class="gv">2026</div></div>
+        <div class="g"><div class="gk">Generated</div><div class="gv">13 Jul 2026</div></div>
+      </div>
+    </div>
+
+    <!-- EXECUTIVE SUMMARY -->
+    <div class="block summary">
+      <p class="eyebrow">Overview</p>
+      <h2>Executive Summary</h2>
+      <p>
+        This profile compiles <b>20 environmental, social and governance indicators</b> for Sabah from official
+        sources — the World Bank, Malaysia's OpenDOSM, Global Forest Watch, UNESCO and state agencies. Environmentally,
+        Sabah remains heavily forested but has lost about <b>1.8 million hectares of tree cover since 2000 (~27% of its
+        baseline)</b>, with 697 fire alerts in 2025 — the key signals for deforestation and haze due diligence.
+        Socially, near-universal basics sit alongside real gaps: 80.5% clean-water access, 5.7% unemployment, and a
+        <b>17.7% absolute poverty rate — the highest of any Malaysian state</b>. Governance is captured by a single
+        national indicator (Control of Corruption, 57.9 / 100).
+      </p>
+      <ul class="takeaways">
+        <li><b>Deforestation is the headline environmental signal</b> — 1.8M ha lost since 2000 (~27% of baseline), plus 697 fire alerts in 2025.</li>
+        <li><b>Poverty is the headline social gap</b> — 17.7%, the highest in Malaysia; unemployment (5.7%) is also above the ~3% national rate.</li>
+        <li><b>Coverage is deep on Social (13 indicators) but thin on Governance (1)</b> — detailed in Coverage &amp; Limitations below.</li>
+        <li><b>Some figures are national or hand-entered</b> — Control of Corruption is a national score applied to Sabah; life expectancy and tourist arrivals come from cited releases, not automated feeds.</li>
+      </ul>
+    </div>
+
+    <!-- ESG INDICATORS -->
+    <div class="block">
+      <p class="eyebrow">The data</p>
+      <h2>ESG Indicators</h2>
+      <p class="desc">All tracked indicators, grouped Environment · Social · Governance. Each shows its value, year, source and how far to trust it — with a one-line explanation of what it means.</p>
+
+      <!-- ENVIRONMENT -->
+      <div class="pillar">
+        <div class="pillar-head"><span class="pt">Environment</span><span class="pc">6 indicators</span></div>
+
+        <div class="ind-grid">
+        <div class="ind">
+          <div class="ind-top"><span class="ind-name">Tree-cover loss (cumulative)</span><span class="ind-val">1,803,226 <em>ha</em></span></div>
+          <div class="ind-meta">2001–2023 <span class="sep">·</span> Global Forest Watch <span class="sep">·</span> SDG 13 <span class="sep">·</span> <span class="conf high">High</span></div>
+          <p class="ind-exp">≈27% of Sabah's year-2000 forest lost over 22 years — the headline deforestation figure for EUDR-style sourcing checks.</p>
+        </div>
+        <div class="ind">
+          <div class="ind-top"><span class="ind-name">Fire alerts (VIIRS, annual)</span><span class="ind-val">697 <em>count</em></span></div>
+          <div class="ind-meta">2025 <span class="sep">·</span> Global Forest Watch (VIIRS) <span class="sep">·</span> SDG 13 <span class="sep">·</span> <span class="conf high">High</span></div>
+          <p class="ind-exp">Satellite-detected fire hotspots for 2025 — an early-warning proxy for land clearing and haze. Well above Brunei's 128.</p>
+        </div>
+        <div class="ind">
+          <div class="ind-top"><span class="ind-name">Forest extent (2000 baseline)</span><span class="ind-val">6,684,138 <em>ha</em></span></div>
+          <div class="ind-meta">2000 <span class="sep">·</span> Global Forest Watch <span class="sep">·</span> SDG 15 <span class="sep">·</span> <span class="conf high">High</span></div>
+          <p class="ind-exp">The year-2000 satellite forest baseline that loss is measured against. Sabah is among Borneo's most forested states.</p>
+        </div>
+        <div class="ind">
+          <div class="ind-top"><span class="ind-name">Air quality (AQI, live)</span><span class="ind-val">58 <em>AQI</em></span></div>
+          <div class="ind-meta">2026 <span class="sep">·</span> WAQI / aqicn <span class="sep">·</span> SDG 13 <span class="sep">·</span> <span class="conf med">Medium</span></div>
+          <p class="ind-exp">Live city-level index. 58 sits in the "Moderate" band (51–100) — generally acceptable, worse on haze days.</p>
+        </div>
+        <div class="ind">
+          <div class="ind-top"><span class="ind-name">National parks</span><span class="ind-val">9 <em>count</em></span></div>
+          <div class="ind-meta">2024 <span class="sep">·</span> Sabah Parks <span class="sep">·</span> SDG 15 <span class="sep">·</span> <span class="conf man">Manual</span></div>
+          <p class="ind-exp">Protected areas under Sabah Parks. "Park" is defined differently in each jurisdiction, so read as a coverage signal, not a cross-border ranking.</p>
+        </div>
+        <div class="ind">
+          <div class="ind-top"><span class="ind-name">Renewable electricity (% output)</span><span class="ind-val">17 <em>%</em></span></div>
+          <div class="ind-meta">2021 <span class="sep">·</span> World Bank <span class="sep">·</span> SDG 7 <span class="sep">·</span> <span class="conf med">Medium</span></div>
+          <p class="ind-exp">Share of power generated from renewables — most of Sabah's electricity is still fossil-based.</p>
+        </div>
+        </div>
+      </div>
+
+      <!-- SOCIAL -->
+      <div class="pillar">
+        <div class="pillar-head"><span class="pt">Social</span><span class="pc">13 indicators</span></div>
+
+        <div class="ind-grid">
+        <div class="ind">
+          <div class="ind-top"><span class="ind-name">Poverty rate (absolute)</span><span class="ind-val">17.7 <em>%</em></span></div>
+          <div class="ind-meta">2024 <span class="sep">·</span> data.gov.my / OpenDOSM <span class="sep">·</span> SDG 1 <span class="sep">·</span> <span class="conf high">High</span></div>
+          <p class="ind-exp">The highest absolute poverty rate of any Malaysian state — Sabah's most pressing social gap.</p>
+        </div>
+        <div class="ind">
+          <div class="ind-top"><span class="ind-name">Unemployment rate</span><span class="ind-val">5.7 <em>%</em></span></div>
+          <div class="ind-meta">2025 <span class="sep">·</span> data.gov.my / OpenDOSM <span class="sep">·</span> SDG 8 <span class="sep">·</span> <span class="conf high">High</span></div>
+          <p class="ind-exp">Above Malaysia's ~3% national rate — a softer labour market.</p>
+        </div>
+        <div class="ind">
+          <div class="ind-top"><span class="ind-name">Clean water access</span><span class="ind-val">80.5 <em>%</em></span></div>
+          <div class="ind-meta">2022 <span class="sep">·</span> data.gov.my / OpenDOSM <span class="sep">·</span> SDG 6 <span class="sep">·</span> <span class="conf high">High</span></div>
+          <p class="ind-exp">About 1 in 5 residents still lack reliable clean water — a live SDG 6 gap.</p>
+        </div>
+        <div class="ind">
+          <div class="ind-top"><span class="ind-name">Life expectancy</span><span class="ind-val">75.3 <em>years</em></span></div>
+          <div class="ind-meta">2024 <span class="sep">·</span> DOSM life tables <span class="sep">·</span> SDG 3 <span class="sep">·</span> <span class="conf man">Manual</span></div>
+          <p class="ind-exp">Life expectancy at birth, close to the national average — a summary health outcome.</p>
+        </div>
+        <div class="ind">
+          <div class="ind-top"><span class="ind-name">Hospital beds</span><span class="ind-val">5,053 <em>beds</em></span></div>
+          <div class="ind-meta">2022 <span class="sep">·</span> data.gov.my / OpenDOSM <span class="sep">·</span> SDG 3 <span class="sep">·</span> <span class="conf high">High</span></div>
+          <p class="ind-exp">Public hospital bed capacity; read against ~806k households for per-capita context.</p>
+        </div>
+        <div class="ind">
+          <div class="ind-top"><span class="ind-name">School enrolment</span><span class="ind-val">506,864 <em>students</em></span></div>
+          <div class="ind-meta">2022 <span class="sep">·</span> data.gov.my / OpenDOSM <span class="sep">·</span> SDG 4 <span class="sep">·</span> <span class="conf high">High</span></div>
+          <p class="ind-exp">Students enrolled — an education-participation volume (a count, not a rate).</p>
+        </div>
+        <div class="ind">
+          <div class="ind-top"><span class="ind-name">Crop production (paddy)</span><span class="ind-val">107,565 <em>tonnes</em></span></div>
+          <div class="ind-meta">2022 <span class="sep">·</span> data.gov.my / OpenDOSM <span class="sep">·</span> SDG 2 <span class="sep">·</span> <span class="conf high">High</span></div>
+          <p class="ind-exp">Annual rice output — a food-security indicator; Sabah is a notable Borneo rice producer.</p>
+        </div>
+        <div class="ind">
+          <div class="ind-top"><span class="ind-name">Electricity access</span><span class="ind-val">544,186 <em>households</em></span></div>
+          <div class="ind-meta">2021 <span class="sep">·</span> data.gov.my / OpenDOSM <span class="sep">·</span> SDG 7 <span class="sep">·</span> <span class="conf high">High</span></div>
+          <p class="ind-exp">Households connected to power, reported as a count — compare with the ~806k total households below.</p>
+        </div>
+        <div class="ind">
+          <div class="ind-top"><span class="ind-name">Households</span><span class="ind-val">806,300 <em>households</em></span></div>
+          <div class="ind-meta">2024 <span class="sep">·</span> data.gov.my / OpenDOSM <span class="sep">·</span> SDG 11 <span class="sep">·</span> <span class="conf high">High</span></div>
+          <p class="ind-exp">Total households — the denominator for the access counts above.</p>
+        </div>
+        <div class="ind">
+          <div class="ind-top"><span class="ind-name">GDP (real)</span><span class="ind-val">83,196.9 <em>RM mil</em></span></div>
+          <div class="ind-meta">2023 <span class="sep">·</span> data.gov.my / OpenDOSM <span class="sep">·</span> SDG 8 <span class="sep">·</span> <span class="conf high">High</span></div>
+          <p class="ind-exp">Real state GDP — roughly RM 83 billion, the size of Sabah's economy.</p>
+        </div>
+        <div class="ind">
+          <div class="ind-top"><span class="ind-name">GDP growth</span><span class="ind-val">1.33 <em>%</em></span></div>
+          <div class="ind-meta">2023 <span class="sep">·</span> data.gov.my / OpenDOSM <span class="sep">·</span> SDG 8 <span class="sep">·</span> <span class="conf high">High</span></div>
+          <p class="ind-exp">Year-on-year real growth — modest in 2023.</p>
+        </div>
+        <div class="ind">
+          <div class="ind-top"><span class="ind-name">Tourist arrivals</span><span class="ind-val">3,200,000 <em>arrivals</em></span></div>
+          <div class="ind-meta">2024 <span class="sep">·</span> Sabah state (via press) <span class="sep">·</span> SDG 8 <span class="sep">·</span> <span class="conf man">Manual</span></div>
+          <p class="ind-exp">2024 visitor arrivals — a proxy for the nature-tourism economy (Kinabalu, diving).</p>
+        </div>
+        <div class="ind">
+          <div class="ind-top"><span class="ind-name">UNESCO World Heritage Sites</span><span class="ind-val">1 <em>count</em></span></div>
+          <div class="ind-meta">2026 <span class="sep">·</span> UNESCO World Heritage List <span class="sep">·</span> SDG 11 <span class="sep">·</span> <span class="conf high">High</span></div>
+          <p class="ind-exp">Kinabalu Park — Sabah's sole World Heritage site; natural-heritage and tourism weight.</p>
+        </div>
+        </div>
+      </div>
+
+      <!-- GOVERNANCE -->
+      <div class="pillar">
+        <div class="pillar-head"><span class="pt">Governance</span><span class="pc">1 indicator</span></div>
+
+        <div class="ind">
+          <div class="ind-top"><span class="ind-name">Control of Corruption (WGI)</span><span class="ind-val">57.9 <em>/100</em></span></div>
+          <div class="ind-meta">2024 <span class="sep">·</span> World Bank WGI <span class="sep">·</span> SDG 16 <span class="sep">·</span> <span class="conf med">Medium</span></div>
+          <p class="ind-exp">A national Malaysia governance score applied to Sabah — mid-range globally. No state-specific governance data is available yet.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SDG COVERAGE -->
+    <div class="block">
+      <p class="eyebrow">The other lens</p>
+      <h2>SDG Coverage</h2>
+      <p class="desc">The same indicators mapped to the UN Sustainable Development Goals they inform — so a reader working from SDGs, not ESG pillars, can find what's covered.</p>
+
+      <div class="tscroll">
+        <table>
+          <thead>
+            <tr><th>Goal</th><th class="r">Indicators</th><th class="r">Latest</th><th>Lead indicator</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="goal">SDG 1 · No Poverty</td><td class="num">1</td><td class="num">2024</td><td class="lead">Poverty rate 17.7%</td></tr>
+            <tr><td class="goal">SDG 2 · Zero Hunger</td><td class="num">1</td><td class="num">2022</td><td class="lead">Paddy production 107,565 t</td></tr>
+            <tr><td class="goal">SDG 3 · Good Health</td><td class="num">2</td><td class="num">2024</td><td class="lead">Life expectancy 75.3 yrs</td></tr>
+            <tr><td class="goal">SDG 4 · Quality Education</td><td class="num">1</td><td class="num">2022</td><td class="lead">School enrolment 506,864</td></tr>
+            <tr><td class="goal">SDG 6 · Clean Water</td><td class="num">1</td><td class="num">2022</td><td class="lead">Clean-water access 80.5%</td></tr>
+            <tr><td class="goal">SDG 7 · Affordable Energy</td><td class="num">2</td><td class="num">2021</td><td class="lead">Electricity access 544,186 hh</td></tr>
+            <tr><td class="goal">SDG 8 · Decent Work &amp; Growth</td><td class="num">4</td><td class="num">2025</td><td class="lead">GDP RM 83.2bn · Unemployment 5.7%</td></tr>
+            <tr><td class="goal">SDG 11 · Sustainable Cities</td><td class="num">2</td><td class="num">2026</td><td class="lead">Households 806,300 · 1 WHS</td></tr>
+            <tr><td class="goal">SDG 13 · Climate Action</td><td class="num">3</td><td class="num">2026</td><td class="lead">Fire alerts 697 · AQI 58</td></tr>
+            <tr><td class="goal">SDG 15 · Life on Land</td><td class="num">2</td><td class="num">2024</td><td class="lead">Forest 6.68M ha · 9 parks</td></tr>
+            <tr><td class="goal">SDG 16 · Peace &amp; Justice</td><td class="num">1</td><td class="num">2024</td><td class="lead">Control of Corruption 57.9</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- COVERAGE & LIMITATIONS -->
+    <div class="block">
+      <p class="eyebrow">Honesty</p>
+      <h2>Coverage &amp; Limitations</h2>
+      <p class="desc">Exactly what this profile does <em>not</em> cover, and which figures to treat with care — so a gap is never mistaken for a zero.</p>
+
+      <div class="cov">
+        <div>
+          <h4>Gaps in coverage</h4>
+          <ul>
+            <li><b>Governance is thin</b> — a single indicator (Control of Corruption), and it's a national figure, not state-specific. No state-level governance data yet.</li>
+            <li><b>No emissions / greenhouse-gas indicator</b> — climate coverage is currently fire, air quality and forest-loss proxies only.</li>
+            <li><b>Several social figures are absolute counts, not rates</b> — electricity access, school enrolment, hospital beds and households are volumes; without population normalisation they aren't directly comparable to other territories.</li>
+          </ul>
+        </div>
+        <div>
+          <h4>Measured but flagged</h4>
+          <ul>
+            <li><span class="conf man">Manual</span> Life expectancy, tourist arrivals and national parks are hand-entered from cited government / press releases, not automated feeds.</li>
+            <li><span class="conf med">Medium</span> Air quality is one live city station; Control of Corruption and renewable-share are national proxies applied to the state.</li>
+            <li><b>Mixed vintages</b> — figures range from a 2000 forest baseline to 2026 live readings; each row shows its own year rather than a single "as of" date.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- METHODOLOGY -->
+    <div class="block">
+      <p class="eyebrow">Provenance</p>
+      <h2>Methodology &amp; Sources</h2>
+      <dl class="meth">
+        <dt>Confidence ratings</dt>
+        <dd>
+          <span class="conf high">High</span> officially measured or a live feed
+          <span class="conf med">Medium</span> modelled, or a national figure applied to the state
+          <span class="conf man">Manual</span> hand-entered from a cited report
+        </dd>
+        <dt>Sources in this profile</dt>
+        <dd>World Bank · World Bank WGI · data.gov.my / OpenDOSM · Global Forest Watch · WAQI / aqicn · UNESCO · Sabah Parks · DOSM</dd>
+        <dt>Note on figures</dt>
+        <dd>Values are shown as reported by each source, at the geographic level indicated (state, national or satellite). No values are estimated or imputed to fill gaps.</dd>
+      </dl>
+    </div>
+
+    <div class="colophon">
+      <span>Borneo Tracker · ESG &amp; SDG Data Profile</span>
+      <span>Sabah, Malaysia</span>
+      <span>Generated 13 Jul 2026</span>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
