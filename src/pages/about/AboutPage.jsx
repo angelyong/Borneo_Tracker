@@ -158,9 +158,12 @@ export default function AboutPage() {
 
       <Section title="The Resilience Score">
         <p style={{ maxWidth: '72ch', color: 'var(--color-muted)', lineHeight: 1.65, margin: '0 0 22px' }}>
-          Beyond the individual indicators, Borneo Tracker rolls the data up into one Resilience Score
-          for each territory — a 0–100 measure of how well a place can sustain its people across the six
-          essentials of daily life, instead of judging progress by income alone.
+          <b style={{ color: 'var(--color-ink)' }}>“Resilience”</b> here simply means how well a place can
+          look after its own people across life’s essentials — from food and energy to housing, healthcare,
+          education and everyday wellbeing — even when times get hard. A territory can look wealthy on paper
+          yet still be fragile if just one of these essentials is weak. Borneo Tracker turns the data into a
+          single 0–100 <b style={{ color: 'var(--color-ink)' }}>Resilience Score</b> that measures exactly
+          this, rather than judging a place by income alone.
         </p>
         <div className="monitor-grid">
           <InfoCard
@@ -174,7 +177,7 @@ export default function AboutPage() {
           <InfoCard
             item={{
               title: 'Resilience by Pillar',
-              body: 'The score split into six survival pillars — Food, Energy, Education, Shelter, Healthcare and Entertainment — shown as a hexagon and a weakest-first list, so you can see which essential is holding a territory back.',
+              body: 'The score broken into its six essentials — Food, Energy, Education, Shelter, Healthcare and Entertainment — shown as a hexagon and a weakest-first list, so you can see which one is holding a territory back.',
               icon: HexagonIcon,
               tone: 'amber',
             }}
