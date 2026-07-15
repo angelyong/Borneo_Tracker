@@ -33,6 +33,7 @@ import PillarCoverage from '../../components/PillarCoverage';
 import ProvenanceChip from '../../components/ProvenanceChip';
 import WeakestLinkBars from '../../components/WeakestLinkBars';
 import MoneyVsResilience from '../../components/MoneyVsResilience';
+import HexRadar from '../../components/HexRadar';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -228,84 +229,8 @@ function RagGauge({ score, thresholds }) {
   );
 }
 
-function HexRadar({ pillars, max, weakest }) {
-  const keys = Object.keys(pillars);
-  const values = Object.values(pillars);
-  const cx = 90;
-  const cy = 90;
-  const maxR = 60;
-  const n = keys.length;
-  // When plotting 0-100 scores, pass max={100} for a fixed scale; otherwise (raw
-  // counts) fall back to auto-scaling against the largest value.
-  const MAX = max || Math.max(...values, 1);
-
-  const angleOf = (i) => Math.PI / 2 - (2 * Math.PI * i) / n;
-
-  const rings = [0.25, 0.5, 0.75, 1.0].map((frac) =>
-    keys
-      .map((_, i) => {
-        const a = angleOf(i);
-        return `${cx + maxR * frac * Math.cos(a)},${cy - maxR * frac * Math.sin(a)}`;
-      })
-      .join(' ')
-  );
-
-  const dataPoints = values.map((v, i) => {
-    const a = angleOf(i);
-    const frac = v / MAX;
-    return `${cx + maxR * frac * Math.cos(a)},${cy - maxR * frac * Math.sin(a)}`;
-  });
-
-  const axes = keys.map((_, i) => {
-    const a = angleOf(i);
-    return {
-      x: cx + maxR * Math.cos(a),
-      y: cy - maxR * Math.sin(a),
-    };
-  });
-
-  return (
-    <svg viewBox="-26 -14 232 208" style={{ ...styles.hexSvg, overflow: 'visible' }}>
-      {rings.map((pts, i) => (
-        <polygon key={i} points={pts} fill="none" stroke="var(--color-border)" strokeWidth="0.8" />
-      ))}
-
-      {axes.map((pt, i) => (
-        <line key={i} x1={cx} y1={cy} x2={pt.x} y2={pt.y} stroke="var(--color-border)" strokeWidth="0.8" />
-      ))}
-
-      <polygon points={dataPoints.join(' ')} fill="rgba(61,184,138,0.25)" stroke="#3db88a" strokeWidth="1.5" />
-
-      <text x={cx} y={cy + 5} textAnchor="middle" fontSize="18">
-        🌿
-      </text>
-
-      {keys.map((key, i) => {
-        const a = angleOf(i);
-        const lx = cx + (maxR + 20) * Math.cos(a);
-        const ly = cy - (maxR + 20) * Math.sin(a);
-
-        return (
-          <g key={key}>
-            <text x={lx} y={ly - 4} textAnchor="middle" fontSize="10" fontWeight="600" fill="var(--color-ink)">
-              {values[i]}
-            </text>
-            <text
-              x={lx}
-              y={ly + 8}
-              textAnchor="middle"
-              fontSize="8"
-              fontWeight={key === weakest ? '700' : '400'}
-              fill={key === weakest ? 'var(--color-red)' : 'var(--color-muted)'}
-            >
-              {key}
-            </text>
-          </g>
-        );
-      })}
-    </svg>
-  );
-}
+// HexRadar moved to src/components/HexRadar.jsx (imported above) to de-duplicate —
+// Regional_Detail renders the same shared component.
 
 const OverviewDashboard = () => {
   const [searchText, setSearchText] = useState('');
