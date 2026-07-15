@@ -9,9 +9,19 @@
 > **Key finding:** Brunei's index only fell 89.2 → 74.8 (still green) — the arithmetic mean *dilutes*
 > the catastrophic Food=8 with 4 strong pillars. This validates 0.6: the weakest-link hero (not the
 > average) must carry the story. Open question: bring the geometric "strict mode" forward so the
-> headline number itself reflects fragility (Brunei strict ≈ 56 → amber)? Next: Phase 2 (surface E)
-> + Phase 3 (weakest-link UI, fix count-radar `useIndicators.js:419`). Data gap: Sabah/Sarawak lack
-> scoreable Energy+Education; Brunei/others Shelter canonical = Households count (not scored).
+> headline number itself reflects fragility (Brunei strict ≈ 62 → amber)?
+>
+> **Phase 1b DONE:** filled Sabah/Sarawak Education (Mean Years Schooling 8.7, GDL 2023), Sarawak
+> Energy (Electrification 99.4%, SEB — already in manual_overrides), Brunei Shelter (sanitation 100%).
+> Fixed the **systemic canonical bug** (absolute counts were beating scoreable %/years indicators):
+> `canonical_sort_key` now ranks curated indicator priority before data level, + energy/shelter
+> priority reordered. **3/4 territories now at 6/6**; only **Sabah Energy** remains an honest gap
+> (no valid published electrification % found — never imputed). **Consistency note (answers Q4):**
+> territories already use different indicators per pillar (Energy: Brunei "Electricity access %" vs
+> Sarawak/Kalimantan "Electrification ratio %"; Education: Brunei "Adult literacy %" vs others "Mean
+> years schooling, years") — comparison is at the normalised 0–100 score level, not the raw indicator.
+> Next: Phase 2 (surface E) + Phase 3 (weakest-link UI, fix count-radar `useIndicators.js:419`).
+> Open: strict mode? · Sabah Energy source? · Phase 2 or 3 next?
 > **Purpose:** Tighten the product's link to the supervisor's **ABCDE Framework**, and make the
 > **True Wealth Hexagon + Resilience Index** (the hero) *credible, capable, and valuable*.
 > **Pairs with:** the `borneo-abcde-framework` skill (thinking lens),

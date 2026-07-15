@@ -7,24 +7,25 @@
   },
   "territories": {
     "Sabah": {
-      "index": 65.5,
+      "index": 61.4,
       "rag": "amber",
       "weakestPillar": "Food",
       "pillarScores": {
         "Food": 28.7,
+        "Education": 45.0,
         "Shelter": 61.0,
         "Healthcare": 76.5,
         "Entertainment": 96.0
       },
       "scoredPillars": [
+        "Education",
         "Entertainment",
         "Food",
         "Healthcare",
         "Shelter"
       ],
       "unscoredPillars": [
-        "Energy",
-        "Education"
+        "Energy"
       ],
       "detail": {
         "Food": [
@@ -33,6 +34,15 @@
             "value": 28.7,
             "unit": "kg/capita",
             "score": 28.7,
+            "confidence": "medium"
+          }
+        ],
+        "Education": [
+          {
+            "indicator": "Mean years schooling (RLS)",
+            "value": 8.7,
+            "unit": "years",
+            "score": 45.0,
             "confidence": "medium"
           }
         ],
@@ -66,25 +76,26 @@
       }
     },
     "Sarawak": {
-      "index": 72.8,
+      "index": 72.5,
       "rag": "green",
-      "weakestPillar": "Food",
+      "weakestPillar": "Education",
       "pillarScores": {
         "Food": 50.7,
+        "Energy": 98.8,
+        "Education": 45.0,
         "Shelter": 67.4,
         "Healthcare": 77.0,
         "Entertainment": 96.0
       },
       "scoredPillars": [
+        "Education",
+        "Energy",
         "Entertainment",
         "Food",
         "Healthcare",
         "Shelter"
       ],
-      "unscoredPillars": [
-        "Energy",
-        "Education"
-      ],
+      "unscoredPillars": [],
       "detail": {
         "Food": [
           {
@@ -92,6 +103,24 @@
             "value": 50.7,
             "unit": "kg/capita",
             "score": 50.7,
+            "confidence": "medium"
+          }
+        ],
+        "Energy": [
+          {
+            "indicator": "Electrification ratio",
+            "value": 99.4,
+            "unit": "%",
+            "score": 98.8,
+            "confidence": "manual"
+          }
+        ],
+        "Education": [
+          {
+            "indicator": "Mean years schooling (RLS)",
+            "value": 8.7,
+            "unit": "years",
+            "score": 45.0,
             "confidence": "medium"
           }
         ],
@@ -125,13 +154,14 @@
       }
     },
     "Brunei": {
-      "index": 74.8,
+      "index": 79.0,
       "rag": "green",
       "weakestPillar": "Food",
       "pillarScores": {
         "Food": 8.1,
         "Energy": 100.0,
         "Education": 90.2,
+        "Shelter": 100.0,
         "Healthcare": 77.5,
         "Entertainment": 98.0
       },
@@ -140,11 +170,10 @@
         "Energy",
         "Entertainment",
         "Food",
-        "Healthcare"
-      ],
-      "unscoredPillars": [
+        "Healthcare",
         "Shelter"
       ],
+      "unscoredPillars": [],
       "detail": {
         "Food": [
           {
@@ -170,6 +199,15 @@
             "value": 96.0899963378906,
             "unit": "%",
             "score": 90.2,
+            "confidence": "high"
+          }
+        ],
+        "Shelter": [
+          {
+            "indicator": "Basic sanitation access",
+            "value": 100.0,
+            "unit": "%",
+            "score": 100.0,
             "confidence": "high"
           }
         ],

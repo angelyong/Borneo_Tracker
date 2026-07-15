@@ -35,6 +35,22 @@ INTERNET_USE = {
     "Kalimantan": (76.1, "BPS — Kalimantan region internet access, 2024", "national"),
 }
 
+# Sourced state indicators filling scoreable gaps with valid official figures
+# (Phase 1). Sabah/Sarawak previously had Energy as a household COUNT and Education
+# as an enrolment COUNT — neither comparable. These add the %/years equivalents so
+# the pillars score, using the SAME indicators as the other territories.
+# (territory, indicator, value, unit, year, source, data_level)
+SOURCED_ROWS = [
+    # Sarawak electrification (99.4%) already lives in manual_overrides.csv; it becomes
+    # canonical via the CONCEPT_PRIORITY reorder + canonical_sort_key fix below.
+    ("Sabah", "Mean years schooling (RLS)", 8.7, "years", "2023",
+     "Global Data Lab — Subnational HDI, mean years schooling, 2023", "modeled"),
+    ("Sarawak", "Mean years schooling (RLS)", 8.7, "years", "2023",
+     "Global Data Lab — Subnational HDI, mean years schooling, 2023", "modeled"),
+    # NOTE: Sabah electrification rate could not be sourced as a valid published % —
+    # left unscored (never imputed) until an official figure is available.
+]
+
 SUM_INDICATORS = {
     "Crop production (paddy)",
     "Fire alerts (VIIRS, annual)",
@@ -71,8 +87,11 @@ CONCEPT_PRIORITY = {
     ],
     "governance": ["Control of Corruption (WGI)"],
     "food": ["Crop production (paddy)", "Agricultural land"],
-    "energy": ["Electricity access", "Electrification ratio", "Renewable electricity (% output)"],
-    "shelter": ["Households", "Basic sanitation access"],
+    # 2026-07-15 (Phase 1): prefer the %-based electrification ratio over the absolute
+    # "Electricity access" household COUNT, so the scoreable indicator wins canonical.
+    "energy": ["Electrification ratio", "Electricity access", "Renewable electricity (% output)"],
+    # 2026-07-15 (Phase 1): prefer the scoreable sanitation % over the household COUNT.
+    "shelter": ["Basic sanitation access", "Households"],
     "entertainment": ["Tourist arrivals", "Tourist trips (domestic)"],
     "heritage": ["UNESCO World Heritage Sites"],
 }
@@ -244,10 +263,15 @@ def data_level_rank(row):
 
 
 def canonical_sort_key(row):
+    # 2026-07-15 (Phase 1): rank the curated per-concept indicator priority BEFORE data
+    # level, so a scoreable %/years indicator wins over an absolute count that merely
+    # happens to sit at a more-local data level (e.g. Electrification ratio > Electricity
+    # access households; Mean years schooling > School enrolment count). is_derived stays
+    # first so real rows still beat derived aggregates.
     return (
         row.get("is_derived", 0),
-        data_level_rank(row),
         indicator_rank(row),
+        data_level_rank(row),
         -sort_year_key(row["year"]),
         row["indicator"],
     )
@@ -404,6 +428,28 @@ def build_internet_rows():
     return rows
 
 
+def build_sourced_rows():
+    """Valid official figures added to fill scoreable pillar gaps (Phase 1). Uses the
+    same indicator names as other territories so they share BOUNDS and are comparable
+    at the normalised 0-100 score level."""
+    rows = []
+    for territory, indicator, value, unit, year, source, data_level in SOURCED_ROWS:
+        rows.append(
+            build_processed_row(
+                {
+                    "indicator": indicator,
+                    "territory": territory,
+                    "year": year,
+                    "value": str(value),
+                    "unit": unit,
+                    "source": source,
+                    "data_level": data_level,
+                }
+            )
+        )
+    return rows
+
+
 def build_percapita_food_rows(rows):
     """Food-pillar (Phase 1, C1=A): paddy production is stored in tonnes (an absolute
     count that can't be compared across territories). Divide by population to get a
@@ -451,6 +497,7 @@ def load_indicator_rows():
     processed.extend(build_manual_processed_rows(load_manual_rows()))
     processed.extend(build_kalimantan_aggregates(raw_rows))
     processed.extend(build_internet_rows())
+    processed.extend(build_sourced_rows())
     processed.extend(build_percapita_food_rows(processed))
     assign_canonical(processed)
     return processed
