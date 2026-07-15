@@ -1,0 +1,18 @@
+# Normalise line endings so Windows stops producing spurious CRLF/LF "whole file
+# changed" diffs (e.g. the daily data-refresh CSVs / JSONs that showed hundreds of
+# fake line changes). Text is stored as LF in the repo; existing files normalise the
+# next time they're committed — no disruptive one-shot renormalise on shared master.
+* text=auto eol=lf
+
+# Binary assets — never normalise or diff as text.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.pdf   binary
+*.docx  binary
+*.xlsx  binary
+*.db    binary
+*.woff  binary
+*.woff2 binary
