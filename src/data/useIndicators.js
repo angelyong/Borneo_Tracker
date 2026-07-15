@@ -396,9 +396,11 @@ export function getAvailableConcepts(rows, territory = null) {
     'education',
     'governance',
     'food',
+    'food_percapita',
     'energy',
     'shelter',
     'entertainment',
+    'internet_use',
   ];
   const sampleByConcept = new Map();
   rows
