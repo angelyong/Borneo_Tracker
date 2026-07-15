@@ -70,6 +70,16 @@ export default function MoneyVsResilience({ gdpPerCapita, territories }) {
         role="img"
         aria-label="Scatter plot of GDP per capita versus Resilience Index for the four Borneo territories, showing that Brunei has the highest income but not the highest resilience."
       >
+        {/* Plot area — a subtle backdrop so the chart reads as a chart */}
+        <rect
+          x={PLOT_LEFT}
+          y={PLOT_TOP}
+          width={PLOT_W}
+          height={PLOT_H}
+          fill="var(--color-grey-soft)"
+          opacity="0.45"
+        />
+
         {/* Gridlines (faint) */}
         {X_TICKS.map((v) => (
           <line
@@ -78,7 +88,7 @@ export default function MoneyVsResilience({ gdpPerCapita, territories }) {
             y1={PLOT_TOP}
             x2={sx(v)}
             y2={PLOT_BOTTOM}
-            stroke="var(--color-border)"
+            stroke="var(--color-faint)"
             strokeWidth="1"
             opacity="0.5"
           />
@@ -90,7 +100,7 @@ export default function MoneyVsResilience({ gdpPerCapita, territories }) {
             y1={sy(v)}
             x2={PLOT_RIGHT}
             y2={sy(v)}
-            stroke="var(--color-border)"
+            stroke="var(--color-faint)"
             strokeWidth="1"
             opacity="0.5"
           />
@@ -102,7 +112,7 @@ export default function MoneyVsResilience({ gdpPerCapita, territories }) {
           y1={PLOT_TOP}
           x2={PLOT_LEFT}
           y2={PLOT_BOTTOM}
-          stroke="var(--color-border)"
+          stroke="var(--color-faint)"
           strokeWidth="1.5"
         />
         <line
@@ -110,7 +120,7 @@ export default function MoneyVsResilience({ gdpPerCapita, territories }) {
           y1={PLOT_BOTTOM}
           x2={PLOT_RIGHT}
           y2={PLOT_BOTTOM}
-          stroke="var(--color-border)"
+          stroke="var(--color-faint)"
           strokeWidth="1.5"
         />
 
