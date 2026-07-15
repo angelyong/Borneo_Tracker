@@ -33,8 +33,14 @@
 > strict mode, RAG 70/40, and the never-imputed confidence layer. Theme-aware; esbuild-verified. ⚠️ A
 > live build/run is currently blocked by PRE-EXISTING merge conflicts in
 > `src/pages/reports/GenerateReportPage.jsx` + `ReportSections.jsx` (unrelated to this work).
-> **Next: Phase 3 (weakest-link hero UI, GDP-vs-Resilience, surface strict index, fix count-radar
-> `useIndicators.js:419`).**
+> **Phase 3 core DONE:** the hexagon now tells the truth. HexRadar gained a `max` prop → the Overview
+> radar plots real 0–100 `pillarScores` (not indicator counts), fixed to a 100 scale, with the weakest
+> pillar in red; new `WeakestLinkBars` component (pillars ranked weakest-first, bars fill toward the 100
+> target) is the honest hero; the strict (geometric) index + fragility gap now render under the headline
+> index; `resilienceView` enriched with strict/weakest/pillarScores incl. an All-Borneo per-pillar
+> average. Build verified (`npm run build` ✓). **Remaining Phase 3 (optional):** GDP-vs-Resilience
+> juxtaposition; 4-territory small-multiples; apply the same score-radar to Regional_Detail (still
+> uses count-based `getHexagonCoverage`).
 > **Purpose:** Tighten the product's link to the supervisor's **ABCDE Framework**, and make the
 > **True Wealth Hexagon + Resilience Index** (the hero) *credible, capable, and valuable*.
 > **Pairs with:** the `borneo-abcde-framework` skill (thinking lens),

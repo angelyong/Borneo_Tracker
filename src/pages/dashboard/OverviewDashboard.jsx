@@ -30,6 +30,7 @@ import L from 'leaflet';
 
 import PillarCoverage from '../../components/PillarCoverage';
 import ProvenanceChip from '../../components/ProvenanceChip';
+import WeakestLinkBars from '../../components/WeakestLinkBars';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -225,14 +226,16 @@ function RagGauge({ score, thresholds }) {
   );
 }
 
-function HexRadar({ pillars }) {
+function HexRadar({ pillars, max, weakest }) {
   const keys = Object.keys(pillars);
   const values = Object.values(pillars);
   const cx = 90;
   const cy = 90;
   const maxR = 60;
   const n = keys.length;
-  const MAX = Math.max(...values, 1);
+  // When plotting 0-100 scores, pass max={100} for a fixed scale; otherwise (raw
+  // counts) fall back to auto-scaling against the largest value.
+  const MAX = max || Math.max(...values, 1);
 
   const angleOf = (i) => Math.PI / 2 - (2 * Math.PI * i) / n;
 
@@ -285,7 +288,14 @@ function HexRadar({ pillars }) {
             <text x={lx} y={ly - 4} textAnchor="middle" fontSize="10" fontWeight="600" fill="var(--color-ink)">
               {values[i]}
             </text>
-            <text x={lx} y={ly + 8} textAnchor="middle" fontSize="8" fill="var(--color-muted)">
+            <text
+              x={lx}
+              y={ly + 8}
+              textAnchor="middle"
+              fontSize="8"
+              fontWeight={key === weakest ? '700' : '400'}
+              fill={key === weakest ? 'var(--color-red)' : 'var(--color-muted)'}
+            >
               {key}
             </text>
           </g>
@@ -674,6 +684,10 @@ const OverviewDashboard = () => {
       return {
         index: territory.index,
         rag: territory.rag,
+        indexStrict: territory.indexStrict,
+        ragStrict: territory.ragStrict,
+        weakestPillar: territory.weakestPillar,
+        pillarScores: territory.pillarScores,
         thresholds,
         note: `Weakest pillar: ${territory.weakestPillar} · ${territory.scoredPillars.length}/6 pillars scored`,
       };
@@ -687,11 +701,31 @@ const OverviewDashboard = () => {
     const index = Math.round(avg * 10) / 10;
     const rag = index >= thresholds.green ? 'green' : index >= thresholds.amber ? 'amber' : 'red';
 
+    // All-Borneo hexagon = the per-pillar average across territories; strict = its
+    // geometric mean; weakest = the lowest averaged pillar.
+    const PILL = ['Food', 'Energy', 'Education', 'Shelter', 'Healthcare', 'Entertainment'];
+    const pillarScores = {};
+    PILL.forEach((p) => {
+      const vals = scored.map((t) => t.pillarScores?.[p]).filter(Number.isFinite);
+      if (vals.length) pillarScores[p] = Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10;
+    });
+    const pv = Object.values(pillarScores);
+    const strict = pv.length ? Math.round(Math.pow(pv.reduce((a, b) => a * b, 1), 1 / pv.length) * 10) / 10 : null;
+    const ragStrict =
+      strict == null ? null : strict >= thresholds.green ? 'green' : strict >= thresholds.amber ? 'amber' : 'red';
+    const weakestPillar = pv.length
+      ? Object.keys(pillarScores).reduce((m, p) => (pillarScores[p] < pillarScores[m] ? p : m), Object.keys(pillarScores)[0])
+      : null;
+
     return {
       index,
       rag,
+      indexStrict: strict,
+      ragStrict,
+      weakestPillar,
+      pillarScores,
       thresholds,
-      note: `Average of ${scored.length} territories`,
+      note: `Average of ${scored.length} territories${weakestPillar ? ` · weakest: ${weakestPillar}` : ''}`,
     };
   }, [isDistrict, isOverall, panelTerritory, resilience]);
 
@@ -723,6 +757,19 @@ const OverviewDashboard = () => {
 
     return totals;
   }, [data, isDistrict, isOverall, panelTerritory, scopeRows, scopeName]);
+
+  // Real 0-100 pillar SCORES for the radar (territory level). Falls back to 0 for any
+  // unscored pillar so the hexagon keeps all six vertices. Districts have no scores.
+  const hexScores = useMemo(() => {
+    if (isDistrict) return null;
+    const ps = resilienceView?.pillarScores;
+    if (!ps) return null;
+    const out = {};
+    ['Food', 'Energy', 'Education', 'Shelter', 'Healthcare', 'Entertainment'].forEach((p) => {
+      out[p] = Number.isFinite(ps[p]) ? ps[p] : 0;
+    });
+    return out;
+  }, [isDistrict, resilienceView]);
 
   // True when the hexagon has at least one scored pillar (districts often don't).
   const hasHexCoverage = useMemo(
@@ -1062,6 +1109,18 @@ const OverviewDashboard = () => {
                 <span style={styles.scoreCaption}>Resilience Index (0–100)</span>
               </div>
 
+              {Number.isFinite(resilienceView.indexStrict) && (
+                <div style={styles.trendRow}>
+                  <span style={styles.trendLabel}>
+                    Strict (True Resilience):{' '}
+                    <b style={{ color: RAG_COLORS[resilienceView.ragStrict] || 'inherit' }}>
+                      {resilienceView.indexStrict}
+                    </b>{' '}
+                    · fragility gap −{Math.round((resilienceView.index - resilienceView.indexStrict) * 10) / 10}
+                  </span>
+                </div>
+              )}
+
               <div style={styles.trendRow}>
                 <span style={styles.trendLabel}>{resilienceView.note}</span>
               </div>
@@ -1072,33 +1131,37 @@ const OverviewDashboard = () => {
         </div>
 
         <div style={styles.card}>
-          <div style={styles.sectionTitle}>Pillar Coverage</div>
-          <div style={styles.sectionSubtitle}>(True Wealth Hexagon · indicators per pillar)</div>
+          <div style={styles.sectionTitle}>{isDistrict ? 'Pillar Coverage' : 'Resilience by Pillar'}</div>
+          <div style={styles.sectionSubtitle}>
+            {isDistrict
+              ? '(True Wealth Hexagon · indicators per pillar)'
+              : '(True Wealth Hexagon · 0–100 resilience score)'}
+          </div>
 
-          {hasHexCoverage ? (
-            <HexRadar pillars={hexCoverage} />
-          ) : isDistrict ? (
-            <div style={styles.stateText}>
-              Hexagon pillars aren't mapped at district level yet — see the ESG &amp; layer figures below
-              for {scopeName || 'this district'}.
-            </div>
-          ) : hexCoverage ? (
-            <HexRadar pillars={hexCoverage} />
+          {isDistrict ? (
+            hasHexCoverage ? (
+              <HexRadar pillars={hexCoverage} />
+            ) : (
+              <div style={styles.stateText}>
+                Hexagon pillars aren't mapped at district level yet — see the ESG &amp; layer figures below
+                for {scopeName || 'this district'}.
+              </div>
+            )
+          ) : hexScores ? (
+            <HexRadar pillars={hexScores} max={100} weakest={resilienceView?.weakestPillar} />
           ) : (
-            <div style={styles.stateText}>Loading indicator data…</div>
+            <div style={styles.stateText}>Loading resilience scores…</div>
           )}
 
-          {!isDistrict && (
+          {!isDistrict && resilienceView?.pillarScores && (
             <div style={{ marginTop: 14, borderTop: '1px solid var(--color-border)', paddingTop: 12 }}>
-              {isOverall ? (
-                <div style={styles.stateText}>
-                  Select a territory to see pillar-by-pillar provenance.
-                </div>
-              ) : resilience?.territories?.[panelTerritory] ? (
-                <PillarCoverage territory={resilience.territories[panelTerritory]} />
-              ) : (
-                <div style={styles.stateText}>Loading pillar provenance…</div>
-              )}
+              <WeakestLinkBars territory={resilienceView} />
+            </div>
+          )}
+
+          {!isDistrict && !isOverall && resilience?.territories?.[panelTerritory] && (
+            <div style={{ marginTop: 14, borderTop: '1px solid var(--color-border)', paddingTop: 12 }}>
+              <PillarCoverage territory={resilience.territories[panelTerritory]} />
             </div>
           )}
         </div>
