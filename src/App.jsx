@@ -9,7 +9,6 @@ import NewsDetailPage from './pages/news/NewsDetailPage';
 import NewsReview from './pages/admin/news/NewsReview';
 import AdminLogin from './pages/admin/AdminLogin';
 import AboutPage from './pages/about/AboutPage';
-import MethodologyPage from './pages/methodology/MethodologyPage';
 import CommunityPage from './pages/community/CommunityPage';
 import GenerateReportPage from './pages/reports/GenerateReportPage';
 import LoginPage from './pages/auth/LoginPage';
@@ -48,7 +47,6 @@ function App() {
          
           <Route path="/data-sources" element={<Placeholder title="Data Sources" />} />
           <Route path="/about" element={<AboutPage />} />
-          <Route path="/methodology" element={<MethodologyPage />} />
           <Route path="/profile" element={<MyProfile />} />
         </Route>
       </Routes>

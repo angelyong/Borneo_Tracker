@@ -28,11 +28,12 @@
 >
 > **Phase 2 DONE (surface E):** `resilience.json` detail now carries `source`+`year`; new reusable
 > `ProvenanceChip` + `PillarCoverage` components; wired into Overview (pillar-provenance block + chips
-> on indicator rows; stale 67/34 fallback → 70/40) and Regional Detail; new **Methodology page**
-> (`/methodology` + sidebar link) covering target-normalisation, equal weight, arithmetic-vs-geometric
-> strict mode, RAG 70/40, and the never-imputed confidence layer. Theme-aware; esbuild-verified. ⚠️ A
-> live build/run is currently blocked by PRE-EXISTING merge conflicts in
-> `src/pages/reports/GenerateReportPage.jsx` + `ReportSections.jsx` (unrelated to this work).
+> on indicator rows; stale 67/34 fallback → 70/40) and Regional Detail. Theme-aware; build-verified.
+> (NOTE: a standalone `/methodology` page was built then **REMOVED at the user's request** — end users
+> don't need the calculation detail; the resilience *concept* is instead explained plainly on the About
+> page ("The Resilience Score" section, no formulas), and the full methodology stays in the repo docs.
+> The pre-existing reports merge conflict was also resolved — the working tree was already marker-free,
+> so `git add` finalised it; `npm run build` passes.)
 > **Phase 3 core DONE:** the hexagon now tells the truth. HexRadar gained a `max` prop → the Overview
 > radar plots real 0–100 `pillarScores` (not indicator counts), fixed to a 100 scale, with the weakest
 > pillar in red; new `WeakestLinkBars` component (pillars ranked weakest-first, bars fill toward the 100

@@ -183,16 +183,6 @@ export default function AboutPage() {
             }}
           />
         </div>
-        <p style={{ marginTop: 22 }}>
-          <Link
-            className="about-button about-button-secondary"
-            to="/methodology"
-            aria-label="Read the resilience methodology"
-          >
-            See how the score is calculated
-            <span aria-hidden="true">↗</span>
-          </Link>
-        </p>
       </Section>
 
       <Section title="What You Can Explore">
