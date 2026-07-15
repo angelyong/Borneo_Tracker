@@ -279,6 +279,7 @@ export const SDG_GOALS = [
   { goal: 'SDG6', label: 'Clean Water' },
   { goal: 'SDG7', label: 'Clean Energy' },
   { goal: 'SDG8', label: 'Economic Growth' },
+  { goal: 'SDG9', label: 'Industry & Innovation' },
   { goal: 'SDG11', label: 'Sustainable Cities' },
   { goal: 'SDG13', label: 'Climate Action' },
   { goal: 'SDG15', label: 'Life on Land' },
