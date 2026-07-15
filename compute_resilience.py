@@ -57,6 +57,12 @@ BOUNDS = {
     "School enrolment (secondary, gross)": {"unit": "%",    "best": 100, "worst": 70},
     # Food
     "Agricultural land":                  {"unit": "% land", "best": 25, "worst": 0},
+    # 2026-07-15 (Phase 1, C1): comparable food self-sufficiency proxy. target = 100
+    # kg paddy/capita/yr (adequacy placeholder — refine with supervisor); floor = 0.
+    "Paddy production per capita":         {"unit": "kg/capita", "best": 100, "worst": 0},
+    # Entertainment (Phase 1, C2=B): internet use %, same 100/50 band as other access
+    # indicators. Multi-agency proxy — carries medium confidence.
+    "Internet use":                       {"unit": "%", "best": 100, "worst": 50},
     # Cross-pillar wellbeing rates (attach to the pillar tagged on the row)
     "Unemployment rate":                  {"unit": "%", "best": 3,  "worst": 15},
     "Poverty rate (absolute)":            {"unit": "%", "best": 0,  "worst": 25},

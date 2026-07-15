@@ -7,24 +7,35 @@
   },
   "territories": {
     "Sabah": {
-      "index": 68.8,
+      "index": 65.5,
       "rag": "amber",
-      "weakestPillar": "Shelter",
+      "weakestPillar": "Food",
       "pillarScores": {
+        "Food": 28.7,
         "Shelter": 61.0,
-        "Healthcare": 76.5
+        "Healthcare": 76.5,
+        "Entertainment": 96.0
       },
       "scoredPillars": [
+        "Entertainment",
+        "Food",
         "Healthcare",
         "Shelter"
       ],
       "unscoredPillars": [
-        "Food",
         "Energy",
-        "Education",
-        "Entertainment"
+        "Education"
       ],
       "detail": {
+        "Food": [
+          {
+            "indicator": "Paddy production per capita",
+            "value": 28.7,
+            "unit": "kg/capita",
+            "score": 28.7,
+            "confidence": "medium"
+          }
+        ],
         "Shelter": [
           {
             "indicator": "Clean water access",
@@ -42,28 +53,48 @@
             "score": 76.5,
             "confidence": "manual"
           }
+        ],
+        "Entertainment": [
+          {
+            "indicator": "Internet use",
+            "value": 98.0,
+            "unit": "%",
+            "score": 96.0,
+            "confidence": "medium"
+          }
         ]
       }
     },
     "Sarawak": {
-      "index": 72.2,
+      "index": 72.8,
       "rag": "green",
-      "weakestPillar": "Shelter",
+      "weakestPillar": "Food",
       "pillarScores": {
+        "Food": 50.7,
         "Shelter": 67.4,
-        "Healthcare": 77.0
+        "Healthcare": 77.0,
+        "Entertainment": 96.0
       },
       "scoredPillars": [
+        "Entertainment",
+        "Food",
         "Healthcare",
         "Shelter"
       ],
       "unscoredPillars": [
-        "Food",
         "Energy",
-        "Education",
-        "Entertainment"
+        "Education"
       ],
       "detail": {
+        "Food": [
+          {
+            "indicator": "Paddy production per capita",
+            "value": 50.7,
+            "unit": "kg/capita",
+            "score": 50.7,
+            "confidence": "medium"
+          }
+        ],
         "Shelter": [
           {
             "indicator": "Clean water access",
@@ -81,29 +112,49 @@
             "score": 77.0,
             "confidence": "manual"
           }
+        ],
+        "Entertainment": [
+          {
+            "indicator": "Internet use",
+            "value": 98.0,
+            "unit": "%",
+            "score": 96.0,
+            "confidence": "medium"
+          }
         ]
       }
     },
     "Brunei": {
-      "index": 89.2,
+      "index": 74.8,
       "rag": "green",
-      "weakestPillar": "Healthcare",
+      "weakestPillar": "Food",
       "pillarScores": {
+        "Food": 8.1,
         "Energy": 100.0,
         "Education": 90.2,
-        "Healthcare": 77.5
+        "Healthcare": 77.5,
+        "Entertainment": 98.0
       },
       "scoredPillars": [
         "Education",
         "Energy",
+        "Entertainment",
+        "Food",
         "Healthcare"
       ],
       "unscoredPillars": [
-        "Food",
-        "Shelter",
-        "Entertainment"
+        "Shelter"
       ],
       "detail": {
+        "Food": [
+          {
+            "indicator": "Paddy production per capita",
+            "value": 8.1,
+            "unit": "kg/capita",
+            "score": 8.1,
+            "confidence": "medium"
+          }
+        ],
         "Energy": [
           {
             "indicator": "Electricity access",
@@ -130,30 +181,49 @@
             "score": 77.5,
             "confidence": "high"
           }
+        ],
+        "Entertainment": [
+          {
+            "indicator": "Internet use",
+            "value": 99.0,
+            "unit": "%",
+            "score": 98.0,
+            "confidence": "high"
+          }
         ]
       }
     },
     "Kalimantan": {
-      "index": 69.5,
-      "rag": "amber",
+      "index": 70.7,
+      "rag": "green",
       "weakestPillar": "Education",
       "pillarScores": {
+        "Food": 93.9,
         "Energy": 86.2,
         "Education": 51.3,
         "Shelter": 78.8,
-        "Healthcare": 61.6
+        "Healthcare": 61.6,
+        "Entertainment": 52.2
       },
       "scoredPillars": [
         "Education",
         "Energy",
+        "Entertainment",
+        "Food",
         "Healthcare",
         "Shelter"
       ],
-      "unscoredPillars": [
-        "Food",
-        "Entertainment"
-      ],
+      "unscoredPillars": [],
       "detail": {
+        "Food": [
+          {
+            "indicator": "Paddy production per capita",
+            "value": 93.9,
+            "unit": "kg/capita",
+            "score": 93.9,
+            "confidence": "medium"
+          }
+        ],
         "Energy": [
           {
             "indicator": "Electrification ratio",
@@ -188,6 +258,15 @@
             "unit": "years",
             "score": 61.6,
             "confidence": "high"
+          }
+        ],
+        "Entertainment": [
+          {
+            "indicator": "Internet use",
+            "value": 76.1,
+            "unit": "%",
+            "score": 52.2,
+            "confidence": "medium"
           }
         ]
       }

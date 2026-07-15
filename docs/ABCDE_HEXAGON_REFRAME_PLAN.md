@@ -1,10 +1,17 @@
 # Borneo Tracker — ABCDE ↔ Hexagon Alignment & Reframe Plan
 
-> **Status:** 2026-07-15. **Phase 0 decisions LOCKED** (0.1 water→Shelter · 0.5 RAG 70/40 ·
-> 0.6 demote hexagon, weakest-link hero). **Smallest validating loop DONE** (1.1 re-tag + 0.5 RAG
-> + 1.5 re-run) — verified: Sabah/Sarawak 1→2 pillars, Kalimantan 3→4, Sabah+Kalimantan flipped
-> green→amber. **Brunei still 89.2 green — Food (8.4%) not yet wired (Phase 1.4, pending target
-> sign-off).** Next: 0.2/0.3/0.4 + remaining Phase 1.
+> **Status:** 2026-07-15. **Phase 0 LOCKED** (0.1 water→Shelter · 0.2 Entertainment=internet% ·
+> 0.3 Food=per-capita paddy, target 100kg · 0.4 latest populations · 0.5 RAG 70/40 · 0.6 demote
+> hexagon, weakest-link hero). **Phase 1 data DONE** (per-capita paddy + internet% wired, populations
+> added, re-run). Coverage jumped to 4–6/6. **Food is now the weakest pillar for Sabah/Sarawak/Brunei;
+> Brunei Food = 8.1 (the 8.4% self-sufficiency, now measured).**
+>
+> **Key finding:** Brunei's index only fell 89.2 → 74.8 (still green) — the arithmetic mean *dilutes*
+> the catastrophic Food=8 with 4 strong pillars. This validates 0.6: the weakest-link hero (not the
+> average) must carry the story. Open question: bring the geometric "strict mode" forward so the
+> headline number itself reflects fragility (Brunei strict ≈ 56 → amber)? Next: Phase 2 (surface E)
+> + Phase 3 (weakest-link UI, fix count-radar `useIndicators.js:419`). Data gap: Sabah/Sarawak lack
+> scoreable Energy+Education; Brunei/others Shelter canonical = Households count (not scored).
 > **Purpose:** Tighten the product's link to the supervisor's **ABCDE Framework**, and make the
 > **True Wealth Hexagon + Resilience Index** (the hero) *credible, capable, and valuable*.
 > **Pairs with:** the `borneo-abcde-framework` skill (thinking lens),

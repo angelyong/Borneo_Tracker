@@ -16,6 +16,25 @@ KALIMANTAN_PROVINCES = [
 
 TODAY = date.today().isoformat()
 
+# Latest official population, for per-capita normalisation (Phase 1, C3).
+# Sources tracked in docs/ABCDE_HEXAGON_REFRAME_PLAN.md.
+POPULATION = {
+    "Sabah": 3_751_000,        # DOSM Current Population Estimates 2024 (~11.0% of 34.1M)
+    "Sarawak": 2_907_500,      # DOSM 2024 estimate
+    "Brunei": 455_500,         # DEPS 2024
+    "Kalimantan": 17_259_155,  # BPS 2024 (mid-2023, 5 provinces combined)
+}
+
+# Internet use — the Entertainment-pillar proxy (Phase 1, C2=B). % of individuals
+# using the internet. Multi-agency sources with slightly different definitions, so
+# scored but flagged (confidence follows data_level): value, source, data_level.
+INTERNET_USE = {
+    "Sabah": (98.0, "DOSM ICT Use & Access Survey 2024 (Malaysia national 98.0%, applied to state)", "national"),
+    "Sarawak": (98.0, "DOSM ICT Use & Access Survey 2024 (Malaysia national 98.0%, applied to state)", "national"),
+    "Brunei": (99.0, "ITU / World Bank — individuals using the Internet (% of population), 2023", "national"),
+    "Kalimantan": (76.1, "BPS — Kalimantan region internet access, 2024", "national"),
+}
+
 SUM_INDICATORS = {
     "Crop production (paddy)",
     "Fire alerts (VIIRS, annual)",
@@ -109,6 +128,10 @@ def dashboard_concept(indicator):
         return "governance"
     if indicator in ("Crop production (paddy)", "Agricultural land"):
         return "food"
+    if indicator == "Paddy production per capita":
+        return "food_percapita"
+    if indicator == "Internet use":
+        return "internet_use"
     if indicator in ("Electricity access", "Electrification ratio", "Renewable electricity (% output)"):
         return "energy"
     if indicator in ("Households", "Basic sanitation access"):
@@ -147,6 +170,8 @@ def sdg_goal(indicator):
         "education": "SDG4",
         "governance": "SDG16",
         "food": "SDG2",
+        "food_percapita": "SDG2",
+        "internet_use": "SDG9",
         "energy": "SDG7",
         "shelter": "SDG11",
         "entertainment": "SDG8",
@@ -159,6 +184,7 @@ def hexagon_pillar(indicator):
     concept = dashboard_concept(indicator)
     mapping = {
         "food": "Food",
+        "food_percapita": "Food",
         "energy": "Energy",
         "education": "Education",
         "shelter": "Shelter",
@@ -169,6 +195,7 @@ def hexagon_pillar(indicator):
         "clean_water_access": "Shelter",
         "entertainment": "Entertainment",
         "heritage": "Entertainment",
+        "internet_use": "Entertainment",
     }
     return mapping.get(concept, "")
 
@@ -355,11 +382,76 @@ def assign_canonical(rows):
         winner["canonical"] = 1
 
 
+def build_internet_rows():
+    """Entertainment-pillar proxy (Phase 1, C2=B): % individuals using the internet.
+    A distinct concept ('internet_use') so it forms its own canonical group and is
+    scored, instead of competing with the tourism/heritage rows."""
+    rows = []
+    for territory, (value, source, data_level) in INTERNET_USE.items():
+        rows.append(
+            build_processed_row(
+                {
+                    "indicator": "Internet use",
+                    "territory": territory,
+                    "year": "2024",
+                    "value": str(value),
+                    "unit": "%",
+                    "source": source,
+                    "data_level": data_level,
+                }
+            )
+        )
+    return rows
+
+
+def build_percapita_food_rows(rows):
+    """Food-pillar (Phase 1, C1=A): paddy production is stored in tonnes (an absolute
+    count that can't be compared across territories). Divide by population to get a
+    comparable kg/capita self-sufficiency proxy. A distinct concept ('food_percapita')
+    so it is its own canonical group and gets scored, while the tonnes row stays as
+    coverage. Must run AFTER the Kalimantan paddy aggregate exists."""
+    derived_rows = []
+    for territory in DASHBOARD_TERRITORIES:
+        population = POPULATION.get(territory)
+        if not population:
+            continue
+        candidates = [
+            row
+            for row in rows
+            if row["territory"] == territory
+            and row["indicator"] == "Crop production (paddy)"
+            and (row["unit"] or "").strip() == "tonnes"
+            and row["value"] is not None
+        ]
+        if not candidates:
+            continue
+        source_row = min(candidates, key=canonical_sort_key)
+        kg_per_capita = round(source_row["value"] * 1000.0 / population, 1)
+        derived = build_processed_row(
+            {
+                "indicator": "Paddy production per capita",
+                "territory": territory,
+                "year": source_row["year"],
+                "value": str(kg_per_capita),
+                "unit": "kg/capita",
+                "source": f"Derived: {source_row['source']} ÷ population {population:,}",
+                "data_level": "territory",
+            }
+        )
+        derived["is_derived"] = 1
+        derived["derived_from"] = "Crop production (paddy)"
+        derived["confidence"] = confidence_for_row(derived)
+        derived_rows.append(derived)
+    return derived_rows
+
+
 def load_indicator_rows():
     raw_rows = load_csv_rows()
     processed = [build_processed_row(raw_row) for raw_row in raw_rows]
     processed.extend(build_manual_processed_rows(load_manual_rows()))
     processed.extend(build_kalimantan_aggregates(raw_rows))
+    processed.extend(build_internet_rows())
+    processed.extend(build_percapita_food_rows(processed))
     assign_canonical(processed)
     return processed
 
