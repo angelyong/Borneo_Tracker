@@ -47,8 +47,9 @@ SOURCED_ROWS = [
      "Global Data Lab — Subnational HDI, mean years schooling, 2023", "modeled"),
     ("Sarawak", "Mean years schooling (RLS)", 8.7, "years", "2023",
      "Global Data Lab — Subnational HDI, mean years schooling, 2023", "modeled"),
-    # NOTE: Sabah electrification rate could not be sourced as a valid published % —
-    # left unscored (never imputed) until an official figure is available.
+    # Sabah electricity access as a % (replaces the CSV household COUNT of the same name).
+    ("Sabah", "Electricity access", 87.6, "%", "2022",
+     "data.gov.my / DOSM — Access to Basic Amenities (% households with electricity, all districts)", "state"),
 ]
 
 SUM_INDICATORS = {

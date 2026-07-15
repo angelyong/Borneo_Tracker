@@ -23,6 +23,7 @@ Writes: public/data/resilience.json
 """
 
 import json
+import math
 import sqlite3
 from pathlib import Path
 
@@ -88,6 +89,23 @@ def score_value(indicator, unit, value):
     return round(max(0.0, min(1.0, ratio)) * 100, 1)
 
 
+def geometric_mean(scores):
+    """Strict resilience (Phase 1, methodology §3). The geometric mean collapses toward
+    zero if ANY pillar is near zero — 'no food = no resilience, however good the rest'.
+    The gap between this and the arithmetic index is the imbalance / fragility penalty."""
+    if not scores:
+        return None
+    if any(s <= 0 for s in scores):
+        return 0.0
+    return round(math.prod(scores) ** (1.0 / len(scores)), 1)
+
+
+def rag_band(value):
+    if value is None:
+        return None
+    return "green" if value >= RAG_GREEN else "amber" if value >= RAG_AMBER else "red"
+
+
 def load_canonical_rows():
     query = """
         SELECT territory, indicator, value, unit, hexagon_pillar, confidence
@@ -134,13 +152,13 @@ def compute(rows):
         scored_pillars = sorted(pillar_scores)
         unscored_pillars = [p for p in PILLARS if p not in pillar_scores]
         index = round(sum(pillar_scores.values()) / len(pillar_scores), 1) if pillar_scores else None
+        strict = geometric_mean(list(pillar_scores.values())) if pillar_scores else None
         weakest = min(pillar_scores, key=pillar_scores.get) if pillar_scores else None
-        rag = None
-        if index is not None:
-            rag = "green" if index >= RAG_GREEN else "amber" if index >= RAG_AMBER else "red"
         result[territory] = {
             "index": index,
-            "rag": rag,
+            "rag": rag_band(index),
+            "indexStrict": strict,
+            "ragStrict": rag_band(strict),
             "weakestPillar": weakest,
             "pillarScores": pillar_scores,
             "scoredPillars": scored_pillars,
@@ -156,14 +174,16 @@ def main():
     payload = {
         "generatedAt": TODAY,
         "method": "linear 0-100 vs documented bounds; pillar = mean of scored indicators; "
-                  "index = mean of scored pillars; unscored pillars excluded, never imputed",
+                  "index = mean of scored pillars; indexStrict = geometric mean (weakest-link "
+                  "strict mode); unscored pillars excluded, never imputed",
         "ragThresholds": {"green": RAG_GREEN, "amber": RAG_AMBER},
         "territories": scores,
     }
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     for territory, data in scores.items():
-        print(f"  {territory}: index={data['index']} rag={data['rag']} weakest={data['weakestPillar']} "
+        print(f"  {territory}: index={data['index']} ({data['rag']})  strict={data['indexStrict']} "
+              f"({data['ragStrict']})  weakest={data['weakestPillar']} "
               f"(scored {len(data['pillarScores'])}/{len(PILLARS)} pillars)")
     print(f"Wrote -> {OUTPUT.relative_to(ROOT)}")
     return 0

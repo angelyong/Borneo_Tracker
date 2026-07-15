@@ -20,8 +20,13 @@
 > territories already use different indicators per pillar (Energy: Brunei "Electricity access %" vs
 > Sarawak/Kalimantan "Electrification ratio %"; Education: Brunei "Adult literacy %" vs others "Mean
 > years schooling, years") — comparison is at the normalised 0–100 score level, not the raw indicator.
-> Next: Phase 2 (surface E) + Phase 3 (weakest-link UI, fix count-radar `useIndicators.js:419`).
-> Open: strict mode? · Sabah Energy source? · Phase 2 or 3 next?
+> **Phase 1 COMPLETE (data layer):** Sabah Energy sourced (electricity access 87.6%, data.gov.my/DOSM
+> 2022) → **all 4 territories now 6/6**. **Strict mode added** (`indexStrict` = geometric mean +
+> `ragStrict`): under it **all four fall to amber** (Sabah 63.7→59.3 · Sarawak 72.5→69.5 · Brunei
+> 79.0→61.8 · Kalimantan 70.7→68.7) — every territory has a hidden weakest link; Brunei's gap is
+> biggest (−17.2, money-rich/food-fragile). **Next: Phase 2 (surface E — confidence/source/coverage
+> in UI + methodology page), then Phase 3 (weakest-link UI, GDP-vs-Resilience, fix count-radar
+> `useIndicators.js:419`).**
 > **Purpose:** Tighten the product's link to the supervisor's **ABCDE Framework**, and make the
 > **True Wealth Hexagon + Resilience Index** (the hero) *credible, capable, and valuable*.
 > **Pairs with:** the `borneo-abcde-framework` skill (thinking lens),

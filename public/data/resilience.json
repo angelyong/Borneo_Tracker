@@ -1,17 +1,20 @@
 {
   "generatedAt": "2026-07-15",
-  "method": "linear 0-100 vs documented bounds; pillar = mean of scored indicators; index = mean of scored pillars; unscored pillars excluded, never imputed",
+  "method": "linear 0-100 vs documented bounds; pillar = mean of scored indicators; index = mean of scored pillars; indexStrict = geometric mean (weakest-link strict mode); unscored pillars excluded, never imputed",
   "ragThresholds": {
     "green": 70,
     "amber": 40
   },
   "territories": {
     "Sabah": {
-      "index": 61.4,
+      "index": 63.7,
       "rag": "amber",
+      "indexStrict": 59.3,
+      "ragStrict": "amber",
       "weakestPillar": "Food",
       "pillarScores": {
         "Food": 28.7,
+        "Energy": 75.2,
         "Education": 45.0,
         "Shelter": 61.0,
         "Healthcare": 76.5,
@@ -19,14 +22,13 @@
       },
       "scoredPillars": [
         "Education",
+        "Energy",
         "Entertainment",
         "Food",
         "Healthcare",
         "Shelter"
       ],
-      "unscoredPillars": [
-        "Energy"
-      ],
+      "unscoredPillars": [],
       "detail": {
         "Food": [
           {
@@ -35,6 +37,15 @@
             "unit": "kg/capita",
             "score": 28.7,
             "confidence": "medium"
+          }
+        ],
+        "Energy": [
+          {
+            "indicator": "Electricity access",
+            "value": 87.6,
+            "unit": "%",
+            "score": 75.2,
+            "confidence": "high"
           }
         ],
         "Education": [
@@ -78,6 +89,8 @@
     "Sarawak": {
       "index": 72.5,
       "rag": "green",
+      "indexStrict": 69.5,
+      "ragStrict": "amber",
       "weakestPillar": "Education",
       "pillarScores": {
         "Food": 50.7,
@@ -156,6 +169,8 @@
     "Brunei": {
       "index": 79.0,
       "rag": "green",
+      "indexStrict": 61.8,
+      "ragStrict": "amber",
       "weakestPillar": "Food",
       "pillarScores": {
         "Food": 8.1,
@@ -234,6 +249,8 @@
     "Kalimantan": {
       "index": 70.7,
       "rag": "green",
+      "indexStrict": 68.7,
+      "ragStrict": "amber",
       "weakestPillar": "Education",
       "pillarScores": {
         "Food": 93.9,
