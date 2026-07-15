@@ -24,8 +24,16 @@
 > 2022) → **all 4 territories now 6/6**. **Strict mode added** (`indexStrict` = geometric mean +
 > `ragStrict`): under it **all four fall to amber** (Sabah 63.7→59.3 · Sarawak 72.5→69.5 · Brunei
 > 79.0→61.8 · Kalimantan 70.7→68.7) — every territory has a hidden weakest link; Brunei's gap is
-> biggest (−17.2, money-rich/food-fragile). **Next: Phase 2 (surface E — confidence/source/coverage
-> in UI + methodology page), then Phase 3 (weakest-link UI, GDP-vs-Resilience, fix count-radar
+> biggest (−17.2, money-rich/food-fragile).
+>
+> **Phase 2 DONE (surface E):** `resilience.json` detail now carries `source`+`year`; new reusable
+> `ProvenanceChip` + `PillarCoverage` components; wired into Overview (pillar-provenance block + chips
+> on indicator rows; stale 67/34 fallback → 70/40) and Regional Detail; new **Methodology page**
+> (`/methodology` + sidebar link) covering target-normalisation, equal weight, arithmetic-vs-geometric
+> strict mode, RAG 70/40, and the never-imputed confidence layer. Theme-aware; esbuild-verified. ⚠️ A
+> live build/run is currently blocked by PRE-EXISTING merge conflicts in
+> `src/pages/reports/GenerateReportPage.jsx` + `ReportSections.jsx` (unrelated to this work).
+> **Next: Phase 3 (weakest-link hero UI, GDP-vs-Resilience, surface strict index, fix count-radar
 > `useIndicators.js:419`).**
 > **Purpose:** Tighten the product's link to the supervisor's **ABCDE Framework**, and make the
 > **True Wealth Hexagon + Resilience Index** (the hero) *credible, capable, and valuable*.

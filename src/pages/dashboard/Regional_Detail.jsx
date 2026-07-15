@@ -17,6 +17,7 @@ import {
   useResilience,
 } from '../../data/useIndicators';
 import { THEME_CHANGE_EVENT, cssVar } from '../../utils/theme';
+import ProvenanceChip from '../../components/ProvenanceChip';
 
 const RegionalDetails = () => {
   const [selectedTerritory,  setSelectedTerritory]  = useState('Sarawak');
@@ -418,7 +419,9 @@ const RegionalDetails = () => {
                       <div key={`${row.territory}-${row.indicator}`} style={styles.metricCard}>
                         <div style={styles.metricTitle}>{row.indicator}</div>
                         <div style={styles.metricValue}>{formatValue(row)}</div>
-                        <div style={styles.metricMeta}>{row.year} · {titleCaseConfidence(row.confidence)}</div>
+                        <div style={styles.metricMeta}>
+                          <ProvenanceChip confidence={row.confidence} source={row.source} year={row.year} />
+                        </div>
                       </div>
                     ))}
                   </div>

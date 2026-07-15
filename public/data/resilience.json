@@ -36,7 +36,9 @@
             "value": 28.7,
             "unit": "kg/capita",
             "score": 28.7,
-            "confidence": "medium"
+            "confidence": "medium",
+            "source": "Derived: data.gov.my / OpenDOSM \u00f7 population 3,751,000",
+            "year": "2022"
           }
         ],
         "Energy": [
@@ -45,7 +47,9 @@
             "value": 87.6,
             "unit": "%",
             "score": 75.2,
-            "confidence": "high"
+            "confidence": "high",
+            "source": "data.gov.my / DOSM \u2014 Access to Basic Amenities (% households with electricity, all districts)",
+            "year": "2022"
           }
         ],
         "Education": [
@@ -54,7 +58,9 @@
             "value": 8.7,
             "unit": "years",
             "score": 45.0,
-            "confidence": "medium"
+            "confidence": "medium",
+            "source": "Global Data Lab \u2014 Subnational HDI, mean years schooling, 2023",
+            "year": "2023"
           }
         ],
         "Shelter": [
@@ -63,7 +69,9 @@
             "value": 80.5,
             "unit": "%",
             "score": 61.0,
-            "confidence": "high"
+            "confidence": "high",
+            "source": "data.gov.my / OpenDOSM",
+            "year": "2022"
           }
         ],
         "Healthcare": [
@@ -72,7 +80,9 @@
             "value": 75.3,
             "unit": "years",
             "score": 76.5,
-            "confidence": "manual"
+            "confidence": "manual",
+            "source": "Manual report: DOSM Abridged Life Tables Malaysia 2024 \u2014 Life expectancy at birth (both sexes); reported via DOSM/Bernama 2024 release \u2014 https://www.dosm.gov.my/portal-main/release-content/abridged-life-tables-malaysia-2024",
+            "year": "2024"
           }
         ],
         "Entertainment": [
@@ -81,7 +91,9 @@
             "value": 98.0,
             "unit": "%",
             "score": 96.0,
-            "confidence": "medium"
+            "confidence": "medium",
+            "source": "DOSM ICT Use & Access Survey 2024 (Malaysia national 98.0%, applied to state)",
+            "year": "2024"
           }
         ]
       }
@@ -116,7 +128,9 @@
             "value": 50.7,
             "unit": "kg/capita",
             "score": 50.7,
-            "confidence": "medium"
+            "confidence": "medium",
+            "source": "Derived: data.gov.my / OpenDOSM \u00f7 population 2,907,500",
+            "year": "2022"
           }
         ],
         "Energy": [
@@ -125,7 +139,9 @@
             "value": 99.4,
             "unit": "%",
             "score": 98.8,
-            "confidence": "manual"
+            "confidence": "manual",
+            "source": "Manual report: Sarawak Energy (via Bernama) \u2014 Domestic electrification rate end-2023 (rural coverage 98.4%) \u2014 https://bernama.com/en/news.php?id=2281533",
+            "year": "2023"
           }
         ],
         "Education": [
@@ -134,7 +150,9 @@
             "value": 8.7,
             "unit": "years",
             "score": 45.0,
-            "confidence": "medium"
+            "confidence": "medium",
+            "source": "Global Data Lab \u2014 Subnational HDI, mean years schooling, 2023",
+            "year": "2023"
           }
         ],
         "Shelter": [
@@ -143,7 +161,9 @@
             "value": 83.7,
             "unit": "%",
             "score": 67.4,
-            "confidence": "high"
+            "confidence": "high",
+            "source": "data.gov.my / OpenDOSM",
+            "year": "2022"
           }
         ],
         "Healthcare": [
@@ -152,7 +172,9 @@
             "value": 75.4,
             "unit": "years",
             "score": 77.0,
-            "confidence": "manual"
+            "confidence": "manual",
+            "source": "Manual report: DOSM Abridged Life Tables Malaysia 2024 \u2014 Life expectancy at birth (both sexes); reported via DOSM/Bernama 2024 release \u2014 https://www.dosm.gov.my/portal-main/release-content/abridged-life-tables-malaysia-2024",
+            "year": "2024"
           }
         ],
         "Entertainment": [
@@ -161,7 +183,9 @@
             "value": 98.0,
             "unit": "%",
             "score": 96.0,
-            "confidence": "medium"
+            "confidence": "medium",
+            "source": "DOSM ICT Use & Access Survey 2024 (Malaysia national 98.0%, applied to state)",
+            "year": "2024"
           }
         ]
       }
@@ -196,7 +220,9 @@
             "value": 8.1,
             "unit": "kg/capita",
             "score": 8.1,
-            "confidence": "medium"
+            "confidence": "medium",
+            "source": "Derived: Manual report: FAO / Brunei Dept of Agriculture & Agrifood \u2014 Approx paddy production 2023 (FAO ~3.7k t); small-scale local rice \u2014 https://www.agriculture.gov.bn/ \u00f7 population 455,500",
+            "year": "2023"
           }
         ],
         "Energy": [
@@ -205,7 +231,9 @@
             "value": 100.0,
             "unit": "%",
             "score": 100.0,
-            "confidence": "high"
+            "confidence": "high",
+            "source": "World Bank",
+            "year": "2023"
           }
         ],
         "Education": [
@@ -214,7 +242,9 @@
             "value": 96.0899963378906,
             "unit": "%",
             "score": 90.2,
-            "confidence": "high"
+            "confidence": "high",
+            "source": "World Bank",
+            "year": "2011"
           }
         ],
         "Shelter": [
@@ -223,7 +253,9 @@
             "value": 100.0,
             "unit": "%",
             "score": 100.0,
-            "confidence": "high"
+            "confidence": "high",
+            "source": "World Bank",
+            "year": "2024"
           }
         ],
         "Healthcare": [
@@ -232,7 +264,9 @@
             "value": 75.501,
             "unit": "years",
             "score": 77.5,
-            "confidence": "high"
+            "confidence": "high",
+            "source": "World Bank",
+            "year": "2024"
           }
         ],
         "Entertainment": [
@@ -241,7 +275,9 @@
             "value": 99.0,
             "unit": "%",
             "score": 98.0,
-            "confidence": "high"
+            "confidence": "high",
+            "source": "ITU / World Bank \u2014 individuals using the Internet (% of population), 2023",
+            "year": "2024"
           }
         ]
       }
@@ -276,7 +312,9 @@
             "value": 93.9,
             "unit": "kg/capita",
             "score": 93.9,
-            "confidence": "medium"
+            "confidence": "medium",
+            "source": "Derived: BPS Indonesia (sum of 5/5 provinces) \u00f7 population 17,259,155",
+            "year": "2025"
           }
         ],
         "Energy": [
@@ -285,7 +323,9 @@
             "value": 93.09,
             "unit": "%",
             "score": 86.2,
-            "confidence": "high"
+            "confidence": "high",
+            "source": "BPS Indonesia (unweighted mean of 1/5 provinces, approx)",
+            "year": "2022"
           }
         ],
         "Education": [
@@ -294,7 +334,9 @@
             "value": 9.08,
             "unit": "years",
             "score": 51.3,
-            "confidence": "high"
+            "confidence": "high",
+            "source": "BPS Indonesia (unweighted mean of 5/5 provinces, approx)",
+            "year": "2025"
           }
         ],
         "Shelter": [
@@ -303,7 +345,9 @@
             "value": 89.41,
             "unit": "%",
             "score": 78.8,
-            "confidence": "high"
+            "confidence": "high",
+            "source": "BPS Indonesia (national by-province) (unweighted mean of 5/5 provinces, approx)",
+            "year": "2025"
           }
         ],
         "Healthcare": [
@@ -312,7 +356,9 @@
             "value": 72.31,
             "unit": "years",
             "score": 61.6,
-            "confidence": "high"
+            "confidence": "high",
+            "source": "BPS Indonesia (unweighted mean of 5/5 provinces, approx)",
+            "year": "2025"
           }
         ],
         "Entertainment": [
@@ -321,7 +367,9 @@
             "value": 76.1,
             "unit": "%",
             "score": 52.2,
-            "confidence": "medium"
+            "confidence": "medium",
+            "source": "BPS \u2014 Kalimantan region internet access, 2024",
+            "year": "2024"
           }
         ]
       }

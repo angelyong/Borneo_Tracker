@@ -28,6 +28,9 @@ import {
 
 import L from 'leaflet';
 
+import PillarCoverage from '../../components/PillarCoverage';
+import ProvenanceChip from '../../components/ProvenanceChip';
+
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -661,7 +664,7 @@ const OverviewDashboard = () => {
 
     if (!resilience?.territories) return null;
 
-    const thresholds = resilience.ragThresholds || { green: 67, amber: 34 };
+    const thresholds = resilience.ragThresholds || { green: 70, amber: 40 };
 
     if (!isOverall) {
       const territory = resilience.territories[panelTerritory];
@@ -1084,6 +1087,20 @@ const OverviewDashboard = () => {
           ) : (
             <div style={styles.stateText}>Loading indicator data…</div>
           )}
+
+          {!isDistrict && (
+            <div style={{ marginTop: 14, borderTop: '1px solid var(--color-border)', paddingTop: 12 }}>
+              {isOverall ? (
+                <div style={styles.stateText}>
+                  Select a territory to see pillar-by-pillar provenance.
+                </div>
+              ) : resilience?.territories?.[panelTerritory] ? (
+                <PillarCoverage territory={resilience.territories[panelTerritory]} />
+              ) : (
+                <div style={styles.stateText}>Loading pillar provenance…</div>
+              )}
+            </div>
+          )}
         </div>
 
         <div style={styles.card}>
@@ -1156,7 +1173,15 @@ const OverviewDashboard = () => {
                   <div>
                     <div style={styles.summaryTerritory}>{territory}</div>
                     <div style={styles.summaryMeta}>
-                      {row ? `${row.year} · ${titleCaseConfidence(row.confidence)}` : 'No data'}
+                      {row ? (
+                        row.source ? (
+                          <ProvenanceChip confidence={row.confidence} source={row.source} year={row.year} />
+                        ) : (
+                          `${row.year} · ${titleCaseConfidence(row.confidence)}`
+                        )
+                      ) : (
+                        'No data'
+                      )}
                     </div>
                   </div>
 
@@ -1177,7 +1202,15 @@ const OverviewDashboard = () => {
                 <div>
                   <div style={styles.summaryTerritory}>{territory}</div>
                   <div style={styles.summaryMeta}>
-                    {row ? `${row.year} · ${titleCaseConfidence(row.confidence)}` : 'No data'}
+                    {row ? (
+                      row.source ? (
+                        <ProvenanceChip confidence={row.confidence} source={row.source} year={row.year} />
+                      ) : (
+                        `${row.year} · ${titleCaseConfidence(row.confidence)}`
+                      )
+                    ) : (
+                      'No data'
+                    )}
                   </div>
                 </div>
 

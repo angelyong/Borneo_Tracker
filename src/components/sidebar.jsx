@@ -18,6 +18,7 @@ const Sidebar = ({ collapsed = false }) => {
     { name: 'Generate Report',          path: '/reports',   icon: <Icons.FileArrow size={20} /> },
     { name: 'Data Sources',             path: '/data-sources', icon: <Icons.Frame size={20} /> },
     { name: 'About Borneo Tracker',     path: '/about',     icon: <Icons.Info size={20} />         },
+    { name: 'Methodology',              path: '/methodology', icon: <Icons.Layers size={20} /> },
   ];
 
   const handleLogout = () => {

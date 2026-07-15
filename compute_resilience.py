@@ -108,7 +108,7 @@ def rag_band(value):
 
 def load_canonical_rows():
     query = """
-        SELECT territory, indicator, value, unit, hexagon_pillar, confidence
+        SELECT territory, indicator, value, unit, hexagon_pillar, confidence, source, year
         FROM indicators
         WHERE canonical = 1 AND territory IN (?, ?, ?, ?)
     """
@@ -145,6 +145,8 @@ def compute(rows):
                         "unit": row["unit"],
                         "score": score,
                         "confidence": row["confidence"],
+                        "source": row["source"],
+                        "year": row["year"],
                     })
             if scored:
                 pillar_scores[pillar] = round(sum(s["score"] for s in scored) / len(scored), 1)
