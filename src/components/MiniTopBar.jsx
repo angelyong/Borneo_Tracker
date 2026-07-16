@@ -1,19 +1,48 @@
 // components/MiniTopBar.jsx
-// Lightweight top bar: hamburger ☰ | logo | spacer | theme | account
+// Lightweight top bar: hamburger ☰ | logo | spacer | mute (News/Community only) | theme | account
 // When signed in, the avatar opens a dropdown (profile / admin / log out).
 // When signed out, it shows a "Log in" button instead.
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import logoImg from '../assets/logo.png';
 import { useAuth } from '../auth/useAuth';
 import AIbotButton from './AIbotButton';
 import ThemeToggle from './ThemeToggle';
+import { isMuted, setMuted } from '../utils/notifications';
+
+// Only these two pages have a "new items" sidebar badge, so only these two
+// get a mute control — everywhere else the button just doesn't render.
+const MUTE_PAGE_BY_PATH = (pathname) => {
+  if (pathname === '/community') return 'community';
+  if (pathname.startsWith('/news')) return 'news';
+  return null;
+};
 
 const MiniTopBar = ({ onMenuClick }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated, isAdmin, user, profile, signOut } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const mutePage = MUTE_PAGE_BY_PATH(location.pathname);
+
+  // Re-sync whenever the route switches between News/Community/elsewhere —
+  // done during render, not an effect, per React's guidance for resetting
+  // state when a dependency changes (mirrors GenerateReportPage's bounds sync).
+  const [appliedMutePage, setAppliedMutePage] = useState(mutePage);
+  const [muted, setMutedState] = useState(() => (mutePage ? isMuted(mutePage) : false));
+  if (mutePage !== appliedMutePage) {
+    setAppliedMutePage(mutePage);
+    setMutedState(mutePage ? isMuted(mutePage) : false);
+  }
+
+  const toggleMute = () => {
+    if (!mutePage) return;
+    const next = !muted;
+    setMuted(mutePage, next);
+    setMutedState(next);
+  };
 
   const closeDropdown = () => setDropdownOpen(false);
 
@@ -57,8 +86,20 @@ const MiniTopBar = ({ onMenuClick }) => {
       <div style={{ flex: 1 }} />
 
 
-      {/* ── Right: theme + account ── */}
+      {/* ── Right: mute (News/Community only) + theme + account ── */}
       <div style={styles.rightGroup}>
+
+        {/* Mute — only visible on News & Insights and Community */}
+        {mutePage && (
+          <button
+            style={styles.iconBtn}
+            onClick={toggleMute}
+            aria-label={muted ? `Unmute ${mutePage}` : `Mute ${mutePage}`}
+            title={muted ? 'Unmute notifications for this page' : 'Mute notifications for this page'}
+          >
+            <MuteIcon muted={muted} />
+          </button>
+        )}
 
         {/* Theme toggle */}
         <ThemeToggle style={styles.iconBtn} />
@@ -125,6 +166,23 @@ const HamburgerIcon = () => (
     <line x1="4" y1="7" x2="20" y2="7" />
     <line x1="4" y1="12" x2="20" y2="12" />
     <line x1="4" y1="17" x2="20" y2="17" />
+  </svg>
+);
+
+const MuteIcon = ({ muted }) => (
+  <svg
+    width="20"
+    height="20"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+    {muted && <line x1="3" y1="3" x2="21" y2="21" />}
   </svg>
 );
 

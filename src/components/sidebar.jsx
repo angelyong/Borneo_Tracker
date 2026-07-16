@@ -1,24 +1,65 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/useAuth';
 import { Icons } from './ui';
+import { CURRENT_USER, getPosts } from '../services/communityService';
+import { getNewsArticles } from '../services/newsService';
+import { getLastSeen, isMuted, NOTIF_CHANGE_EVENT } from '../utils/notifications';
 
 const Sidebar = ({ collapsed = false }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, isAdmin, signOut } = useAuth();
   const [logoutHovered, setLogoutHovered] = useState(false);
+  const [counts, setCounts] = useState({ news: 0, community: 0 });
 
   const isAdminRoute = location.pathname.startsWith('/admin');
   const [adminOpen, setAdminOpen] = useState(isAdminRoute);
+
+  // Recomputed on mount, whenever the route changes (so opening /news or
+  // /community — which mark themselves seen — clears the badge right away),
+  // and whenever the mute toggle fires NOTIF_CHANGE_EVENT.
+  useEffect(() => {
+    let cancelled = false;
+
+    const computeCounts = async () => {
+      const [posts, articles] = await Promise.all([getPosts(), getNewsArticles()]);
+      if (cancelled) return;
+
+      const communityLastSeen = getLastSeen('community');
+      const newsLastSeen = getLastSeen('news');
+
+      const communityCount = isMuted('community')
+        ? 0
+        : posts.filter(
+            (post) =>
+              post.author !== CURRENT_USER &&
+              (!communityLastSeen || new Date(post.createdAt) > communityLastSeen)
+          ).length;
+
+      const newsCount = isMuted('news')
+        ? 0
+        : articles.filter((article) => !newsLastSeen || new Date(article.publishedAt) > newsLastSeen).length;
+
+      setCounts({ community: communityCount, news: newsCount });
+    };
+
+    computeCounts();
+
+    window.addEventListener(NOTIF_CHANGE_EVENT, computeCounts);
+    return () => {
+      cancelled = true;
+      window.removeEventListener(NOTIF_CHANGE_EVENT, computeCounts);
+    };
+  }, [location.pathname]);
 
   const menuItems = [
     { name: 'Dashboard',                path: '/'       ,   icon: <Icons.Grid size={20} />     },
     { name: 'Regional Details',         path: '/regions',   icon: <Icons.Table size={20} /> },
     { name: 'ESG Indicators',           path: '/esg',       icon: <Icons.Gauge size={20} /> },
     { name: 'SDG Progress',             path: '/sdg',       icon: <Icons.Chart size={20} /> },
-    { name: 'News & Insights',          path: '/news',      icon: <Icons.Newspaper size={20} /> },
-    { name: 'Community',                path: '/community', icon: <Icons.Comment size={20} /> },
+    { name: 'News & Insights',          path: '/news',      icon: <Icons.Newspaper size={20} />, badgeKey: 'news' },
+    { name: 'Community',                path: '/community', icon: <Icons.Comment size={20} />, badgeKey: 'community' },
     { name: 'Generate Report',          path: '/reports',   icon: <Icons.FileArrow size={20} /> },
     { name: 'Data Sources',             path: '/data-sources', icon: <Icons.Frame size={20} /> },
   ];
@@ -53,6 +94,9 @@ const Sidebar = ({ collapsed = false }) => {
           >
             <span style={styles.navIcon}>{item.icon}</span>
             {!collapsed && <span>{item.name}</span>}
+            {!collapsed && item.badgeKey && counts[item.badgeKey] > 0 && (
+              <span style={styles.badge}>{counts[item.badgeKey] > 9 ? '9+' : counts[item.badgeKey]}</span>
+            )}
           </NavLink>
         ))}
 
@@ -243,6 +287,23 @@ const styles = {
     color:           '#ffffff',
     borderLeft:      '3px solid #4ade80',
     fontWeight:      '700',
+  },
+
+  badge: {
+    marginLeft:      'auto',
+    minWidth:        '18px',
+    height:          '18px',
+    padding:         '0 5px',
+    borderRadius:    '999px',
+    backgroundColor: '#dc2626',
+    color:           '#ffffff',
+    fontSize:        '10.5px',
+    fontWeight:      '800',
+    display:         'flex',
+    alignItems:      'center',
+    justifyContent:  'center',
+    flexShrink:      0,
+    lineHeight:      1,
   },
 
   adminToggle: {

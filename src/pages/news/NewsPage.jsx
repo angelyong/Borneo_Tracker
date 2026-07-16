@@ -5,6 +5,7 @@ import NewsEmptyState from './NewsEmptyState';
 import NewsFilters from './NewsFilters';
 import NewsSkeleton from './NewsSkeleton';
 import { getNewsArticles } from '../../services/newsService';
+import { markSeen } from '../../utils/notifications';
 import { matchesNewsSearch } from './newsUtils';
 import './news.css';
 
@@ -38,6 +39,9 @@ const NewsPage = () => {
 
   useEffect(() => {
     let cancelled = false;
+
+    // Clears this page's sidebar badge — the whole point of opening it.
+    markSeen('news');
 
     getNewsArticles()
       .then((nextArticles) => {

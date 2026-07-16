@@ -5,6 +5,7 @@ import NewsEmptyState from './NewsEmptyState';
 import NewsImage from './NewsImage';
 import NewsSkeleton from './NewsSkeleton';
 import { getNewsArticleById, getRelatedNewsArticles } from '../../services/newsService';
+import { markSeen } from '../../utils/notifications';
 import { formatCountryLabel, formatNewsDate, formatRelativeTime, formatSourceCount } from './newsUtils';
 import './news.css';
 
@@ -34,6 +35,10 @@ const NewsDetailPage = () => {
 
   useEffect(() => {
     let cancelled = false;
+
+    // Clears the sidebar badge — reachable directly via a shared link, not
+    // only through the /news list.
+    markSeen('news');
 
     Promise.resolve()
       .then(() => {

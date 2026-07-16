@@ -12,6 +12,7 @@ import {
   toggleLikePost,
 } from '../../services/communityService';
 import { requestPersistentStorage } from '../../services/communityAttachmentStore';
+import { markSeen } from '../../utils/notifications';
 import { buildPostShareUrl, matchesCommunitySearch } from './communityUtils';
 import CommunityFilters from './CommunityFilters';
 import NewPostForm from './NewPostForm';
@@ -52,6 +53,9 @@ const CommunityPage = () => {
     // Best-effort: ask the browser to keep our attachment storage from being
     // evicted under pressure. Never blocks; failure is fine (plan §2.3).
     requestPersistentStorage();
+
+    // Clears this page's sidebar badge — the whole point of opening it.
+    markSeen('community');
 
     getPosts()
       .then((nextPosts) => {
