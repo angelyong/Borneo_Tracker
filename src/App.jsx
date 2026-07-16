@@ -7,6 +7,7 @@ import MyProfile from './pages/profile/MyProfile';
 import NewsPage from './pages/news/NewsPage';
 import NewsDetailPage from './pages/news/NewsDetailPage';
 import NewsReview from './pages/admin/news/NewsReview';
+import UserManagement from './pages/admin/UserManagement';
 import AboutPage from './pages/about/AboutPage';
 import CommunityPage from './pages/community/CommunityPage';
 import GenerateReportPage from './pages/reports/GenerateReportPage';
@@ -46,6 +47,14 @@ function App() {
             element={
               <RequireAdmin>
                 <NewsReview />
+              </RequireAdmin>
+            }
+          />
+          <Route
+            path="/admin/users"
+            element={
+              <RequireAdmin>
+                <UserManagement />
               </RequireAdmin>
             }
           />

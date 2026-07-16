@@ -1,10 +1,38 @@
 /* ============================================================
-   News & Insights — dark-green editorial theme
-   Palette derived from the app shell (sidebar):
-   base #0d2118 / #1a3a2a, accent #4ade80, text #c8ddd2
+   News & Insights — editorial theme, light by default.
+   Follows the app's light/dark toggle like every other page: the base
+   block below is the light palette; html[data-theme='dark'] restores the
+   dark-green look (base #0d2118 / #1a3a2a, accent #4ade80, text #c8ddd2)
+   that used to be the only theme this page had.
    ============================================================ */
 
 .news-page {
+  --news-bg: #f5f5f2;
+  --news-bg-2: #eef1ee;
+  --news-surface: #ffffff;
+  --news-surface-2: #f7f8f6;
+  --news-surface-hover: #eef6f0;
+  --news-border: rgba(15, 42, 30, 0.10);
+  --news-border-strong: rgba(21, 128, 61, 0.32);
+  --news-text: #16241a;
+  --news-text-soft: #3a4f42;
+  --news-text-muted: #5c6b62;
+  --news-text-dim: #8a978f;
+  --news-accent: #16a34a;
+  --news-accent-strong: #15803d;
+  --news-accent-ink: #ffffff;
+  --news-shadow: 0 1px 2px rgba(15, 42, 30, 0.06), 0 10px 26px rgba(15, 42, 30, 0.08);
+  --news-shadow-hover: 0 8px 20px rgba(15, 42, 30, 0.10), 0 20px 42px rgba(15, 42, 30, 0.12);
+
+  min-height: 100%;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(74, 222, 128, 0.08), transparent 60%),
+    linear-gradient(180deg, var(--news-bg-2), var(--news-bg) 40%);
+  color: var(--news-text);
+  font-family: Inter, 'Segoe UI', Arial, sans-serif;
+}
+
+html[data-theme='dark'] .news-page {
   --news-bg: #0a1a12;
   --news-bg-2: #0d2118;
   --news-surface: #12281c;
@@ -21,13 +49,6 @@
   --news-accent-ink: #06251a;
   --news-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 10px 30px rgba(0, 0, 0, 0.35);
   --news-shadow-hover: 0 8px 20px rgba(0, 0, 0, 0.45), 0 20px 50px rgba(0, 0, 0, 0.45);
-
-  min-height: 100%;
-  background:
-    radial-gradient(1200px 600px at 80% -10%, rgba(74, 222, 128, 0.08), transparent 60%),
-    linear-gradient(180deg, var(--news-bg-2), var(--news-bg) 40%);
-  color: var(--news-text);
-  font-family: Inter, 'Segoe UI', Arial, sans-serif;
 }
 
 .news-page-inner {
@@ -265,13 +286,19 @@
   width: fit-content;
   padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(56, 189, 248, 0.14);
-  border: 1px solid rgba(56, 189, 248, 0.32);
-  color: #7dd3fc;
+  background: rgba(37, 99, 235, 0.10);
+  border: 1px solid rgba(37, 99, 235, 0.28);
+  color: #1d4ed8;
   font-size: 11px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
+}
+
+html[data-theme='dark'] .news-ai-label {
+  background: rgba(56, 189, 248, 0.14);
+  border-color: rgba(56, 189, 248, 0.32);
+  color: #7dd3fc;
 }
 
 .news-ai-label::before {
@@ -321,7 +348,7 @@
 .news-chip {
   padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(15, 42, 30, 0.05);
   border: 1px solid var(--news-border);
   color: var(--news-text-soft);
   font-size: 11.5px;
@@ -329,13 +356,29 @@
   letter-spacing: 0.01em;
 }
 
+html[data-theme='dark'] .news-chip {
+  background: rgba(255, 255, 255, 0.06);
+}
+
 .news-chip-territory {
+  background: rgba(22, 163, 74, 0.10);
+  border-color: rgba(22, 163, 74, 0.28);
+  color: #15803d;
+}
+
+html[data-theme='dark'] .news-chip-territory {
   background: rgba(74, 222, 128, 0.14);
   border-color: rgba(74, 222, 128, 0.3);
   color: #a7f3c8;
 }
 
 .news-chip-country {
+  background: rgba(79, 70, 229, 0.10);
+  border-color: rgba(79, 70, 229, 0.26);
+  color: #4338ca;
+}
+
+html[data-theme='dark'] .news-chip-country {
   background: rgba(129, 140, 248, 0.14);
   border-color: rgba(129, 140, 248, 0.3);
   color: #c7cbff;
@@ -347,12 +390,18 @@
   gap: 6px;
   padding: 4px 11px;
   border-radius: 999px;
-  background: rgba(245, 158, 11, 0.14);
-  border: 1px solid rgba(245, 158, 11, 0.32);
-  color: #fbbf72;
+  background: rgba(217, 119, 6, 0.12);
+  border: 1px solid rgba(217, 119, 6, 0.3);
+  color: #b45309;
   font-size: 11.5px;
   font-weight: 800;
   white-space: nowrap;
+}
+
+html[data-theme='dark'] .news-source-badge {
+  background: rgba(245, 158, 11, 0.14);
+  border-color: rgba(245, 158, 11, 0.32);
+  color: #fbbf72;
 }
 
 .news-source-badge::before {
@@ -376,14 +425,24 @@
 .news-tag {
   padding: 5px 9px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(15, 42, 30, 0.045);
   border: 1px solid var(--news-border);
   color: var(--news-text-muted);
   font-size: 11.5px;
   font-weight: 700;
 }
 
+html[data-theme='dark'] .news-tag {
+  background: rgba(255, 255, 255, 0.04);
+}
+
 .news-tag-sdg {
+  background: rgba(5, 150, 105, 0.10);
+  border-color: rgba(5, 150, 105, 0.26);
+  color: #047857;
+}
+
+html[data-theme='dark'] .news-tag-sdg {
   background: rgba(16, 185, 129, 0.12);
   border-color: rgba(16, 185, 129, 0.3);
   color: #6ee7b7;
@@ -626,6 +685,12 @@
 }
 
 .news-error-state {
+  border-color: rgba(220, 38, 38, 0.3);
+  background: rgba(254, 226, 226, 0.9);
+  color: #b91c1c;
+}
+
+html[data-theme='dark'] .news-error-state {
   border-color: rgba(248, 113, 113, 0.4);
   background: rgba(127, 29, 29, 0.28);
   color: #fca5a5;
@@ -641,6 +706,10 @@
 .news-skeleton {
   overflow: hidden;
   position: relative;
+  background: rgba(15, 42, 30, 0.06);
+}
+
+html[data-theme='dark'] .news-skeleton {
   background: rgba(255, 255, 255, 0.05);
 }
 
@@ -649,8 +718,12 @@
   position: absolute;
   inset: 0;
   transform: translateX(-100%);
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
+  background: linear-gradient(90deg, transparent, rgba(15, 42, 30, 0.10), transparent);
   animation: news-shimmer 1.3s infinite;
+}
+
+html[data-theme='dark'] .news-skeleton::after {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
 }
 
 .news-skeleton-image {

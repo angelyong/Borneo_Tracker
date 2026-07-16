@@ -1,5 +1,5 @@
 // components/MiniTopBar.jsx
-// Lightweight top bar: hamburger ☰ | logo | spacer | theme | bell | account
+// Lightweight top bar: hamburger ☰ | logo | spacer | theme | account
 // When signed in, the avatar opens a dropdown (profile / admin / log out).
 // When signed out, it shows a "Log in" button instead.
 
@@ -10,7 +10,7 @@ import { useAuth } from '../auth/useAuth';
 import AIbotButton from './AIbotButton';
 import ThemeToggle from './ThemeToggle';
 
-const MiniTopBar = ({ onMenuClick, notifCount = 0 }) => {
+const MiniTopBar = ({ onMenuClick }) => {
   const navigate = useNavigate();
   const { isAuthenticated, isAdmin, user, profile, signOut } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -57,25 +57,11 @@ const MiniTopBar = ({ onMenuClick, notifCount = 0 }) => {
       <div style={{ flex: 1 }} />
 
 
-      {/* ── Right: theme + bell + account ── */}
+      {/* ── Right: theme + account ── */}
       <div style={styles.rightGroup}>
 
         {/* Theme toggle */}
         <ThemeToggle style={styles.iconBtn} />
-
-        {/* Bell */}
-        <button
-          style={styles.iconBtn}
-          onClick={() => navigate('/alerts')}
-          aria-label="Alerts"
-        >
-          <div style={styles.bellWrap}>
-            <BellIcon />
-            {notifCount > 0 && (
-              <span style={styles.badge}>{notifCount}</span>
-            )}
-          </div>
-        </button>
 
         {/* Account: avatar menu when signed in, else a Log in button */}
         {isAuthenticated ? (
@@ -142,22 +128,6 @@ const HamburgerIcon = () => (
   </svg>
 );
 
-const BellIcon = () => (
-  <svg
-    width="22"
-    height="22"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-  </svg>
-);
-
 const PersonIcon = () => (
   <svg
     width="22"
@@ -215,30 +185,6 @@ rightGroup: {
   gap: '16px',
   marginLeft: 'auto',
 },
-
-  // Bell badge
-  bellWrap: {
-    position:       'relative',
-    display:        'flex',
-    alignItems:     'center',
-    justifyContent: 'center',
-  },
-  badge: {
-    position:        'absolute',
-    top:             '-5px',
-    right:           '-5px',
-    backgroundColor: '#dc2626',
-    color:           '#fff',
-    fontSize:        '10px',
-    fontWeight:      '700',
-    width:           '16px',
-    height:          '16px',
-    borderRadius:    '50%',
-    display:         'flex',
-    alignItems:      'center',
-    justifyContent:  'center',
-    pointerEvents:   'none',
-  },
 
   // Avatar circle button — dark green fill matching sidebar
   avatarWrap: { position: 'relative' },

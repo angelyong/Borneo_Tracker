@@ -1,8 +1,12 @@
-/* Admin News Review queue — self-contained styles. */
+/* Admin News Review queue — self-contained styles.
+   Surfaces/text point at the app's --color-* theme vars so this page follows
+   the light/dark toggle like everywhere else. The brand green (#2f7d4f family)
+   is this page's fixed accent — like COLORS.amber elsewhere, it deliberately
+   does not change between themes. */
 
 .admin-news-page {
   padding: 24px 16px 64px;
-  background: #f5f6f8;
+  background: var(--color-page-bg);
   min-height: 100%;
 }
 
@@ -18,12 +22,12 @@
 .admin-news-header h1 {
   margin: 0 0 6px;
   font-size: 1.6rem;
-  color: #16241a;
+  color: var(--color-ink);
 }
 
 .admin-news-subtitle {
   margin: 0;
-  color: #5c6b62;
+  color: var(--color-muted);
   font-size: 0.92rem;
 }
 
@@ -36,9 +40,9 @@
 }
 
 .admin-news-tab {
-  border: 1px solid #d3dbd6;
-  background: #ffffff;
-  color: #3a463f;
+  border: 1px solid var(--color-border);
+  background: var(--color-card);
+  color: var(--color-ink);
   padding: 7px 14px;
   border-radius: 999px;
   font-size: 0.85rem;
@@ -57,17 +61,17 @@
 
 /* State blocks */
 .admin-news-state {
-  background: #ffffff;
-  border: 1px solid #e2e7e4;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 32px 20px;
   text-align: center;
-  color: #4c5a52;
+  color: var(--color-muted);
 }
 
 .admin-news-state.is-error {
-  border-color: #e3b7b7;
-  color: #9a3131;
+  border-color: var(--color-red);
+  color: var(--color-red);
 }
 
 .admin-news-empty {
@@ -82,8 +86,8 @@
 }
 
 .draft-card {
-  background: #ffffff;
-  border: 1px solid #e2e7e4;
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 18px;
   box-shadow: 0 1px 2px rgba(20, 36, 26, 0.04);
@@ -102,7 +106,7 @@
   object-fit: cover;
   border-radius: 8px;
   flex: 0 0 auto;
-  background: #eef1ef;
+  background: var(--color-grey-soft);
 }
 
 .draft-card-fields {
@@ -118,20 +122,20 @@
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: #6b7a71;
+  color: var(--color-muted);
   margin-bottom: 4px;
 }
 
 .draft-input,
 .draft-textarea {
   width: 100%;
-  border: 1px solid #cfd7d2;
+  border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 9px 11px;
   font-size: 0.92rem;
   font-family: inherit;
-  color: #16241a;
-  background: #fbfcfb;
+  color: var(--color-ink);
+  background: var(--color-card);
   box-sizing: border-box;
 }
 
@@ -155,8 +159,8 @@
   flex-wrap: wrap;
   gap: 8px 14px;
   font-size: 0.82rem;
-  color: #4c5a52;
-  border-top: 1px solid #eef1ef;
+  color: var(--color-muted);
+  border-top: 1px solid var(--color-border);
   padding-top: 12px;
 }
 
@@ -167,7 +171,7 @@
 }
 
 .draft-meta-item strong {
-  color: #16241a;
+  color: var(--color-ink);
   font-weight: 600;
 }
 
@@ -184,9 +188,9 @@
   padding: 3px 10px;
   border-radius: 999px;
   font-size: 0.72rem;
-  background: #eef4ef;
-  color: #2f5b40;
-  border: 1px solid #d7e6dd;
+  background: var(--color-green-soft);
+  color: var(--color-green);
+  border: 1px solid var(--color-border);
 }
 
 .draft-chip-pillar {
@@ -203,8 +207,8 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #7a5a1e;
-  background: #fbf0d8;
-  border: 1px solid #ecd9a6;
+  background: var(--color-yellow-soft);
+  border: 1px solid var(--color-yellow);
   padding: 3px 9px;
   border-radius: 6px;
 }
@@ -212,8 +216,8 @@
 /* Corroboration / sources */
 .draft-sources {
   margin-top: 14px;
-  background: #f7faf8;
-  border: 1px solid #e2e9e4;
+  background: var(--color-grey-soft);
+  border: 1px solid var(--color-border);
   border-radius: 10px;
   padding: 12px 14px;
 }
@@ -221,7 +225,7 @@
 .draft-sources-count {
   margin: 0 0 8px;
   font-weight: 600;
-  color: #16241a;
+  color: var(--color-ink);
   font-size: 0.9rem;
 }
 
@@ -246,7 +250,7 @@
 }
 
 .draft-source-date {
-  color: #7a887f;
+  color: var(--color-faint);
   font-size: 0.76rem;
   margin-left: 6px;
 }
@@ -258,7 +262,7 @@
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
-  border-top: 1px solid #eef1ef;
+  border-top: 1px solid var(--color-border);
   padding-top: 14px;
 }
 
@@ -278,13 +282,13 @@
 }
 
 .draft-btn-approve {
-  background: #ffffff;
+  background: var(--color-card);
   border-color: #2f7d4f;
   color: #2f7d4f;
 }
 
 .draft-btn-approve:hover:not(:disabled) {
-  background: #eef6f0;
+  background: var(--color-green-soft);
 }
 
 .draft-btn-publish {
@@ -297,23 +301,23 @@
 }
 
 .draft-btn-save {
-  background: #ffffff;
-  border-color: #cfd7d2;
-  color: #3a463f;
+  background: var(--color-card);
+  border-color: var(--color-border);
+  color: var(--color-ink);
 }
 
 .draft-btn-save:hover:not(:disabled) {
-  background: #f3f5f4;
+  background: var(--color-grey-soft);
 }
 
 .draft-btn-reject {
-  background: #ffffff;
-  border-color: #d99b9b;
-  color: #a23a3a;
+  background: var(--color-card);
+  border-color: var(--color-red);
+  color: var(--color-red);
 }
 
 .draft-btn-reject:hover:not(:disabled) {
-  background: #fbf1f1;
+  background: var(--color-red-soft);
 }
 
 .draft-confirm {
@@ -323,15 +327,15 @@
 }
 
 .draft-confirm.is-published {
-  color: #2f7d4f;
+  color: var(--color-green);
 }
 
 .draft-confirm.is-rejected {
-  color: #a23a3a;
+  color: var(--color-red);
 }
 
 .draft-confirm.is-saved {
-  color: #3a6ea5;
+  color: var(--color-blue);
 }
 
 /* Read-only (published / rejected) cards */
@@ -342,12 +346,12 @@
 .draft-readonly-title {
   margin: 0 0 6px;
   font-size: 1.05rem;
-  color: #16241a;
+  color: var(--color-ink);
 }
 
 .draft-readonly-body {
   margin: 0;
-  color: #4c5a52;
+  color: var(--color-muted);
   font-size: 0.9rem;
   line-height: 1.55;
 }
@@ -364,11 +368,11 @@
 }
 
 .draft-status-tag.status-published {
-  background: #eaf5ee;
-  color: #2f7d4f;
+  background: var(--color-green-soft);
+  color: var(--color-green);
 }
 
 .draft-status-tag.status-rejected {
-  background: #fbeaea;
-  color: #a23a3a;
+  background: var(--color-red-soft);
+  color: var(--color-red);
 }

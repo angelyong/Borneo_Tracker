@@ -1,28 +1,33 @@
 import { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/useAuth';
 import { Icons } from './ui';
 
 const Sidebar = ({ collapsed = false }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated, isAdmin, signOut } = useAuth();
   const [logoutHovered, setLogoutHovered] = useState(false);
 
-  // The admin queue is only shown to admins; everything else is public.
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  const [adminOpen, setAdminOpen] = useState(isAdminRoute);
+
   const menuItems = [
     { name: 'Dashboard',                path: '/'       ,   icon: <Icons.Grid size={20} />     },
     { name: 'Regional Details',         path: '/regions',   icon: <Icons.Table size={20} /> },
     { name: 'ESG Indicators',           path: '/esg',       icon: <Icons.Gauge size={20} /> },
     { name: 'SDG Progress',             path: '/sdg',       icon: <Icons.Chart size={20} /> },
-
     { name: 'News & Insights',          path: '/news',      icon: <Icons.Newspaper size={20} /> },
-    ...(isAdmin
-      ? [{ name: 'News Review (Admin)', path: '/admin/news', icon: <Icons.Newspaper size={20} /> }]
-      : []),
     { name: 'Community',                path: '/community', icon: <Icons.Comment size={20} /> },
     { name: 'Generate Report',          path: '/reports',   icon: <Icons.FileArrow size={20} /> },
     { name: 'Data Sources',             path: '/data-sources', icon: <Icons.Frame size={20} /> },
-    { name: 'About Borneo Tracker',     path: '/about',     icon: <Icons.Info size={20} />         },
+  ];
+
+  // Grouped under a single expandable "Admin Tools" entry instead of sitting
+  // as top-level items — only admins ever see this at all.
+  const adminItems = [
+    { name: 'News Review',    path: '/admin/news',  icon: <Icons.Newspaper size={18} /> },
+    { name: 'User Management', path: '/admin/users', icon: <Icons.User size={18} /> },
   ];
 
   const handleLogout = async () => {
@@ -50,6 +55,71 @@ const Sidebar = ({ collapsed = false }) => {
             {!collapsed && <span>{item.name}</span>}
           </NavLink>
         ))}
+
+        {isAdmin && (
+          <div>
+            <button
+              type="button"
+              onClick={() => setAdminOpen((open) => !open)}
+              style={{
+                ...styles.navLink,
+                ...styles.adminToggle,
+                ...(isAdminRoute ? styles.navLinkActive : {}),
+                justifyContent: collapsed ? 'center' : 'flex-start',
+                padding: collapsed ? '12px 8px' : '12px 14px',
+                width: '100%',
+                cursor: 'pointer',
+              }}
+            >
+              <span style={styles.navIcon}><Icons.Briefcase size={20} /></span>
+              {!collapsed && (
+                <>
+                  <span style={{ flex: 1, textAlign: 'left' }}>Admin Tools</span>
+                  <span
+                    style={{
+                      display: 'inline-flex',
+                      transition: 'transform 0.2s ease',
+                      transform: adminOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                    }}
+                  >
+                    <Icons.Chevron size={16} />
+                  </span>
+                </>
+              )}
+            </button>
+
+            {adminOpen && !collapsed && (
+              <div style={styles.adminSubList}>
+                {adminItems.map((item) => (
+                  <NavLink
+                    key={item.name}
+                    to={item.path}
+                    style={({ isActive }) => ({
+                      ...styles.subNavLink,
+                      ...(isActive ? styles.navLinkActive : {}),
+                    })}
+                  >
+                    <span style={styles.navIcon}>{item.icon}</span>
+                    <span>{item.name}</span>
+                  </NavLink>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        <NavLink
+          to="/about"
+          style={({ isActive }) => ({
+            ...styles.navLink,
+            ...(isActive ? styles.navLinkActive : {}),
+            justifyContent: collapsed ? 'center' : 'flex-start',
+            padding: collapsed ? '12px 8px' : '12px 14px',
+          })}
+        >
+          <span style={styles.navIcon}><Icons.Info size={20} /></span>
+          {!collapsed && <span>About Borneo Tracker</span>}
+        </NavLink>
       </nav>
 
       {/* ── Bottom section ── */}
@@ -173,6 +243,36 @@ const styles = {
     color:           '#ffffff',
     borderLeft:      '3px solid #4ade80',
     fontWeight:      '700',
+  },
+
+  adminToggle: {
+    backgroundColor: 'transparent',
+    // Longhand, non-conflicting sides only — the shorthand `border` property
+    // would fight with navLink/navLinkActive's `borderLeft` and trigger a
+    // React "mixing shorthand and non-shorthand" style warning on toggle.
+    borderTop: 'none',
+    borderRight: 'none',
+    borderBottom: 'none',
+  },
+  adminSubList: {
+    display:       'flex',
+    flexDirection: 'column',
+    gap:           '2px',
+    padding:       '2px 0 4px',
+  },
+  subNavLink: {
+    display:        'flex',
+    alignItems:     'center',
+    gap:            '10px',
+    padding:        '10px 14px 10px 34px',
+    borderRadius:   '8px',
+    textDecoration: 'none',
+    color:          '#a0bfad',
+    fontSize:       '13.5px',
+    fontWeight:     '600',
+    transition:     'all 0.2s ease',
+    borderLeft:     '3px solid transparent',
+    fontFamily:     'Inter, Arial, sans-serif',
   },
 
   // ── Bottom ──

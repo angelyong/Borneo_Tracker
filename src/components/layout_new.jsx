@@ -24,10 +24,7 @@ const Layout = ({ children }) => {
 
   return (
     <div style={styles.layout}>
-      <MiniTopBar
-        onMenuClick={handleMenuClick}
-        notifCount={2}
-      />
+      <MiniTopBar onMenuClick={handleMenuClick} />
 
       <div style={styles.shell}>
         <aside style={{ ...styles.sidebar, width: sidebarWidth }}>

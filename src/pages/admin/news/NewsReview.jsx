@@ -224,7 +224,7 @@ const NewsReview = () => {
             <h1 style={{ margin: 0 }}>News Review Queue</h1>
             {isAuthEnabled && adminEmail ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <span style={{ fontSize: '0.85rem', color: '#4c5a52' }}>{adminEmail}</span>
+                <span style={{ fontSize: '0.85rem', color: 'var(--color-muted)' }}>{adminEmail}</span>
                 <button type="button" className="admin-news-tab" onClick={handleLogout}>
                   Log out
                 </button>
