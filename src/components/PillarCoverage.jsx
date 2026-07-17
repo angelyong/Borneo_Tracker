@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import ProvenanceChip from './ProvenanceChip';
 
 // Renders all six True-Wealth pillars for a territory with their 0-100 score and
@@ -19,6 +20,7 @@ function ragColor(score) {
 }
 
 export default function PillarCoverage({ territory }) {
+  const { t } = useTranslation();
   if (!territory) return null;
   const { pillarScores = {}, detail = {}, weakestPillar } = territory;
   const scoredCount = Object.keys(pillarScores).length;
@@ -35,7 +37,7 @@ export default function PillarCoverage({ territory }) {
           marginBottom: 6,
         }}
       >
-        Pillar provenance · {scoredCount}/6 scored
+        {t('dashboard.pillarProvenance', { count: scoredCount })}
       </div>
 
       {PILLARS.map((pillar) => {
@@ -96,7 +98,7 @@ export default function PillarCoverage({ territory }) {
               </>
             ) : (
               <span style={{ fontSize: 12, color: 'var(--color-faint)', fontStyle: 'italic' }}>
-                No comparable data — never imputed
+                {t('dashboard.noComparableData')}
               </span>
             )}
           </div>

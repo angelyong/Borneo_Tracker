@@ -1,15 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 const COUNTRY_FLAGS = {
   Malaysia: '🇲🇾',
   Brunei: '🇧🇳',
   Indonesia: '🇮🇩',
-};
-
-const CONFIRM_LABELS = {
-  published: 'Published',
-  rejected: 'Rejected',
-  saved: 'Saved',
 };
 
 const formatDate = (value) => {
@@ -26,6 +21,12 @@ const formatDate = (value) => {
  * then ask the parent to drop the card via onRemove.
  */
 const DraftCard = ({ draft, onApprove, onPublishEdited, onReject, onSaveEdits, onRemove }) => {
+  const { t } = useTranslation();
+  const CONFIRM_LABELS = {
+    published: t('admin.confirmPublished'),
+    rejected: t('admin.confirmRejected'),
+    saved: t('admin.confirmSaved'),
+  };
   const [title, setTitle] = useState(draft.title || '');
   const [body, setBody] = useState(draft.body || '');
   const [busy, setBusy] = useState(false);
@@ -59,7 +60,7 @@ const DraftCard = ({ draft, onApprove, onPublishEdited, onReject, onSaveEdits, o
         setBusy(false);
       }
     } catch {
-      setError('That action could not be completed. Please try again.');
+      setError(t('admin.actionFailed'));
       setBusy(false);
     }
   };
@@ -78,7 +79,7 @@ const DraftCard = ({ draft, onApprove, onPublishEdited, onReject, onSaveEdits, o
         <div className="draft-card-fields">
           <div>
             <label className="draft-field-label" htmlFor={`title-${draft.id}`}>
-              Title
+              {t('admin.title')}
             </label>
             <input
               id={`title-${draft.id}`}
@@ -92,7 +93,7 @@ const DraftCard = ({ draft, onApprove, onPublishEdited, onReject, onSaveEdits, o
 
           <div>
             <label className="draft-field-label" htmlFor={`body-${draft.id}`}>
-              Body
+              {t('admin.body')}
             </label>
             <textarea
               id={`body-${draft.id}`}
@@ -107,7 +108,7 @@ const DraftCard = ({ draft, onApprove, onPublishEdited, onReject, onSaveEdits, o
 
       <div className="draft-chip-row">
         {draft.esgPillar ? (
-          <span className="draft-chip draft-chip-pillar" title="ESG pillar">
+          <span className="draft-chip draft-chip-pillar" title={t('admin.esgPillarTitle')}>
             {draft.esgPillar}
           </span>
         ) : null}
@@ -121,34 +122,34 @@ const DraftCard = ({ draft, onApprove, onPublishEdited, onReject, onSaveEdits, o
       <div className="draft-meta">
         {draft.beatLabel ? (
           <span className="draft-meta-item">
-            <strong>Beat:</strong> {draft.beatLabel}
+            <strong>{t('admin.beatLabel')}</strong> {draft.beatLabel}
           </span>
         ) : null}
         {draft.country ? (
           <span className="draft-meta-item">
-            <strong>Country:</strong> {flag} {draft.country}
+            <strong>{t('admin.countryLabel')}</strong> {flag} {draft.country}
           </span>
         ) : null}
         {territories.length ? (
           <span className="draft-meta-item">
-            <strong>Territories:</strong> {territories.join(', ')}
+            <strong>{t('admin.territoriesLabel')}</strong> {territories.join(', ')}
           </span>
         ) : null}
         {draft.originalLang ? (
           <span className="draft-meta-item">
-            <strong>Original language:</strong> {draft.originalLang.toUpperCase()}
+            <strong>{t('admin.originalLanguageLabel')}</strong> {draft.originalLang.toUpperCase()}
           </span>
         ) : null}
         <span className="draft-meta-item">
-          <strong>Created:</strong> {formatDate(draft.createdAt)}
+          <strong>{t('admin.createdLabel')}</strong> {formatDate(draft.createdAt)}
         </span>
       </div>
 
-      {draft.aiGenerated ? <span className="draft-ai-label">AI-generated</span> : null}
+      {draft.aiGenerated ? <span className="draft-ai-label">{t('admin.aiGenerated')}</span> : null}
 
       <div className="draft-sources">
         <p className="draft-sources-count">
-          Reported by {sourceCount} source{sourceCount === 1 ? '' : 's'}
+          {t('news.reportedBySource', { count: sourceCount })}
         </p>
         {sources.length ? (
           <ul className="draft-sources-list">
@@ -169,7 +170,7 @@ const DraftCard = ({ draft, onApprove, onPublishEdited, onReject, onSaveEdits, o
             ))}
           </ul>
         ) : (
-          <p className="draft-readonly-body">No sources listed.</p>
+          <p className="draft-readonly-body">{t('admin.noSourcesListed')}</p>
         )}
       </div>
 
@@ -180,7 +181,7 @@ const DraftCard = ({ draft, onApprove, onPublishEdited, onReject, onSaveEdits, o
           onClick={handleApprove}
           disabled={busy}
         >
-          Approve
+          {t('admin.approve')}
         </button>
         <button
           type="button"
@@ -188,7 +189,7 @@ const DraftCard = ({ draft, onApprove, onPublishEdited, onReject, onSaveEdits, o
           onClick={handlePublishEdited}
           disabled={busy}
         >
-          Save &amp; Publish
+          {t('admin.saveAndPublish')}
         </button>
         <button
           type="button"
@@ -196,7 +197,7 @@ const DraftCard = ({ draft, onApprove, onPublishEdited, onReject, onSaveEdits, o
           onClick={handleSaveEdits}
           disabled={busy}
         >
-          Save edits
+          {t('admin.saveEdits')}
         </button>
         <button
           type="button"
@@ -204,7 +205,7 @@ const DraftCard = ({ draft, onApprove, onPublishEdited, onReject, onSaveEdits, o
           onClick={handleReject}
           disabled={busy}
         >
-          Reject
+          {t('admin.reject')}
         </button>
 
         {error ? (
@@ -217,7 +218,7 @@ const DraftCard = ({ draft, onApprove, onPublishEdited, onReject, onSaveEdits, o
           </span>
         ) : busy ? (
           <span className="draft-confirm" role="status">
-            Working…
+            {t('admin.working')}
           </span>
         ) : null}
       </div>

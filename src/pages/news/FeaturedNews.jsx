@@ -1,8 +1,10 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import NewsImage from './NewsImage';
 import { formatCountryLabel, formatNewsDate, formatSourceCount, truncateText } from './newsUtils';
 
 const FeaturedNews = ({ article, onUnavailableSource }) => {
+  const { t, i18n } = useTranslation();
   if (!article) return null;
 
   const primarySourceUrl = article.sources?.[0]?.url;
@@ -17,7 +19,7 @@ const FeaturedNews = ({ article, onUnavailableSource }) => {
           beatLabel={article.beatLabel}
           lazy={false}
         />
-        <span className="news-featured-flag">★ Featured</span>
+        <span className="news-featured-flag">★ {t('news.featured')}</span>
         <span className="news-featured-media-beat">{article.beatLabel}</span>
       </div>
 
@@ -33,11 +35,11 @@ const FeaturedNews = ({ article, onUnavailableSource }) => {
 
         <h2 id="featured-news-title">{article.title}</h2>
         <p>{truncateText(article.body, 260)}</p>
-        <div className="news-ai-label">AI Summary</div>
+        <div className="news-ai-label">{t('news.aiSummary')}</div>
 
         <div className="news-card-meta">
-          <span className="news-source-badge">{formatSourceCount(article.sourceCount)}</span>
-          <span>{formatNewsDate(article.publishedAt)}</span>
+          <span className="news-source-badge">{formatSourceCount(article.sourceCount, t)}</span>
+          <span>{formatNewsDate(article.publishedAt, i18n.language)}</span>
         </div>
 
         <div className="news-tag-group" aria-label="SDG tags">
@@ -50,7 +52,7 @@ const FeaturedNews = ({ article, onUnavailableSource }) => {
 
         <div className="news-action-row">
           <Link to={`/news/${article.id}`} className="news-button">
-            Read Summary
+            {t('news.readSummary')}
           </Link>
           {primarySourceUrl ? (
             <a
@@ -59,11 +61,11 @@ const FeaturedNews = ({ article, onUnavailableSource }) => {
               target="_blank"
               rel="noopener noreferrer"
             >
-              Original Source
+              {t('news.originalSource')}
             </a>
           ) : (
             <button type="button" className="news-button news-button-secondary" onClick={onUnavailableSource}>
-              Original Source
+              {t('news.originalSource')}
             </button>
           )}
         </div>

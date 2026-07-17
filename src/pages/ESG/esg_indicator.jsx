@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   CATEGORY_TO_PILLAR,
   TERRITORIES,
@@ -10,7 +11,15 @@ import {
 } from '../../data/useIndicators';
 import ExportMenu from '../../components/ExportMenu';
 
+const CATEGORIES = ['Environment', 'Social', 'Governance'];
+const CATEGORY_LABEL_KEY = {
+  Environment: 'esg.categoryEnvironment',
+  Social: 'esg.categorySocial',
+  Governance: 'esg.categoryGovernance',
+};
+
 const ESGIndicator = () => {
+  const { t } = useTranslation();
   const [selectedRegion, setSelectedRegion]   = useState('Sarawak');
   const [selectedCategory, setSelectedCategory] = useState('Environment');
   const { data, loading, error } = useIndicators();
@@ -36,8 +45,8 @@ const ESGIndicator = () => {
           {/* ── Page header ── */}
           <div style={styles.header}>
             <div style={styles.headerLeft}>
-              <h1 style={styles.pageTitle}>ESG Indicators</h1>
-              <p style={styles.pageSubtitle}>Real snapshot data grouped by pillar with visible confidence tags</p>
+              <h1 style={styles.pageTitle}>{t('esg.title')}</h1>
+              <p style={styles.pageSubtitle}>{t('esg.subtitle')}</p>
             </div>
             <div style={styles.headerRight}>
               <select
@@ -57,7 +66,7 @@ const ESGIndicator = () => {
 
           {/* ── Pillar tabs ── */}
           <div style={styles.tabs}>
-            {['Environment', 'Social', 'Governance'].map((category) => (
+            {CATEGORIES.map((category) => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
@@ -66,13 +75,13 @@ const ESGIndicator = () => {
                   ...(selectedCategory === category ? styles.tabActive : {}),
                 }}
               >
-                {category}
+                {t(CATEGORY_LABEL_KEY[category])}
               </button>
             ))}
           </div>
 
           {/* ── States ── */}
-          {loading && <div style={styles.messageCard}>Loading real indicator data…</div>}
+          {loading && <div style={styles.messageCard}>{t('esg.loadingIndicatorData')}</div>}
           {error   && <div style={styles.errorCard}>{error}</div>}
 
           {!loading && !error && (
@@ -82,29 +91,31 @@ const ESGIndicator = () => {
               <div style={styles.card}>
                 <div style={styles.scoreCard}>
                   <div style={styles.scoreHeader}>
-                    <div style={styles.scoreLabel}>{selectedCategory} Snapshot</div>
-                    <div style={styles.statusBadge}>Snapshot Only</div>
+                    <div style={styles.scoreLabel}>
+                      {t('esg.categorySnapshot', { category: t(CATEGORY_LABEL_KEY[selectedCategory]) })}
+                    </div>
+                    <div style={styles.statusBadge}>{t('esg.snapshotOnly')}</div>
                   </div>
                   <div style={styles.scoreNumber}>{summary.count}</div>
-                  <div style={styles.scoreCaption}>canonical indicators available</div>
+                  <div style={styles.scoreCaption}>{t('esg.canonicalIndicatorsAvailable')}</div>
                   <div style={styles.trendContainer}>
-                    <span style={styles.trendLabel}>Latest data year</span>
-                    <span style={styles.trendValue}>{summary.latestYear || 'Unknown'}</span>
+                    <span style={styles.trendLabel}>{t('esg.latestDataYear')}</span>
+                    <span style={styles.trendValue}>{summary.latestYear || t('esg.unknown')}</span>
                   </div>
                   <div style={styles.bestRiskGrid}>
                     <div style={styles.bestRiskItem}>
-                      <div style={styles.bestRiskLabel}>Confidence mix</div>
+                      <div style={styles.bestRiskLabel}>{t('esg.confidenceMix')}</div>
                       <div style={styles.bestRiskValue}>
                         {Object.keys(summary.confidenceCounts).length
                           ? Object.entries(summary.confidenceCounts)
                               .map(([label, count]) => `${titleCaseConfidence(label)} ${count}`)
                               .join(' · ')
-                          : 'No data'}
+                          : t('common.noData')}
                       </div>
                     </div>
                     <div style={styles.bestRiskItem}>
-                      <div style={styles.bestRiskLabel}>Trend status</div>
-                      <div style={styles.bestRiskValue}>Historical series not enabled yet</div>
+                      <div style={styles.bestRiskLabel}>{t('esg.trendStatus')}</div>
+                      <div style={styles.bestRiskValue}>{t('esg.historicalSeriesNotEnabled')}</div>
                     </div>
                   </div>
                 </div>
@@ -125,7 +136,7 @@ const ESGIndicator = () => {
                       </div>
                     ))
                   ) : (
-                    <div style={styles.emptyState}>No canonical indicators are available for this pillar yet.</div>
+                    <div style={styles.emptyState}>{t('esg.noCanonicalIndicators')}</div>
                   )}
                 </div>
               </div>

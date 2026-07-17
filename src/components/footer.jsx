@@ -1,14 +1,16 @@
+import { useTranslation } from 'react-i18next';
 import { COLORS } from '../theme';
 
 const Footer = () => {
+  const { t } = useTranslation();
   return (
     <footer style={styles.footer}>
-      <span>© 2026 Borneo Tracker. All rights reserved.</span>
+      <span>{t('footer.rights', { year: new Date().getFullYear() })}</span>
 
       <span style={styles.footerLinks}>
-        <span style={styles.footerLink}>Privacy Policy</span>
-        <span style={styles.footerLink}>Terms of Use</span>
-        <span style={styles.footerLink}>Data Policy</span>
+        <span style={styles.footerLink}>{t('footer.privacyPolicy')}</span>
+        <span style={styles.footerLink}>{t('footer.termsOfUse')}</span>
+        <span style={styles.footerLink}>{t('footer.dataPolicy')}</span>
       </span>
     </footer>
   );

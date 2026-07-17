@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import OverviewDashboard from './pages/dashboard/OverviewDashboard';
 import RegionalDetails from './pages/dashboard/Regional_Detail';
 import ESGIndicator from './pages/ESG/esg_indicator';
@@ -19,13 +20,17 @@ import CheckEmailPage from './pages/auth/CheckEmailPage';
 import Layout from './components/layout_new';
 import { ProtectedRoute, RequireAdmin } from './auth/ProtectedRoute';
 
-const Placeholder = ({ title }) => (
-  <div style={{ padding: '40px', fontSize: '24px', textAlign: 'center' }}>
-    {title} Page (Coming Soon)
-  </div>
-);
+const Placeholder = ({ title }) => {
+  const { t } = useTranslation();
+  return (
+    <div style={{ padding: '40px', fontSize: '24px', textAlign: 'center' }}>
+      {t('app.comingSoon', { title })}
+    </div>
+  );
+};
 
 function App() {
+  const { t } = useTranslation();
   return (
     <BrowserRouter>
       <Routes>
@@ -60,9 +65,9 @@ function App() {
           />
           <Route path="/community" element={<CommunityPage />} />
           <Route path="/reports" element={<GenerateReportPage />} />
-          <Route path="/submission" element={<Placeholder title="Submit Report" />} />
+          <Route path="/submission" element={<Placeholder title={t('app.submitReport')} />} />
 
-          <Route path="/data-sources" element={<Placeholder title="Data Sources" />} />
+          <Route path="/data-sources" element={<Placeholder title={t('sidebar.dataSources')} />} />
           <Route path="/about" element={<AboutPage />} />
           <Route
             path="/profile"

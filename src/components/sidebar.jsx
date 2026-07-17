@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth/useAuth';
 import { Icons } from './ui';
@@ -7,6 +8,7 @@ import { getNewsArticles } from '../services/newsService';
 import { getLastSeen, isMuted, NOTIF_CHANGE_EVENT } from '../utils/notifications';
 
 const Sidebar = ({ collapsed = false }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, isAdmin, signOut } = useAuth();
@@ -54,21 +56,21 @@ const Sidebar = ({ collapsed = false }) => {
   }, [location.pathname]);
 
   const menuItems = [
-    { name: 'Dashboard',                path: '/'       ,   icon: <Icons.Grid size={20} />     },
-    { name: 'Regional Details',         path: '/regions',   icon: <Icons.Table size={20} /> },
-    { name: 'ESG Indicators',           path: '/esg',       icon: <Icons.Gauge size={20} /> },
-    { name: 'SDG Progress',             path: '/sdg',       icon: <Icons.Chart size={20} /> },
-    { name: 'News & Insights',          path: '/news',      icon: <Icons.Newspaper size={20} />, badgeKey: 'news' },
-    { name: 'Community',                path: '/community', icon: <Icons.Comment size={20} />, badgeKey: 'community' },
-    { name: 'Generate Report',          path: '/reports',   icon: <Icons.FileArrow size={20} /> },
-    { name: 'Data Sources',             path: '/data-sources', icon: <Icons.Frame size={20} /> },
+    { name: t('sidebar.dashboard'),        path: '/'       ,   icon: <Icons.Grid size={20} />     },
+    { name: t('sidebar.regionalDetails'),  path: '/regions',   icon: <Icons.Table size={20} /> },
+    { name: t('sidebar.esgIndicators'),    path: '/esg',       icon: <Icons.Gauge size={20} /> },
+    { name: t('sidebar.sdgProgress'),      path: '/sdg',       icon: <Icons.Chart size={20} /> },
+    { name: t('sidebar.newsInsights'),     path: '/news',      icon: <Icons.Newspaper size={20} />, badgeKey: 'news' },
+    { name: t('sidebar.community'),        path: '/community', icon: <Icons.Comment size={20} />, badgeKey: 'community' },
+    { name: t('sidebar.generateReport'),   path: '/reports',   icon: <Icons.FileArrow size={20} /> },
+    { name: t('sidebar.dataSources'),      path: '/data-sources', icon: <Icons.Frame size={20} /> },
   ];
 
   // Grouped under a single expandable "Admin Tools" entry instead of sitting
   // as top-level items — only admins ever see this at all.
   const adminItems = [
-    { name: 'News Review',    path: '/admin/news',  icon: <Icons.Newspaper size={18} /> },
-    { name: 'User Management', path: '/admin/users', icon: <Icons.User size={18} /> },
+    { name: t('sidebar.newsReview'),      path: '/admin/news',  icon: <Icons.Newspaper size={18} /> },
+    { name: t('sidebar.userManagement'),  path: '/admin/users', icon: <Icons.User size={18} /> },
   ];
 
   const handleLogout = async () => {
@@ -118,7 +120,7 @@ const Sidebar = ({ collapsed = false }) => {
               <span style={styles.navIcon}><Icons.Briefcase size={20} /></span>
               {!collapsed && (
                 <>
-                  <span style={{ flex: 1, textAlign: 'left' }}>Admin Tools</span>
+                  <span style={{ flex: 1, textAlign: 'left' }}>{t('sidebar.adminTools')}</span>
                   <span
                     style={{
                       display: 'inline-flex',
@@ -162,7 +164,7 @@ const Sidebar = ({ collapsed = false }) => {
           })}
         >
           <span style={styles.navIcon}><Icons.Info size={20} /></span>
-          {!collapsed && <span>About Borneo Tracker</span>}
+          {!collapsed && <span>{t('sidebar.aboutBorneoTracker')}</span>}
         </NavLink>
       </nav>
 
@@ -184,7 +186,7 @@ const Sidebar = ({ collapsed = false }) => {
             }}
           >
             <span style={styles.logoutIcon}>⎋</span>
-            {!collapsed && 'Log out'}
+            {!collapsed && t('sidebar.logOut')}
           </button>
         ) : (
           <button
@@ -192,7 +194,7 @@ const Sidebar = ({ collapsed = false }) => {
             style={{ ...styles.logoutBtn, color: '#c8ddd2' }}
           >
             <span style={styles.logoutIcon}>⎋</span>
-            {!collapsed && 'Log in'}
+            {!collapsed && t('sidebar.logIn')}
           </button>
         )}
 

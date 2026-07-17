@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import DraftCard from './DraftCard';
 import {
@@ -21,12 +22,6 @@ const COUNTRY_FLAGS = {
   Indonesia: '🇮🇩',
 };
 
-const TABS = [
-  { key: 'pending', label: 'Pending' },
-  { key: 'published', label: 'Published' },
-  { key: 'rejected', label: 'Rejected' },
-];
-
 const formatDate = (value) => {
   if (!value) return '—';
   const date = new Date(value);
@@ -34,24 +29,26 @@ const formatDate = (value) => {
   return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 };
 
-const ReadOnlyCard = ({ article }) => (
+const ReadOnlyCard = ({ article, t }) => (
   <article className="draft-card is-readonly">
-    <span className={`draft-status-tag status-${article.status}`}>{article.status}</span>
+    <span className={`draft-status-tag status-${article.status}`}>
+      {article.status === 'published' ? t('admin.tabPublished') : t('admin.tabRejected')}
+    </span>
     <h3 className="draft-readonly-title">{article.title}</h3>
     <p className="draft-readonly-body">{article.body}</p>
     <div className="draft-meta">
       {article.beatLabel ? (
         <span className="draft-meta-item">
-          <strong>Beat:</strong> {article.beatLabel}
+          <strong>{t('admin.beatLabel')}</strong> {article.beatLabel}
         </span>
       ) : null}
       {article.country ? (
         <span className="draft-meta-item">
-          <strong>Country:</strong> {COUNTRY_FLAGS[article.country] || ''} {article.country}
+          <strong>{t('admin.countryLabel')}</strong> {COUNTRY_FLAGS[article.country] || ''} {article.country}
         </span>
       ) : null}
       <span className="draft-meta-item">
-        <strong>{article.status === 'published' ? 'Published' : 'Created'}:</strong>{' '}
+        <strong>{article.status === 'published' ? t('admin.publishedLabel') : t('admin.createdLabel')}</strong>{' '}
         {formatDate(article.status === 'published' ? article.publishedAt : article.createdAt)}
       </span>
     </div>
@@ -59,9 +56,15 @@ const ReadOnlyCard = ({ article }) => (
 );
 
 const NewsReview = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { user, isAuthEnabled, signOut } = useAuth();
   const adminEmail = user?.email || '';
+  const TABS = [
+    { key: 'pending', label: t('admin.tabPending') },
+    { key: 'published', label: t('admin.tabPublished') },
+    { key: 'rejected', label: t('admin.tabRejected') },
+  ];
   const [tab, setTab] = useState('pending');
   const [drafts, setDrafts] = useState([]);
   const [others, setOthers] = useState([]);
@@ -79,7 +82,7 @@ const NewsReview = () => {
     setError('');
     return getPendingDrafts()
       .then((items) => setDrafts(items))
-      .catch(() => setError('Drafts could not be loaded right now.'))
+      .catch(() => setError(t('admin.draftsLoadError')))
       .finally(() => setLoading(false));
   };
 
@@ -88,7 +91,7 @@ const NewsReview = () => {
     setError('');
     return getAllNews()
       .then((items) => setOthers(items.filter((item) => item.status === status)))
-      .catch(() => setError('News could not be loaded right now.'))
+      .catch(() => setError(t('news.loadError')))
       .finally(() => setLoading(false));
   };
 
@@ -111,7 +114,7 @@ const NewsReview = () => {
         }
       })
       .catch(() => {
-        if (!cancelled) setError('News could not be loaded right now.');
+        if (!cancelled) setError(t('news.loadError'));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -120,6 +123,9 @@ const NewsReview = () => {
     return () => {
       cancelled = true;
     };
+    // Re-runs on tab change only — a language switch mid-view just won't
+    // retranslate an already-shown error until the tab is retried.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab]);
 
   const handleRemove = (id) => {
@@ -133,22 +139,22 @@ const NewsReview = () => {
 
   const handleApprove = async (id) => {
     await approveNews(id);
-    showNotice('Draft approved and published.');
+    showNotice(t('admin.draftApprovedPublished'));
   };
 
   const handlePublishEdited = async (id, edits) => {
     await publishEditedNews(id, edits);
-    showNotice('Edited draft published.');
+    showNotice(t('admin.editedDraftPublished'));
   };
 
   const handleReject = async (id) => {
     await rejectNews(id);
-    showNotice('Draft rejected.');
+    showNotice(t('admin.draftRejected'));
   };
 
   const handleSaveEdits = async (id, edits) => {
     await updateNews(id, edits);
-    showNotice('Edits saved. Draft stays in the queue.');
+    showNotice(t('admin.editsSavedQueue'));
   };
 
   const handleRetry = () => {
@@ -161,7 +167,7 @@ const NewsReview = () => {
 
   const renderBody = () => {
     if (loading) {
-      return <div className="admin-news-state">Loading…</div>;
+      return <div className="admin-news-state">{t('common.loading')}</div>;
     }
 
     if (error) {
@@ -169,7 +175,7 @@ const NewsReview = () => {
         <div className="admin-news-state is-error" role="alert">
           <p>{error}</p>
           <button type="button" className="admin-news-tab" onClick={handleRetry}>
-            Retry
+            {t('common.retry')}
           </button>
         </div>
       );
@@ -177,7 +183,7 @@ const NewsReview = () => {
 
     if (tab === 'pending') {
       if (drafts.length === 0) {
-        return <div className="admin-news-state admin-news-empty">No drafts awaiting review 🎉</div>;
+        return <div className="admin-news-state admin-news-empty">{t('admin.noDraftsAwaitingReview')}</div>;
       }
       return (
         <div className="admin-news-list">
@@ -197,12 +203,12 @@ const NewsReview = () => {
     }
 
     if (others.length === 0) {
-      return <div className="admin-news-state admin-news-empty">Nothing here yet.</div>;
+      return <div className="admin-news-state admin-news-empty">{t('admin.nothingHereYet')}</div>;
     }
     return (
       <div className="admin-news-list">
         {others.map((article) => (
-          <ReadOnlyCard key={article.id} article={article} />
+          <ReadOnlyCard key={article.id} article={article} t={t} />
         ))}
       </div>
     );
@@ -221,22 +227,22 @@ const NewsReview = () => {
               flexWrap: 'wrap',
             }}
           >
-            <h1 style={{ margin: 0 }}>News Review Queue</h1>
+            <h1 style={{ margin: 0 }}>{t('admin.newsReviewQueue')}</h1>
             {isAuthEnabled && adminEmail ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span style={{ fontSize: '0.85rem', color: 'var(--color-muted)' }}>{adminEmail}</span>
                 <button type="button" className="admin-news-tab" onClick={handleLogout}>
-                  Log out
+                  {t('sidebar.logOut')}
                 </button>
               </div>
             ) : null}
           </div>
           <p className="admin-news-subtitle" style={{ marginTop: '6px' }}>
-            Admin approval view — review AI-generated drafts before they go public.
+            {t('admin.approvalSubtitle')}
           </p>
         </header>
 
-        <div className="admin-news-tabs" role="tablist" aria-label="News review filters">
+        <div className="admin-news-tabs" role="tablist" aria-label={t('admin.newsReviewFiltersAria')}>
           {TABS.map((item) => (
             <button
               key={item.key}

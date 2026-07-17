@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Card, Icons } from '../../components/ui';
 import BorneoMap from "../../assets/borneo_about.png";
@@ -6,113 +7,118 @@ import './about.css';
 const dashboardRoute = '/';
 const dataSourcesRoute = '/data-sources';
 
-const indicatorCards = [
-  { title: 'Forest Cover', tone: 'green', icon: TreeIcon, trend: 'M2 31 L14 25 L25 15 L37 19 L49 7 L62 12 L74 5' },
-  { title: 'Deforestation', tone: 'orange', icon: TreeLossIcon, trend: 'M2 10 L13 18 L24 13 L35 24 L47 20 L59 29 L72 25' },
-  { title: 'Water Quality', tone: 'blue', icon: DropIcon, trend: 'M2 24 C13 14 24 32 36 22 S60 15 74 24' },
-  { title: 'Air Quality', tone: 'sky', icon: CloudIcon, trend: 'M2 14 C10 7 17 21 25 14 S39 8 47 15 S62 22 72 12' },
-  { title: 'Poverty', tone: 'amber', icon: HouseholdIcon, bars: [13, 22, 30, 18, 35, 24, 32, 39] },
-  { title: 'Fire Hotspots', tone: 'flame', icon: FlameIcon, bars: [25, 38, 18, 44, 32, 15, 41, 50] },
-];
+function useAboutContent(t) {
+  const indicatorCards = [
+    { title: t('about.indicatorForestCover'), tone: 'green', icon: TreeIcon, trend: 'M2 31 L14 25 L25 15 L37 19 L49 7 L62 12 L74 5' },
+    { title: t('about.indicatorDeforestation'), tone: 'orange', icon: TreeLossIcon, trend: 'M2 10 L13 18 L24 13 L35 24 L47 20 L59 29 L72 25' },
+    { title: t('about.indicatorWaterQuality'), tone: 'blue', icon: DropIcon, trend: 'M2 24 C13 14 24 32 36 22 S60 15 74 24' },
+    { title: t('about.indicatorAirQuality'), tone: 'sky', icon: CloudIcon, trend: 'M2 14 C10 7 17 21 25 14 S39 8 47 15 S62 22 72 12' },
+    { title: t('about.indicatorPoverty'), tone: 'amber', icon: HouseholdIcon, bars: [13, 22, 30, 18, 35, 24, 32, 39] },
+    { title: t('about.indicatorFireHotspots'), tone: 'flame', icon: FlameIcon, bars: [25, 38, 18, 44, 32, 15, 41, 50] },
+  ];
 
-const monitorItems = [
-  {
-    title: 'Environment',
-    body: 'Forest cover, deforestation, air quality, water quality and fire hotspots.',
-    icon: ForestGroupIcon,
-    tone: 'green',
-  },
-  {
-    title: 'Social',
-    body: 'Poverty, employment, education, healthcare and clean water access.',
-    icon: Icons.People,
-    tone: 'blue',
-  },
-  {
-    title: 'Sustainability Progress',
-    body: 'Regional performance across priority Sustainable Development Goals.',
-    icon: GrowthIcon,
-    tone: 'amber',
-  },
-];
+  const monitorItems = [
+    {
+      title: t('esg.categoryEnvironment'),
+      body: t('about.monitorEnvironmentBody'),
+      icon: ForestGroupIcon,
+      tone: 'green',
+    },
+    {
+      title: t('esg.categorySocial'),
+      body: t('about.monitorSocialBody'),
+      icon: Icons.People,
+      tone: 'blue',
+    },
+    {
+      title: t('about.monitorSustainabilityTitle'),
+      body: t('about.monitorSustainabilityBody'),
+      icon: GrowthIcon,
+      tone: 'amber',
+    },
+  ];
 
-const exploreItems = [
-  {
-    title: 'Regional Comparison',
-    body: 'Compare indicators across Borneo.',
-    to: '/regions',
-    icon: Icons.Chart,
-    tone: 'green',
-  },
-  {
-    title: 'ESG Indicators',
-    body: 'Review environmental, social and governance performance.',
-    to: '/esg',
-    icon: LeafIcon,
-    tone: 'green',
-  },
-  {
-    title: 'SDG Progress',
-    body: 'Follow progress toward priority Sustainable Development Goals.',
-    to: '/sdg',
-    icon: SdgWheelIcon,
-    tone: 'multi',
-  },
-  {
-    title: 'News & Insights',
-    body: 'Read AI-curated sustainability news with credited sources.',
-    to: '/news',
-    icon: Icons.Newspaper,
-    tone: 'green',
-  },
- 
-  {
-    title: 'Community',
-    body: 'Discuss wildlife, culture, livelihoods and everyday life with people across Borneo.',
-    to: '/community',
-    icon: Icons.People,
-    tone: 'blue',
-  },
-];
+  const exploreItems = [
+    {
+      title: t('about.exploreRegionalTitle'),
+      body: t('about.exploreRegionalBody'),
+      to: '/regions',
+      icon: Icons.Chart,
+      tone: 'green',
+    },
+    {
+      title: t('esg.title'),
+      body: t('about.exploreEsgBody'),
+      to: '/esg',
+      icon: LeafIcon,
+      tone: 'green',
+    },
+    {
+      title: t('sdg.title'),
+      body: t('about.exploreSdgBody'),
+      to: '/sdg',
+      icon: SdgWheelIcon,
+      tone: 'multi',
+    },
+    {
+      title: t('sidebar.newsInsights'),
+      body: t('about.exploreNewsBody'),
+      to: '/news',
+      icon: Icons.Newspaper,
+      tone: 'green',
+    },
 
-const scopeItems = [
-  {
-    title: '4 Territories',
-    body: 'Sabah, Sarawak, Brunei, Kalimantan',
-    icon: GlobeIcon,
-    tone: 'green',
-  },
-  {
-    title: 'ESG & SDG Insights',
-    body: 'Environmental, social, governance and SDG data',
-    icon: LeafIcon,
-    tone: 'green',
-  },
-  {
-    title: 'Transparent Sources',
-    body: 'Clear data sources and regular updates',
-    icon: ShieldIcon,
-    tone: 'amber',
-  },
-];
+    {
+      title: t('sidebar.community'),
+      body: t('about.exploreCommunityBody'),
+      to: '/community',
+      icon: Icons.People,
+      tone: 'blue',
+    },
+  ];
+
+  const scopeItems = [
+    {
+      title: t('about.scopeTerritoriesTitle'),
+      body: t('about.scopeTerritoriesBody'),
+      icon: GlobeIcon,
+      tone: 'green',
+    },
+    {
+      title: t('about.scopeEsgSdgTitle'),
+      body: t('about.scopeEsgSdgBody'),
+      icon: LeafIcon,
+      tone: 'green',
+    },
+    {
+      title: t('about.scopeSourcesTitle'),
+      body: t('about.scopeSourcesBody'),
+      icon: ShieldIcon,
+      tone: 'amber',
+    },
+  ];
+
+  return { indicatorCards, monitorItems, exploreItems, scopeItems };
+}
 
 export default function AboutPage() {
+  const { t } = useTranslation();
+  const { indicatorCards, monitorItems, exploreItems, scopeItems } = useAboutContent(t);
   return (
     <main className="about-page" aria-labelledby="about-title">
       <section className="about-hero" aria-label="About Borneo Tracker">
         <div className="about-hero-copy">
-          <p className="about-kicker">ABOUT THE PLATFORM</p>
-          <h1 id="about-title">Understanding Borneo Through Trusted Data</h1>
+          <p className="about-kicker">{t('about.kicker')}</p>
+          <h1 id="about-title">{t('about.heroTitle')}</h1>
           <p className="about-lede">
-            Borneo Tracker brings environmental, social and sustainability indicators together in one
-            clear and accessible platform.
+            {t('about.heroLede')}
           </p>
           <div className="about-actions" aria-label="Primary actions">
-            <Link className="about-button about-button-primary" to={dashboardRoute} aria-label="Explore Dashboard">
-              Explore Dashboard
+            <Link className="about-button about-button-primary" to={dashboardRoute} aria-label={t('about.exploreDashboard')}>
+              {t('about.exploreDashboard')}
             </Link>
-            <Link className="about-button about-button-secondary" to={dataSourcesRoute} aria-label="View Data Sources">
-              View Data Sources
+            <Link className="about-button about-button-secondary" to={dataSourcesRoute} aria-label={t('about.viewDataSources')}>
+              {t('about.viewDataSources')}
               <span aria-hidden="true">↗</span>
             </Link>
           </div>
@@ -135,10 +141,9 @@ export default function AboutPage() {
 
       <section className="about-purpose" aria-labelledby="purpose-title">
         <div>
-          <h2 id="purpose-title">Our Purpose</h2>
+          <h2 id="purpose-title">{t('about.ourPurpose')}</h2>
           <p>
-            We support public awareness, regional monitoring and evidence-informed decisions by making
-            Borneo's sustainability data easier to explore, compare and understand.
+            {t('about.purposeBody')}
           </p>
         </div>
         <div className="scope-grid" aria-label="Platform scope">
@@ -148,7 +153,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <Section title="What We Monitor">
+      <Section title={t('about.whatWeMonitor')}>
         <div className="monitor-grid">
           {monitorItems.map((item) => (
             <InfoCard key={item.title} item={item} />
@@ -156,28 +161,24 @@ export default function AboutPage() {
         </div>
       </Section>
 
-      <Section title="The Resilience Score">
+      <Section title={t('about.theResilienceScore')}>
         <p style={{ maxWidth: '72ch', color: 'var(--color-muted)', lineHeight: 1.65, margin: '0 0 22px' }}>
-          <b style={{ color: 'var(--color-ink)' }}>“Resilience”</b> here simply means how well a place can
-          look after its own people across life’s essentials — from food and energy to housing, healthcare,
-          education and everyday wellbeing — even when times get hard. A territory can look wealthy on paper
-          yet still be fragile if just one of these essentials is weak. Borneo Tracker turns the data into a
-          single 0–100 <b style={{ color: 'var(--color-ink)' }}>Resilience Score</b> that measures exactly
-          this, rather than judging a place by income alone.
+          <b style={{ color: 'var(--color-ink)' }}>{t('about.resilienceQuoted')}</b> {t('about.resilienceExplainerPart1')}{' '}
+          <b style={{ color: 'var(--color-ink)' }}>{t('about.resilienceScoreLabel')}</b> {t('about.resilienceExplainerPart2')}
         </p>
         <div className="monitor-grid">
           <InfoCard
             item={{
-              title: 'Resilience Status',
-              body: 'A single 0–100 score with a traffic-light status — green (resilient), amber (at risk) or red (critical) — so a territory’s overall standing reads at a glance.',
+              title: t('about.resilienceStatusTitle'),
+              body: t('about.resilienceStatusBody'),
               icon: GrowthIcon,
               tone: 'green',
             }}
           />
           <InfoCard
             item={{
-              title: 'Resilience by Pillar',
-              body: 'The score broken into its six essentials — Food, Energy, Education, Shelter, Healthcare and Entertainment — shown as a hexagon and a weakest-first list, so you can see which one is holding a territory back.',
+              title: t('dashboard.resilienceByPillar'),
+              body: t('about.resilienceByPillarBody'),
               icon: HexagonIcon,
               tone: 'amber',
             }}
@@ -185,7 +186,7 @@ export default function AboutPage() {
         </div>
       </Section>
 
-      <Section title="What You Can Explore">
+      <Section title={t('about.whatYouCanExplore')}>
         <div className="explore-grid">
           {exploreItems.map((item) => (
             <FeatureCard key={item.title} item={item} />
@@ -199,14 +200,13 @@ export default function AboutPage() {
             <DatabaseShieldIcon size={54} />
           </div>
           <div>
-            <h2>Built on Transparent Data</h2>
+            <h2>{t('about.builtOnTransparentData')}</h2>
             <p>
-              Every indicator includes its source and update information so users can understand where
-              the data comes from and how it supports the dashboard.
+              {t('about.transparentDataBody')}
             </p>
           </div>
-          <Link className="about-button about-button-secondary" to={dataSourcesRoute} aria-label="View Data Sources">
-            View Data Sources
+          <Link className="about-button about-button-secondary" to={dataSourcesRoute} aria-label={t('about.viewDataSources')}>
+            {t('about.viewDataSources')}
             <span aria-hidden="true">↗</span>
           </Link>
         </div>
@@ -216,10 +216,9 @@ export default function AboutPage() {
             <Icons.Info size={34} />
           </div>
           <div>
-            <h2 id="notice-title">Important Notice</h2>
+            <h2 id="notice-title">{t('about.importantNotice')}</h2>
             <p>
-              Borneo Tracker supports awareness and monitoring. For emergencies, always contact the
-              relevant official emergency services.
+              {t('about.noticeBody')}
             </p>
           </div>
         </aside>

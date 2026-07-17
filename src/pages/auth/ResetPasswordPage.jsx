@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/useAuth';
 import AuthLayout, { AuthCard } from '../../components/AuthLayout';
@@ -10,6 +11,7 @@ import { COLORS, FONT } from '../../theme';
 // so updateUser({ password }) here sets the new password. We then sign out and
 // send the user to a clean login.
 const ResetPasswordPage = () => {
+  const { t } = useTranslation();
   const { updatePassword, signOut } = useAuth();
   const navigate = useNavigate();
   const [password, setPassword] = useState('');
@@ -21,15 +23,15 @@ const ResetPasswordPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!password || !confirm) {
-      setError('Enter and confirm your new password.');
+      setError(t('auth.enterConfirmNewPassword'));
       return;
     }
     if (password.length < 12) {
-      setError('Password must be at least 12 characters.');
+      setError(t('auth.passwordMinLength'));
       return;
     }
     if (password !== confirm) {
-      setError('Passwords do not match.');
+      setError(t('auth.passwordsDoNotMatch'));
       return;
     }
     setError('');
@@ -40,7 +42,7 @@ const ResetPasswordPage = () => {
       setDone(true);
       setTimeout(() => navigate('/login'), 2000);
     } catch (err) {
-      setError(err.message || 'Could not reset the password. Open the reset link from your email again.');
+      setError(err.message || t('auth.couldNotResetPassword'));
     } finally {
       setBusy(false);
     }
@@ -49,26 +51,26 @@ const ResetPasswordPage = () => {
   return (
     <AuthLayout>
       <AuthCard>
-        <h1 style={styles.title}>Reset Password</h1>
+        <h1 style={styles.title}>{t('auth.resetPasswordTitle')}</h1>
 
         <form onSubmit={handleSubmit}>
-          <Field label="New Password" hint="At least 12 characters">
-            <PasswordInput autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter new password" />
+          <Field label={t('auth.newPasswordLabel')} hint={t('auth.atLeast12Chars')}>
+            <PasswordInput autoComplete="new-password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t('auth.newPasswordPlaceholder')} />
           </Field>
 
-          <Field label="Confirm Password">
-            <PasswordInput autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Re-enter new password" />
+          <Field label={t('auth.confirmPasswordLabelCap')}>
+            <PasswordInput autoComplete="new-password" value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder={t('auth.reenterNewPasswordPlaceholder')} />
           </Field>
 
           {error && <p style={styles.error}>{error}</p>}
 
           <Button type="submit" variant="primary" disabled={busy} style={styles.submitBtn}>
-            {busy ? 'Resetting…' : 'Submit'}
+            {busy ? t('auth.resetting') : t('auth.submit')}
           </Button>
         </form>
       </AuthCard>
 
-      <SuccessModal open={done} message="Your password has been reset." />
+      <SuccessModal open={done} message={t('auth.passwordResetSuccess')} />
     </AuthLayout>
   );
 };

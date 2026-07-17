@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../auth/useAuth';
 import AuthLayout, { AuthCard } from '../../components/AuthLayout';
@@ -9,6 +10,7 @@ import { COLORS, FONT } from '../../theme';
 // Lets the user resend the email, with a cooldown so we don't spam Supabase's
 // rate-limited mailer.
 const CheckEmailPage = () => {
+  const { t } = useTranslation();
   const { resendSignup, resetPasswordForEmail } = useAuth();
   const location = useLocation();
   const purpose = location.state?.purpose === 'reset' ? 'reset' : 'verify';
@@ -27,7 +29,7 @@ const CheckEmailPage = () => {
   const resend = async (e) => {
     e.preventDefault();
     if (!email.trim()) {
-      setError('Enter your email address.');
+      setError(t('auth.enterEmailAddress'));
       return;
     }
     setBusy(true);
@@ -36,10 +38,10 @@ const CheckEmailPage = () => {
     try {
       if (purpose === 'reset') await resetPasswordForEmail(email.trim());
       else await resendSignup(email.trim());
-      setMessage('Email sent. Please check your inbox (and spam folder).');
+      setMessage(t('auth.emailSentNotice'));
       setCooldown(purpose === 'verify' ? 60 : 30);
     } catch (err) {
-      setError(err.message || 'Could not send the email.');
+      setError(err.message || t('auth.couldNotSendEmail'));
     } finally {
       setBusy(false);
     }
@@ -48,11 +50,11 @@ const CheckEmailPage = () => {
   return (
     <AuthLayout>
       <AuthCard>
-        <h1 style={styles.title}>Check your email</h1>
+        <h1 style={styles.title}>{t('auth.checkEmailTitle')}</h1>
         <p style={styles.subtitle}>
           {purpose === 'reset'
-            ? 'If an account matches, we sent a password reset link.'
-            : 'We sent a verification link to your email. Click it to activate your account.'}
+            ? t('auth.resetEmailSentNotice')
+            : t('auth.verifyEmailSentNotice')}
         </p>
 
         <form onSubmit={resend}>
@@ -61,19 +63,19 @@ const CheckEmailPage = () => {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email address"
-            aria-label="Email address"
+            placeholder={t('auth.emailAddressPlaceholder')}
+            aria-label={t('auth.emailAddressPlaceholder')}
           />
 
           {message && <p style={styles.ok}>{message}</p>}
           {error && <p style={styles.error}>{error}</p>}
 
           <Button type="submit" variant="primary" disabled={busy || cooldown > 0} style={styles.submitBtn}>
-            {busy ? 'Sending…' : cooldown ? `Send again in ${cooldown}s` : 'Send another email'}
+            {busy ? t('auth.sending') : cooldown ? t('auth.sendAgainIn', { seconds: cooldown }) : t('auth.sendAnotherEmail')}
           </Button>
         </form>
 
-        <Link to="/login" style={styles.link}>Back to login</Link>
+        <Link to="/login" style={styles.link}>{t('auth.backToLogin')}</Link>
       </AuthCard>
     </AuthLayout>
   );

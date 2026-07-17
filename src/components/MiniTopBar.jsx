@@ -1,13 +1,15 @@
 // components/MiniTopBar.jsx
-// Lightweight top bar: hamburger ☰ | logo | spacer | mute (News/Community only) | theme | account
+// Lightweight top bar: hamburger ☰ | logo | spacer | mute (News/Community only) | language | theme | account
 // When signed in, the avatar opens a dropdown (profile / admin / log out).
 // When signed out, it shows a "Log in" button instead.
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import logoImg from '../assets/logo.png';
 import { useAuth } from '../auth/useAuth';
 import AIbotButton from './AIbotButton';
+import LanguageSwitcher from './LanguageSwitcher';
 import ThemeToggle from './ThemeToggle';
 import { isMuted, setMuted } from '../utils/notifications';
 
@@ -20,6 +22,7 @@ const MUTE_PAGE_BY_PATH = (pathname) => {
 };
 
 const MiniTopBar = ({ onMenuClick }) => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, isAdmin, user, profile, signOut } = useAuth();
@@ -43,6 +46,10 @@ const MiniTopBar = ({ onMenuClick }) => {
     setMuted(mutePage, next);
     setMutedState(next);
   };
+
+  const muteLabelKey = mutePage === 'community'
+    ? (muted ? 'topbar.unmuteCommunity' : 'topbar.muteCommunity')
+    : (muted ? 'topbar.unmuteNews' : 'topbar.muteNews');
 
   const closeDropdown = () => setDropdownOpen(false);
 
@@ -71,7 +78,7 @@ const MiniTopBar = ({ onMenuClick }) => {
       <button
         onClick={onMenuClick}
         style={styles.iconBtn}
-        aria-label="Toggle sidebar"
+        aria-label={t('topbar.toggleSidebar')}
       >
         <HamburgerIcon />
       </button>
@@ -86,7 +93,7 @@ const MiniTopBar = ({ onMenuClick }) => {
       <div style={{ flex: 1 }} />
 
 
-      {/* ── Right: mute (News/Community only) + theme + account ── */}
+      {/* ── Right: mute (News/Community only) + language + theme + account ── */}
       <div style={styles.rightGroup}>
 
         {/* Mute — only visible on News & Insights and Community */}
@@ -94,12 +101,15 @@ const MiniTopBar = ({ onMenuClick }) => {
           <button
             style={styles.iconBtn}
             onClick={toggleMute}
-            aria-label={muted ? `Unmute ${mutePage}` : `Mute ${mutePage}`}
-            title={muted ? 'Unmute notifications for this page' : 'Mute notifications for this page'}
+            aria-label={t(muteLabelKey)}
+            title={t(muteLabelKey)}
           >
             <MuteIcon muted={muted} />
           </button>
         )}
+
+        {/* Language switcher */}
+        <LanguageSwitcher style={styles.iconBtn} />
 
         {/* Theme toggle */}
         <ThemeToggle style={styles.iconBtn} />
@@ -110,7 +120,7 @@ const MiniTopBar = ({ onMenuClick }) => {
             <button
               style={styles.avatarCircle}
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              aria-label="User menu"
+              aria-label={t('topbar.userMenu')}
             >
               <PersonIcon />
             </button>
@@ -131,11 +141,11 @@ const MiniTopBar = ({ onMenuClick }) => {
                 <div style={styles.dropdownDivider} />
 
                 <button style={styles.dropdownItem} onClick={() => goTo('/profile')}>
-                  My Profile
+                  {t('topbar.myProfile')}
                 </button>
                 {isAdmin && (
                   <button style={styles.dropdownItem} onClick={() => goTo('/admin/news')}>
-                    News Review (Admin)
+                    {t('topbar.newsReviewAdmin')}
                   </button>
                 )}
 
@@ -144,14 +154,14 @@ const MiniTopBar = ({ onMenuClick }) => {
                   style={{ ...styles.dropdownItem, color: '#dc2626' }}
                   onClick={handleLogout}
                 >
-                  Log out
+                  {t('topbar.logOut')}
                 </button>
               </div>
             )}
           </div>
         ) : (
           <button style={styles.loginBtn} onClick={() => navigate('/login')}>
-            Log in
+            {t('topbar.logIn')}
           </button>
         )}
       </div>

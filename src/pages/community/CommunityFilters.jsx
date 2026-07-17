@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Icons, Select } from '../../components/ui';
 import { COLORS, FONT, RADII, SHADOWS } from '../../theme';
 
@@ -12,6 +13,7 @@ const CommunityFilters = ({
   territoryOptions,
   resultCount,
 }) => {
+  const { t } = useTranslation();
   return (
     <div style={styles.wrap}>
       <div style={styles.searchBox}>
@@ -20,9 +22,9 @@ const CommunityFilters = ({
           type="search"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Search discussions by topic, region, or keyword…"
+          placeholder={t('community.searchPlaceholder')}
           style={styles.searchInput}
-          aria-label="Search community discussions"
+          aria-label={t('community.searchAriaLabel')}
         />
       </div>
 
@@ -30,7 +32,7 @@ const CommunityFilters = ({
       <Select value={territory} onChange={onTerritoryChange} options={territoryOptions} style={styles.select} />
 
       <span style={styles.resultCount}>
-        {resultCount} {resultCount === 1 ? 'discussion' : 'discussions'}
+        {t('community.discussionsCount', { count: resultCount })}
       </span>
     </div>
   );

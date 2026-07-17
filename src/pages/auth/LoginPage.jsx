@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/useAuth';
 import AuthLayout, { AuthCard } from '../../components/AuthLayout';
@@ -8,6 +9,7 @@ import { COLORS, FONT } from '../../theme';
 // Real Supabase email + password sign-in. On success we return the user to
 // wherever a ProtectedRoute/RequireAdmin bounced them from (location.state.from).
 const LoginPage = () => {
+  const { t } = useTranslation();
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -19,7 +21,7 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) {
-      setError('Enter your email and password to sign in.');
+      setError(t('auth.enterEmailPassword'));
       return;
     }
     setError('');
@@ -28,7 +30,7 @@ const LoginPage = () => {
       await signIn({ email: email.trim(), password });
       navigate(location.state?.from || '/', { replace: true });
     } catch (err) {
-      setError(err.message || 'Sign in failed. Check your email and password.');
+      setError(err.message || t('auth.signInFailed'));
     } finally {
       setBusy(false);
     }
@@ -37,40 +39,40 @@ const LoginPage = () => {
   return (
     <AuthLayout>
       <AuthCard>
-        <h1 style={styles.title}>Login</h1>
+        <h1 style={styles.title}>{t('auth.loginTitle')}</h1>
         <p style={styles.subtitle}>
-          Don&rsquo;t have any account? <Link to="/register" style={styles.link}>Register now.</Link>
+          {t('auth.noAccountYet')} <Link to="/register" style={styles.link}>{t('auth.registerNow')}</Link>
         </p>
 
         <form onSubmit={handleSubmit}>
-          <Field label="Email" required>
+          <Field label={t('profile.email')} required>
             <TextInput
               type="email"
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              placeholder={t('auth.emailPlaceholder')}
             />
           </Field>
 
-          <Field label="Password" required>
+          <Field label={t('profile.password')} required>
             <PasswordInput
               autoComplete="current-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
+              placeholder={t('auth.passwordPlaceholder')}
             />
           </Field>
 
           {error && <p style={styles.error}>{error}</p>}
 
           <Button type="submit" variant="primary" disabled={busy} style={styles.submitBtn}>
-            {busy ? 'Signing in…' : 'Sign In'}
+            {busy ? t('auth.signingIn') : t('auth.signIn')}
           </Button>
         </form>
 
         <Link to="/forgot-password" style={styles.forgotLink}>
-          Forgotten your password?
+          {t('auth.forgottenPassword')}
         </Link>
       </AuthCard>
     </AuthLayout>

@@ -3,6 +3,7 @@
 // Clicking Edit opens an inline edit form. Saving shows a success toast.
 
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import MiniTopBar from '../../components/MiniTopBar';
 import { useAuth } from '../../auth/useAuth';
 
@@ -19,6 +20,7 @@ const INITIAL_USER = {
 };
 
 export default function MyProfile() {
+  const { t } = useTranslation();
   const { user: authUser, profile } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [user, setUser] = useState(() => ({
@@ -71,14 +73,14 @@ export default function MyProfile() {
 
         {/* Scrollable content */}
         <div style={s.content}>
-          <h1 style={s.pageTitle}>My Profile</h1>
+          <h1 style={s.pageTitle}>{t('profile.title')}</h1>
 
           {/* ── Personal Details card ── */}
           <div style={s.card}>
             <div style={s.cardHeader}>
-              <span style={s.cardLabel}>Personal Details</span>
+              <span style={s.cardLabel}>{t('profile.personalDetails')}</span>
               <button style={s.editBtn} onClick={openDetails}>
-                <EditIcon /> Edit
+                <EditIcon /> {t('common.edit')}
               </button>
             </div>
 
@@ -87,20 +89,20 @@ export default function MyProfile() {
               <div style={s.form}>
                 <div style={s.formGrid}>
                   <div style={s.field}>
-                    <label style={s.label}>First Name</label>
+                    <label style={s.label}>{t('profile.firstName')}</label>
                     <input style={s.input} value={form.firstName} onChange={e => setForm({ ...form, firstName: e.target.value })} />
                   </div>
                   <div style={s.field}>
-                    <label style={s.label}>Last Name</label>
+                    <label style={s.label}>{t('profile.lastName')}</label>
                     <input style={s.input} value={form.lastName} onChange={e => setForm({ ...form, lastName: e.target.value })} />
                   </div>
                 </div>
                 <div style={s.field}>
-                  <label style={s.label}>Email</label>
+                  <label style={s.label}>{t('profile.email')}</label>
                   <input style={s.input} type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
                 </div>
                 <div style={s.field}>
-                  <label style={s.label}>Phone Number</label>
+                  <label style={s.label}>{t('profile.phoneNumber')}</label>
                   <div style={s.phoneRow}>
                     <select style={s.phoneCode} value={form.phoneCode} onChange={e => setForm({ ...form, phoneCode: e.target.value })}>
                       {['+60', '+62', '+673', '+65'].map(c => <option key={c}>{c}</option>)}
@@ -109,37 +111,37 @@ export default function MyProfile() {
                   </div>
                 </div>
                 <div style={s.field}>
-                  <label style={s.label}>Address <span style={s.required}>*</span></label>
-                  <p style={s.hint}>House No., Building, Street name</p>
+                  <label style={s.label}>{t('profile.address')} <span style={s.required}>*</span></label>
+                  <p style={s.hint}>{t('profile.addressHint')}</p>
                   <input style={s.input} value={form.addressLine} onChange={e => setForm({ ...form, addressLine: e.target.value })} />
                 </div>
                 <div style={s.formGrid}>
                   <div style={s.field}>
-                    <label style={s.label}>City</label>
+                    <label style={s.label}>{t('profile.city')}</label>
                     <input style={s.input} value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} />
                   </div>
                   <div style={s.field}>
-                    <label style={s.label}>State</label>
+                    <label style={s.label}>{t('profile.state')}</label>
                     <input style={s.input} value={form.state} onChange={e => setForm({ ...form, state: e.target.value })} />
                   </div>
                 </div>
                 <div style={{ ...s.field, maxWidth: '200px' }}>
-                  <label style={s.label}>Postal code</label>
+                  <label style={s.label}>{t('profile.postalCode')}</label>
                   <input style={s.input} value={form.postal} onChange={e => setForm({ ...form, postal: e.target.value })} />
                 </div>
                 <div style={s.formActions}>
-                  <button style={s.cancelBtn} onClick={() => setEditMode(null)}>Cancel</button>
-                  <button style={s.saveBtn} onClick={saveDetails}>Save Changes</button>
+                  <button style={s.cancelBtn} onClick={() => setEditMode(null)}>{t('common.cancel')}</button>
+                  <button style={s.saveBtn} onClick={saveDetails}>{t('profile.saveChanges')}</button>
                 </div>
               </div>
             ) : (
               /* View mode */
               <div style={s.detailsGrid}>
                 {[
-                  { label: 'Name',    value: fullName },
-                  { label: 'Email',   value: user.email },
-                  { label: 'Phone',   value: `${user.phoneCode}${user.phone}` },
-                  { label: 'Address', value: fullAddress },
+                  { label: t('profile.name'),    value: fullName },
+                  { label: t('profile.email'),   value: user.email },
+                  { label: t('profile.phone'),   value: `${user.phoneCode}${user.phone}` },
+                  { label: t('profile.address'), value: fullAddress },
                 ].map(row => (
                   <div key={row.label} style={s.detailRow}>
                     <span style={s.detailLabel}>{row.label}</span>
@@ -153,18 +155,18 @@ export default function MyProfile() {
           {/* ── Password card ── */}
           <div style={{ ...s.card, marginTop: '16px' }}>
             <div style={s.cardHeader}>
-              <span style={s.cardLabel}>Password</span>
+              <span style={s.cardLabel}>{t('profile.password')}</span>
               <button style={s.editBtn} onClick={openPassword}>
-                <EditIcon /> Edit
+                <EditIcon /> {t('common.edit')}
               </button>
             </div>
 
             {editMode === 'password' ? (
               <div style={s.form}>
                 {[
-                  { label: 'Current password', key: 'current' },
-                  { label: 'New password',      key: 'next'    },
-                  { label: 'Confirm password',  key: 'confirm' },
+                  { label: t('profile.currentPassword'), key: 'current' },
+                  { label: t('profile.newPassword'),      key: 'next'    },
+                  { label: t('profile.confirmPassword'),  key: 'confirm' },
                 ].map(f => (
                   <div key={f.key} style={s.field}>
                     <label style={s.label}>{f.label}</label>
@@ -177,19 +179,19 @@ export default function MyProfile() {
                   </div>
                 ))}
                 <div style={s.formActions}>
-                  <button style={s.cancelBtn} onClick={() => setEditMode(null)}>Cancel</button>
-                  <button style={s.saveBtn} onClick={savePassword}>Save Changes</button>
+                  <button style={s.cancelBtn} onClick={() => setEditMode(null)}>{t('common.cancel')}</button>
+                  <button style={s.saveBtn} onClick={savePassword}>{t('profile.saveChanges')}</button>
                 </div>
               </div>
             ) : (
               <div style={s.detailRow}>
-                <span style={s.detailLabel}>Password</span>
+                <span style={s.detailLabel}>{t('profile.password')}</span>
                 <span style={{ ...s.detailValue, letterSpacing: '3px', fontSize: '18px' }}>••••••••</span>
               </div>
             )}
           </div>
 
-        
+
         </div>
       </div>
 
@@ -198,7 +200,7 @@ export default function MyProfile() {
         <div style={s.toastOverlay}>
           <div style={s.toastBox}>
             <div style={s.toastIcon}>✓</div>
-            <p style={s.toastText}>Your changes have been updated.</p>
+            <p style={s.toastText}>{t('profile.changesUpdated')}</p>
           </div>
         </div>
       )}

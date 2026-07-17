@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 // Shared UI primitives for the Figma redesign — keep pages lean and consistent.
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { COLORS, FONT, RADII, SHADOWS, STATUS_STYLES } from '../theme';
 
 /* ---------- Logo (hornbill mark from the design) ---------- */
@@ -271,6 +272,12 @@ export const Icons = {
       strokeLinejoin="round"
       fill="none"
     />
+  )),
+  Globe: I((c) => (
+    <g stroke={c} strokeWidth="1.8" fill="none" strokeLinecap="round">
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M3.5 12h17M12 3.5c2.3 2.3 3.5 5.3 3.5 8.5s-1.2 6.2-3.5 8.5c-2.3-2.3-3.5-5.3-3.5-8.5S9.7 5.8 12 3.5Z" />
+    </g>
   )),
 };
 
@@ -609,6 +616,7 @@ export function Menu({ trigger, items, align = 'right' }) {
 
 /* ---------- Pagination ---------- */
 export function Pagination({ page, pages, onPage }) {
+  const { t } = useTranslation();
   return (
     <div
       style={{
@@ -631,10 +639,10 @@ export function Pagination({ page, pages, onPage }) {
           fontWeight: 700,
         }}
       >
-        &lt; Prev
+        {t('pagination.prev')}
       </button>
       <span style={{ color: COLORS.ink }}>
-        {page} of {Math.max(pages, 1)}
+        {t('pagination.pageOf', { page, pages: Math.max(pages, 1) })}
       </span>
       <button
         disabled={page >= pages}
@@ -646,7 +654,7 @@ export function Pagination({ page, pages, onPage }) {
           fontWeight: 700,
         }}
       >
-        Next &gt;
+        {t('pagination.next')}
       </button>
     </div>
   );

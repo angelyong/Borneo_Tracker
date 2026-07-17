@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { Button, Icons, Modal } from '../../components/ui';
 import { COLORS, FONT, RADII } from '../../theme';
@@ -18,17 +19,29 @@ import CommunityFilters from './CommunityFilters';
 import NewPostForm from './NewPostForm';
 import PostCard from './PostCard';
 
-const TOPIC_FILTER_OPTIONS = ['All Topics', ...TOPIC_OPTIONS];
-const TERRITORY_FILTER_OPTIONS = ['All Regions', ...TERRITORY_OPTIONS.filter((t) => t !== 'All Borneo')];
+const ALL_TOPICS = 'All Topics';
+const ALL_REGIONS = 'All Regions';
 
 const CommunityPage = () => {
+  const { t } = useTranslation();
+  const topicFilterOptions = useMemo(
+    () => [{ value: ALL_TOPICS, label: t('community.allTopics') }, ...TOPIC_OPTIONS],
+    [t]
+  );
+  const territoryFilterOptions = useMemo(
+    () => [
+      { value: ALL_REGIONS, label: t('community.allRegions') },
+      ...TERRITORY_OPTIONS.filter((option) => option !== 'All Borneo'),
+    ],
+    [t]
+  );
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   const [search, setSearch] = useState('');
-  const [topic, setTopic] = useState('All Topics');
-  const [territory, setTerritory] = useState('All Regions');
+  const [topic, setTopic] = useState(ALL_TOPICS);
+  const [territory, setTerritory] = useState(ALL_REGIONS);
 
   const [composerOpen, setComposerOpen] = useState(false);
   const [submittingPost, setSubmittingPost] = useState(false);
@@ -62,7 +75,7 @@ const CommunityPage = () => {
         if (!cancelled) setPosts(nextPosts);
       })
       .catch(() => {
-        if (!cancelled) setError('Discussions could not be loaded right now.');
+        if (!cancelled) setError(t('community.loadError'));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -71,6 +84,9 @@ const CommunityPage = () => {
     return () => {
       cancelled = true;
     };
+    // Mount-only fetch — re-running on every language switch would refetch
+    // needlessly; an already-shown error just won't retranslate until retried.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Clear any pending toast timeout on unmount so it can't setState afterwards.
@@ -107,23 +123,23 @@ const CommunityPage = () => {
       await createPost(form);
       await refresh();
       closeComposer();
-      showToast('Your discussion has been posted.');
+      showToast(t('community.postedToast'));
     } catch (err) {
       // Keep the composer open with the user's input intact and explain why.
-      setSubmitError(err?.message || 'Something went wrong while publishing. Please try again.');
+      setSubmitError(err?.message || t('community.publishError'));
     } finally {
       setSubmittingPost(false);
     }
   };
 
   const handleDeletePost = async (postId) => {
-    if (!window.confirm('Delete this discussion? This can’t be undone.')) return;
+    if (!window.confirm(t('community.deleteConfirm'))) return;
     try {
       await deletePost(postId);
       await refresh();
-      showToast('Your discussion has been deleted.');
+      showToast(t('community.deletedToast'));
     } catch {
-      showToast('Could not delete the discussion. Please try again.');
+      showToast(t('community.deleteError'));
     }
   };
 
@@ -151,7 +167,7 @@ const CommunityPage = () => {
     const url = buildPostShareUrl(postId);
     try {
       await navigator.clipboard.writeText(url);
-      showToast('Link copied to clipboard.');
+      showToast(t('community.linkCopied'));
     } catch {
       showToast(url);
     }
@@ -159,30 +175,29 @@ const CommunityPage = () => {
 
   const filteredPosts = useMemo(() => {
     return posts
-      .filter((post) => (topic === 'All Topics' ? true : post.topic === topic))
-      .filter((post) => (territory === 'All Regions' ? true : post.territory === territory))
+      .filter((post) => (topic === ALL_TOPICS ? true : post.topic === topic))
+      .filter((post) => (territory === ALL_REGIONS ? true : post.territory === territory))
       .filter((post) => matchesCommunitySearch(post, search));
   }, [posts, topic, territory, search]);
 
   const clearFilters = () => {
     setSearch('');
-    setTopic('All Topics');
-    setTerritory('All Regions');
+    setTopic(ALL_TOPICS);
+    setTerritory(ALL_REGIONS);
   };
 
   return (
     <div style={styles.page}>
       <header style={styles.header}>
         <div>
-          <h1 style={styles.title}>Community</h1>
+          <h1 style={styles.title}>{t('community.title')}</h1>
           <p style={styles.subtitle}>
-            Discuss what&rsquo;s happening across Borneo — wildlife, culture, livelihoods, and everyday
-            life across Sabah, Sarawak, Brunei and Kalimantan.
+            {t('community.subtitle')}
           </p>
         </div>
         <Button variant="primary" onClick={openComposer}>
           <Icons.Plus size={18} style={{ marginRight: 6, verticalAlign: -3 }} />
-          Start a discussion
+          {t('community.startDiscussion')}
         </Button>
       </header>
 
@@ -193,26 +208,26 @@ const CommunityPage = () => {
         onTopicChange={setTopic}
         territory={territory}
         onTerritoryChange={setTerritory}
-        topicOptions={TOPIC_FILTER_OPTIONS}
-        territoryOptions={TERRITORY_FILTER_OPTIONS}
+        topicOptions={topicFilterOptions}
+        territoryOptions={territoryFilterOptions}
         resultCount={filteredPosts.length}
       />
 
-      {loading && <div style={styles.stateCard}>Loading discussions…</div>}
+      {loading && <div style={styles.stateCard}>{t('community.loadingDiscussions')}</div>}
 
       {!loading && error && (
         <div style={{ ...styles.stateCard, color: COLORS.red }}>{error}</div>
       )}
 
       {!loading && !error && posts.length === 0 && (
-        <div style={styles.stateCard}>No discussions yet — be the first to start one.</div>
+        <div style={styles.stateCard}>{t('community.noDiscussionsYet')}</div>
       )}
 
       {!loading && !error && posts.length > 0 && filteredPosts.length === 0 && (
         <div style={styles.stateCard}>
-          <p style={{ margin: '0 0 12px' }}>No discussions match your search or filters.</p>
+          <p style={{ margin: '0 0 12px' }}>{t('community.noDiscussionsMatch')}</p>
           <Button variant="ghost" onClick={clearFilters}>
-            Clear filters
+            {t('common.clearFilters')}
           </Button>
         </div>
       )}

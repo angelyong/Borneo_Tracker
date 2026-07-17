@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { TERRITORIES, useIndicators } from '../../data/useIndicators';
 import { buildProfile } from './reportContent';
 import { generatePdfFromSections } from '../../utils/pdfReport';
@@ -23,14 +24,16 @@ const DEFAULT_SECTIONS = {
   methodology: true,
 };
 
-const SECTION_TOGGLES = [
-  { key: 'summary', label: 'Executive Summary' },
-  { key: 'sdg', label: 'SDG Coverage' },
-  { key: 'coverage', label: 'Coverage & Limitations' },
-  { key: 'methodology', label: 'Methodology & Sources' },
-];
+const SECTION_LABEL_KEY = {
+  summary: 'reports.sectionExecutiveSummary',
+  sdg: 'reports.sectionSdgCoverage',
+  coverage: 'reports.sectionCoverageLimitations',
+  methodology: 'reports.sectionMethodologySources',
+};
+const SECTION_KEYS = ['summary', 'sdg', 'coverage', 'methodology'];
 
 const GenerateReportPage = () => {
+  const { t } = useTranslation();
   const { data, loading, error } = useIndicators();
 
   const [territory, setTerritory] = useState(TERRITORIES[0]);
@@ -85,34 +88,32 @@ const GenerateReportPage = () => {
   return (
     <div style={styles.page}>
       <header style={styles.header}>
-        <h1 style={styles.title}>Generate Report</h1>
+        <h1 style={styles.title}>{t('sidebar.generateReport')}</h1>
         <p style={styles.subtitle}>
-          A citable ESG &amp; SDG data profile for one territory &mdash; every indicator we&rsquo;ve gathered,
-          explained in plain language and downloadable as a PDF. Built for compliance buyers, suppliers and
-          investors, not just internal dashboards.
+          {t('reports.subtitle')}
         </p>
       </header>
 
       <div style={styles.controlsCard}>
         <div style={styles.controlsRow}>
           <label style={styles.controlLabel}>
-            1. Select Territory
+            {t('reports.selectTerritory')}
             <select value={territory} onChange={(e) => setTerritory(e.target.value)} style={styles.select}>
-              {TERRITORY_OPTIONS.map((t) => (
-                <option key={t} value={t}>
-                  {t}
+              {TERRITORY_OPTIONS.map((option) => (
+                <option key={option} value={option}>
+                  {option === ALL_BORNEO ? t('reports.allBorneo') : option}
                 </option>
               ))}
             </select>
           </label>
 
           <div style={styles.controlLabel}>
-            2. Include Sections
+            {t('reports.includeSections')}
             <div style={styles.checkboxGrid}>
-              {SECTION_TOGGLES.map(({ key, label }) => (
+              {SECTION_KEYS.map((key) => (
                 <label key={key} style={styles.checkboxRow}>
                   <input type="checkbox" checked={sections[key]} onChange={() => toggleSection(key)} />
-                  {label}
+                  {t(SECTION_LABEL_KEY[key])}
                 </label>
               ))}
             </div>
@@ -126,15 +127,15 @@ const GenerateReportPage = () => {
             disabled={generating || loading || !!error || !profile.pillars.length}
             style={{ minWidth: 220 }}
           >
-            {generating ? 'Generating PDF…' : 'Generate & Download PDF'}
+            {generating ? t('reports.generatingPdf') : t('reports.generateDownloadPdf')}
           </Button>
         </div>
       </div>
 
-      {loading && <div style={styles.stateCard}>Loading real indicator data…</div>}
+      {loading && <div style={styles.stateCard}>{t('esg.loadingIndicatorData')}</div>}
       {error && <div style={{ ...styles.stateCard, color: COLORS.red }}>{error}</div>}
       {!loading && !error && !profile.pillars.length && (
-        <div style={styles.stateCard}>No indicators are available for this selection.</div>
+        <div style={styles.stateCard}>{t('reports.noIndicatorsAvailable')}</div>
       )}
 
       {!loading && !error && profile.pillars.length > 0 && (

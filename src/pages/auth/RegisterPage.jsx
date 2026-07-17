@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/useAuth';
 import AuthLayout, { AuthCard } from '../../components/AuthLayout';
@@ -11,6 +12,7 @@ const EMPTY_FORM = { firstName: '', lastName: '', email: '', password: '', confi
 // trigger (handle_new_user) turns that into a public.profiles row. Email
 // verification is ON, so we send the user to /check-email afterwards.
 const RegisterPage = () => {
+  const { t } = useTranslation();
   const { signUp } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState(EMPTY_FORM);
@@ -22,15 +24,15 @@ const RegisterPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.firstName.trim() || !form.lastName.trim() || !form.email.trim() || !form.password) {
-      setError('Fill in every field to create an account.');
+      setError(t('auth.fillEveryField'));
       return;
     }
     if (form.password.length < 12) {
-      setError('Password must be at least 12 characters.');
+      setError(t('auth.passwordMinLength'));
       return;
     }
     if (form.password !== form.confirm) {
-      setError('Passwords do not match.');
+      setError(t('auth.passwordsDoNotMatch'));
       return;
     }
     setError('');
@@ -47,7 +49,7 @@ const RegisterPage = () => {
         state: { purpose: 'verify', email: form.email.trim(), cooldown: 60 },
       });
     } catch (err) {
-      setError(err.message || 'Could not create your account.');
+      setError(err.message || t('auth.couldNotCreateAccount'));
     } finally {
       setBusy(false);
     }
@@ -56,37 +58,37 @@ const RegisterPage = () => {
   return (
     <AuthLayout>
       <AuthCard>
-        <h1 style={styles.title}>Create your account</h1>
+        <h1 style={styles.title}>{t('auth.createAccountTitle')}</h1>
         <p style={styles.subtitle}>
-          Already have an account? <Link to="/login" style={styles.link}>Login.</Link>
+          {t('auth.alreadyHaveAccount')} <Link to="/login" style={styles.link}>{t('auth.loginLink')}</Link>
         </p>
 
         <form onSubmit={handleSubmit}>
           <div style={styles.row}>
-            <Field label="First name" required style={styles.rowField}>
+            <Field label={t('profile.firstName')} required style={styles.rowField}>
               <TextInput autoComplete="given-name" value={form.firstName} onChange={setField('firstName')} placeholder="Json" />
             </Field>
-            <Field label="Last name" required style={styles.rowField}>
+            <Field label={t('profile.lastName')} required style={styles.rowField}>
               <TextInput autoComplete="family-name" value={form.lastName} onChange={setField('lastName')} placeholder="Chen" />
             </Field>
           </div>
 
-          <Field label="Email" required>
-            <TextInput type="email" autoComplete="email" value={form.email} onChange={setField('email')} placeholder="you@example.com" />
+          <Field label={t('profile.email')} required>
+            <TextInput type="email" autoComplete="email" value={form.email} onChange={setField('email')} placeholder={t('auth.emailPlaceholder')} />
           </Field>
 
-          <Field label="Password" required hint="At least 12 characters">
-            <PasswordInput autoComplete="new-password" value={form.password} onChange={setField('password')} placeholder="Create a password" />
+          <Field label={t('profile.password')} required hint={t('auth.atLeast12Chars')}>
+            <PasswordInput autoComplete="new-password" value={form.password} onChange={setField('password')} placeholder={t('auth.createPasswordPlaceholder')} />
           </Field>
 
-          <Field label="Confirm password" required>
-            <PasswordInput autoComplete="new-password" value={form.confirm} onChange={setField('confirm')} placeholder="Re-enter your password" />
+          <Field label={t('profile.confirmPassword')} required>
+            <PasswordInput autoComplete="new-password" value={form.confirm} onChange={setField('confirm')} placeholder={t('auth.reenterPasswordPlaceholder')} />
           </Field>
 
           {error && <p style={styles.error}>{error}</p>}
 
           <Button type="submit" variant="primary" disabled={busy} style={styles.submitBtn}>
-            {busy ? 'Creating account…' : 'Register'}
+            {busy ? t('auth.creatingAccount') : t('auth.register')}
           </Button>
         </form>
       </AuthCard>

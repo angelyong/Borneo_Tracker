@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { GeoJSON, MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -233,6 +234,7 @@ function RagGauge({ score, thresholds }) {
 // Regional_Detail renders the same shared component.
 
 const OverviewDashboard = () => {
+  const { t } = useTranslation();
   const [searchText, setSearchText] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchActiveIdx, setSearchActiveIdx] = useState(0);
@@ -759,7 +761,7 @@ const OverviewDashboard = () => {
             <span style={styles.searchIcon}>🔍</span>
             <input
               type="text"
-              placeholder="Search regions & districts…"
+              placeholder={t('dashboard.searchPlaceholder')}
               value={searchText}
               onChange={(e) => {
                 setSearchText(e.target.value);
@@ -773,7 +775,7 @@ const OverviewDashboard = () => {
             {searchText && (
               <button
                 type="button"
-                aria-label="Clear search"
+                aria-label={t('dashboard.clearSearch')}
                 onClick={() => {
                   setSearchText('');
                   setSearchOpen(false);
@@ -815,12 +817,12 @@ const OverviewDashboard = () => {
                           : styles.searchOptionTagDistrict),
                       }}
                     >
-                      {item.type === 'region' ? 'Region' : 'District'}
+                      {item.type === 'region' ? t('dashboard.region') : t('dashboard.district')}
                     </span>
                   </li>
                 ))
               ) : (
-                <li style={styles.searchEmpty}>No places match “{searchText.trim()}”.</li>
+                <li style={styles.searchEmpty}>{t('dashboard.noPlacesMatch', { query: searchText.trim() })}</li>
               )}
             </ul>
           )}
@@ -892,27 +894,27 @@ const OverviewDashboard = () => {
         </MapContainer>
 
         <div style={{ ...styles.mapControls, right: panelWidth + 32 }}>
-          <button type="button" onClick={handleZoomIn} style={styles.mapControlBtn} title="Zoom in" aria-label="Zoom in">
+          <button type="button" onClick={handleZoomIn} style={styles.mapControlBtn} title={t('dashboard.zoomIn')} aria-label={t('dashboard.zoomIn')}>
             +
           </button>
-          <button type="button" onClick={handleZoomOut} style={styles.mapControlBtn} title="Zoom out" aria-label="Zoom out">
+          <button type="button" onClick={handleZoomOut} style={styles.mapControlBtn} title={t('dashboard.zoomOut')} aria-label={t('dashboard.zoomOut')}>
             −
           </button>
           <button
             type="button"
             onClick={handleRecenter}
             style={{ ...styles.mapControlBtn, ...styles.mapControlBtnLast }}
-            title="Recenter map"
-            aria-label="Recenter map"
+            title={t('dashboard.recenterMap')}
+            aria-label={t('dashboard.recenterMap')}
           >
             ⟲
           </button>
         </div>
 
         <div style={styles.mapLegend}>
-          <div style={styles.mapLegendTitle}>{LAYER_CONFIG[activeLayer]?.label || 'Layer'}</div>
+          <div style={styles.mapLegendTitle}>{LAYER_CONFIG[activeLayer]?.label || t('dashboard.layer')}</div>
           <div style={styles.mapLegendSub}>
-            {isDistrict ? `Across ${districtParent} districts` : 'Coloured across the 4 regions'}
+            {isDistrict ? t('dashboard.acrossDistricts', { parent: districtParent }) : t('dashboard.colouredAcrossRegions')}
           </div>
           {legendScale.map((item) => (
             <div key={item.label} style={styles.mapLegendRow}>
@@ -924,7 +926,7 @@ const OverviewDashboard = () => {
       </div>
 
       <div style={{ ...styles.panel, width: panelWidth, minWidth: panelWidth }}>
-        <div onMouseDown={onDragStart} style={styles.dragHandle} title="Drag to resize panel">
+        <div onMouseDown={onDragStart} style={styles.dragHandle} title={t('dashboard.dragToResizePanel')}>
           <div style={styles.dragGrip} />
         </div>
 
@@ -935,7 +937,7 @@ const OverviewDashboard = () => {
               onClick={() => setLevel('region')}
               style={{ ...styles.levelBtn, ...(!isDistrict ? styles.levelBtnActive : {}) }}
             >
-              Region
+              {t('dashboard.region')}
             </button>
             <button
               type="button"
@@ -945,7 +947,7 @@ const OverviewDashboard = () => {
               }}
               style={{ ...styles.levelBtn, ...(isDistrict ? styles.levelBtnActive : {}) }}
             >
-              District
+              {t('dashboard.district')}
             </button>
           </div>
 
@@ -996,12 +998,11 @@ const OverviewDashboard = () => {
         </div>
 
         <div style={styles.card}>
-          <div style={styles.sectionTitle}>Overall Resilience Status</div>
+          <div style={styles.sectionTitle}>{t('dashboard.overallResilienceStatus')}</div>
 
           {resilienceView?.unavailable ? (
             <div style={styles.stateText}>
-              The Resilience Index is computed at territory level (6 pillars). Switch to Region view
-              for {districtParent}'s score — district-level indicators don't yet cover all pillars.
+              {t('dashboard.resilienceDistrictNotice', { district: districtParent })}
             </div>
           ) : resilienceView ? (
             <>
@@ -1010,15 +1011,18 @@ const OverviewDashboard = () => {
               <div style={styles.gaugeLegend}>
                 {[
                   {
-                    label: `Poor (<${resilienceView.thresholds.amber})`,
+                    label: t('dashboard.poor', { value: resilienceView.thresholds.amber }),
                     color: RAG_COLORS.red,
                   },
                   {
-                    label: `Moderate (${resilienceView.thresholds.amber}–${resilienceView.thresholds.green})`,
+                    label: t('dashboard.moderate', {
+                      low: resilienceView.thresholds.amber,
+                      high: resilienceView.thresholds.green,
+                    }),
                     color: RAG_COLORS.amber,
                   },
                   {
-                    label: `Good (≥${resilienceView.thresholds.green})`,
+                    label: t('dashboard.good', { value: resilienceView.thresholds.green }),
                     color: RAG_COLORS.green,
                   },
                 ].map((item) => (
@@ -1033,17 +1037,17 @@ const OverviewDashboard = () => {
                 <span style={{ ...styles.scoreBig, color: RAG_COLORS[resilienceView.rag] || '#1f2937' }}>
                   {resilienceView.index}
                 </span>
-                <span style={styles.scoreCaption}>Resilience Index (0–100)</span>
+                <span style={styles.scoreCaption}>{t('dashboard.resilienceIndexCaption')}</span>
               </div>
 
               {Number.isFinite(resilienceView.indexStrict) && (
                 <div style={styles.trendRow}>
                   <span style={styles.trendLabel}>
-                    Strict (True Resilience):{' '}
+                    {t('dashboard.strictTrueResilience')}{' '}
                     <b style={{ color: RAG_COLORS[resilienceView.ragStrict] || 'inherit' }}>
                       {resilienceView.indexStrict}
                     </b>{' '}
-                    · fragility gap {resilienceView.index >= resilienceView.indexStrict ? '−' : '+'}
+                    · {t('dashboard.fragilityGap')} {resilienceView.index >= resilienceView.indexStrict ? '−' : '+'}
                     {Math.abs(Math.round((resilienceView.index - resilienceView.indexStrict) * 10) / 10)}
                   </span>
                 </div>
@@ -1054,16 +1058,16 @@ const OverviewDashboard = () => {
               </div>
             </>
           ) : (
-            <div style={styles.stateText}>Loading resilience scores…</div>
+            <div style={styles.stateText}>{t('dashboard.loadingResilienceScores')}</div>
           )}
         </div>
 
         <div style={styles.card}>
-          <div style={styles.sectionTitle}>{isDistrict ? 'Pillar Coverage' : 'Resilience by Pillar'}</div>
+          <div style={styles.sectionTitle}>{isDistrict ? t('dashboard.pillarCoverage') : t('dashboard.resilienceByPillar')}</div>
           <div style={styles.sectionSubtitle}>
             {isDistrict
-              ? '(True Wealth Hexagon · indicators per pillar)'
-              : '(True Wealth Hexagon · 0–100 resilience score)'}
+              ? t('dashboard.hexagonSubDistrict')
+              : t('dashboard.hexagonSubRegion')}
           </div>
 
           {isDistrict ? (
@@ -1071,19 +1075,18 @@ const OverviewDashboard = () => {
               <HexRadar pillars={hexCoverage} />
             ) : (
               <div style={styles.stateText}>
-                Hexagon pillars aren't mapped at district level yet — see the ESG &amp; layer figures below
-                for {scopeName || 'this district'}.
+                {t('dashboard.hexagonNotMappedDistrict', { scope: scopeName || t('dashboard.thisDistrict') })}
               </div>
             )
           ) : hexScores ? (
             <HexRadar pillars={hexScores} max={100} weakest={resilienceView?.weakestPillar} />
           ) : (
-            <div style={styles.stateText}>Loading resilience scores…</div>
+            <div style={styles.stateText}>{t('dashboard.loadingResilienceScores')}</div>
           )}
 
           {!isDistrict && resilienceView?.pillarScores && (
             <div style={{ marginTop: 14, borderTop: '1px solid var(--color-border)', paddingTop: 12 }}>
-              <WeakestLinkBars territory={resilienceView} />
+              <WeakestLinkBars territory={resilienceView} title={t('dashboard.weakestLinkFirst')} />
             </div>
           )}
 
@@ -1096,15 +1099,15 @@ const OverviewDashboard = () => {
 
         {!isDistrict && resilience?.territories && (
           <div style={styles.card}>
-            <div style={styles.sectionTitle}>Money vs Resilience</div>
-            <div style={styles.sectionSubtitle}>(paper wealth vs true wealth)</div>
+            <div style={styles.sectionTitle}>{t('dashboard.moneyVsResilience')}</div>
+            <div style={styles.sectionSubtitle}>{t('dashboard.moneyVsResilienceSub')}</div>
             <MoneyVsResilience gdpPerCapita={GDP_PER_CAPITA_USD} territories={resilience.territories} />
           </div>
         )}
 
         <div style={styles.card}>
           <div style={styles.esgHeader}>
-            <span style={styles.sectionTitle}>ESG Indicators</span>
+            <span style={styles.sectionTitle}>{t('dashboard.esgIndicators')}</span>
 
             <select value={esgCategory} onChange={(e) => setEsgCategory(e.target.value)} style={styles.esgDropdown}>
               {ESG_CATEGORIES.map((category) => (
@@ -1120,7 +1123,7 @@ const OverviewDashboard = () => {
               <div style={styles.esgCardTitle}>{esgCard.label}</div>
 
               <div style={styles.esgScoreRow}>
-                <span style={styles.esgScoreLabel}>Coverage:</span>
+                <span style={styles.esgScoreLabel}>{t('dashboard.coverage')}</span>
                 <span style={styles.esgScoreValue}>{esgCard.meta}</span>
               </div>
 
@@ -1132,19 +1135,19 @@ const OverviewDashboard = () => {
                   </div>
                 ))
               ) : (
-                <div style={styles.stateText}>No canonical indicators for this pillar yet.</div>
+                <div style={styles.stateText}>{t('dashboard.noCanonicalIndicators')}</div>
               )}
             </div>
           ) : (
             <div style={styles.esgCardBody}>
-              <div style={styles.stateText}>Loading indicator data…</div>
+              <div style={styles.stateText}>{t('dashboard.loadingIndicatorData')}</div>
             </div>
           )}
         </div>
 
         <div style={styles.card}>
           <div style={styles.liveSectionTitle}>
-            Live Layer: {activeLayer ? LAYER_CONFIG[activeLayer]?.label : 'None'}
+            {t('dashboard.liveLayer', { layer: activeLayer ? LAYER_CONFIG[activeLayer]?.label : t('dashboard.none') })}
           </div>
 
           <div style={styles.layerRadioGroup}>
@@ -1162,7 +1165,7 @@ const OverviewDashboard = () => {
             ))}
           </div>
 
-          {loading && <div style={styles.stateText}>Loading map data…</div>}
+          {loading && <div style={styles.stateText}>{t('dashboard.loadingMapData')}</div>}
           {error && <div style={{ ...styles.stateText, color: 'var(--color-red)' }}>{error}</div>}
 
           {isDistrict ? (
@@ -1179,7 +1182,7 @@ const OverviewDashboard = () => {
                           `${row.year} · ${titleCaseConfidence(row.confidence)}`
                         )
                       ) : (
-                        'No data'
+                        t('dashboard.noData')
                       )}
                     </div>
                   </div>
@@ -1189,8 +1192,10 @@ const OverviewDashboard = () => {
               ))
             ) : (
               <div style={styles.stateText}>
-                No district data for “{LAYER_CONFIG[activeLayer]?.label}” in {districtParent} yet.
-                Poverty is available now; forest, fire &amp; air layers arrive with the satellite feed.
+                {t('dashboard.noDistrictDataForLayer', {
+                  layer: LAYER_CONFIG[activeLayer]?.label,
+                  parent: districtParent,
+                })}
               </div>
             )
           ) : (
@@ -1208,7 +1213,7 @@ const OverviewDashboard = () => {
                         `${row.year} · ${titleCaseConfidence(row.confidence)}`
                       )
                     ) : (
-                      'No data'
+                      t('dashboard.noData')
                     )}
                   </div>
                 </div>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import NewsCard from './NewsCard';
 import NewsEmptyState from './NewsEmptyState';
@@ -10,6 +11,7 @@ import { formatCountryLabel, formatNewsDate, formatRelativeTime, formatSourceCou
 import './news.css';
 
 const NewsDetailPage = () => {
+  const { t, i18n } = useTranslation();
   const { articleId } = useParams();
   const navigate = useNavigate();
   const [article, setArticle] = useState(null);
@@ -27,7 +29,7 @@ const NewsDetailPage = () => {
       setArticle(nextArticle);
       setRelatedArticles(nextArticle ? await getRelatedNewsArticles(nextArticle) : []);
     } catch {
-      setError('News could not be loaded right now.');
+      setError(t('news.loadError'));
     } finally {
       setLoading(false);
     }
@@ -60,7 +62,7 @@ const NewsDetailPage = () => {
       })
       .catch(() => {
         if (!cancelled) {
-          setError('News could not be loaded right now.');
+          setError(t('news.loadError'));
         }
       })
       .finally(() => {
@@ -72,19 +74,22 @@ const NewsDetailPage = () => {
     return () => {
       cancelled = true;
     };
+    // Re-runs on articleId change only — a language switch mid-view just
+    // won't retranslate an already-shown error until the article is retried.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [articleId]);
 
   const showUnavailableSource = () => {
-    setSourceNotice('Original source is not available yet.');
+    setSourceNotice(t('news.sourceUnavailable'));
   };
 
   return (
     <div className="news-page">
       <div className="news-page-inner">
         <nav className="news-breadcrumb" aria-label="Breadcrumb">
-          <Link to="/news">News &amp; Insights</Link>
+          <Link to="/news">{t('sidebar.newsInsights')}</Link>
           <span>/</span>
-          <span>{article?.title || 'Article'}</span>
+          <span>{article?.title || t('news.articleFallback')}</span>
         </nav>
 
         {loading ? <NewsSkeleton count={3} /> : null}
@@ -93,13 +98,13 @@ const NewsDetailPage = () => {
           <div className="news-error-state" role="alert">
             <p>{error}</p>
             <button type="button" className="news-button news-button-secondary" onClick={() => loadArticle(articleId)}>
-              Retry
+              {t('common.retry')}
             </button>
           </div>
         ) : null}
 
         {!loading && !error && !article ? (
-          <NewsEmptyState title="News article not found." actionLabel="Back to News" onAction={() => navigate('/news')} />
+          <NewsEmptyState title={t('news.articleNotFound')} actionLabel={t('news.backToNews')} onAction={() => navigate('/news')} />
         ) : null}
 
         {!loading && !error && article ? (
@@ -128,15 +133,15 @@ const NewsDetailPage = () => {
                 <h1>{article.title}</h1>
 
                 <div className="news-card-meta">
-                  <span>{formatNewsDate(article.publishedAt)}</span>
-                  <span>{formatRelativeTime(article.publishedAt)}</span>
+                  <span>{formatNewsDate(article.publishedAt, i18n.language)}</span>
+                  <span>{formatRelativeTime(article.publishedAt, i18n.language)}</span>
                 </div>
 
                 <p className="news-notice">
-                  This displayed content is an AI-generated summary and not the original full article.
+                  {t('news.aiGeneratedNotice')}
                 </p>
 
-                <div className="news-ai-label">AI-generated Summary</div>
+                <div className="news-ai-label">{t('news.aiGeneratedSummary')}</div>
                 <div className="news-detail-summary">
                   {(article.body || '')
                     .split(/\n{2,}/)
@@ -148,7 +153,7 @@ const NewsDetailPage = () => {
                 </div>
 
                 <div className="news-source-block">
-                  <span className="news-source-badge">{formatSourceCount(article.sourceCount)}</span>
+                  <span className="news-source-badge">{formatSourceCount(article.sourceCount, t)}</span>
                   {article.sources.length ? (
                     <ul className="news-source-list">
                       {article.sources.map((source) => (
@@ -162,14 +167,14 @@ const NewsDetailPage = () => {
                             {source.name}
                           </a>
                           {source.publishedAt ? (
-                            <span className="news-source-date">{formatNewsDate(source.publishedAt)}</span>
+                            <span className="news-source-date">{formatNewsDate(source.publishedAt, i18n.language)}</span>
                           ) : null}
                         </li>
                       ))}
                     </ul>
                   ) : (
                     <button type="button" className="news-button news-button-secondary" onClick={showUnavailableSource}>
-                      View Original Source
+                      {t('news.viewOriginalSource')}
                     </button>
                   )}
                 </div>
@@ -190,7 +195,7 @@ const NewsDetailPage = () => {
 
                 <div className="news-action-row">
                   <Link to="/news" className="news-button news-button-secondary">
-                    Back to News
+                    {t('news.backToNews')}
                   </Link>
                 </div>
               </div>
@@ -198,7 +203,7 @@ const NewsDetailPage = () => {
 
             {relatedArticles.length ? (
               <>
-                <h2 className="news-section-title">Related Articles</h2>
+                <h2 className="news-section-title">{t('news.relatedArticles')}</h2>
                 <div className="news-related-grid">
                   {relatedArticles.map((related) => (
                     <NewsCard article={related} key={related.id} />

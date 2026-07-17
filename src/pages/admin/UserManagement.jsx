@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../auth/useAuth';
 import { getAllUsers, setUserStatus } from '../../services/adminUserService';
 import { Badge, Card, Icons, Menu, Pagination, Select, Table, TextInput } from '../../components/ui';
@@ -8,7 +9,7 @@ import { COLORS, FONT, RADII } from '../../theme';
 // authenticated admin and just does the roster work.
 
 const PAGE_SIZE = 8;
-const STATUS_FILTERS = ['All Status', 'Active', 'Suspended'];
+const STATUS_VALUES = ['All Status', 'Active', 'Suspended'];
 
 const titleCase = (value) => (value ? value.charAt(0).toUpperCase() + value.slice(1) : value);
 
@@ -19,15 +20,22 @@ const formatDate = (value) => {
   return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
 };
 
-const columns = [
-  { key: 'name', label: 'Name' },
-  { key: 'role', label: 'Role' },
-  { key: 'status', label: 'Status' },
-  { key: 'joined', label: 'Joined' },
-  { key: 'action', label: 'Action' },
-];
-
 const UserManagement = () => {
+  const { t } = useTranslation();
+  const STATUS_LABEL_KEY = {
+    'All Status': 'admin.statusFilterAll',
+    Active: 'admin.statusActive',
+    Suspended: 'admin.statusSuspended',
+  };
+  const statusFilterOptions = STATUS_VALUES.map((value) => ({ value, label: t(STATUS_LABEL_KEY[value]) }));
+  const columns = [
+    { key: 'name', label: t('profile.name') },
+    { key: 'role', label: t('admin.colRole') },
+    { key: 'status', label: t('admin.colStatus') },
+    { key: 'joined', label: t('admin.colJoined') },
+    { key: 'action', label: t('admin.colAction') },
+  ];
+
   const { user: currentUser } = useAuth();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -44,7 +52,7 @@ const UserManagement = () => {
         if (!cancelled) setUsers(rows);
       })
       .catch(() => {
-        if (!cancelled) setError('Accounts could not be loaded right now.');
+        if (!cancelled) setError(t('admin.accountsLoadError'));
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -52,6 +60,9 @@ const UserManagement = () => {
     return () => {
       cancelled = true;
     };
+    // Mount-only fetch — re-running on every language switch would refetch
+    // needlessly; an already-shown error just won't retranslate until retried.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const showNotice = (message) => {
@@ -63,9 +74,9 @@ const UserManagement = () => {
     try {
       await setUserStatus(id, nextStatus);
       setUsers((current) => current.map((u) => (u.id === id ? { ...u, status: nextStatus } : u)));
-      showNotice(nextStatus === 'suspended' ? 'Account suspended.' : 'Account reactivated.');
+      showNotice(nextStatus === 'suspended' ? t('admin.accountSuspended') : t('admin.accountReactivated'));
     } catch {
-      showNotice('Could not update this account — please try again.');
+      showNotice(t('admin.couldNotUpdateAccount'));
     }
   };
 
@@ -87,15 +98,15 @@ const UserManagement = () => {
   return (
     <div style={styles.page}>
       <header style={styles.header}>
-        <h1 style={styles.title}>User Management</h1>
-        <p style={styles.subtitle}>Every registered account, with the ability to suspend or reactivate access.</p>
+        <h1 style={styles.title}>{t('admin.userManagementTitle')}</h1>
+        <p style={styles.subtitle}>{t('admin.userManagementSubtitle')}</p>
       </header>
 
       <div style={styles.controlsRow}>
         <div>
-          <div style={styles.controlLabel}>Account Status</div>
+          <div style={styles.controlLabel}>{t('admin.accountStatus')}</div>
           <Select
-            options={STATUS_FILTERS}
+            options={statusFilterOptions}
             value={status}
             onChange={(v) => {
               setStatus(v);
@@ -105,9 +116,9 @@ const UserManagement = () => {
           />
         </div>
         <div style={{ width: 260 }}>
-          <div style={styles.controlLabel}>Search</div>
+          <div style={styles.controlLabel}>{t('common.search')}</div>
           <TextInput
-            placeholder="Search by name"
+            placeholder={t('admin.searchByName')}
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -119,7 +130,7 @@ const UserManagement = () => {
 
       {notice && <div style={styles.notice}>{notice}</div>}
 
-      {loading && <div style={styles.stateCard}>Loading accounts…</div>}
+      {loading && <div style={styles.stateCard}>{t('admin.loadingAccounts')}</div>}
       {!loading && error && <div style={{ ...styles.stateCard, color: COLORS.red }}>{error}</div>}
 
       {!loading && !error && (
@@ -130,19 +141,22 @@ const UserManagement = () => {
             keyFor={(u) => u.id}
             renderCell={(u, key) => {
               if (key === 'name') return `${u.firstName} ${u.lastName}`.trim() || '—';
-              if (key === 'role') return u.role === 'admin' ? 'Admin' : 'User';
-              if (key === 'status') return <Badge status={titleCase(u.status)} />;
+              if (key === 'role') return u.role === 'admin' ? t('admin.roleAdmin') : t('admin.roleUser');
+              if (key === 'status') {
+                const statusValue = titleCase(u.status);
+                return <Badge status={statusValue}>{t(STATUS_LABEL_KEY[statusValue] || statusValue)}</Badge>;
+              }
               if (key === 'joined') return formatDate(u.createdAt);
               if (key === 'action') {
                 if (currentUser?.id === u.id) {
-                  return <span style={{ color: COLORS.faint, fontSize: 12.5 }}>You</span>;
+                  return <span style={{ color: COLORS.faint, fontSize: 12.5 }}>{t('admin.you')}</span>;
                 }
                 return (
                   <Menu
                     trigger={
                       <button
                         style={{ border: 'none', background: 'none', color: COLORS.ink, padding: 4, cursor: 'pointer' }}
-                        aria-label="Account actions"
+                        aria-label={t('admin.accountActions')}
                       >
                         <Icons.Dots size={20} />
                       </button>
@@ -150,12 +164,12 @@ const UserManagement = () => {
                     items={[
                       u.status === 'suspended'
                         ? {
-                            label: 'Reactivate account',
+                            label: t('admin.reactivateAccount'),
                             icon: <Icons.User size={16} />,
                             onClick: () => handleSetStatus(u.id, 'active'),
                           }
                         : {
-                            label: 'Suspend account',
+                            label: t('admin.suspendAccount'),
                             icon: <Icons.Warn size={16} />,
                             danger: true,
                             onClick: () => handleSetStatus(u.id, 'suspended'),

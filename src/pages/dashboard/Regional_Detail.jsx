@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import * as echarts from 'echarts';
 import {
   TERRITORIES,
@@ -20,6 +21,7 @@ import ProvenanceChip from '../../components/ProvenanceChip';
 import HexRadar from '../../components/HexRadar';
 
 const RegionalDetails = () => {
+  const { t, i18n } = useTranslation();
   const [selectedTerritory,  setSelectedTerritory]  = useState('Sarawak');
   const [selectedConcept,    setSelectedConcept]    = useState('forest_cover');
   const [chartMode,          setChartMode]          = useState('snapshot');
@@ -83,7 +85,7 @@ const RegionalDetails = () => {
   const ragColor = { green: '#16a34a', amber: '#d97706', red: '#dc2626' };
 
   const selectedConceptLabel =
-    availableConcepts.find((item) => item.concept === activeConcept)?.label || 'Selected indicator';
+    availableConcepts.find((item) => item.concept === activeConcept)?.label || t('regional.selectedIndicator');
 
   const theme = useMemo(() => ({
     primary:     '#22c55e',
@@ -137,7 +139,7 @@ const RegionalDetails = () => {
             trigger: 'item',
             formatter: (params) => {
               const row = comparisonRows[params.dataIndex]?.row;
-              return `<strong>${params.name}</strong><br/>${row ? formatValue(row) : 'No data'}`;
+              return `<strong>${params.name}</strong><br/>${row ? formatValue(row) : t('common.noData')}`;
             },
           },
           grid: { left: '5%', right: '5%', bottom: '10%', top: '10%', containLabel: true },
@@ -154,7 +156,8 @@ const RegionalDetails = () => {
     const onResize = () => lineChartInstance.current?.resize();
     window.addEventListener('resize', onResize);
     return () => { window.removeEventListener('resize', onResize); lineChartInstance.current?.dispose(); };
-  }, [activeChartMode, comparisonRows, selectedConceptLabel, theme.azure, theme.borderLight, theme.primary, theme.textMuted, trendSeries]);
+    // i18n.language forces a rebuild so canvas-drawn tooltip text picks up the new language.
+  }, [activeChartMode, comparisonRows, i18n.language, selectedConceptLabel, t, theme.azure, theme.borderLight, theme.primary, theme.textMuted, trendSeries]);
 
   // ── ESG pillar bar chart ─────────────────────────────────────────────────
   useEffect(() => {
@@ -171,7 +174,8 @@ const RegionalDetails = () => {
       },
       grid: { left: '8%', right: '5%', bottom: '10%', top: '10%', containLabel: true },
       xAxis: {
-        type: 'category', data: ['Environment', 'Social', 'Governance'],
+        type: 'category',
+        data: [t('esg.categoryEnvironment'), t('esg.categorySocial'), t('esg.categoryGovernance')],
         axisLine: { lineStyle: { color: theme.borderLight } },
         axisTick: { show: false }, axisLabel: { color: theme.textMuted, fontSize: 11 },
       },
@@ -181,9 +185,9 @@ const RegionalDetails = () => {
         axisLabel: { color: theme.textMuted, fontSize: 10 },
         axisLine: { show: false }, axisTick: { show: false },
       },
-      legend: { data: ['Indicators'], bottom: 0, left: 'center', icon: 'circle', textStyle: { color: theme.ink, fontSize: 11 }, itemWidth: 10, itemHeight: 10 },
+      legend: { data: [t('regional.indicatorsSeriesName')], bottom: 0, left: 'center', icon: 'circle', textStyle: { color: theme.ink, fontSize: 11 }, itemWidth: 10, itemHeight: 10 },
       series: [{
-        name: 'Indicators', type: 'bar', barWidth: '28%',
+        name: t('regional.indicatorsSeriesName'), type: 'bar', barWidth: '28%',
         data: Object.values(esgCoverage),
         itemStyle: { color: '#22c55e', borderRadius: [4, 4, 0, 0] },
         label: { show: true, position: 'top', formatter: '{c}', fontSize: 10, color: theme.textMuted },
@@ -192,7 +196,8 @@ const RegionalDetails = () => {
     const onResize = () => barChartInstance.current?.resize();
     window.addEventListener('resize', onResize);
     return () => { window.removeEventListener('resize', onResize); barChartInstance.current?.dispose(); };
-  }, [confidenceCoverage, esgCoverage, theme.borderLight, theme.ink, theme.textMuted]);
+    // i18n.language forces a rebuild so canvas-drawn axis/legend text picks up the new language.
+  }, [confidenceCoverage, esgCoverage, i18n.language, t, theme.borderLight, theme.ink, theme.textMuted]);
 
   // ── JSX ──────────────────────────────────────────────────────────────────
   return (
@@ -207,17 +212,17 @@ const RegionalDetails = () => {
           {/* Toolbar */}
           <div style={styles.topToolbar}>
             <div style={styles.toolbarGroup}>
-              <label style={styles.toolbarLabel}>Territory</label>
+              <label style={styles.toolbarLabel}>{t('regional.territory')}</label>
               <select
                 value={selectedTerritory}
                 onChange={(e) => setSelectedTerritory(e.target.value)}
                 style={styles.toolbarSelect}
               >
-                {TERRITORIES.map((t) => <option key={t} value={t}>{t}</option>)}
+                {TERRITORIES.map((territory) => <option key={territory} value={territory}>{territory}</option>)}
               </select>
             </div>
             <div style={styles.toolbarGroup}>
-              <label style={styles.toolbarLabel}>Comparison Indicator</label>
+              <label style={styles.toolbarLabel}>{t('regional.comparisonIndicator')}</label>
               <select
                 value={activeConcept}
                 onChange={(e) => setSelectedConcept(e.target.value)}
@@ -231,7 +236,7 @@ const RegionalDetails = () => {
           </div>
 
           {/* Loading / error states */}
-          {loading && <div style={styles.noticeCard}>Loading snapshot data…</div>}
+          {loading && <div style={styles.noticeCard}>{t('regional.loadingSnapshotData')}</div>}
           {error   && <div style={styles.errorCard}>{error}</div>}
 
           {!loading && !error && (
@@ -241,31 +246,34 @@ const RegionalDetails = () => {
                 {territoryResilience?.index != null && (
                   <div
                     style={styles.summaryChip}
-                    title={`Scored ${territoryResilience.scoredPillars.length}/6 hexagon pillars`}
+                    title={t('regional.scoredPillarsTitle', { count: territoryResilience.scoredPillars.length })}
                   >
-                    <span style={styles.summaryChipLabel}>Resilience Index</span>
+                    <span style={styles.summaryChipLabel}>{t('regional.resilienceIndex')}</span>
                     <strong style={{ color: ragColor[territoryResilience.rag] || 'var(--color-ink)' }}>
                       {territoryResilience.index}
                     </strong>
                     <span style={{ fontSize: '11px', color: 'var(--color-muted)' }}>
-                      weakest: {territoryResilience.weakestPillar} · {territoryResilience.scoredPillars.length}/6 pillars scored
+                      {t('regional.weakestPillarsScored', {
+                        pillar: territoryResilience.weakestPillar,
+                        count: territoryResilience.scoredPillars.length,
+                      })}
                     </span>
                   </div>
                 )}
                 <div style={styles.summaryChip}>
-                  <span style={styles.summaryChipLabel}>Canonical indicators</span>
+                  <span style={styles.summaryChipLabel}>{t('regional.canonicalIndicators')}</span>
                   <strong>{summary.count}</strong>
                 </div>
                 <div style={styles.summaryChip}>
-                  <span style={styles.summaryChipLabel}>Latest year</span>
-                  <strong>{summary.latestYear || 'Unknown'}</strong>
+                  <span style={styles.summaryChipLabel}>{t('regional.latestYear')}</span>
+                  <strong>{summary.latestYear || t('esg.unknown')}</strong>
                 </div>
                 <div style={styles.summaryChip}>
-                  <span style={styles.summaryChipLabel}>Trend status</span>
+                  <span style={styles.summaryChipLabel}>{t('esg.trendStatus')}</span>
                   <strong>
                     {trendReadyCount
-                      ? `${trendReadyCount} indicator${trendReadyCount > 1 ? 's' : ''} trend-ready`
-                      : 'Snapshot only'}
+                      ? t('regional.trendReady', { count: trendReadyCount })
+                      : t('regional.snapshotOnly')}
                   </strong>
                 </div>
               </div>
@@ -279,14 +287,14 @@ const RegionalDetails = () => {
                     <div style={styles.chartHeaderLeft}>
                       <div style={styles.cardTitle}>
                         {activeChartMode === 'trend'
-                          ? `Historical trend — ${selectedTerritory}`
-                          : 'Cross-territory snapshot'}
+                          ? t('regional.historicalTrend', { territory: selectedTerritory })
+                          : t('regional.crossTerritorySnapshot')}
                       </div>
                       <div style={styles.chartStat}>{selectedConceptLabel}</div>
                       <div style={{ fontSize: '11.5px', color: 'var(--color-muted)' }}>
                         {activeChartMode === 'trend' && trendSeries
-                          ? `${trendSeries.points.length} real annual points · ${trendSeries.source}`
-                          : 'Latest available canonical value for each territory'}
+                          ? t('regional.realAnnualPoints', { count: trendSeries.points.length, source: trendSeries.source })
+                          : t('regional.latestCanonicalValue')}
                       </div>
                     </div>
                     <div style={styles.chartTabs}>
@@ -294,19 +302,19 @@ const RegionalDetails = () => {
                         onClick={() => setChartMode('snapshot')}
                         style={{ ...styles.chartTab, ...(activeChartMode === 'snapshot' ? styles.chartTabActive : {}) }}
                       >
-                        Snapshot
+                        {t('regional.snapshot')}
                       </button>
                       <button
                         onClick={() => setChartMode('trend')}
                         disabled={!trendSeries}
-                        title={trendSeries ? 'Real annual series' : 'No historical series for this indicator yet'}
+                        title={trendSeries ? t('regional.realAnnualSeries') : t('regional.noHistoricalSeries')}
                         style={{
                           ...styles.chartTab,
                           ...(activeChartMode === 'trend' ? styles.chartTabActive : {}),
                           ...(!trendSeries ? { opacity: 0.4, cursor: 'not-allowed' } : {}),
                         }}
                       >
-                        Trend
+                        {t('regional.trend')}
                       </button>
                     </div>
                   </div>
@@ -316,16 +324,16 @@ const RegionalDetails = () => {
                   <div style={styles.cardFooter}>
                     {activeChartMode === 'trend' && trendSeries ? (
                       <span style={styles.footerItem}>
-                        Confidence: <strong>{titleCaseConfidence(trendSeries.confidence)}</strong>
-                        {' · '}Data level: <strong>{trendSeries.data_level}</strong>
+                        {t('regional.confidenceLabel')} <strong>{titleCaseConfidence(trendSeries.confidence)}</strong>
+                        {' · '}{t('regional.dataLevelLabel')} <strong>{trendSeries.data_level}</strong>
                       </span>
                     ) : (
                       <>
-                        <span style={styles.footerLabel}>Confidence by territory:</span>
+                        <span style={styles.footerLabel}>{t('regional.confidenceByTerritory')}</span>
                         {comparisonRows.map((entry) => (
                           <span key={entry.territory} style={styles.footerItem}>
                             <span style={{ width: 8, height: 8, borderRadius: '50%', background: theme.primary, display: 'inline-block' }} />
-                            {entry.territory}: <strong>{entry.row ? titleCaseConfidence(entry.row.confidence) : 'No data'}</strong>
+                            {entry.territory}: <strong>{entry.row ? titleCaseConfidence(entry.row.confidence) : t('common.noData')}</strong>
                           </span>
                         ))}
                       </>
@@ -337,15 +345,15 @@ const RegionalDetails = () => {
                 <div style={styles.card}>
                   <div style={styles.chartHeader}>
                     <div style={styles.chartHeaderLeft}>
-                      <div style={styles.cardTitle}>Resilience by Pillar (0–100)</div>
+                      <div style={styles.cardTitle}>{t('regional.resilienceByPillarTitle')}</div>
                       <div style={{ fontSize: '13px', color: 'var(--color-muted)', marginTop: '4px' }}>
                         {pillarScores
-                          ? 'True Wealth Hexagon — real resilience scores per pillar'
-                          : 'Resilience scores are computed at territory level'}
+                          ? t('regional.hexagonRealScores')
+                          : t('regional.resilienceComputedTerritoryLevel')}
                       </div>
                     </div>
                     <div style={styles.chartTabs}>
-                      <button style={{ ...styles.chartTab, ...styles.chartTabActive }}>Scores</button>
+                      <button style={{ ...styles.chartTab, ...styles.chartTabActive }}>{t('regional.scores')}</button>
                     </div>
                   </div>
                   <div style={{ ...styles.chartArea, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -358,7 +366,7 @@ const RegionalDetails = () => {
                       />
                     ) : (
                       <div style={{ textAlign: 'center', fontSize: '13px', color: 'var(--color-muted)', padding: '0 16px' }}>
-                        Resilience scores are computed at territory level (Sabah, Sarawak, Brunei, Kalimantan).
+                        {t('regional.resilienceComputedTerritoryLevelFull')}
                       </div>
                     )}
                   </div>
@@ -371,7 +379,7 @@ const RegionalDetails = () => {
                         </span>
                       ))
                     ) : (
-                      <span style={styles.footerItem}>No territory-level resilience scores for this scope.</span>
+                      <span style={styles.footerItem}>{t('regional.noTerritoryResilienceScores')}</span>
                     )}
                   </div>
                 </div>
@@ -382,15 +390,15 @@ const RegionalDetails = () => {
                 <div style={{ ...styles.card, width: '100%' }}>
                   <div style={styles.chartHeader}>
                     <div style={styles.chartHeaderLeft}>
-                      <div style={styles.cardTitle}>Coverage by ESG pillar</div>
+                      <div style={styles.cardTitle}>{t('regional.coverageByEsgPillar')}</div>
                       <div style={{ fontSize: '13px', color: 'var(--color-muted)', marginTop: '4px' }}>
                         {trendReadyCount
-                          ? 'Real yearly series enabled for selected indicators; the rest remain snapshot-only'
-                          : 'Trend charts are held back until the schema stores true yearly series'}
+                          ? t('regional.realYearlySeriesEnabled')
+                          : t('regional.trendChartsHeldBack')}
                       </div>
                     </div>
                     <div style={styles.chartTabs}>
-                      <button style={{ ...styles.chartTab, ...styles.chartTabActive }}>Current</button>
+                      <button style={{ ...styles.chartTab, ...styles.chartTabActive }}>{t('regional.current')}</button>
                     </div>
                   </div>
                   <div style={{ ...styles.chartArea, height: '280px' }}>

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import FeaturedNews from './FeaturedNews';
 import NewsCard from './NewsCard';
 import NewsEmptyState from './NewsEmptyState';
@@ -11,15 +12,19 @@ import './news.css';
 
 const INITIAL_VISIBLE_COUNT = 6;
 const LOAD_MORE_COUNT = 6;
+const ALL_TERRITORIES = 'All Territories';
+const ALL_COUNTRIES = 'All Countries';
+const ALL_TOPICS = 'All Topics';
 
 const NewsPage = () => {
+  const { t } = useTranslation();
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
-  const [territory, setTerritory] = useState('All Territories');
-  const [country, setCountry] = useState('All Countries');
-  const [topic, setTopic] = useState('All Topics');
+  const [territory, setTerritory] = useState(ALL_TERRITORIES);
+  const [country, setCountry] = useState(ALL_COUNTRIES);
+  const [topic, setTopic] = useState(ALL_TOPICS);
   const [sort, setSort] = useState('latest');
   const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE_COUNT);
   const [sourceNotice, setSourceNotice] = useState('');
@@ -31,7 +36,7 @@ const NewsPage = () => {
       const nextArticles = await getNewsArticles();
       setArticles(nextArticles);
     } catch {
-      setError('News could not be loaded right now.');
+      setError(t('news.loadError'));
     } finally {
       setLoading(false);
     }
@@ -51,7 +56,7 @@ const NewsPage = () => {
       })
       .catch(() => {
         if (!cancelled) {
-          setError('News could not be loaded right now.');
+          setError(t('news.loadError'));
         }
       })
       .finally(() => {
@@ -63,6 +68,9 @@ const NewsPage = () => {
     return () => {
       cancelled = true;
     };
+    // Mount-only fetch — re-running on every language switch would refetch
+    // needlessly; an already-shown error just won't retranslate until retried.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const resetVisibleCount = () => {
@@ -96,14 +104,14 @@ const NewsPage = () => {
 
   const topics = useMemo(() => {
     const uniqueTopics = [...new Set(articles.map((article) => article.beatLabel))].sort();
-    return ['All Topics', ...uniqueTopics];
+    return [ALL_TOPICS, ...uniqueTopics];
   }, [articles]);
 
   const filteredArticles = useMemo(() => {
     return articles
-      .filter((article) => (territory === 'All Territories' ? true : article.territories?.includes(territory)))
-      .filter((article) => (country === 'All Countries' ? true : article.country === country))
-      .filter((article) => (topic === 'All Topics' ? true : article.beatLabel === topic))
+      .filter((article) => (territory === ALL_TERRITORIES ? true : article.territories?.includes(territory)))
+      .filter((article) => (country === ALL_COUNTRIES ? true : article.country === country))
+      .filter((article) => (topic === ALL_TOPICS ? true : article.beatLabel === topic))
       .filter((article) => matchesNewsSearch(article, search))
       .sort((a, b) => {
         const first = new Date(a.publishedAt).getTime();
@@ -117,21 +125,21 @@ const NewsPage = () => {
   const visibleArticles = latestArticles.slice(0, visibleCount);
   const hasFilters =
     search ||
-    territory !== 'All Territories' ||
-    country !== 'All Countries' ||
-    topic !== 'All Topics';
+    territory !== ALL_TERRITORIES ||
+    country !== ALL_COUNTRIES ||
+    topic !== ALL_TOPICS;
   const hasMore = visibleCount < latestArticles.length;
 
   const clearFilters = () => {
     setSearch('');
-    setTerritory('All Territories');
-    setCountry('All Countries');
-    setTopic('All Topics');
+    setTerritory(ALL_TERRITORIES);
+    setCountry(ALL_COUNTRIES);
+    setTopic(ALL_TOPICS);
     setSort('latest');
   };
 
   const showUnavailableSource = () => {
-    setSourceNotice('Original source is not available yet.');
+    setSourceNotice(t('news.sourceUnavailable'));
   };
 
   return (
@@ -139,8 +147,8 @@ const NewsPage = () => {
       <div className="news-page-inner">
         <header className="news-header">
           <div>
-            <h1>News &amp; Insights</h1>
-            <p>AI-curated sustainability news from trusted publishers across Borneo</p>
+            <h1>{t('sidebar.newsInsights')}</h1>
+            <p>{t('news.subtitle')}</p>
           </div>
         </header>
 
@@ -160,7 +168,7 @@ const NewsPage = () => {
         />
 
         <p className="news-notice">
-          Articles are summarised and rewritten by AI. Original sources are always credited.
+          {t('news.aiDisclaimer')}
         </p>
 
         {sourceNotice ? (
@@ -175,19 +183,19 @@ const NewsPage = () => {
           <div className="news-error-state" role="alert">
             <p>{error}</p>
             <button type="button" className="news-button news-button-secondary" onClick={handleRetry}>
-              Retry
+              {t('common.retry')}
             </button>
           </div>
         ) : null}
 
         {!loading && !error && articles.length === 0 ? (
-          <NewsEmptyState title="No news is available yet." />
+          <NewsEmptyState title={t('news.noNewsAvailable')} />
         ) : null}
 
         {!loading && !error && articles.length > 0 && filteredArticles.length === 0 ? (
           <NewsEmptyState
-            title="No news matches your search or filters."
-            actionLabel="Clear Filters"
+            title={t('news.noNewsMatches')}
+            actionLabel={t('common.clearFilters')}
             onAction={clearFilters}
           />
         ) : null}
@@ -196,7 +204,7 @@ const NewsPage = () => {
           <>
             <FeaturedNews article={displayedFeaturedArticle} onUnavailableSource={showUnavailableSource} />
 
-            <h2 className="news-section-title">Latest News</h2>
+            <h2 className="news-section-title">{t('news.latestNews')}</h2>
             {visibleArticles.length ? (
               <div className="news-grid">
                 {visibleArticles.map((article) => (
@@ -204,7 +212,7 @@ const NewsPage = () => {
                 ))}
               </div>
             ) : (
-              <NewsEmptyState title="No news is available yet." />
+              <NewsEmptyState title={t('news.noNewsAvailable')} />
             )}
 
             {hasMore ? (
@@ -214,7 +222,7 @@ const NewsPage = () => {
                   className="news-button news-button-secondary"
                   onClick={() => setVisibleCount((count) => count + LOAD_MORE_COUNT)}
                 >
-                  Load More News
+                  {t('news.loadMoreNews')}
                 </button>
               </div>
             ) : null}
@@ -222,7 +230,7 @@ const NewsPage = () => {
             {!hasMore && hasFilters && visibleArticles.length > 0 ? (
               <div className="news-load-more">
                 <button type="button" className="news-button news-button-secondary" onClick={clearFilters}>
-                  Clear Filters
+                  {t('common.clearFilters')}
                 </button>
               </div>
             ) : null}

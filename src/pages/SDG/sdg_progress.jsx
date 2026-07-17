@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   SDG_GOALS,
   TERRITORIES,
@@ -11,6 +12,7 @@ import {
 import ExportMenu from '../../components/ExportMenu';
 
 const SDGProgress = () => {
+  const { t } = useTranslation();
   const [selectedRegion, setSelectedRegion] = useState('Sarawak');
   const [selectedGoal, setSelectedGoal] = useState('SDG1');
   const { data, loading, error } = useIndicators();
@@ -32,9 +34,9 @@ const SDGProgress = () => {
         <div style={styles.content} ref={contentRef}>
         <div style={styles.header}>
           <div style={styles.headerLeft}>
-            <h1 style={styles.pageTitle}>SDG Progress</h1>
+            <h1 style={styles.pageTitle}>{t('sdg.title')}</h1>
             <p style={styles.pageSubtitle}>
-              UN Sustainable Development Goals tracked with real snapshot data and visible confidence tags
+              {t('sdg.subtitle')}
             </p>
           </div>
           <div style={styles.headerRight}>
@@ -70,7 +72,7 @@ const SDGProgress = () => {
           ))}
         </div>
 
-        {loading ? <div style={styles.messageCard}>Loading real indicator data…</div> : null}
+        {loading ? <div style={styles.messageCard}>{t('esg.loadingIndicatorData')}</div> : null}
         {error ? <div style={styles.errorCard}>{error}</div> : null}
 
         {!loading && !error ? (
@@ -81,31 +83,31 @@ const SDGProgress = () => {
                   <div style={styles.scoreLabel}>
                     {selectedGoal} · {goalLabel}
                   </div>
-                  <div style={styles.statusBadge}>Snapshot Only</div>
+                  <div style={styles.statusBadge}>{t('esg.snapshotOnly')}</div>
                 </div>
 
                 <div style={styles.scoreNumber}>{summary.count}</div>
-                <div style={styles.scoreCaption}>canonical indicators available</div>
+                <div style={styles.scoreCaption}>{t('esg.canonicalIndicatorsAvailable')}</div>
 
                 <div style={styles.trendContainer}>
-                  <span style={styles.trendLabel}>Latest data year</span>
-                  <span style={styles.trendValue}>{summary.latestYear || 'Unknown'}</span>
+                  <span style={styles.trendLabel}>{t('esg.latestDataYear')}</span>
+                  <span style={styles.trendValue}>{summary.latestYear || t('esg.unknown')}</span>
                 </div>
 
                 <div style={styles.bestRiskGrid}>
                   <div style={styles.bestRiskItem}>
-                    <div style={styles.bestRiskLabel}>Confidence mix</div>
+                    <div style={styles.bestRiskLabel}>{t('esg.confidenceMix')}</div>
                     <div style={styles.bestRiskValue}>
                       {Object.keys(summary.confidenceCounts).length
                         ? Object.entries(summary.confidenceCounts)
                             .map(([label, count]) => `${titleCaseConfidence(label)} ${count}`)
                             .join(' · ')
-                        : 'No data'}
+                        : t('common.noData')}
                     </div>
                   </div>
                   <div style={styles.bestRiskItem}>
-                    <div style={styles.bestRiskLabel}>Trend status</div>
-                    <div style={styles.bestRiskValue}>Historical series not enabled yet</div>
+                    <div style={styles.bestRiskLabel}>{t('esg.trendStatus')}</div>
+                    <div style={styles.bestRiskValue}>{t('esg.historicalSeriesNotEnabled')}</div>
                   </div>
                 </div>
               </div>
@@ -128,7 +130,7 @@ const SDGProgress = () => {
                   ))
                 ) : (
                   <div style={styles.emptyState}>
-                    No canonical indicators are available for this goal in {selectedRegion} yet.
+                    {t('sdg.noCanonicalIndicatorsForRegion', { region: selectedRegion })}
                   </div>
                 )}
               </div>

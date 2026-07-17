@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/useAuth';
 import AuthLayout, { AuthCard } from '../../components/AuthLayout';
@@ -9,6 +10,7 @@ import { COLORS, FONT } from '../../theme';
 // redirects back to /reset-password; we always show the neutral "check your
 // email" screen so the form never reveals whether an account exists.
 const ForgotPasswordPage = () => {
+  const { t } = useTranslation();
   const { resetPasswordForEmail } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
@@ -18,7 +20,7 @@ const ForgotPasswordPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email.trim()) {
-      setError('Enter the email address you signed up with.');
+      setError(t('auth.enterSignupEmail'));
       return;
     }
     setError('');
@@ -27,7 +29,7 @@ const ForgotPasswordPage = () => {
       await resetPasswordForEmail(email.trim());
       navigate('/check-email', { replace: true, state: { purpose: 'reset', email: email.trim() } });
     } catch (err) {
-      setError(err.message || 'Could not send the reset email.');
+      setError(err.message || t('auth.couldNotSendReset'));
     } finally {
       setBusy(false);
     }
@@ -39,16 +41,15 @@ const ForgotPasswordPage = () => {
         <button
           type="button"
           onClick={() => navigate('/login')}
-          aria-label="Close"
+          aria-label={t('common.close')}
           style={styles.closeBtn}
         >
           <Icons.Close size={20} color={COLORS.ink} />
         </button>
 
-        <h1 style={styles.title}>Find your account</h1>
+        <h1 style={styles.title}>{t('auth.findAccountTitle')}</h1>
         <p style={styles.subtitle}>
-          Please enter the email address you signed up with and we&rsquo;ll send you a link to reset
-          your password by email.
+          {t('auth.findAccountBody')}
         </p>
 
         <form onSubmit={handleSubmit}>
@@ -57,15 +58,15 @@ const ForgotPasswordPage = () => {
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="Email address"
-            aria-label="Email address"
+            placeholder={t('auth.emailAddressPlaceholder')}
+            aria-label={t('auth.emailAddressPlaceholder')}
             style={styles.input}
           />
 
           {error && <p style={styles.error}>{error}</p>}
 
           <Button type="submit" variant="navy" disabled={busy} style={styles.submitBtn}>
-            {busy ? 'Submitting…' : 'Submit'}
+            {busy ? t('auth.submitting') : t('auth.submit')}
           </Button>
         </form>
       </AuthCard>

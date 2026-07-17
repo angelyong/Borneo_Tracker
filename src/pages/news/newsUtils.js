@@ -11,15 +11,15 @@ const COUNTRY_FLAGS = {
   Indonesia: '🇮🇩',
 };
 
-export function formatNewsDate(value) {
-  return new Intl.DateTimeFormat('en-MY', {
+export function formatNewsDate(value, locale = 'en') {
+  return new Intl.DateTimeFormat(locale === 'ms' ? 'ms-MY' : 'en-MY', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
   }).format(new Date(value));
 }
 
-export function formatRelativeTime(value) {
+export function formatRelativeTime(value, locale = 'en') {
   const date = new Date(value);
   const diffMs = date.getTime() - Date.now();
   const divisions = [
@@ -32,7 +32,7 @@ export function formatRelativeTime(value) {
     { amount: Number.POSITIVE_INFINITY, unit: 'year' },
   ];
 
-  const formatter = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+  const formatter = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
   let duration = diffMs / 1000;
 
   for (const division of divisions) {
@@ -42,7 +42,7 @@ export function formatRelativeTime(value) {
     duration /= division.amount;
   }
 
-  return formatNewsDate(value);
+  return formatNewsDate(value, locale);
 }
 
 export function truncateText(text, maxLength = 170) {
@@ -55,9 +55,9 @@ export function formatCountryLabel(country) {
   return flag ? `${flag} ${country}` : country;
 }
 
-export function formatSourceCount(count) {
+export function formatSourceCount(count, t) {
   const total = Number(count) || 0;
-  return `Reported by ${total} ${total === 1 ? 'source' : 'sources'}`;
+  return t('news.reportedBySource', { count: total });
 }
 
 export function matchesNewsSearch(article, query) {
