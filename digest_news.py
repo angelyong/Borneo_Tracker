@@ -118,7 +118,10 @@ Items:
 def env_val(name):
     """Read a var from the environment or .env (never printed)."""
     if os.environ.get(name):
-        return os.environ[name]
+        # .strip(): a GitHub secret pasted with a trailing newline would otherwise
+        # produce an illegal HTTP header value (ValueError: Invalid header value)
+        # when used in the Supabase auth headers — CI reads os.environ, not .env.
+        return os.environ[name].strip()
     envf = Path(".env")
     if envf.exists():
         for line in envf.read_text(encoding="utf-8").splitlines():
