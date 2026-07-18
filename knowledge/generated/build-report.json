@@ -1,0 +1,160 @@
+{
+  "buildTimestamp": "2026-07-18T08:02:17.756Z",
+  "sourcesScanned": [
+    {
+      "id": "site-copy-en",
+      "type": "json",
+      "path": "src/i18n/locales/en.json"
+    },
+    {
+      "id": "manual-site-overview",
+      "type": "json",
+      "path": "knowledge/site-overview.json"
+    },
+    {
+      "id": "manual-regions",
+      "type": "json",
+      "path": "knowledge/regions.json"
+    },
+    {
+      "id": "manual-esg-indicators",
+      "type": "json",
+      "path": "knowledge/esg-indicators.json"
+    },
+    {
+      "id": "manual-sdg-progress",
+      "type": "json",
+      "path": "knowledge/sdg-progress.json"
+    },
+    {
+      "id": "manual-data-sources",
+      "type": "json",
+      "path": "knowledge/data-sources.json"
+    },
+    {
+      "id": "manual-generate-report",
+      "type": "json",
+      "path": "knowledge/generate-report.json"
+    },
+    {
+      "id": "manual-faq",
+      "type": "json",
+      "path": "knowledge/faq.json"
+    }
+  ],
+  "sourcesProcessed": [
+    {
+      "id": "site-copy-en",
+      "recordsExtracted": 6
+    },
+    {
+      "id": "manual-site-overview",
+      "recordsExtracted": 1
+    },
+    {
+      "id": "manual-regions",
+      "recordsExtracted": 1
+    },
+    {
+      "id": "manual-esg-indicators",
+      "recordsExtracted": 2
+    },
+    {
+      "id": "manual-sdg-progress",
+      "recordsExtracted": 1
+    },
+    {
+      "id": "manual-data-sources",
+      "recordsExtracted": 2
+    },
+    {
+      "id": "manual-generate-report",
+      "recordsExtracted": 1
+    },
+    {
+      "id": "manual-faq",
+      "recordsExtracted": 2
+    }
+  ],
+  "missingSources": [],
+  "unsafeSources": [],
+  "recordsCreated": 16,
+  "recordsSkipped": 0,
+  "duplicateRecords": [],
+  "invalidRecords": [],
+  "placeholderRecords": [
+    {
+      "id": "site-overview",
+      "title": "Borneo Tracker Overview",
+      "status": "placeholder",
+      "sourceFile": "knowledge/site-overview.json"
+    },
+    {
+      "id": "regions-overview",
+      "title": "Borneo Regions",
+      "status": "placeholder",
+      "sourceFile": "knowledge/regions.json"
+    },
+    {
+      "id": "forest-cover",
+      "title": "Forest Cover",
+      "status": "placeholder",
+      "sourceFile": "knowledge/esg-indicators.json"
+    },
+    {
+      "id": "esg-overview",
+      "title": "ESG Indicators",
+      "status": "placeholder",
+      "sourceFile": "knowledge/esg-indicators.json"
+    },
+    {
+      "id": "sdg-overview",
+      "title": "SDG Progress",
+      "status": "placeholder",
+      "sourceFile": "knowledge/sdg-progress.json"
+    },
+    {
+      "id": "data-sources-overview",
+      "title": "Data Sources",
+      "status": "placeholder",
+      "sourceFile": "knowledge/data-sources.json"
+    },
+    {
+      "id": "environmental-data-sources",
+      "title": "Environmental Data Sources",
+      "status": "placeholder",
+      "sourceFile": "knowledge/data-sources.json"
+    },
+    {
+      "id": "generate-report",
+      "title": "Generate Report",
+      "status": "placeholder",
+      "sourceFile": "knowledge/generate-report.json"
+    },
+    {
+      "id": "faq-esg-vs-sdg",
+      "title": "Difference Between ESG and SDG",
+      "status": "placeholder",
+      "sourceFile": "knowledge/faq.json"
+    },
+    {
+      "id": "faq-website-usage",
+      "title": "Website Usage",
+      "status": "placeholder",
+      "sourceFile": "knowledge/faq.json"
+    }
+  ],
+  "outputFiles": [
+    "knowledge/generated/site-overview.json",
+    "knowledge/generated/regions.json",
+    "knowledge/generated/esg-indicators.json",
+    "knowledge/generated/sdgs.json",
+    "knowledge/generated/generate-report.json",
+    "knowledge/generated/faq.json",
+    "knowledge/generated/data-sources.json",
+    "knowledge/generated/knowledge-index.json",
+    "knowledge/generated/build-report.json"
+  ],
+  "warnings": [],
+  "errors": []
+}

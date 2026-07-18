@@ -1,10 +1,12 @@
 import { useState } from 'react';
+import AIChatDialog from './ai-chat/AIChatDialog';
 
 const STATIC_SRC = '../src/assets/AIbot_static.png';
 const HOVER_SRC = '../src/assets/AIbot_GIF.gif';
 
 const AIbotButton = () => {
   const [isHovered, setIsHovered] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const imageSrc = isHovered ? HOVER_SRC : STATIC_SRC;
 
@@ -17,10 +19,14 @@ const AIbotButton = () => {
     : styles.image;
 
   return (
+    <>
     <button
       type="button"
       style={buttonStyle}
       aria-label="AI Assistant"
+      aria-haspopup="dialog"
+      aria-expanded={isChatOpen}
+      onClick={() => setIsChatOpen(true)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -33,6 +39,8 @@ const AIbotButton = () => {
         draggable="false"
       />
     </button>
+    <AIChatDialog open={isChatOpen} onClose={() => setIsChatOpen(false)} />
+    </>
   );
 };
 

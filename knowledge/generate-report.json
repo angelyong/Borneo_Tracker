@@ -1,0 +1,16 @@
+[
+  {
+    "id": "generate-report",
+    "title": "Generate Report",
+    "category": "website-usage",
+    "content": "Use the Generate Report page to select a territory, choose report sections, and generate a downloadable PDF based on available Borneo Tracker indicators. Replace with final user guidance.",
+    "regions": [],
+    "relatedSdgs": [],
+    "unit": null,
+    "sourceName": "Borneo Tracker",
+    "sourceUrl": "",
+    "pageUrl": "/reports",
+    "updatedAt": null,
+    "status": "placeholder"
+  }
+]

@@ -1,0 +1,16 @@
+[
+  {
+    "id": "site-overview",
+    "title": "Borneo Tracker Overview",
+    "category": "site",
+    "content": "Borneo Tracker is a website for exploring Borneo regional sustainability indicators, ESG pillars, SDG progress, news, community discussion and report generation. Replace this with approved production copy.",
+    "regions": ["Sabah", "Sarawak", "Brunei", "Kalimantan"],
+    "relatedSdgs": [],
+    "unit": null,
+    "sourceName": "Borneo Tracker",
+    "sourceUrl": "",
+    "pageUrl": "/about",
+    "updatedAt": null,
+    "status": "placeholder"
+  }
+]

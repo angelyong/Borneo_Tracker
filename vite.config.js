@@ -1,9 +1,26 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { aiChatController } from './src/server/ai/AIChatController.js'
+
+function aiChatApiPlugin() {
+  return {
+    name: 'borneo-tracker-ai-chat-api',
+    configureServer(server) {
+      server.middlewares.use('/api/ai/chat', (req, res) => {
+        aiChatController.handleNodeRequest(req, res)
+      })
+    },
+    configurePreviewServer(server) {
+      server.middlewares.use('/api/ai/chat', (req, res) => {
+        aiChatController.handleNodeRequest(req, res)
+      })
+    },
+  }
+}
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), aiChatApiPlugin()],
   test: {
     // jsdom gives us localStorage + File/Blob; fake-indexeddb (loaded in the
     // setup file) fills in IndexedDB, which jsdom doesn't implement.

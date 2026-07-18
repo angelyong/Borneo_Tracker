@@ -1,0 +1,67 @@
+{
+  "sources": [
+    {
+      "id": "site-copy-en",
+      "type": "json",
+      "path": "src/i18n/locales/en.json",
+      "category": "site-overview",
+      "enabled": true
+    },
+    {
+      "id": "manual-site-overview",
+      "type": "json",
+      "path": "knowledge/site-overview.json",
+      "category": "site-overview",
+      "enabled": true
+    },
+    {
+      "id": "manual-regions",
+      "type": "json",
+      "path": "knowledge/regions.json",
+      "category": "regions",
+      "enabled": true
+    },
+    {
+      "id": "manual-esg-indicators",
+      "type": "json",
+      "path": "knowledge/esg-indicators.json",
+      "category": "esg-indicators",
+      "enabled": true
+    },
+    {
+      "id": "manual-sdg-progress",
+      "type": "json",
+      "path": "knowledge/sdg-progress.json",
+      "category": "sdg-progress",
+      "enabled": true
+    },
+    {
+      "id": "manual-data-sources",
+      "type": "json",
+      "path": "knowledge/data-sources.json",
+      "category": "data-sources",
+      "enabled": true
+    },
+    {
+      "id": "manual-generate-report",
+      "type": "json",
+      "path": "knowledge/generate-report.json",
+      "category": "generate-report",
+      "enabled": true
+    },
+    {
+      "id": "manual-faq",
+      "type": "json",
+      "path": "knowledge/faq.json",
+      "category": "faq",
+      "enabled": true
+    },
+    {
+      "id": "hybrid-ai-chatbot-doc",
+      "type": "markdown",
+      "path": "docs/hybrid-ai-chatbot.md",
+      "category": "website-usage",
+      "enabled": false
+    }
+  ]
+}

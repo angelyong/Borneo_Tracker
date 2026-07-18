@@ -1,0 +1,16 @@
+[
+  {
+    "id": "sdg-overview",
+    "title": "SDG Progress",
+    "category": "sdg",
+    "content": "Borneo Tracker maps selected dashboard indicators to priority Sustainable Development Goals so users can view sustainability progress by goal. Replace with approved SDG methodology.",
+    "regions": [],
+    "relatedSdgs": ["SDG1", "SDG2", "SDG3", "SDG4", "SDG6", "SDG7", "SDG8", "SDG9", "SDG11", "SDG13", "SDG15", "SDG16"],
+    "unit": null,
+    "sourceName": "Borneo Tracker placeholder knowledge",
+    "sourceUrl": "",
+    "pageUrl": "/sdg",
+    "updatedAt": null,
+    "status": "placeholder"
+  }
+]

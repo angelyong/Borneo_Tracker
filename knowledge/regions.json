@@ -1,0 +1,16 @@
+[
+  {
+    "id": "regions-overview",
+    "title": "Borneo Regions",
+    "category": "regions",
+    "content": "Borneo Tracker currently groups regional dashboard views around Sabah, Sarawak, Brunei and Kalimantan. Replace with verified regional descriptions before publishing as authoritative text.",
+    "regions": ["Sabah", "Sarawak", "Brunei", "Kalimantan"],
+    "relatedSdgs": [],
+    "unit": null,
+    "sourceName": "Borneo Tracker",
+    "sourceUrl": "",
+    "pageUrl": "/regions",
+    "updatedAt": null,
+    "status": "placeholder"
+  }
+]
