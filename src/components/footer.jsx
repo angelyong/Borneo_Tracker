@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { COLORS } from '../theme';
 
 const Footer = () => {
@@ -8,9 +9,15 @@ const Footer = () => {
       <span>{t('footer.rights', { year: new Date().getFullYear() })}</span>
 
       <span style={styles.footerLinks}>
-        <span style={styles.footerLink}>{t('footer.privacyPolicy')}</span>
-        <span style={styles.footerLink}>{t('footer.termsOfUse')}</span>
-        <span style={styles.footerLink}>{t('footer.dataPolicy')}</span>
+        <Link to="/privacy-policy" style={styles.footerLink}>
+          {t('footer.privacyPolicy')}
+        </Link>
+        <Link to="/terms-of-use" style={styles.footerLink}>
+          {t('footer.termsOfUse')}
+        </Link>
+        <Link to="/data-policy" style={styles.footerLink}>
+          {t('footer.dataPolicy')}
+        </Link>
       </span>
     </footer>
   );
@@ -41,7 +48,10 @@ const styles = {
   },
 
   footerLink: {
+    color: 'inherit',
     cursor: 'pointer',
+    textDecoration: 'none',
+    outlineOffset: 3,
   },
 };
 
