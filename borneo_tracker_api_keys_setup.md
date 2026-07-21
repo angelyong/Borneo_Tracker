@@ -1,6 +1,10 @@
 # Borneo Tracker — API Keys Setup & Status
 
+_Last updated: 2026-07-20_
+
 > Real keys live in `.env` (git-ignored). This file tracks **status + how each was obtained + gotchas**. Never paste real key values here.
+>
+> Two independent pipelines each read their own keys: the **data pipeline** (dashboard refresh — GFW/BPS/FIRMS/WAQI, below) and the **News digest pipeline** (AR-3 — Gemini + Supabase, see "News pipeline keys").
 
 ## UPDATE 2026-07-06 — rate limits & CI
 
@@ -27,6 +31,24 @@
 - **BPS** — https://webapi.bps.go.id/developer/ → register → create application → APPID = key.
 - **FIRMS** — https://firms.modaps.eosdis.nasa.gov/api/map_key/ → email → MAP_KEY.
 - **WAQI** — https://aqicn.org/data-platform/token/ → email → token.
+
+## News pipeline keys (AR-3 — separate from the data pipeline)
+
+The daily News digest (`.github/workflows/news.yml` → `fetch_news.py` then `digest_news.py`) runs
+independently of the dashboard refresh. `fetch_news.py` needs no keys (it just reads publisher RSS);
+`digest_news.py` reads the keys below. All are set as **repo secrets** at
+github.com/angelyong/Borneo_Tracker → Settings → Secrets and variables → Actions (and locally in `.env`).
+
+| Env var / secret | Belongs to | Used by | Purpose | Required? |
+|---|---|---|---|---|
+| `GEMINI_API_KEY` | Google (Gemini API) | `digest_news.py` | AI rephrase/summarise fetched news into drafts | yes |
+| `GEMINI_API_KEY_2` | Google (Gemini API, 2nd project) | `digest_news.py` | Optional fallback key when the primary hits quota (also honours `_3`/`_4` and comma-separated `GEMINI_API_KEYS`) | optional |
+| `SUPABASE_URL` | Supabase (project) | `digest_news.py` | Target Supabase project REST URL | yes |
+| `SUPABASE_SERVICE_KEY` | Supabase (service role) | `digest_news.py` | Service-role key to UPSERT drafts (`status=pending`) into the news table | yes |
+
+- **Where** — Gemini: https://aistudio.google.com/apikey (create a key per Google Cloud project; a 2nd project gives an independent quota bucket for `GEMINI_API_KEY_2`). Supabase: project → Settings → API → Project URL (`SUPABASE_URL`) and the **service_role** secret (`SUPABASE_SERVICE_KEY`).
+- **Service-role key is backend/CI-only** — it bypasses RLS. Never ship it to the React frontend; the daily Action and local runs are the only places it's used.
+- The workflow writes to Supabase, so there is **no git commit** — a failure here never affects the dashboard refresh. Publishing stays manual (a human sets `status=published`).
 
 ## Gotchas (important)
 - **BPS firewall (WAF):** bare `curl` is blocked with a "Perimeter WAF Block" page. **Send a browser `User-Agent` header** on every BPS request, e.g. `Mozilla/5.0 ...`. With a normal UA it returns JSON fine.

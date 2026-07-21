@@ -1,5 +1,7 @@
 # Borneo Tracker (T002)
 
+_Last updated: 2026-07-20_
+
 A public, open-data **ESG / SDG / Resilience dashboard for Borneo Island** — Sabah, Sarawak (Malaysia), Brunei, and Kalimantan (Indonesia, 5 provinces rolled up). Every number is real, cited, and tagged with a confidence level; where data does not exist we show the gap instead of inventing a value.
 
 **Stack:** Python data pipeline → SQLite → static JSON → React + Vite frontend (Leaflet map, ECharts).
@@ -12,7 +14,14 @@ A public, open-data **ESG / SDG / Resilience dashboard for Borneo Island** — S
 | Regional Detail | `/regions` | Per-territory dashboard: Resilience Index, cross-territory comparison, **real historical trend charts**, Hexagon/ESG coverage |
 | ESG Indicators | `/esg` | E / S / G indicators per territory with confidence tags |
 | SDG Progress | `/sdg` | Six UN SDGs (No Poverty, Quality Education, Clean Water, Economic Growth, Climate Action, Life on Land) |
-| Community | `/community` | Discussion feed with search/filter, posting **with image/video/file attachments**, likes, comments, share, and delete-your-own-post (frontend-only — see limitations below) |
+| Community | `/community` | Discussion feed with search/filter, posting **with image/video/file attachments**, likes, comments, share, and delete-your-own-post (community feed is frontend-only — see limitations below) |
+| News & Insights | `/news`, `/news/:articleId` | Borneo Pulse news digest (published articles from the Supabase-backed news pipeline) |
+| Generate Report | `/reports` | ESG & SDG Data Profile — downloadable report of all indicators with coverage/limitations |
+| About | `/about` | Project background and framework overview |
+
+**Auth pages** (Supabase-backed): `/login`, `/register`, `/forgot-password`, `/reset-password`, `/check-email`, and `/profile` (**requires login**).
+
+**Admin pages** (**require admin role**): `/admin/news` (News Review — approve/publish digest drafts) and `/admin/users` (User Management).
 
 ## Quick start
 
@@ -33,7 +42,7 @@ npm run test         # -> Vitest (Community upload rules, storage & service)
 To re-pull fresh data from the live sources you need API keys (`cp .env.example .env` and fill in), then:
 
 ```bash
-python run_pipeline.py   # ingest -> history -> SQLite -> JSON -> resilience (5 steps)
+python run_pipeline.py   # ingest -> history -> SQLite -> JSON -> resilience -> districts (6 steps)
 ```
 
 ## Architecture
@@ -54,7 +63,12 @@ python run_pipeline.py   # ingest -> history -> SQLite -> JSON -> resilience (5 
  React frontend (src/data/useIndicators.js — the only data entry point)
 ```
 
-**Hard rule:** API keys are backend-only. The frontend never calls a source API — it reads only the exported JSON.
+Two add-on pipelines feed the frontend alongside the core steps above:
+
+- **District (ADM2) drill-down** — `ingest_districts.py` builds `public/data/districts.json` (954 district rows, GADM choropleth), the 6th pipeline step. It is an add-on layer: a failed pull keeps the previous `districts.json` and never blocks the core territory dashboard.
+- **News (Borneo Pulse)** — `fetch_news.py` pulls publisher RSS feeds and `digest_news.py` rephrases them (Gemini) into **Supabase** as pending drafts; `/admin/news` approves/publishes and the public `/news` page reads only published articles. This runs as its own GitHub Action, separate from the data refresh.
+
+**Hard rule:** API keys are backend-only. The frontend never calls a source API — it reads only the exported JSON (plus Supabase for auth + news).
 
 ## Automated daily refresh
 
@@ -87,7 +101,7 @@ python run_pipeline.py   # ingest -> history -> SQLite -> JSON -> resilience (5 
 
 ### Community attachments (frontend-only prototype)
 
-The Community feature has **no backend**. Posts, comments, likes and uploaded attachments are stored **only in the current browser** — post/attachment metadata in `localStorage`, and attachment blobs in IndexedDB (`borneo-tracker-community`). Consequences:
+The **Community feed** has **no backend of its own** (the app does now use Supabase for auth + news, but not for Community). Posts, comments, likes and uploaded attachments are stored **only in the current browser** — post/attachment metadata in `localStorage`, and attachment blobs in IndexedDB (`borneo-tracker-community`). Consequences:
 
 - Content is **not shared** across devices or users; another visitor sees only the seed posts.
 - Attachments survive a refresh **only while the browser keeps the storage** — browsers can evict IndexedDB under storage pressure (Safari especially). The app requests persistent storage best-effort, but persistence is **not guaranteed**.
@@ -104,6 +118,8 @@ A real multi-user version needs a backend (auth, shared DB, object storage, malw
 | `data_model.py` | Concept mapping, canonical-flag & confidence logic |
 | `load_db.py` | CSVs → SQLite with validation (fails loudly, never publishes a broken DB) |
 | `export_json.py` / `compute_resilience.py` | DB → frontend JSON (snapshot + series / index scores) |
-| `run_pipeline.py` | All five steps in one command |
+| `ingest_districts.py` | Builds `public/data/districts.json` (ADM2 district drill-down, GADM choropleth) |
+| `fetch_news.py` / `digest_news.py` | Pull publisher RSS → rephrase → Supabase news drafts (Borneo Pulse) |
+| `run_pipeline.py` | All six data steps in one command (ingest → history → load_db → export → resilience → districts) |
 | `src/data/useIndicators.js` | The frontend's single data module |
 | `HANDOFF.md` / `PROGRESS_REPORT.md` | Project history & data-layer report |

@@ -1,5 +1,9 @@
 # Supabase setup — News Tracker live store (AR-3)
 
+_Last updated: 2026-07-20_
+
+> **Note:** In addition to the `news_items` table defined in [`supabase/schema.sql`](../supabase/schema.sql), the app also uses a `profiles` table for authentication/roles. That table was created directly via the Supabase console (see [`docs/SUPABASE_AUTH_MIGRATION_PLAN.md`](./SUPABASE_AUTH_MIGRATION_PLAN.md)) and is **not** part of `schema.sql`.
+
 The public `/news` page and the daily pipeline use a free hosted **Supabase**
 project as the shared, live store. No Docker, nothing to self-host. ~5 minutes.
 

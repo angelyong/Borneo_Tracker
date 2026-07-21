@@ -3,6 +3,8 @@
 
 **Prepared:** 21 June 2026 · **Project:** Borneo Tracker — a public ESG & SDG monitoring dashboard for Borneo Island.
 
+_Last updated: 2026-07-20_
+
 ---
 
 ## 1. Data Strategy
@@ -93,15 +95,11 @@ Each country publishes an official SDG platform; Malaysia and Indonesia report a
 
 ---
 
-## 6. Known Data Gap
+## 6. Known Data Gap — resolved (water quality superseded)
 
-> **Water Quality (river WQI / IKA) is the one indicator without clean, auto-pullable data for the whole island.**
+> **Update (2026-07-20): river water quality was dropped from the tracked indicator set (2026-06-29) and superseded by Clean Water Access — it is no longer a gap.**
 >
-> - **Malaysia (Sabah/Sarawak):** river WQI exists only inside DOE Environmental Quality Report PDFs — not state-keyed, not via API.
-> - **Kalimantan:** IKA (water quality index) exists in KLHK PDF reports only (e.g. Kalimantan Selatan = 55.6, 2023).
-> - **Brunei:** no published numeric water-quality dataset at all.
->
-> **Recommended handling:** use **Clean Water Access** (Section 3, fully available via API for all four territories) as the primary SDG 6 metric, and present river water quality as a secondary "limited data" indicator sourced from annual PDF reports where available. This gap is inherent to regional data availability, not a limitation of the project.
+> The original concern was that river WQI / IKA had no clean, auto-pullable data island-wide (Malaysia DOE PDF-only, Brunei classification-only, Kalimantan KLHK PDFs — though Kalimantan IKA is in fact reachable via the BPS national-domain API). Rather than wait on data that doesn't exist uniformly, **Clean Water Access** (Section 3, fully available via API for all four territories) is used as the SDG 6 metric, which it already covers 4/4. River water quality is retained only as an optional, clearly-labelled "limited data" reference where PDFs exist. Reinstate as a scored indicator only if a numeric Brunei WQI and a uniform cross-territory method appear.
 
 ---
 
