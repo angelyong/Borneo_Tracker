@@ -62,7 +62,7 @@ Kalimantan Selatan,Mean years schooling (RLS),2025,8.81,years,BPS Indonesia,prov
 Kalimantan Selatan,Crop production (paddy),2025,290332.45,tonnes,BPS Indonesia,province
 Kalimantan Selatan,Tourist trips (domestic),2025,1822941,trips,BPS Indonesia,province
 Kalimantan Selatan,Life expectancy,2024,69.65,years,BPS Indonesia,province
-Kalimantan Timur,Unemployment rate,2024,5.14,%,BPS Indonesia,province
+Kalimantan Timur,Unemployment rate,2025,5.18,%,BPS Indonesia,province
 Kalimantan Timur,Poverty rate (P0),2025,5.17,%,BPS Indonesia,province
 Kalimantan Timur,Mean years schooling (RLS),2025,10.1,years,BPS Indonesia,province
 Kalimantan Timur,GDP growth (PDRB),2025,4.53,%,BPS Indonesia,province
@@ -105,20 +105,20 @@ Kalimantan Barat,"Fire alerts (VIIRS, annual)",2025,21611,count,Global Forest Wa
 Kalimantan Selatan,"Fire alerts (VIIRS, annual)",2025,1987,count,Global Forest Watch (VIIRS),satellite
 Kalimantan Tengah,"Fire alerts (VIIRS, annual)",2025,3895,count,Global Forest Watch (VIIRS),satellite
 Kalimantan Utara,"Fire alerts (VIIRS, annual)",2025,159,count,Global Forest Watch (VIIRS),satellite
-Borneo (all),Active fire hotspots (1d),2026,760,count,"NASA FIRMS (VIIRS, regional CSV)",satellite
-Sabah,"Air quality (AQI, live)",2026,49,AQI,WAQI / aqicn,city
-Sarawak,"Air quality (AQI, live)",2026,54,AQI,WAQI / aqicn,city
+Borneo (all),Active fire hotspots (1d),2026,579,count,"NASA FIRMS (VIIRS, regional CSV)",satellite
+Sabah,"Air quality (AQI, live)",2026,36,AQI,WAQI / aqicn,city
+Sarawak,"Air quality (AQI, live)",2026,56,AQI,WAQI / aqicn,city
 Brunei,"Air quality (AQI, live)",2026,7,AQI,WAQI / aqicn,city
 Kalimantan Barat,"Air quality (AQI, live)",2023,62,AQI,WAQI / aqicn,city
-Kalimantan Timur,"Air quality (AQI, live)",2026,57,AQI,WAQI / aqicn,city
-Kalimantan Tengah,"Air quality (AQI, live)",2026,66,AQI,WAQI / aqicn,city
-Kalimantan,"Air quality (AQI, live)",2026,62,AQI,WAQI / aqicn (mean of 3 Kalimantan cities),city
+Kalimantan Timur,"Air quality (AQI, live)",2026,21,AQI,WAQI / aqicn,city
+Kalimantan Tengah,"Air quality (AQI, live)",2026,51,AQI,WAQI / aqicn,city
+Kalimantan,"Air quality (AQI, live)",2026,45,AQI,WAQI / aqicn (mean of 3 Kalimantan cities),city
 Sabah,UNESCO World Heritage Sites,2026,1,count,UNESCO World Heritage List (whc.unesco.org),state
 Sarawak,UNESCO World Heritage Sites,2026,2,count,UNESCO World Heritage List (whc.unesco.org),state
 Brunei,UNESCO World Heritage Sites,2026,0,count,UNESCO World Heritage List (whc.unesco.org),national
 Kalimantan,UNESCO World Heritage Sites,2026,0,count,UNESCO World Heritage List (whc.unesco.org),territory
 Brunei,Households,2021,87137,households,DEPS Brunei Population & Housing Census 2021,national
-Kalimantan,Unemployment rate,2025,4.34,%,"BPS Indonesia (unweighted mean of 5/5 provinces, approx)",territory
+Kalimantan,Unemployment rate,2025,4.35,%,"BPS Indonesia (unweighted mean of 5/5 provinces, approx)",territory
 Kalimantan,Mean years schooling (RLS),2025,9.08,years,"BPS Indonesia (unweighted mean of 5/5 provinces, approx)",territory
 Kalimantan,GDP growth (PDRB),2025,4.5,%,"BPS Indonesia (unweighted mean of 2/5 provinces, approx)",territory
 Kalimantan,Crop production (paddy),2025,1620591.73,tonnes,BPS Indonesia (sum of 5/5 provinces),territory

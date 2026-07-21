@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-20",
+  "generatedAt": "2026-07-21",
   "method": "linear 0-100 vs documented bounds; pillar = mean of scored indicators; index = mean of scored pillars; indexStrict = geometric mean (weakest-link strict mode); unscored pillars excluded, never imputed",
   "ragThresholds": {
     "green": 70,
