@@ -1,12 +1,11 @@
 import { useState } from 'react';
-
-const STATIC_SRC = '../src/assets/AIbot_static.png';
-const HOVER_SRC = '../src/assets/AIbot_GIF.gif';
+import hoverSrc from '../assets/AIbot_GIF.gif';
+import staticSrc from '../assets/AIbot_static.png';
 
 const AIbotButton = () => {
   const [isHovered, setIsHovered] = useState(false);
 
-  const imageSrc = isHovered ? HOVER_SRC : STATIC_SRC;
+  const imageSrc = isHovered ? hoverSrc : staticSrc;
 
   const buttonStyle = isHovered
     ? { ...styles.button, ...styles.buttonHover }
