@@ -1,8 +1,9 @@
-import { act } from 'react';
+import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import AIbotButton from '../AIbotButton';
+import AIChatDialog from './AIChatDialog';
 import AIChatMessage from './AIChatMessage';
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -33,6 +34,16 @@ function changeTextarea(element, value) {
   });
 }
 
+const ControlledChat = () => {
+  const [open, setOpen] = React.useState(false);
+  return (
+    <>
+      <AIbotButton isOpen={open} onToggle={() => setOpen((value) => !value)} />
+      <AIChatDialog open={open} onClose={() => setOpen(false)} />
+    </>
+  );
+};
+
 describe('AI chat dialog', () => {
   beforeEach(() => {
     vi.stubGlobal('fetch', vi.fn(() => new Promise(() => {})));
@@ -49,7 +60,7 @@ describe('AI chat dialog', () => {
   });
 
   it('opens from the existing AI button and closes with the close button', () => {
-    render(<MemoryRouter><AIbotButton /></MemoryRouter>);
+    render(<MemoryRouter><ControlledChat /></MemoryRouter>);
     click(document.querySelector('[aria-label="AI Assistant"]'));
     expect(document.querySelector('[role="dialog"]')).toBeTruthy();
 
@@ -58,7 +69,7 @@ describe('AI chat dialog', () => {
   });
 
   it('closes with Escape', () => {
-    render(<MemoryRouter><AIbotButton /></MemoryRouter>);
+    render(<MemoryRouter><ControlledChat /></MemoryRouter>);
     click(document.querySelector('[aria-label="AI Assistant"]'));
     act(() => {
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
@@ -67,7 +78,7 @@ describe('AI chat dialog', () => {
   });
 
   it('disables empty submission and shows loading after a user message', () => {
-    render(<MemoryRouter><AIbotButton /></MemoryRouter>);
+    render(<MemoryRouter><ControlledChat /></MemoryRouter>);
     click(document.querySelector('[aria-label="AI Assistant"]'));
     const send = document.querySelector('[aria-label="Send message"]');
     expect(send.disabled).toBe(true);

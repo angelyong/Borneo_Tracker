@@ -21,7 +21,7 @@ const MUTE_PAGE_BY_PATH = (pathname) => {
   return null;
 };
 
-const MiniTopBar = ({ onMenuClick }) => {
+const MiniTopBar = ({ isSidebarOpen = false, isChatbotOpen = false, onMenuClick, onChatbotToggle }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
@@ -79,11 +79,12 @@ const MiniTopBar = ({ onMenuClick }) => {
         onClick={onMenuClick}
         style={styles.iconBtn}
         aria-label={t('topbar.toggleSidebar')}
+        aria-expanded={isSidebarOpen}
       >
         <HamburgerIcon />
       </button>
 
-      <AIbotButton />
+      <AIbotButton isOpen={isChatbotOpen} onToggle={onChatbotToggle} />
 
       <div style={styles.logoCenter} onClick={() => navigate('/')}>
         <img src={logoImg} alt="Borneo Tracker Logo" style={styles.logoImage} />

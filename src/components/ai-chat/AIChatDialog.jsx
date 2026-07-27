@@ -98,7 +98,6 @@ const AIChatDialog = ({ open, onClose }) => {
         ref={panelRef}
         className="ai-chat-dialog"
         role="dialog"
-        aria-modal="true"
         aria-labelledby="ai-chat-title"
       >
         <header className="ai-chat-header">

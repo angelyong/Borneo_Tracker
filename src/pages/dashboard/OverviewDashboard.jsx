@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useOutletContext } from 'react-router-dom';
 import { GeoJSON, MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -63,7 +64,7 @@ const TERRITORY_OPTIONS = ['Overall Borneo', 'Sabah', 'Sarawak', 'Brunei', 'Kali
 const ESG_CATEGORIES = ['Environment', 'Social', 'Governance'];
 const RAG_COLORS = { green: '#16a34a', amber: '#f59e0b', red: '#dc2626' };
 
-const ResizeMap = () => {
+const ResizeMap = ({ triggerKey }) => {
   const map = useMap();
 
   useEffect(() => {
@@ -88,6 +89,13 @@ const ResizeMap = () => {
       window.removeEventListener('resize', resizeMap);
     };
   }, [map]);
+
+  useEffect(() => {
+    const id = setTimeout(() => {
+      map.invalidateSize();
+    }, 280);
+    return () => clearTimeout(id);
+  }, [map, triggerKey]);
 
   return null;
 };
@@ -235,6 +243,7 @@ function RagGauge({ score, thresholds }) {
 
 const OverviewDashboard = () => {
   const { t } = useTranslation();
+  const { isChatbotOpen = false } = useOutletContext() || {};
   const [searchText, setSearchText] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchActiveIdx, setSearchActiveIdx] = useState(0);
@@ -836,7 +845,7 @@ const OverviewDashboard = () => {
           zoomControl={false}
           maxBoundsViscosity={1.0}
         >
-          <ResizeMap />
+          <ResizeMap triggerKey={isChatbotOpen} />
           <FitBorneoOnLoad onInitialView={handleInitialView} />
           <MapFocus
             geo={districtGeo}
