@@ -1,5 +1,12 @@
--- Borneo Tracker — News Tracker (AR-3) Supabase schema.
--- Run ONCE in the Supabase SQL editor on a new free project.
+-- Borneo Tracker — News Tracker (AR-3) Supabase schema: public.news_items.
+--
+-- RUN ORDER: auth_schema.sql FIRST, then this file. The admin policies below
+-- call current_user_role(), which auth_schema.sql defines.
+--
+-- Idempotent: safe to re-run against the live database. Every statement is
+-- create-if-not-exists or drop-then-create, and the drops also cover the
+-- RETIRED policy names — see the RLS section for why that matters.
+--
 -- Frontend camelCase <-> DB snake_case mapping is done in src/services/newsStore.js.
 
 create table if not exists public.news_items (
@@ -47,24 +54,33 @@ create policy "public reads published"
 --    BYPASSES RLS, to upsert drafts as status='pending'. That key is secret and
 --    lives only in GitHub Actions secrets / a local .env — never in the frontend.
 --  • Admin approval: either the Supabase Table Editor, OR the in-app /admin/news
---    page (logged-in admins) — see the admin policies below.
+--    page — gated on profiles.role = 'admin', see the admin policies below.
 
 -- Admin access (in-app approval) ----------------------------------------------
--- Authenticated users (your admin accounts) may see ALL rows and UPDATE them
--- (approve / edit / reject). Set this up:
---   1. Run this whole file (it's idempotent — drop-if-exists + create).
---   2. Authentication -> Providers -> Email: turn OFF "Allow new users to sign up"
---      (so ONLY accounts you create can log in — every logged-in user is an admin).
---   3. Authentication -> Users -> Add user: create your admin account(s).
+-- "Admin" = a signed-in user whose public.profiles.role is 'admin'. The check
+-- goes through current_user_role(), a SECURITY DEFINER helper defined in
+-- auth_schema.sql — run that file first or these two policies fail to create.
+--
+-- HISTORY — do NOT "simplify" these back to `to authenticated using (true)`.
+-- Until 2026-07-16 that is exactly what they were, named "authenticated reads
+-- all" / "authenticated updates", back when the only accounts that existed were
+-- hand-created admins. Public signup then went live (profiles.role defaults to
+-- 'user'), which turned those two policies into a hole: every registered visitor
+-- could read unpublished drafts and edit any row. They were tightened to
+-- admin-only in the console, but this file was never updated — so re-running it
+-- would have ADDED the permissive pair back alongside the admin pair. Postgres
+-- ORs permissive policies, so that silently re-opens the publish gate. The two
+-- drops below exist to clean up any database still carrying the old names.
 drop policy if exists "authenticated reads all" on public.news_items;
-create policy "authenticated reads all"
-  on public.news_items for select
-  to authenticated
-  using (true);
-
 drop policy if exists "authenticated updates" on public.news_items;
-create policy "authenticated updates"
+
+drop policy if exists "admin reads all" on public.news_items;
+create policy "admin reads all"
+  on public.news_items for select
+  using (current_user_role() = 'admin');
+
+drop policy if exists "admin updates" on public.news_items;
+create policy "admin updates"
   on public.news_items for update
-  to authenticated
-  using (true)
-  with check (true);
+  using (current_user_role() = 'admin')
+  with check (current_user_role() = 'admin');
