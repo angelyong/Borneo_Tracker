@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import './policies.css';
 
 const LAST_UPDATED = 'July 2026';

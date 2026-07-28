@@ -35,11 +35,15 @@ export const LAYER_CONFIG = {
   poverty: { label: 'Poverty', concept: 'poverty', better: 'lower' },
 };
 
+// `generatedAt` is the top-level date the daily rebuild pipeline stamps into
+// each JSON file. It is surfaced alongside the data (never instead of it) so the
+// UI can state how old the snapshot is — see components/DataFreshness.jsx.
 export function useIndicators() {
   const [state, setState] = useState({
     data: null,
     loading: true,
     error: null,
+    generatedAt: null,
   });
 
   useEffect(() => {
@@ -53,11 +57,11 @@ export function useIndicators() {
         }
         const payload = await response.json();
         if (!ignore) {
-          setState({ data: payload, loading: false, error: null });
+          setState({ data: payload, loading: false, error: null, generatedAt: payload?.generatedAt ?? null });
         }
       } catch (error) {
         if (!ignore) {
-          setState({ data: null, loading: false, error: error.message });
+          setState({ data: null, loading: false, error: error.message, generatedAt: null });
         }
       }
     }
@@ -76,6 +80,7 @@ export function useResilience() {
     data: null,
     loading: true,
     error: null,
+    generatedAt: null,
   });
 
   useEffect(() => {
@@ -89,11 +94,11 @@ export function useResilience() {
         }
         const payload = await response.json();
         if (!ignore) {
-          setState({ data: payload, loading: false, error: null });
+          setState({ data: payload, loading: false, error: null, generatedAt: payload?.generatedAt ?? null });
         }
       } catch (error) {
         if (!ignore) {
-          setState({ data: null, loading: false, error: error.message });
+          setState({ data: null, loading: false, error: error.message, generatedAt: null });
         }
       }
     }
@@ -111,11 +116,16 @@ export function useResilience() {
 // the district name as `territory`, so all the territory helpers below (
 // getCanonicalRows, getRowsForPillar, getHexagonCoverage, summarizeRows…) work
 // unchanged when passed a district name.
+//
+// Its `generatedAt` is deliberately reported separately from the territory data:
+// the district build runs on its own (much slower) cadence, so the two dates
+// differ and the UI must show whichever one is actually on screen.
 export function useDistricts() {
   const [state, setState] = useState({
     data: null,
     loading: true,
     error: null,
+    generatedAt: null,
   });
 
   useEffect(() => {
@@ -129,11 +139,11 @@ export function useDistricts() {
         }
         const payload = await response.json();
         if (!ignore) {
-          setState({ data: payload, loading: false, error: null });
+          setState({ data: payload, loading: false, error: null, generatedAt: payload?.generatedAt ?? null });
         }
       } catch (error) {
         if (!ignore) {
-          setState({ data: null, loading: false, error: error.message });
+          setState({ data: null, loading: false, error: error.message, generatedAt: null });
         }
       }
     }

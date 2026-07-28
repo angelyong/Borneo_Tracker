@@ -30,6 +30,7 @@ import {
 
 import L from 'leaflet';
 
+import DataFreshness from '../../components/DataFreshness';
 import PillarCoverage from '../../components/PillarCoverage';
 import ProvenanceChip from '../../components/ProvenanceChip';
 import WeakestLinkBars from '../../components/WeakestLinkBars';
@@ -259,9 +260,9 @@ const OverviewDashboard = () => {
   const searchRef = useRef(null);
   const initialViewRef = useRef(null);
 
-  const { data, loading, error } = useIndicators();
+  const { data, loading, error, generatedAt } = useIndicators();
   const { data: resilience } = useResilience();
-  const { data: districtData } = useDistricts();
+  const { data: districtData, loading: districtLoading, generatedAt: districtGeneratedAt } = useDistricts();
   const { data: districtGeo } = useDistrictGeo();
   const { data: bruneiGeo } = useBruneiGeo();
 
@@ -997,6 +998,15 @@ const OverviewDashboard = () => {
           )}
         </div>
 
+        {/* District mode reads districts.json, which rebuilds on its own slower
+            cadence — show that file's own date so the gap stays visible. */}
+        <div style={styles.freshnessRow}>
+          <DataFreshness
+            generatedAt={isDistrict ? districtGeneratedAt : generatedAt}
+            loading={isDistrict ? districtLoading : loading}
+          />
+        </div>
+
         <div style={styles.card}>
           <div style={styles.sectionTitle}>{t('dashboard.overallResilienceStatus')}</div>
 
@@ -1146,8 +1156,8 @@ const OverviewDashboard = () => {
         </div>
 
         <div style={styles.card}>
-          <div style={styles.liveSectionTitle}>
-            {t('dashboard.liveLayer', { layer: activeLayer ? LAYER_CONFIG[activeLayer]?.label : t('dashboard.none') })}
+          <div style={styles.mapLayerSectionTitle}>
+            {t('dashboard.mapLayer', { layer: activeLayer ? LAYER_CONFIG[activeLayer]?.label : t('dashboard.none') })}
           </div>
 
           <div style={styles.layerRadioGroup}>
@@ -1518,6 +1528,15 @@ const styles = {
     flexShrink: 0,
   },
 
+  freshnessRow: {
+    display: 'flex',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: '6px',
+    marginTop: '-6px',
+    flexShrink: 0,
+  },
+
   levelToggle: {
     display: 'inline-flex',
     backgroundColor: 'var(--color-grey-soft)',
@@ -1721,7 +1740,7 @@ const styles = {
     color: 'var(--color-ink)',
   },
 
-  liveSectionTitle: {
+  mapLayerSectionTitle: {
     fontSize: '12px',
     fontWeight: '600',
     color: 'var(--color-ink)',

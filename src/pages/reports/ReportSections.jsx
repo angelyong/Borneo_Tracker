@@ -57,8 +57,16 @@ function LeadEmphasis({ text }) {
 }
 
 // ---- Masthead / cover ------------------------------------------------------
-export function ReportMasthead({ territory, allTerritories, glance, generatedShort }) {
-  const cells = [...glance, { k: 'Generated', v: generatedShort }];
+// `dataAsOfShort` is the date the underlying snapshot was built by the daily
+// pipeline; `generatedShort` is when this report was exported. They are shown
+// as two separate cells because a report can be printed long after the data
+// behind it was last refreshed.
+export function ReportMasthead({ territory, allTerritories, glance, generatedShort, dataAsOfShort }) {
+  const cells = [
+    ...glance,
+    { k: 'Data as of', v: dataAsOfShort || '—' },
+    { k: 'Generated', v: generatedShort },
+  ];
   return (
     <div style={{ background: C.sheet, fontFamily: FONT, color: C.ink, borderTop: `3px solid ${C.accent}` }}>
       <div style={{ padding: '34px 40px 26px' }}>

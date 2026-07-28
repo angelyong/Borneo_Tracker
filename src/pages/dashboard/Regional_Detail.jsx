@@ -17,6 +17,7 @@ import {
   useResilience,
 } from '../../data/useIndicators';
 import { THEME_CHANGE_EVENT, cssVar } from '../../utils/theme';
+import DataFreshness from '../../components/DataFreshness';
 import ProvenanceChip from '../../components/ProvenanceChip';
 import HexRadar from '../../components/HexRadar';
 
@@ -30,7 +31,7 @@ const RegionalDetails = () => {
   // re-read the current colors via cssVar().
   const [themeVersion,       setThemeVersion]       = useState(0);
 
-  const { data,              loading, error } = useIndicators();
+  const { data,              loading, error, generatedAt } = useIndicators();
   const { data: resilience }                 = useResilience();
 
   const lineChartRef       = useRef(null);
@@ -232,6 +233,9 @@ const RegionalDetails = () => {
                   <option key={item.concept} value={item.concept}>{item.label}</option>
                 ))}
               </select>
+            </div>
+            <div style={styles.toolbarFreshness}>
+              <DataFreshness generatedAt={generatedAt} loading={loading} />
             </div>
           </div>
 
@@ -443,6 +447,7 @@ const styles = {
   toolbarGroup: { display: 'flex', flexDirection: 'column', gap: '6px' },
   toolbarLabel: { fontSize: '12px', fontWeight: '600', color: 'var(--color-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' },
   toolbarSelect: { minWidth: '220px', border: '1px solid var(--color-border)', borderRadius: '10px', padding: '10px 12px', backgroundColor: 'var(--color-card)', fontSize: '14px', color: 'var(--color-ink)' },
+  toolbarFreshness: { marginLeft: 'auto', display: 'flex', alignItems: 'flex-end', paddingBottom: '11px' },
 
   summaryStrip:     { display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '12px' },
   summaryChip:      { backgroundColor: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: '999px', padding: '10px 14px', display: 'flex', gap: '8px', alignItems: 'center', color: 'var(--color-ink)' },

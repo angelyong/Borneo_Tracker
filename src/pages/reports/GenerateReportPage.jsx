@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { TERRITORIES, useIndicators } from '../../data/useIndicators';
 import { buildProfile } from './reportContent';
 import { generatePdfFromSections } from '../../utils/pdfReport';
+import { parseGeneratedAt } from '../../utils/dataFreshness';
+import DataFreshness from '../../components/DataFreshness';
 import { Button } from '../../components/ui';
 import { COLORS, FONT, RADII, SHADOWS } from '../../theme';
 import {
@@ -34,7 +36,7 @@ const SECTION_KEYS = ['summary', 'sdg', 'coverage', 'methodology'];
 
 const GenerateReportPage = () => {
   const { t } = useTranslation();
-  const { data, loading, error } = useIndicators();
+  const { data, loading, error, generatedAt } = useIndicators();
 
   const [territory, setTerritory] = useState(TERRITORIES[0]);
   const [sections, setSections] = useState(DEFAULT_SECTIONS);
@@ -65,6 +67,16 @@ const GenerateReportPage = () => {
     []
   );
 
+  // When the underlying data was last rebuilt — distinct from the export date
+  // above, and printed onto the report so a saved PDF carries its own vintage.
+  // The report sheet is a fixed English document, so this is formatted en-GB.
+  const dataAsOfShort = useMemo(() => {
+    const date = parseGeneratedAt(generatedAt);
+    return date
+      ? date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' })
+      : null;
+  }, [generatedAt]);
+
   const toggleSection = (key) => setSections((prev) => ({ ...prev, [key]: !prev[key] }));
 
   const handleGenerate = async () => {
@@ -92,6 +104,9 @@ const GenerateReportPage = () => {
         <p style={styles.subtitle}>
           {t('reports.subtitle')}
         </p>
+        <div style={styles.freshnessRow}>
+          <DataFreshness generatedAt={generatedAt} loading={loading} />
+        </div>
       </header>
 
       <div style={styles.controlsCard}>
@@ -146,6 +161,7 @@ const GenerateReportPage = () => {
               allTerritories={allTerritories}
               glance={profile.glance}
               generatedShort={generatedShort}
+              dataAsOfShort={dataAsOfShort}
             />
           </div>
 
@@ -187,6 +203,7 @@ const styles = {
   header: { marginBottom: 20 },
   title: { fontSize: 26, fontWeight: 800, color: COLORS.ink, margin: 0 },
   subtitle: { fontSize: 14, color: COLORS.muted, margin: '6px 0 0', maxWidth: 640, lineHeight: 1.5 },
+  freshnessRow: { marginTop: 10, display: 'flex', alignItems: 'center', flexWrap: 'wrap' },
 
   controlsCard: {
     background: COLORS.card,
