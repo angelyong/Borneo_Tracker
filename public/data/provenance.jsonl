@@ -1,0 +1,3 @@
+{"bytes": 103450, "file": "public/data/indicators.json", "generatedAt": "2026-07-27", "runId": "local", "sha256": "470b0914b081e979b034b542ccde3ce003422f78e40b1733d427346d190264f7", "ts": "2026-07-28T02:23:10Z"}
+{"bytes": 11277, "file": "public/data/resilience.json", "generatedAt": "2026-07-27", "runId": "local", "sha256": "1bfc2bf16996b728c3cff8b425b771b1ef16fb9a4101104a1836795494749486", "ts": "2026-07-28T02:23:10Z"}
+{"bytes": 487665, "file": "public/data/districts.json", "generatedAt": "2026-07-10", "runId": "local", "sha256": "c95251311f0226036d6092fc61ea75a1e6ffef774fd97180a289bfae968df8cf", "ts": "2026-07-28T02:23:10Z"}

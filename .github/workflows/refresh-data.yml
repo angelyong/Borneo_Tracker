@@ -19,21 +19,45 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Run data pipeline (ingest -> SQLite -> JSON)
+      - name: Run data pipeline (ingest -> SQLite -> JSON -> manifest)
         env:
           BPS_API_KEY: ${{ secrets.BPS_API_KEY }}
           GFW_API_KEY: ${{ secrets.GFW_API_KEY }}
           WAQI_TOKEN: ${{ secrets.WAQI_TOKEN }}
+          # Added 2026-07-28: without these two, CI silently produced degraded data
+          # (fire alerts fell back to the keyless regional CSV, mean-years-schooling
+          # was skipped entirely) while still reporting success. Both scripts treat an
+          # empty/unset value as "no key" and degrade gracefully, so the workflow keeps
+          # working until the repo owner adds the secret values.
+          FIRMS_MAP_KEY: ${{ secrets.FIRMS_MAP_KEY }}
+          GDL_API_TOKEN: ${{ secrets.GDL_API_TOKEN }}
         run: python run_pipeline.py
+
+      # The gate. Runs AFTER the pipeline and BEFORE the commit: if a source broke
+      # and the pipeline kept stale or gutted data, this fails the job red and
+      # nothing is committed. See validate_data.py for the checks.
+      - name: Validate refreshed data
+        run: python validate_data.py
 
       - name: Commit refreshed data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add borneo_tracker_poc.csv borneo_tracker_history.csv public/data/indicators.json public/data/resilience.json
+          # Stage the DATA files first and let them alone decide whether today is a
+          # no-op. manifest.json (fresh UTC timestamp every run) and provenance.jsonl
+          # (appended every run) would otherwise ALWAYS be dirty and defeat the
+          # "no changes today" check, committing noise daily. They are staged only
+          # once the data itself has genuinely changed — which makes provenance.jsonl
+          # an append-only log of distinct DATA VERSIONS rather than of workflow runs,
+          # and keeps the committed manifest an accurate description of the committed
+          # bytes (unchanged data => unchanged hashes => the old manifest still holds).
+          git add borneo_tracker_poc.csv borneo_tracker_history.csv \
+                  public/data/indicators.json public/data/resilience.json \
+                  public/data/districts.json
           if git diff --cached --quiet; then
-            echo "No data changes today."
+            echo "No data changes today (manifest/provenance intentionally not committed)."
           else
+            git add public/data/manifest.json public/data/provenance.jsonl
             git commit -m "chore: scheduled data refresh"
             git push
           fi
