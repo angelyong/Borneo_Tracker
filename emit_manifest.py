@@ -124,7 +124,10 @@ def main():
         return 1
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    MANIFEST.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    # newline="\n" explicitly: this file is published and diffed, and a Windows
+    # run must not produce different bytes from a CI run. Same reason
+    # append_provenance() pins its newline.
+    MANIFEST.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8", newline="\n")
     append_provenance(manifest)
 
     print(f"Manifest {manifest['generatedAt']} (run {manifest['runId']}):")
