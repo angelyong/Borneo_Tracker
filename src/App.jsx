@@ -12,6 +12,7 @@ import UserManagement from './pages/admin/UserManagement';
 import AboutPage from './pages/about/AboutPage';
 import CommunityPage from './pages/community/CommunityPage';
 import GenerateReportPage from './pages/reports/GenerateReportPage';
+import { DataPolicyPage, PrivacyPolicyPage, TermsOfUsePage } from './pages/policies/PolicyPage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
@@ -69,6 +70,9 @@ function App() {
 
           <Route path="/data-sources" element={<Placeholder title={t('sidebar.dataSources')} />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+          <Route path="/terms-of-use" element={<TermsOfUsePage />} />
+          <Route path="/data-policy" element={<DataPolicyPage />} />
           <Route
             path="/profile"
             element={

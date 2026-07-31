@@ -404,6 +404,7 @@ const styles = {
     textAlign:    'left',
     transition:   'background-color 0.2s ease',
     marginBottom: '4px',
+    backgroundColor: 'transparent',
   },
   logoutIcon: {
     fontSize:  '16px',

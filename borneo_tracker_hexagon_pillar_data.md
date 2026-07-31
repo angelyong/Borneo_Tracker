@@ -1,19 +1,23 @@
 # Borneo Tracker — True Wealth Hexagon: Pillar Data Sourcing (Round 2)
 
+_Last updated: 2026-07-20_
+
 > Second sourcing round (verified live 2026-06-21) for the 4 pillars that ESG/SDG did NOT cover: **Food, Energy, Shelter, Entertainment**. (Education & Healthcare were already covered in round 1.) Goal: confirm each pillar has enough real, mostly auto-pullable data to compute a Resilience score.
 >
 > 🟢 = real data for all/most territories, auto-pullable · 🟡 = partial / national-only / proxy / manual once · 🔴 = no clean data (drop or Phase 2). Each pillar only needs 2–3 usable indicators.
 
 ## Result: all 6 pillars are now buildable
 
-| Pillar | Anchor indicator (🟢) | Support indicators | Verdict |
+> **Anchor update (2026-07-20):** the anchors below now name the indicator each pillar is actually *scored* on by `compute_resilience.py`, not the absolute count that surfaces the data. Absolute counts (crop tonnes, electricity/housing/tourist counts) are size-dependent and the scorer refuses them — they stay as coverage while a comparable %/years/per-capita indicator carries the score. Crop paddy is normalised to **kg/capita**; housing is superseded by **clean water / sanitation %**; **Internet use %** is now a scored Entertainment proxy; **clean water is tagged Shelter** (WASH), not Healthcare (Life expectancy stays Healthcare). Taxonomy is unchanged.
+
+| Pillar | Scored anchor indicator | Support / coverage indicators | Verdict |
 |---|---|---|---|
-| Food | Crop production (paddy) | Agricultural land 🟡, Self-sufficiency ratio 🟡 | ✅ Buildable |
-| Energy | Electricity access | Renewable share 🟡, Generation/consumption 🟡 | ✅ Buildable |
-| Education | (round 1) Enrolment / literacy | — | ✅ Buildable |
-| Shelter | Housing count | Road length 🟡, Flood risk 🔴 | ✅ Buildable |
-| Healthcare | (round 1) Hospital beds / doctors | Clean water | ✅ Buildable |
-| Entertainment | Tourism arrivals | National parks 🟡, UNESCO/heritage 🟡 | ✅ Buildable |
+| Food | Paddy production per capita (kg/capita) | Crop production (paddy, tonnes) 🟢 coverage, Agricultural land 🟡 | ✅ Buildable |
+| Energy | Electrification ratio (%) | Electricity access (households) 🟢 coverage, Renewable share 🟡, Generation/consumption 🟡 | ✅ Buildable |
+| Education | (round 1) Mean years schooling / literacy (%) | Enrolment count 🟢 coverage | ✅ Buildable |
+| Shelter | Clean water / Basic sanitation access (%) | Housing count 🟢 coverage, Road length 🟡, Flood risk 🔴 | ✅ Buildable |
+| Healthcare | (round 1) Life expectancy (years) / Hospital beds per 1k | — | ✅ Buildable |
+| Entertainment | Internet use (%) | Tourism arrivals 🟢 coverage, National parks 🟡, UNESCO/heritage 🟡 | ✅ Buildable |
 
 ---
 
@@ -45,17 +49,22 @@
 | Road length (km) | 23,716 km (2016) | 35,517 km (2016) | 3,820 km (2023) | per-province (BPS) | 🟡 stale/uneven |
 | Flood risk | May-2021 event figures | 270 incidents (2021) | 207 incidents (2022) | BNPB per-event | 🔴 event-based |
 
+**Scored indicators (2026-07-20):** the housing/road/flood figures above are coverage only — the Shelter pillar is *scored* on **Clean water access %** and **Basic sanitation access %** (band 100/50). Clean water was re-tagged from Healthcare to Shelter (WASH adequacy) so Shelter lights up instead of Healthcare double-counting; Life expectancy stays Healthcare. See `data_model.py::hexagon_pillar()`.
+
 **Access:** Malaysia → OpenDOSM **`hh_profile_state`** [API] — *needs trailing slash*; also `hh_access_amenities` (housing adequacy proxy). Brunei → DEPS 2021 Census PDF + World Bank `IS.ROD.TOTL.KM`. Kalimantan → BPS census / road tables. *Flood has no clean cross-territory time series → use as a qualitative "risk flag", not a scored indicator (Phase 2).*
 
 ## ENTERTAINMENT
 
 | Sub-indicator | Sabah | Sarawak | Brunei | Kalimantan | Verdict |
 |---|---|---|---|---|---|
+| Internet use (%) | 98.0% (2024) | 98.0% (2024) | 99.0% (2023) | 76.1% (2024) | 🟡 national proxy |
 | Tourism arrivals | 2.61M (2023) | 3.92M (2023) | ~133k (2023) | Kaltim 40,330 wisman (2023) | 🟢 |
 | National parks (count) | 9 | ~30 | 1 | 8 | 🟡 manual |
 | UNESCO WHS / heritage | 1 WHS + 24 gazetted | 2 WHS + ~41 | 0 WHS (2 tentative) | 0 WHS (1 tentative) | 🟡 manual |
 
-**Access:** Tourism → **state tourism boards** (Sabah Tourism Board, Sarawak Ministry of Tourism / Sarawak Open Data CSV), Brunei Tourism PDF, Kalimantan BPS "wisatawan" (sum 5 provinces). *Federal data.gov.my tourism is national/quarterly only — use state boards for state figures.* Parks/heritage → manual count from official lists + UNESCO WHS list (authoritative).
+**Scored proxy (2026-07-20):** **Internet use %** is now the pillar's *scored* Entertainment indicator (its own `internet_use` concept, band 100/50), because tourism arrivals are absolute counts the scorer refuses. It carries **medium** confidence — Sabah/Sarawak apply the Malaysia national 98.0% (DOSM ICT Use & Access Survey 2024), Brunei 99.0% (ITU / World Bank 2023), Kalimantan 76.1% (BPS 2024). Parks/heritage/tourism remain coverage indicators for the pillar.
+
+**Access:** Tourism → **state tourism boards** (Sabah Tourism Board, Sarawak Ministry of Tourism / Sarawak Open Data CSV), Brunei Tourism PDF, Kalimantan BPS "wisatawan" (sum 5 provinces). *Federal data.gov.my tourism is national/quarterly only — use state boards for state figures.* Parks/heritage → manual count from official lists + UNESCO WHS list (authoritative). Internet use → DOSM ICT Use & Access Survey (MY), ITU / World Bank (Brunei), BPS (Kalimantan).
 
 ---
 

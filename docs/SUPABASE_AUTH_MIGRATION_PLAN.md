@@ -1,6 +1,7 @@
 # Supabase Auth Migration Plan — user login + direct-admin (route C)
 
-**Status:** In progress · **Created:** 2026-07-16 · **Owner:** Henry
+**Status:** COMPLETED & merged to master (2026-07-16) · **Created:** 2026-07-16 · **Owner:** Henry
+_Status updated: 2026-07-20_
 **Scope:** Add real user authentication and role-based admin to the app, unified on **Supabase**.
 
 > Companion docs: [`SUPABASE_SETUP.md`](SUPABASE_SETUP.md) (the existing News Tracker store — this plan extends the *same* Supabase project with auth) · [`PRODUCTION_ROLLOUT_PLAN.md`](PRODUCTION_ROLLOUT_PLAN.md).
@@ -26,9 +27,11 @@ The app needs one unified identity system for both **end users** and **admins**.
 
 ---
 
-## Implementation status (2026-07-16)
+## Implementation status (updated 2026-07-20)
 
-Phases **0–5 built** on branch `feature/supabase-auth`; **build + lint + 35 tests green**, dev server boots. Phase 6: automated checks pass — the **live browser flow (register → verify email → login → admin gate) is pending a manual test**. Phase 7 (deploy) waits on the DirectAdmin domain. Phase 8 (merge to master) after the manual test.
+**DONE & merged to master.** Phases **0–6 and 8 complete**: Supabase auth is live in the app (`src/auth/AuthProvider.jsx` implements `signUp / signIn / signOut / resetPasswordForEmail / resendSignup / updatePassword`, with `role / isAdmin` driven off the `profiles` table), the auth pages are Supabase-wired, `/admin/*` is role-gated, and the figma-redesign **UserManagement** admin page was rebuilt on Supabase (`src/pages/admin/UserManagement.jsx` + `src/services/adminUserService.js` reading `profiles`). The manual browser flow passed and the branch merged to `master`.
+
+**Still pending (both waiting on the live domain):** Phase 7 **production deployment** (waits on the DirectAdmin domain) and **custom SMTP** (still on Supabase's built-in, rate-limited email).
 
 ## Legend
 🔸 = decision to lock first · ⏳ = do only after the DirectAdmin domain is live · everything else = doable now.
@@ -79,18 +82,19 @@ Phases **0–5 built** on branch `feature/supabase-auth`; **build + lint + 35 te
 - [x] Unified entry: admin signs in at `/login`; `/admin/news` wrapped in `<RequireAdmin>` → **retired** `AdminLogin.jsx` + `/admin/login`
 - [x] `NewsReview.jsx` uses `useAuth` (role gate handled by the route)
 - [x] Sidebar "News Review (Admin)" link + top-bar admin item visible only when `isAdmin`
-- [ ] *(Future, not this round)* rebuild figma-redesign's **UserManagement** / **ReportVerification** admin pages on Supabase
+- [x] Rebuilt figma-redesign's **UserManagement** admin page on Supabase (`src/pages/admin/UserManagement.jsx` + `adminUserService.js` on `profiles`)
+- [ ] *(Future, not this round)* rebuild figma-redesign's **ReportVerification** admin page on Supabase
 
 ## Phase 5 — Cleanup / de-conflict ✅
 - [x] Consolidated to **one** Supabase auth (deleted the old admin-only `services/authService.js`)
 - [x] Confirmed **nothing** from `origin/login`'s backend pulled in (no `server/`, custom authService, `compose.yaml`, Mailpit)
 - [x] Removed unused `Sidebar` import in `MyProfile.jsx` (lint clean)
 
-## Phase 6 — Test & verify
+## Phase 6 — Test & verify ✅
 - [x] Build (`vite build`), lint (`eslint src`), and the **35 existing vitest tests** pass; dev server boots
-- [ ] **Manual (browser):** register → verify email → login → logout
-- [ ] **Manual:** forgot password → reset password end-to-end
-- [ ] **Manual:** role gate — normal user blocked from `/admin/news`; admin allowed
+- [x] **Manual (browser):** register → verify email → login → logout
+- [x] **Manual:** forgot password → reset password end-to-end
+- [x] **Manual:** role gate — normal user blocked from `/admin/news`; admin allowed
 
 ## Phase 7 — ⏳ Deploy prep (after DirectAdmin domain is live)
 - [ ] Production build env: `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`
@@ -101,10 +105,10 @@ Phases **0–5 built** on branch `feature/supabase-auth`; **build + lint + 35 te
 - [ ] Add `.htaccess` (SPA route rewrite → `index.html`)
 - [ ] Point the domain / document root at `dist`
 
-## Phase 8 — Merge back
-- [ ] PR `feature/supabase-auth` → `master`; review
-- [ ] Manual browser test passes → merge
-- [ ] Update docs / memory with the final state
+## Phase 8 — Merge back ✅
+- [x] PR `feature/supabase-auth` → `master`; review
+- [x] Manual browser test passes → merge
+- [x] Update docs / memory with the final state
 
 ---
 

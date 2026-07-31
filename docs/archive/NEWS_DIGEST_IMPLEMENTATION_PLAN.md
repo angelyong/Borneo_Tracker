@@ -1,3 +1,5 @@
+> ⚠️ SUPERSEDED / HISTORICAL (2026-07-20): This plan proposed a self-hosted Node/Express/Prisma/PostgreSQL backend that was NOT built. The News & Insights feature shipped instead as a Python pipeline (fetch_news.py + digest_news.py) writing to Supabase. See docs/NEWS_IMPLEMENTATION_PLAN.md for the architecture that was actually implemented. Kept for historical reference only.
+
 # Borneo Tracker “Borneo Pulse” AI News Digest 实施计划
 
 **状态：** 已于 2026-07-13 对照当前仓库、`NEWS_DIGEST_CONCEPT.md`、现有 News UI、认证后端、Prisma schema、数据指标 vocabulary 与 CI 配置完成实施前审查

@@ -1,6 +1,10 @@
 # Borneo Tracker — Data Coverage Matrix (Completeness Check)
 
+_Last updated: 2026-07-20_
+
 > **Purpose:** Prove that real, auto-pullable data exists for every ESG + SDG indicator across all four territories (Sabah, Sarawak, Brunei, Kalimantan) **before** we start building. Every "real value" below was pulled live from the actual source on **2026-06-21** — it is proof the data exists, not just that a portal exists.
+>
+> **Note (2026-07-20):** this matrix reflects the **original pre-build survey (June 2026)** plus **mid-July updates** made during the build — river water quality was dropped/superseded (see §C), and several scored hexagon indicators were added (Internet use, Paddy production per capita, Basic sanitation access — see §B.1).
 
 ## Legend
 
@@ -46,6 +50,18 @@ Each territory queried separately. **Kalimantan = sum/avg of 5 provinces.** Brun
 > Indonesia API (free key): `webapi.bps.go.id/v1/api/list?model=data&domain=<PROV>&var=<ID>&key=<KEY>`.
 > Brunei API (keyless): `api.worldbank.org/v2/country/brn/indicator/<CODE>?format=json` — codes: `SL.UEM.TOTL.ZS`, `SH.MED.BEDS.ZS`, `SH.H2O.BASW.ZS`, `NY.GDP.MKTP.KD.ZG`, `AG.LND.FRST.ZS`.
 
+### B.1 Added scored hexagon indicators (mid-July 2026 build)
+
+Added during the build to give the True Wealth Hexagon comparable, *scoreable* indicators (%/years/per-capita, not absolute counts). All now live in `public/data/indicators.json` and `data_model.py`.
+
+| Indicator | Pillar | Sabah | Sarawak | Brunei | Kalimantan | Status |
+|---|---|---|---|---|---|---|
+| **Internet use (%)** | Entertainment | 98.0% (2024) | 98.0% (2024) | 99.0% (2023) | 76.1% (2024) | 🟡 national proxy — medium confidence |
+| **Paddy production per capita (kg/capita)** | Food | derived | derived | 8.1 (2023) | derived | 🟢 derived from paddy tonnes ÷ population |
+| **Basic sanitation access (%)** | Shelter | [API] | [API] | 100% (2024) [API WB] | [API] | 🟢 |
+
+> Internet use: DOSM ICT Use & Access Survey (MY, national applied to state), ITU / World Bank (Brunei), BPS (Kalimantan). Paddy per capita: `build_percapita_food_rows()` divides the paddy-tonnes row by `POPULATION`. Sanitation: World Bank `SH.STA.BASS.ZS` (Brunei) / national statistics.
+
 ---
 
 ## C. Weak indicators (real but not cleanly auto-pullable)
@@ -53,9 +69,10 @@ Each territory queried separately. **Kalimantan = sum/avg of 5 provinces.** Brun
 | Indicator | Sabah | Sarawak | Brunei | Kalimantan | Status |
 |---|---|---|---|---|---|
 | **Air quality (PM2.5)** | KK 8.1 µg/m³ live | Kuching 20 µg/m³ live | BSB AQI 5–6 live | Pontianak AQI ~62 live | 🟡 city-level only, uneven coverage |
-| **Water quality (river WQI/IKA)** | DOE PDF only | DOE PDF only | ⚠️ no numeric dataset | KLHK IKA PDF (Kalsel 55.6, 2023) | 🔴 PDF-only / partly missing |
+| ~~**Water quality (river WQI/IKA)**~~ **DROPPED 2026-06-29** | DOE PDF only | DOE PDF only | classification only, no number | BPS IKA API (var 2532); KLHK PDF (Kalsel 55.6, 2023) | ⬛ superseded by Clean water access (SDG6 already 4/4) |
 | **Governance / transparency** | = Malaysia | = Malaysia | Brunei country value | = Indonesia | 🟡 country-level only — no sub-national score exists anywhere |
 
+> Water quality (2026-07-20): **dropped/superseded, no longer the headline gap.** No comparable cross-territory number exists (Malaysia DOE PDF-only, Brunei classification-only), and SDG6 is already fully covered by **Clean water access** (§B, 4/4). Kalimantan IKA *is* in fact reachable via the BPS national-domain API (var 2532) — so even the original "PDF-only" framing was too pessimistic. Removed from the tracked indicator set on 2026-06-29; reinstate only if a numeric Brunei WQI and a uniform method appear.
 > Air quality: WAQI/aqicn free token API `api.waqi.info/feed/<city>/?token=<TOKEN>` — only works for cities that have a station (major capitals do; smaller towns don't).
 > Governance: CPI 2024 — Malaysia 50, Indonesia 37, Brunei not scored in 2024 (use 2020=60 or 2025=63, labelled). WGI Control-of-Corruption percentile via `api.worldbank.org/v2/country/MYS;IDN;BRN/indicator/CC.PER.RNK`. Sabah/Sarawak inherit Malaysia; Kalimantan inherits Indonesia.
 
@@ -81,6 +98,6 @@ Each territory queried separately. **Kalimantan = sum/avg of 5 provinces.** Brun
 
 - 🟢 **8 indicator-areas are fully auto-pullable real data today** — forest cover, deforestation, fire, employment, education, healthcare, clean water, GDP. (≈ 80% of the dashboard.)
 - 🟡 **3 are usable with a label** — poverty (Brunei is a proxy, no official figure), air quality (city-level only), governance (country-level only, no sub-national score exists).
-- 🔴 **1 is a genuine gap** — water quality: PDF-only for Malaysia/Kalimantan, nonexistent for Brunei. Recommend reframing (use clean-water *access* as the SDG6 metric) or marking it "limited data."
+- ⬛ **Water quality is no longer counted as a gap (dropped 2026-06-29)** — superseded by Clean water access (SDG6 already 4/4). No comparable cross-territory number exists and none is needed; see §C.
 
-**Conclusion: the data foundation is sufficient to proceed.** Nothing critical is missing; every territory has real, mostly auto-pullable data for the core indicators. The known limits (Brunei poverty/forest are proxies, governance is country-level, water quality is thin) are inherent to the region — no amount of further searching changes them, so they should be *designed around* (via the `data_level` label), not waited on.
+**Conclusion: the data foundation is sufficient to proceed.** Nothing critical is missing; every territory has real, mostly auto-pullable data for the core indicators. The known limits (Brunei poverty/forest are proxies, governance is country-level) are inherent to the region — no amount of further searching changes them, so they should be *designed around* (via the `data_level` label), not waited on. Water quality, once flagged the headline gap, was resolved by superseding it with Clean water access rather than waiting on data that doesn't exist.

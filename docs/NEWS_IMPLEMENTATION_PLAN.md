@@ -1,7 +1,8 @@
 # News & Insights ("Borneo Pulse" / AR-3) — Implementation Plan
 
 **Project:** T002 Borneo Tracker · **Module:** AR-3 · **Date:** 2026-07-14
-**Status:** Build plan (supervisor-approved concept) · **Related:** `docs/NEWS_DIGEST_CONCEPT.md`, `docs/ADDITIONAL_REQUIREMENTS.md` (AR-3, FR-3.1–3.12)
+**Status:** BUILT on the Supabase path & merged to master · **Related:** `docs/NEWS_DIGEST_CONCEPT.md`, `docs/ADDITIONAL_REQUIREMENTS.md` (AR-3, FR-3.1–3.12)
+_Status updated: 2026-07-20_
 
 > This is the concrete build plan for the News & Insights page. The *why* lives in
 > `NEWS_DIGEST_CONCEPT.md`; the formal requirements/acceptance criteria in AR-3. This file answers:
@@ -15,18 +16,22 @@ outlets, (b) multi-source corroboration — how many independent outlets reporte
 
 ---
 
-## 0. Where we are today (reality check)
+## 0. Where we are today (updated 2026-07-20 — this snapshot now reflects the shipped build)
+
+> **This plan has been executed on the Supabase path and merged to master.** The table below is
+> the current state; the sections that follow are the design that produced it and are kept for
+> reference.
 
 | Layer | Current state |
 |---|---|
 | **Frontend** | ✅ The public `/news` page is **fully built** on `master`: `NewsPage`, `FeaturedNews`, `NewsCard`, `NewsDetailPage`, filters, skeleton/empty/error states, `/news/:articleId` route, sidebar entry. |
-| **Data** | ❌ **All fake.** `newsService.js` returns 10 hard-coded articles from `src/data/mockNews.js`. No real news is fetched. |
-| **Admin side** | ❌ **Not built.** No admin review queue exists on `master` (the old `ReportVerification.jsx` lives only on the `feature/figma-redesign` branch). |
-| **Backend** | ❌ **There is none.** The whole app is a static Vite+React SPA. Auth is mock (`authToken` is never actually set). |
-| **Data pipeline** | ✅ A real Python pipeline exists for the dashboard: `run_pipeline.py` → SQLite (`borneo_tracker.db`) → `public/data/*.json`, run daily by `.github/workflows/refresh-data.yml` (05:00 MYT). **We mirror this pattern for news.** |
+| **Data** | ✅ **Real, on Supabase.** The collect→digest pipeline (`fetch_news.py` + `digest_news.py`) inserts rows into the Supabase `news_items` table; the public `newsService` reads only `status='published'`. The old `mockNews` is now just the no-keys dev/test fallback. |
+| **Admin side** | ✅ **Built.** The `/admin/news` review queue ships on `master`: `src/pages/admin/news/NewsReview.jsx` (+ `DraftCard.jsx`) with `src/services/adminNewsService.js` (Approve / Edit→Publish / Reject against `news_items`), role-gated by the Supabase auth migration. |
+| **Backend** | ✅ **Supabase** is the shared backend (Postgres + auto REST API + Auth). Real role-based auth shipped (`role='admin'` from `profiles`); the old mock `authToken` is retired. |
+| **Data pipeline** | ✅ A real Python pipeline exists for the dashboard: `run_pipeline.py` → SQLite (`borneo_tracker.db`) → `public/data/*.json`, run daily by `.github/workflows/refresh-data.yml` (05:00 MYT). The news pipeline (`fetch_news.py` + `digest_news.py`) mirrors this pattern, writing to Supabase instead of committing JSON. |
 
-**So the news UI shell is done; everything behind it — collection, AI digest, storage, and the whole
-admin review/publish side — is what this plan builds.**
+**The news UI shell, the collection + AI digest pipeline, Supabase storage, and the admin
+review/publish side described in this plan are all now built and merged.**
 
 ---
 

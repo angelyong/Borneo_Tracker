@@ -1,8 +1,12 @@
 # Borneo Tracker (T002) — Data Layer Progress Report
 
+_Last updated: 2026-07-20_
+
 **Phase 3 — Data Collection & Pipeline**
 **Status:** Substantially complete · **Report date:** 2026-06-29
 **Prepared by:** Henry (data layer)
+
+> **Note (2026-07-20):** This report captures an **early phase** (late June 2026), focused on the data layer. Features added **afterward** are not covered in the body below and include: **News & Insights** (Borneo Pulse — RSS → rephrase → Supabase drafts → `/admin/news` → public `/news`), the **district (ADM2) drill-down** (`ingest_districts.py` → `public/data/districts.json`), and **Supabase-backed authentication** (login/register/profile + admin roles). Section 10 has been refreshed to the current Resilience Index and hexagon methodology.
 
 ---
 
@@ -132,9 +136,11 @@
 
 - **Frontend ↔ backend bridge (Phase 4)** — all mock data replaced: `export_json.py` → `public/data/indicators.json` → `src/data/useIndicators.js`; Overview / Regional Detail / ESG read real data with visible confidence tags. DB setup hardened: validation before publish, loud failures, model fallback now requires an explicit `--allow-model-fallback` flag.
 - **Real historical trends (Phase 5)** — new `ingest_history.py` pulls multi-year series (256 observations) into a new `indicator_observations` table (PK `territory+indicator+year`); `export_json.py` exports 16 per-territory series (each ≥3 real annual points); Regional Detail gained a working **Trend** tab. Headline: **annual tree-cover loss 2001–2024 for all four territories** (GFW `_change` tables — the `_summary` tables only hold cumulative totals), VIIRS fire alerts since 2012, plus Sabah/Sarawak state-level series (clean water, unemployment, GDP growth, poverty). Brunei/Kalimantan socioeconomic series pending — World Bank API was down 2026-07-05; the daily workflow back-fills automatically.
-- **Resilience Index** — `compute_resilience.py`: linear 0–100 vs documented bounds → hexagon-pillar means → index + weakest pillar + RAG. Current: Brunei 81.2 🟢 · Kalimantan 69.2 🟢 · Sarawak 58.6 🟡 · Sabah 56.9 🟡 (weakest pillar everywhere: Education). Only ratio/percent/years indicators are scored; unscored pillars are excluded and labelled, never imputed. *The original methodology file was removed from the repo — the bounds table in `compute_resilience.py` is a reconstruction awaiting review.*
+- **Resilience Index** — `compute_resilience.py`: linear 0–100 vs documented bounds → hexagon-pillar means → index + weakest pillar + RAG (RAG unified to **Green ≥ 70 / Amber ≥ 40**). Current (`resilience.json`, generated 2026-07-20): **Brunei 79.0 🟢** (weakest: Food) · **Sarawak 72.5 🟢** (weakest: Education) · **Kalimantan 68.5 🟡** (weakest: Education) · **Sabah 63.7 🟡** (weakest: Food). A strict geometric-mean variant (`indexStrict`, weakest-link mode) is also exported. Only ratio/percent/years indicators are scored; unscored pillars are excluded and labelled, never imputed. The original methodology file (`borneo_tracker_resilience_index_methodology.md`) **is present in the repo**; the bounds table in `compute_resilience.py` follows it.
+- **Hexagon reframe (2026-07-15/16)** — the hexagon and pillar scoring were reworked for credibility: clean-water access **re-tagged from Clean Water to the Shelter pillar**, a new **Internet-use Entertainment proxy**, **paddy-production-per-capita** used for Food scoring, and RAG thresholds **unified to 70/40** across the app. All four territories now populate **6/6 pillars**.
 - **SDG page** — `/sdg` is now a real page (the 6 client-required goals, region selector, confidence tags).
-- **Automated refresh** — `.github/workflows/refresh-data.yml` runs the 5-step pipeline daily at 05:00 MYT and commits changed data. data.gov.my calls are throttled to respect its official **4 requests/minute** limit.
+- **Automated refresh** — `.github/workflows/refresh-data.yml` runs the pipeline daily at 05:00 MYT and commits changed data. data.gov.my calls are throttled to respect its official **4 requests/minute** limit. *(The pipeline has since grown to **6 steps** — the 6th builds the district ADM2 drill-down `public/data/districts.json`.)*
+- **Indicator coverage (current)** — the frontend JSON (`public/data/indicators.json`) now carries **~35 distinct indicators across the 4 territories** (Sabah, Sarawak, Brunei, Kalimantan), up from the 32 recorded in the late-June DB snapshot above.
 
 ---
 

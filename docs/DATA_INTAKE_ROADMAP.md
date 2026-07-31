@@ -1,6 +1,7 @@
 # Data Intake Roadmap — De-manualising `manual_overrides.csv`
 
 **Status:** 🔵 **Bucket B started 2026-07-09 — UNESCO puller DONE (code, tested); rest deferred to the admin-site build.**
+_Status updated: 2026-07-20 — an admin site now **partially exists** (user management + news review, both on Supabase), but the data-intake automation in this roadmap (Bucket C review queue, the staleness monitor, and the FAOSTAT paddy puller) is **still not built**. The "wait until you build the admin site" trigger is now partly satisfied: the front+back admin surface and the Supabase backend that Bucket C's review queue needs both exist — so Bucket C can now be built on top of them rather than blocked on standing up an admin site._
 **Decided:** 2026-07-09 · **Owner:** Henry · **Related:** [`ADDITIONAL_REQUIREMENTS.md`](./ADDITIONAL_REQUIREMENTS.md) (AR-1)
 
 **Progress log**
