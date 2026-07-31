@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - aichatbot
-    paths:
-      - ".github/workflows/test-chatbot-gemini.yml"
   workflow_dispatch:
 
 jobs:
@@ -13,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      GEMINI_API_KEY: ${{ secrets.AICHATBOTGEMINI_API_KEY}}
+      GEMINI_API_KEY: ${{ secrets.AICHATBOTGEMINI_API_KEY }}
 
     steps:
       - name: Test Gemini API
@@ -39,7 +37,10 @@ jobs:
           payload = json.dumps({
               "contents": [{
                   "parts": [{
-                      "text": "Reply exactly: Borneo Tracker Gemini connection successful"
+                      "text": (
+                          "Reply with exactly: "
+                          "Borneo Tracker Gemini connection successful"
+                      )
                   }]
               }]
           }).encode("utf-8")
@@ -65,6 +66,12 @@ jobs:
               print(f"Request failed: {error}")
               sys.exit(1)
 
-          answer = data["candidates"][0]["content"]["parts"][0]["text"]
+          try:
+              answer = data["candidates"][0]["content"]["parts"][0]["text"]
+          except (KeyError, IndexError, TypeError):
+              print("Unexpected Gemini response")
+              print(json.dumps(data, indent=2))
+              sys.exit(1)
+
           print(answer.strip())
           PY
