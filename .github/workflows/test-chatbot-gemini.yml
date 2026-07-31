@@ -1,0 +1,70 @@
+name: Test Chatbot Gemini API
+
+on:
+  push:
+    branches:
+      - aichatbot
+    paths:
+      - ".github/workflows/test-chatbot-gemini.yml"
+  workflow_dispatch:
+
+jobs:
+  test-gemini:
+    runs-on: ubuntu-latest
+
+    env:
+      GEMINI_API_KEY: ${{ secrets.AICHATBOT_GEMINI_API_KEY}}
+
+    steps:
+      - name: Test Gemini API
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import sys
+          import urllib.error
+          import urllib.request
+
+          api_key = os.getenv("GEMINI_API_KEY")
+
+          if not api_key:
+              print("GEMINI_API_KEY is missing")
+              sys.exit(1)
+
+          url = (
+              "https://generativelanguage.googleapis.com/"
+              "v1beta/models/gemini-2.5-flash:generateContent"
+          )
+
+          payload = json.dumps({
+              "contents": [{
+                  "parts": [{
+                      "text": "Reply exactly: Borneo Tracker Gemini connection successful"
+                  }]
+              }]
+          }).encode("utf-8")
+
+          request = urllib.request.Request(
+              url,
+              data=payload,
+              method="POST",
+              headers={
+                  "Content-Type": "application/json",
+                  "x-goog-api-key": api_key,
+              },
+          )
+
+          try:
+              with urllib.request.urlopen(request, timeout=30) as response:
+                  data = json.loads(response.read().decode("utf-8"))
+          except urllib.error.HTTPError as error:
+              print(f"HTTP error: {error.code}")
+              print(error.read().decode("utf-8"))
+              sys.exit(1)
+          except Exception as error:
+              print(f"Request failed: {error}")
+              sys.exit(1)
+
+          answer = data["candidates"][0]["content"]["parts"][0]["text"]
+          print(answer.strip())
+          PY
