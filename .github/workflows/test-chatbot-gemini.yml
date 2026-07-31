@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      GEMINI_API_KEY: ${{ secrets.AICHATBOT_GEMINI_API_KEY}}
+      GEMINI_API_KEY: ${{ secrets.AICHATBOTGEMINI_API_KEY}}
 
     steps:
       - name: Test Gemini API
