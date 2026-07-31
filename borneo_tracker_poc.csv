@@ -105,14 +105,13 @@ Kalimantan Barat,"Fire alerts (VIIRS, annual)",2025,21611,count,Global Forest Wa
 Kalimantan Selatan,"Fire alerts (VIIRS, annual)",2025,1987,count,Global Forest Watch (VIIRS),satellite
 Kalimantan Tengah,"Fire alerts (VIIRS, annual)",2025,3895,count,Global Forest Watch (VIIRS),satellite
 Kalimantan Utara,"Fire alerts (VIIRS, annual)",2025,159,count,Global Forest Watch (VIIRS),satellite
-Borneo (all),Active fire hotspots (1d),2026,466,count,"NASA FIRMS (VIIRS, regional CSV)",satellite
-Sabah,"Air quality (AQI, live)",2026,28,AQI,WAQI / aqicn,city
-Sarawak,"Air quality (AQI, live)",2026,52,AQI,WAQI / aqicn,city
-Brunei,"Air quality (AQI, live)",2026,7,AQI,WAQI / aqicn,city
+Sabah,"Air quality (AQI, live)",2026,36,AQI,WAQI / aqicn,city
+Sarawak,"Air quality (AQI, live)",2026,54,AQI,WAQI / aqicn,city
+Brunei,"Air quality (AQI, live)",2026,4,AQI,WAQI / aqicn,city
 Kalimantan Barat,"Air quality (AQI, live)",2023,62,AQI,WAQI / aqicn,city
-Kalimantan Timur,"Air quality (AQI, live)",2026,41,AQI,WAQI / aqicn,city
-Kalimantan Tengah,"Air quality (AQI, live)",2026,51,AQI,WAQI / aqicn,city
-Kalimantan,"Air quality (AQI, live)",2026,51,AQI,WAQI / aqicn (mean of 3 Kalimantan cities),city
+Kalimantan Timur,"Air quality (AQI, live)",2026,33,AQI,WAQI / aqicn,city
+Kalimantan Tengah,"Air quality (AQI, live)",2026,54,AQI,WAQI / aqicn,city
+Kalimantan,"Air quality (AQI, live)",2026,50,AQI,WAQI / aqicn (mean of 3 Kalimantan cities),city
 Sabah,UNESCO World Heritage Sites,2026,1,count,UNESCO World Heritage List (whc.unesco.org),state
 Sarawak,UNESCO World Heritage Sites,2026,2,count,UNESCO World Heritage List (whc.unesco.org),state
 Brunei,UNESCO World Heritage Sites,2026,0,count,UNESCO World Heritage List (whc.unesco.org),national
