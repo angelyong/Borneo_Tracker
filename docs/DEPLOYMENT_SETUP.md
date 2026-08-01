@@ -43,11 +43,18 @@ Two additions worth asking for at the same time:
    Send them `borneo_deploy.pub` (the `.pub` file only — never the other one). Keep
    `borneo_deploy` for Step 2. A key is preferred because it can be revoked on its own and
    cannot be used to log into the DirectAdmin control panel.
-2. **A TLS certificate that covers `borneotracker.rentsmartprop.com.my`.** As of 2026-07-28 the
-   certificate on that server covers `rentsmartprop.com.my`, `apexseo.*`, `hybrid.*`,
-   `invoice.*`, `mail.*`, `packaging.*` and `webmail.*` — but **not** the `borneotracker`
-   subdomain, so every visitor gets a browser security warning. In DirectAdmin this is usually
-   *SSL Certificates → Free & automatic certificate from Let's Encrypt* on that subdomain.
+2. ~~**A TLS certificate that covers `borneotracker.rentsmartprop.com.my`.**~~ **DONE — do not
+   ask for this.** Resolved on 2026-08-01 via DirectAdmin's Let's Encrypt integration. The
+   server now presents a **wildcard** `*.rentsmartprop.com.my` (+ the apex), issued 2026-07-31
+   and **valid to 2026-10-29**; strict TLS validation passes and the browser warning is gone.
+   The same certificate also covers `mail.rentsmartprop.com.my`, which is why Supabase's SMTP
+   client connects cleanly (see `SUPABASE_AUTH_MIGRATION_PLAN.md`, Phase 7).
+
+   ⚠️ **Renewal is now the risk.** Wildcards renew over DNS-01, which fails more often than the
+   HTTP-01 method used for plain hostnames, and nothing here watches it. Re-check the expiry in
+   **mid-October 2026** — if it lapses the whole site silently reverts to a full-page cert
+   warning. Once `SMOKE_ALLOW_INSECURE_TLS` is flipped to `false` (§5) the deploy smoke test
+   catches this for you, which is the durable fix; until then it is a diary entry.
 
 Then get the server's SSH host key so the connection can be pinned:
 
@@ -178,6 +185,11 @@ hashed asset files are all still on the server — see Step 6.
 ---
 
 ## 5. Tightening TLS
+
+> **Status 2026-08-01: the certificate now validates** (wildcard `*.rentsmartprop.com.my`, see
+> §1.2). So the "flip it" step below is no longer hypothetical — set
+> `SMOKE_ALLOW_INSECURE_TLS` to `false` on the first real deploy. That is also what turns the
+> October renewal from something someone has to remember into something the pipeline catches.
 
 Every run does a *strict* TLS probe regardless of the variable, purely to report status.
 
