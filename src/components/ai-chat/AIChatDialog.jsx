@@ -76,8 +76,8 @@ const AIChatDialog = ({ open, onClose }) => {
           mode: response.mode,
         }),
       ]);
-    } catch {
-      setError('The AI assistant could not respond right now. Please try again.');
+    } catch (chatError) {
+      setError(chatError?.message || 'The AI assistant could not respond right now. Please try again.');
     } finally {
       setLoading(false);
     }

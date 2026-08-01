@@ -34,6 +34,20 @@ function changeTextarea(element, value) {
   });
 }
 
+async function submitMessage(text) {
+  const input = document.querySelector('#ai-chat-input');
+  changeTextarea(input, text);
+  await act(async () => {
+    document.querySelector('[aria-label="Send message"]').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+  });
+}
+
+const errorResponse = (status, error) => ({
+  ok: false,
+  status,
+  json: () => Promise.resolve(error ? { error } : {}),
+});
+
 const ControlledChat = () => {
   const [open, setOpen] = React.useState(false);
   return (
@@ -51,6 +65,7 @@ describe('AI chat dialog', () => {
 
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
     act(() => {
       root?.unmount();
     });
@@ -104,5 +119,63 @@ describe('AI chat dialog', () => {
       />
     );
     expect(document.querySelector('.ai-chat-source')?.textContent).toContain('Forest Cover');
+  });
+
+  it('shows a service unavailable error for 404 responses', async () => {
+    fetch.mockResolvedValueOnce(errorResponse(404));
+    render(<MemoryRouter><ControlledChat /></MemoryRouter>);
+    click(document.querySelector('[aria-label="AI Assistant"]'));
+
+    await submitMessage('What is Borneo Tracker?');
+
+    expect(document.querySelector('[role="alert"]')?.textContent).toContain('not available yet');
+    expect(document.body.textContent).not.toContain('Placeholder content');
+  });
+
+  it('shows a quota error for 429 responses', async () => {
+    fetch.mockResolvedValueOnce(errorResponse(429));
+    render(<MemoryRouter><ControlledChat /></MemoryRouter>);
+    click(document.querySelector('[aria-label="AI Assistant"]'));
+
+    await submitMessage('What is the latest forest cover value?');
+
+    expect(document.querySelector('[role="alert"]')?.textContent).toContain('quota has been reached');
+    expect(document.body.textContent).not.toContain('Dynamic data connection is not configured yet');
+  });
+
+  it('shows a safe server error for 500 responses', async () => {
+    fetch.mockResolvedValueOnce(errorResponse(500, 'stack trace should not be shown'));
+    render(<MemoryRouter><ControlledChat /></MemoryRouter>);
+    click(document.querySelector('[aria-label="AI Assistant"]'));
+
+    await submitMessage('Explain SDG progress');
+
+    expect(document.querySelector('[role="alert"]')?.textContent).toContain('server had a problem');
+    expect(document.body.textContent).not.toContain('stack trace');
+    expect(document.body.textContent).not.toContain('Placeholder content');
+  });
+
+  it('does not render mock answers for production-style network failures', async () => {
+    vi.stubEnv('VITE_AI_CHAT_CLIENT_MOCK_FALLBACK', 'false');
+    fetch.mockRejectedValueOnce(new Error('Network failed'));
+    render(<MemoryRouter><ControlledChat /></MemoryRouter>);
+    click(document.querySelector('[aria-label="AI Assistant"]'));
+
+    await submitMessage('What is Borneo Tracker?');
+
+    expect(document.querySelector('[role="alert"]')?.textContent).toContain('connection failed');
+    expect(document.body.textContent).not.toContain('Placeholder content');
+  });
+
+  it('uses explicit development mock mode when enabled', async () => {
+    vi.stubEnv('VITE_AI_CHAT_CLIENT_MOCK_FALLBACK', 'true');
+    fetch.mockRejectedValueOnce(new Error('Local dev backend missing'));
+    render(<MemoryRouter><ControlledChat /></MemoryRouter>);
+    click(document.querySelector('[aria-label="AI Assistant"]'));
+
+    await submitMessage('What is Borneo Tracker?');
+
+    expect(document.body.textContent).toContain('Placeholder content');
+    expect(document.querySelector('[role="alert"]')).toBeFalsy();
   });
 });

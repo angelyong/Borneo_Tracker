@@ -68,11 +68,16 @@ Manual source files in `knowledge/*.json` are not overwritten.
 
 Records need stable IDs, title, category, content, source file, source type, page URL and status. Placeholder content is never marked verified. Empty content, secret-like content and missing source traceability are rejected. Numerical claims are warned for review rather than invented or inferred.
 
-## Chatbot Search
+## Chatbot Consumption
 
-`StaticKnowledgeProvider` now reads `knowledge/generated/knowledge-index.json` when available. It falls back to manual `knowledge/*.json` files when the generated index is missing or invalid.
+`knowledge/generated/knowledge-index.json` is the static knowledge artifact for
+the future chatbot runtime. The previous `src/server/ai/StaticKnowledgeProvider`
+prototype was removed during Stage 0 cleanup, so no current code should import it
+or treat it as the production search interface.
 
-Search uses normalized title, keywords, category, content, regions, SDGs, source metadata and exact phrase boosts. The provider interface stays unchanged for the chatbot service.
+Stage 1 should load the generated index from the Supabase Edge Function or its
+chosen server-side adapter, then apply the retrieval and answer-contract rules in
+`docs/AI_CHATBOT_CONCEPT_AND_PLAN.md`.
 
 ## Current Limitations
 
@@ -83,4 +88,6 @@ Search uses normalized title, keywords, category, content, regions, SDGs, source
 
 ## Future Upgrade Path
 
-A vector-store provider can be added behind the same `StaticKnowledgeProvider.search()` interface by indexing `knowledge/generated/knowledge-index.json`. The chatbot controller and UI should not need changes.
+Vector retrieval is not part of Stage 0A. Per the authoritative chatbot plan,
+add vector search only after the documented corpus-size or golden-set recall
+thresholds are met.

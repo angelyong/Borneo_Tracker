@@ -11,6 +11,19 @@ export function createConversationId() {
   return `chat-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
+export class AIChatServiceError extends Error {
+  constructor(message, { status = 0, code = 'AI_CHAT_ERROR' } = {}) {
+    super(message);
+    this.name = 'AIChatServiceError';
+    this.status = status;
+    this.code = code;
+  }
+}
+
+function isDevelopmentMockEnabled() {
+  return import.meta.env.DEV && import.meta.env.VITE_AI_CHAT_CLIENT_MOCK_FALLBACK === 'true';
+}
+
 function compactHistory(messages) {
   return messages
     .filter((message) => ['user', 'assistant'].includes(message.role))
@@ -50,6 +63,39 @@ function mockClientResponse(message, conversationId) {
   };
 }
 
+function safeErrorForStatus(status, fallback = '') {
+  if (status === 404) {
+    return new AIChatServiceError(
+      'The AI assistant service is not available yet.',
+      { status, code: 'AI_CHAT_NOT_AVAILABLE' }
+    );
+  }
+  if (status === 429) {
+    return new AIChatServiceError(
+      'The AI assistant quota has been reached. Please wait and try again.',
+      { status, code: 'AI_CHAT_RATE_LIMITED' }
+    );
+  }
+  if (status >= 500) {
+    return new AIChatServiceError(
+      'The AI assistant server had a problem. Please try again later.',
+      { status, code: 'AI_CHAT_SERVER_ERROR' }
+    );
+  }
+  return new AIChatServiceError(
+    fallback || 'The AI assistant could not respond right now.',
+    { status, code: 'AI_CHAT_REQUEST_FAILED' }
+  );
+}
+
+function normalizeFailure(error) {
+  if (error instanceof AIChatServiceError) return error;
+  return new AIChatServiceError(
+    'The AI assistant connection failed. Please try again later.',
+    { code: 'AI_CHAT_CONNECTION_FAILED' }
+  );
+}
+
 export async function sendAIChatMessage({
   message,
   conversationId,
@@ -75,13 +121,25 @@ export async function sendAIChatMessage({
     });
     if (!response.ok) {
       const body = await response.json().catch(() => ({}));
-      throw new Error(body.error || 'The AI assistant could not respond right now.');
+      throw safeErrorForStatus(response.status, body.error);
     }
-    return await response.json();
+    const body = await response.json().catch(() => {
+      throw new AIChatServiceError(
+        'The AI assistant returned an unreadable response. Please try again later.',
+        { code: 'AI_CHAT_MALFORMED_RESPONSE' }
+      );
+    });
+    if (!body || typeof body.answer !== 'string') {
+      throw new AIChatServiceError(
+        'The AI assistant returned an invalid response. Please try again later.',
+        { code: 'AI_CHAT_MALFORMED_RESPONSE' }
+      );
+    }
+    return body;
   } catch (error) {
-    if (import.meta.env.VITE_AI_CHAT_CLIENT_MOCK_FALLBACK === 'false') {
-      throw error;
+    if (isDevelopmentMockEnabled()) {
+      return mockClientResponse(message, conversationId || createConversationId());
     }
-    return mockClientResponse(message, conversationId || createConversationId());
+    throw normalizeFailure(error);
   }
 }

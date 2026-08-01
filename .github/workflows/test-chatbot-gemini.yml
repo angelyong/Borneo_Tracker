@@ -1,9 +1,6 @@
 name: Test Chatbot Gemini API
 
 on:
-  push:
-    branches:
-      - aichatbot
   workflow_dispatch:
 
 jobs:

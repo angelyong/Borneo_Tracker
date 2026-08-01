@@ -10,7 +10,6 @@ import { KnowledgeDeduplicator } from './KnowledgeDeduplicator.js';
 import { KnowledgeWriter } from './KnowledgeWriter.js';
 import { KnowledgeBuilder } from './KnowledgeBuilder.js';
 import { ContentSourceScanner, isSafeSourcePath } from './ContentSourceScanner.js';
-import { StaticKnowledgeProvider } from '../../src/server/ai/StaticKnowledgeProvider.js';
 
 const source = {
   id: 'test-source',
@@ -116,42 +115,6 @@ describe('knowledge build output', () => {
     const result = new KnowledgeBuilder({ scanner }).run({ validateOnly: true });
     expect(result.ok).toBe(false);
     expect(result.report.missingSources).toHaveLength(1);
-  });
-
-  it('loads generated index in StaticKnowledgeProvider and preserves source metadata', () => {
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'knowledge-provider-'));
-    const generated = path.join(tmp, 'knowledge-index.json');
-    fs.writeFileSync(generated, JSON.stringify({
-      records: [{
-        id: 'forest-cover',
-        title: 'Forest Cover',
-        category: 'esg-indicators',
-        content: 'Forest cover means remaining forest area.',
-        keywords: ['forest', 'cover'],
-        regions: [],
-        relatedSdgs: [],
-        sourceFile: 'knowledge/test.json',
-        sourceType: 'json',
-        sourceName: 'Borneo Tracker',
-        pageUrl: '/esg',
-        status: 'verified',
-        searchableText: 'forest cover remaining forest area',
-      }],
-    }));
-    const provider = new StaticKnowledgeProvider({ generatedIndex: generated, knowledgeDir: tmp });
-    const result = provider.search('forest cover', 1);
-    expect(result.records[0].title).toBe('Forest Cover');
-    expect(result.records[0].sourceFile).toBe('knowledge/test.json');
-  });
-
-  it('falls back safely when generated index is unavailable', () => {
-    const provider = new StaticKnowledgeProvider({
-      generatedIndex: path.join(os.tmpdir(), 'does-not-exist.json'),
-      knowledgeDir: path.resolve('knowledge'),
-    });
-    const result = provider.search('Borneo Tracker', 1);
-    expect(result.status).toBe('ok');
-    expect(result.records.length).toBeGreaterThan(0);
   });
 
   it('loads repository source configuration without enabling missing files', () => {
