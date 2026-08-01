@@ -47,19 +47,35 @@ export async function getAllUsers() {
   return MOCK_USERS.map(mapRow);
 }
 
-/** Suspend or reactivate one account. */
+/**
+ * Suspend or reactivate one account.
+ *
+ * Goes through the `admin_set_user_status` RPC rather than a direct table
+ * update, and that is not a style choice. `authenticated` has no UPDATE
+ * privilege on profiles.status — deliberately, because profiles_update_own
+ * covers a user's own row, so granting the column would let anyone lift their
+ * own suspension. The RPC is SECURITY DEFINER and checks for admin internally.
+ *
+ * It also has to THROW rather than return null on failure. The previous version
+ * used .update().maybeSingle(), and RLS silently matching zero rows is not an
+ * error to Postgres — so a blocked write returned `null` with no error set and
+ * the caller could not tell it apart from success. Every failure path here ends
+ * in an exception so the UI has something to react to.
+ */
 export async function setUserStatus(id, status) {
   if (supabase) {
-    const { data, error } = await supabase
-      .from(TABLE)
-      .update({ status })
-      .eq('id', id)
-      .select('id, first_name, last_name, role, status, created_at')
-      .maybeSingle();
+    const { data, error } = await supabase.rpc('admin_set_user_status', {
+      target_id: id,
+      new_status: status,
+    });
     orThrow(error);
-    return data ? mapRow(data) : null;
+    // A composite return arrives as an object; tolerate an array just in case.
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row) throw new Error('The account status was not updated.');
+    return mapRow(row);
   }
   const target = MOCK_USERS.find((u) => u.id === id);
-  if (target) target.status = status;
-  return target ? mapRow(target) : null;
+  if (!target) throw new Error(`No account with id ${id}.`);
+  target.status = status;
+  return mapRow(target);
 }

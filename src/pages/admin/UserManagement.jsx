@@ -70,11 +70,17 @@ const UserManagement = () => {
     window.setTimeout(() => setNotice(''), 3000);
   };
 
+  // Render what the database actually returned, never what we asked for. The
+  // first version applied `nextStatus` to local state and announced success
+  // before checking anything, so a write the database had refused looked exactly
+  // like one it had accepted — until you reloaded the page.
   const handleSetStatus = async (id, nextStatus) => {
     try {
-      await setUserStatus(id, nextStatus);
-      setUsers((current) => current.map((u) => (u.id === id ? { ...u, status: nextStatus } : u)));
-      showNotice(nextStatus === 'suspended' ? t('admin.accountSuspended') : t('admin.accountReactivated'));
+      const updated = await setUserStatus(id, nextStatus);
+      setUsers((current) => current.map((u) => (u.id === id ? updated : u)));
+      showNotice(
+        updated.status === 'suspended' ? t('admin.accountSuspended') : t('admin.accountReactivated'),
+      );
     } catch {
       showNotice(t('admin.couldNotUpdateAccount'));
     }

@@ -112,6 +112,12 @@ export const AuthProvider = ({ children }) => {
   const value = useMemo(() => {
     const user = session?.user ?? null;
     const role = MOCK ? 'admin' : profile?.role ?? 'user';
+    // Mirrors current_user_role() in supabase/auth_schema.sql, which only returns
+    // a role while status = 'active'. Keeping the two in step means the UI offers
+    // exactly what the database will honour — a suspended admin is not shown
+    // admin links that would then fail. The database is still the enforcement
+    // point; this only stops the interface from promising otherwise.
+    const isSuspended = MOCK ? false : profile?.status === 'suspended';
     return {
       loading,
       isAuthEnabled: !MOCK,
@@ -119,7 +125,8 @@ export const AuthProvider = ({ children }) => {
       user,
       profile,
       role,
-      isAdmin: role === 'admin',
+      isSuspended,
+      isAdmin: role === 'admin' && !isSuspended,
       isAuthenticated: MOCK ? true : Boolean(session),
       signIn,
       signUp,

@@ -49,13 +49,23 @@ create table if not exists public.profiles (
 -- Fails closed for anonymous callers: auth.uid() is NULL, so no row matches and
 -- the function returns NULL. `NULL = 'admin'` evaluates to NULL, not true, so
 -- every policy that consults it denies access.
+--
+-- CHANGED 2026-08-02 — the live version was
+--     select role from public.profiles where id = auth.uid()
+-- with no status condition, which meant suspending an admin took nothing away:
+-- they kept every privilege this function grants. Requiring `status = 'active'`
+-- makes suspension a real, database-enforced revocation rather than a label in
+-- the admin table. Returning NULL for a suspended user is safe — nothing
+-- compares the result against 'user', only against 'admin'.
 create or replace function public.current_user_role()
   returns text
   language sql
   stable
   security definer
   set search_path to 'public'
-as $function$ select role from public.profiles where id = auth.uid() $function$;
+as $function$
+  select role from public.profiles where id = auth.uid() and status = 'active'
+$function$;
 
 
 -- Signup trigger ---------------------------------------------------------------
@@ -142,53 +152,70 @@ revoke update (role, status) on public.profiles from anon, authenticated;
 -- docs/SUPABASE_AUTH_MIGRATION_PLAN.md.
 
 
--- KNOWN GAP — /admin/users Suspend does not work (unresolved, 2026-07-28) ------
--- Deliberately NOT fixed here, because the fix is a design decision rather than
--- a transcription. Recorded so the next person does not have to rediscover it.
+-- Admin action: suspend / reactivate an account --------------------------------
+-- ADDED 2026-08-02. Fixes a bug where /admin/users' Suspend button appeared to
+-- work and changed nothing: the only UPDATE policy on profiles is
+-- profiles_update_own (auth.uid() = id), so an admin editing somebody else's row
+-- matched zero rows — and Postgres does not treat a 0-row UPDATE as an error, so
+-- PostgREST returned success with no data and the UI reported success.
 --
--- Symptom: an admin clicks Suspend, the row flips to Suspended and a success
--- toast appears, and the database never changes. Reload and it is Active again.
+-- Why an RPC rather than "add an admin UPDATE policy":
+--   A policy alone would not have been enough. An admin's request runs as
+--   `authenticated`, which the revoke above denies UPDATE on `status`. Granting
+--   that column back would also hand it to every ordinary user, because
+--   profiles_update_own already covers their own row — so anyone suspended could
+--   simply clear their own suspension. SECURITY DEFINER keeps the column locked
+--   for everyone and puts the single legitimate write behind an explicit check.
 --
--- Two independent causes, both must be addressed:
---   1. There is no admin UPDATE policy on profiles. The only UPDATE policy is
---      profiles_update_own (auth.uid() = id), so an admin editing someone
---      else's row matches zero rows. Postgres does not treat a 0-row UPDATE as
---      an error, so PostgREST returns success with no data.
---   2. Even with such a policy, an admin's request runs as `authenticated`,
---      which the revoke above denies UPDATE on `status`. Simply granting it
---      back would also let any user clear their own suspension, since
---      profiles_update_own covers their row.
--- The frontend compounds it: handleSetStatus in
--- src/pages/admin/UserManagement.jsx ignores the return value of
--- setUserStatus, so it reports success unconditionally.
---
--- Recommended fix — a SECURITY DEFINER RPC, which needs no column grant at all:
---
---   create or replace function public.admin_set_user_status(
---     target_id uuid, new_status text)
---     returns public.profiles
---     language plpgsql security definer set search_path to 'public'
---   as $$
---   declare updated public.profiles;
---   begin
---     if current_user_role() <> 'admin' then
---       raise exception 'not authorised';
---     end if;
---     if target_id = auth.uid() then
---       raise exception 'cannot change your own status';
---     end if;
---     update public.profiles set status = new_status
---       where id = target_id returning * into updated;
---     return updated;
---   end $$;
---   revoke execute on function public.admin_set_user_status(uuid, text) from anon;
---
--- adminUserService.setUserStatus would then call supabase.rpc(...) instead of
--- .from('profiles').update(...), and UserManagement.handleSetStatus must check
--- the result rather than assume it worked.
---
--- Note separately: profiles.status is not enforced anywhere in the frontend —
--- the route guards in src/auth/ProtectedRoute.jsx read `role` only. Making
--- Suspend write to the database is necessary but not sufficient to lock a user
--- out; that needs either a status predicate in the policies or a write to
--- auth.users.banned_until.
+-- `is distinct from` rather than `<>`: current_user_role() returns NULL for an
+-- anonymous or suspended caller, and `NULL <> 'admin'` is NULL, not true — a
+-- plain `<>` would skip the raise and let the update through.
+create or replace function public.admin_set_user_status(target_id uuid, new_status text)
+  returns public.profiles
+  language plpgsql
+  security definer
+  set search_path to 'public'
+as $function$
+declare
+  updated public.profiles;
+begin
+  if current_user_role() is distinct from 'admin' then
+    raise exception 'not authorised' using errcode = '42501';
+  end if;
+
+  -- Stops the obvious footgun of an admin suspending themselves and locking the
+  -- team out of the admin pages. Recovery would need the Supabase Table Editor.
+  if target_id = auth.uid() then
+    raise exception 'you cannot change your own account status' using errcode = '22023';
+  end if;
+
+  if new_status not in ('active', 'suspended') then
+    raise exception 'status must be active or suspended, got %', new_status
+      using errcode = '22023';
+  end if;
+
+  update public.profiles
+     set status = new_status
+   where id = target_id
+  returning * into updated;
+
+  if not found then
+    raise exception 'no account with id %', target_id using errcode = 'P0002';
+  end if;
+
+  return updated;
+end
+$function$;
+
+-- Functions are executable by PUBLIC by default; narrow that to signed-in users.
+-- The admin check inside the function is the real gate — this is defence in depth.
+revoke execute on function public.admin_set_user_status(uuid, text) from public;
+grant  execute on function public.admin_set_user_status(uuid, text) to authenticated;
+
+-- Remaining known limit: a suspended ORDINARY user can still sign in and browse.
+-- Their privileges are the same as an anonymous visitor's plus read/write of
+-- their own profile name, so the practical impact is small; the case that
+-- mattered — a suspended admin keeping admin powers — is closed above by
+-- current_user_role(). Fully blocking sign-in would mean writing
+-- auth.users.banned_until, which is a service_role operation and would need the
+-- news pipeline's key in the browser. Deliberately not done.
