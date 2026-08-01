@@ -16,26 +16,13 @@ KALIMANTAN_PROVINCES = [
 
 TODAY = date.today().isoformat()
 
-# Latest official population, for per-capita normalisation (Phase 1, C3).
-# Sources tracked in docs/ABCDE_HEXAGON_REFRAME_PLAN.md.
+# Fallback population used only when the ingestion CSV has no machine-readable
+# population observation for the territory/year. Sabah, Sarawak and Brunei now
+# arrive from DOSM/World Bank in ingest_poc.py. Kalimantan remains a documented
+# BPS fixed fallback until its exact WebAPI table/variable mapping is verified.
 POPULATION = {
-    "Sabah": 3_751_000,        # DOSM Current Population Estimates 2024 (~11.0% of 34.1M)
-    "Sarawak": 2_907_500,      # DOSM 2024 estimate
-    "Brunei": 455_500,         # DEPS 2024
-    "Kalimantan": 17_259_155,  # BPS 2024 (mid-2023, 5 provinces combined)
+    "Kalimantan": 17_951_300,  # BPS 2025, 5 provinces combined (fallback only)
 }
-
-# The reference year of the POPULATION figures above. Carried into the per-capita
-# provenance so the (often older) paddy PRODUCTION year and this POPULATION year are
-# BOTH visible instead of silently mixed. Figures are ~2024 (Kalimantan is a mid-2023
-# BPS projection reported for 2024). We deliberately keep the CURRENT population as the
-# denominator ("per current resident") rather than chase historical per-year figures:
-# DOSM rebased state population after the 2020 census, so a raw 2022 figure is a
-# different series and would inject a bigger artefact than the ~1-2 kg/capita it fixes.
-# The real lag is stale PRODUCTION (Sabah/Sarawak paddy is 2022) — tracked in
-# docs/DATA_INTAKE_ROADMAP.md. North-star (not built): population as an ingested ANNUAL
-# series so per-capita auto year-matches and this snapshot constant disappears.
-POPULATION_YEAR = "2024"
 
 # Internet use — the Entertainment-pillar proxy (Phase 1, C2=B). % of individuals
 # using the internet. Multi-agency sources with slightly different definitions, so
@@ -43,7 +30,6 @@ POPULATION_YEAR = "2024"
 INTERNET_USE = {
     "Sabah": (98.0, "DOSM ICT Use & Access Survey 2024 (Malaysia national 98.0%, applied to state)", "national"),
     "Sarawak": (98.0, "DOSM ICT Use & Access Survey 2024 (Malaysia national 98.0%, applied to state)", "national"),
-    "Brunei": (99.0, "ITU / World Bank — individuals using the Internet (% of population), 2023", "national"),
     "Kalimantan": (76.1, "BPS — Kalimantan region internet access, 2024", "national"),
 }
 
@@ -59,9 +45,6 @@ SOURCED_ROWS = [
      "Global Data Lab — Subnational HDI, mean years schooling, 2023", "modeled"),
     ("Sarawak", "Mean years schooling (RLS)", 8.7, "years", "2023",
      "Global Data Lab — Subnational HDI, mean years schooling, 2023", "modeled"),
-    # Sabah electricity access as a % (replaces the CSV household COUNT of the same name).
-    ("Sabah", "Electricity access", 87.6, "%", "2022",
-     "data.gov.my / DOSM — Access to Basic Amenities (% households with electricity, all districts)", "state"),
 ]
 
 SUM_INDICATORS = {
@@ -102,7 +85,12 @@ CONCEPT_PRIORITY = {
     "food": ["Crop production (paddy)", "Agricultural land"],
     # 2026-07-15 (Phase 1): prefer the %-based electrification ratio over the absolute
     # "Electricity access" household COUNT, so the scoreable indicator wins canonical.
-    "energy": ["Electrification ratio", "Electricity access", "Renewable electricity (% output)"],
+    "energy": [
+        "Electricity access",
+        "Electrification ratio",
+        "Domestic electrification ratio",
+        "Renewable electricity (% output)",
+    ],
     # 2026-07-15 (Phase 1): prefer the scoreable sanitation % over the household COUNT.
     "shelter": ["Basic sanitation access", "Households"],
     "entertainment": ["Tourist arrivals", "Tourist trips (domestic)"],
@@ -136,6 +124,10 @@ def dashboard_concept(indicator):
         return "air_quality"
     if indicator == "Fire alerts (VIIRS, annual)":
         return "fire_hotspots"
+    if indicator == "Active fire hotspots (24h)":
+        # Keep the live 24-hour FIRMS snapshot separate from GFW's annual alert
+        # series. They have different time windows and must never be averaged.
+        return "active_fire_hotspots_24h"
     if indicator == "National parks (count)":
         return "protected_areas"
     if indicator == "Clean water access":
@@ -164,10 +156,13 @@ def dashboard_concept(indicator):
         return "food_percapita"
     if indicator == "Internet use":
         return "internet_use"
+    if indicator == "Population":
+        return "population"
     if indicator in (
         "Electricity access",
         "Electricity access (households)",
         "Electrification ratio",
+        "Domestic electrification ratio",
         "Renewable electricity (% output)",
     ):
         return "energy"
@@ -182,7 +177,10 @@ def dashboard_concept(indicator):
 
 def esg_pillar(indicator):
     concept = dashboard_concept(indicator)
-    if concept in {"forest_cover", "deforestation", "air_quality", "fire_hotspots", "protected_areas"}:
+    if concept in {
+        "forest_cover", "deforestation", "air_quality", "fire_hotspots",
+        "active_fire_hotspots_24h", "protected_areas",
+    }:
         return "E"
     if indicator == "Renewable electricity (% output)":
         return "E"
@@ -198,6 +196,7 @@ def sdg_goal(indicator):
         "deforestation": "SDG13",
         "air_quality": "SDG13",
         "fire_hotspots": "SDG13",
+        "active_fire_hotspots_24h": "SDG13",
         "protected_areas": "SDG15",
         "clean_water_access": "SDG6",
         "poverty": "SDG1",
@@ -319,6 +318,13 @@ def build_processed_row(
     last_updated=None,
 ):
     indicator = raw_row["indicator"]
+    resolved_source = source if source is not None else raw_row["source"]
+    resolved_last_updated = last_updated or raw_row.get("last_updated")
+    if not resolved_last_updated:
+        # A stale row must never be stamped with today or its observation year.
+        # Ingestion migrates legacy rows from the previous artifact's generatedAt;
+        # leaving an untraceable stale date empty makes validation fail honestly.
+        resolved_last_updated = "" if "STALE" in resolved_source else TODAY
     row = {
         "territory": territory or raw_row["territory"],
         "source_territory": source_territory or raw_row["territory"],
@@ -327,12 +333,12 @@ def build_processed_row(
         "year": year if year is not None else raw_row["year"],
         "value": parse_value(value if value is not None else raw_row["value"]),
         "unit": unit if unit is not None else raw_row["unit"],
-        "source": source if source is not None else raw_row["source"],
+        "source": resolved_source,
         "data_level": data_level if data_level is not None else raw_row["data_level"],
         "esg_pillar": esg_pillar(indicator),
         "sdg_goal": sdg_goal(indicator),
         "hexagon_pillar": hexagon_pillar(indicator),
-        "last_updated": last_updated or TODAY,
+        "last_updated": resolved_last_updated,
         "is_derived": 0,
         "derived_from": "",
         "source_count": 1,
@@ -406,6 +412,7 @@ def build_kalimantan_aggregates(rows):
             value=str(aggregate_value),
             year=selected_year_label,
             unit=selected_rows[0]["unit"],
+            last_updated=selected_rows[0].get("last_updated"),
         )
         base["is_derived"] = 1
         base["derived_from"] = ", ".join(sorted(row["territory"] for row in selected_rows))
@@ -424,12 +431,17 @@ def assign_canonical(rows):
         winner["canonical"] = 1
 
 
-def build_internet_rows():
+def build_internet_rows(existing_rows):
     """Entertainment-pillar proxy (Phase 1, C2=B): % individuals using the internet.
     A distinct concept ('internet_use') so it forms its own canonical group and is
     scored, instead of competing with the tourism/heritage rows."""
     rows = []
+    existing_territories = {
+        row["territory"] for row in existing_rows if row["indicator"] == "Internet use"
+    }
     for territory, (value, source, data_level) in INTERNET_USE.items():
+        if territory in existing_territories:
+            continue
         rows.append(
             build_processed_row(
                 {
@@ -476,9 +488,6 @@ def build_percapita_food_rows(rows):
     coverage. Must run AFTER the Kalimantan paddy aggregate exists."""
     derived_rows = []
     for territory in DASHBOARD_TERRITORIES:
-        population = POPULATION.get(territory)
-        if not population:
-            continue
         candidates = [
             row
             for row in rows
@@ -490,6 +499,27 @@ def build_percapita_food_rows(rows):
         if not candidates:
             continue
         source_row = min(candidates, key=canonical_sort_key)
+        population_rows = [
+            row for row in rows
+            if row["territory"] == territory
+            and row["indicator"] == "Population"
+            and row["value"] is not None
+        ]
+        if population_rows:
+            # Use the latest official population as the current-resident
+            # denominator. DOSM rebased its state series after the 2020 census, so
+            # selecting an older same-year point can silently mix incompatible
+            # series. The production and population years are both disclosed below.
+            population_row = max(population_rows, key=lambda row: sort_year_key(row["year"]))
+            population = population_row["value"]
+            population_label = (
+                f"{int(population):,} ({population_row['year']}; {population_row['source']})"
+            )
+        else:
+            population = POPULATION.get(territory)
+            population_label = f"{int(population):,} (documented fallback)" if population else ""
+        if not population:
+            continue
         kg_per_capita = round(source_row["value"] * 1000.0 / population, 1)
         derived = build_processed_row(
             {
@@ -498,14 +528,18 @@ def build_percapita_food_rows(rows):
                 "year": source_row["year"],
                 "value": str(kg_per_capita),
                 "unit": "kg/capita",
+                # State both reference years explicitly; never present the current
+                # population denominator as if it belonged to the production year.
                 "source": (
-                    f"Derived: {source_row['source']} ÷ {POPULATION_YEAR} population "
-                    f"{population:,}. Latest available production ({source_row['year']}) "
-                    f"per current resident; production-year lag tracked in "
+                    f"Derived: {source_row['year']} production ({source_row['source']}) "
+                    f"÷ population {population_label}. Production/population years "
+                    f"may differ; this is production per current resident and stale "
+                    f"production is tracked in "
                     f"docs/DATA_INTAKE_ROADMAP.md."
                 ),
                 "data_level": "territory",
-            }
+            },
+            last_updated=source_row.get("last_updated"),
         )
         derived["is_derived"] = 1
         derived["derived_from"] = "Crop production (paddy)"
@@ -519,7 +553,7 @@ def load_indicator_rows():
     processed = [build_processed_row(raw_row) for raw_row in raw_rows]
     processed.extend(build_manual_processed_rows(load_manual_rows()))
     processed.extend(build_kalimantan_aggregates(raw_rows))
-    processed.extend(build_internet_rows())
+    processed.extend(build_internet_rows(processed))
     processed.extend(build_sourced_rows())
     processed.extend(build_percapita_food_rows(processed))
     assign_canonical(processed)

@@ -27,6 +27,7 @@ import http.client
 import json
 import os
 import time
+from datetime import date
 from pathlib import Path
 import urllib.request
 import urllib.error
@@ -34,6 +35,13 @@ from urllib.parse import quote, urlsplit
 
 ROOT = Path(__file__).parent
 OUT_CSV = ROOT / "borneo_tracker_poc.csv"
+VERIFIED_REFERENCE_CSV = ROOT / "verified_reference_data.csv"
+DEPRECATED_INDICATORS = {"Active fire hotspots (1d)"}
+# These observations describe the present moment. Reusing yesterday's value is
+# materially misleading, so a failed refresh removes them instead of invoking
+# the general last-good fallback used for slower annual/quarterly indicators.
+VOLATILE_INDICATORS = {"Air quality (AQI, live)", "Active fire hotspots (24h)"}
+TODAY = date.today().isoformat()
 UA = "Mozilla/5.0 (Borneo-Tracker-POC)"  # BPS firewall blocks bare clients
 
 
@@ -123,18 +131,116 @@ def get_bytes_raw(url, headers=None, timeout=60):
     return body
 
 
-def add(rows, territory, indicator, year, value, unit, source, data_level):
+def add(rows, territory, indicator, year, value, unit, source, data_level,
+        last_updated=None):
     rows.append({
         "territory": territory, "indicator": indicator, "year": str(year),
         "value": value, "unit": unit, "source": source, "data_level": data_level,
+        "last_updated": last_updated or TODAY,
     })
     print(f"  [OK] {territory} | {indicator} = {value}{unit} ({year})")
+
+
+def pull_verified_reference_data(rows):
+    """Load reviewed rows transcribed from official fixed publications."""
+    if not VERIFIED_REFERENCE_CSV.exists():
+        print("  [verified reference] file missing — skipped")
+        return
+    with VERIFIED_REFERENCE_CSV.open(newline="", encoding="utf-8") as handle:
+        for record in csv.DictReader(handle):
+            add(rows, **record)
+
+
+def load_previous_rows(path=OUT_CSV):
+    if not path.exists():
+        return []
+    with path.open(newline="", encoding="utf-8") as handle:
+        rows = list(csv.DictReader(handle))
+    # Enrich legacy CSV rows from the previous exported snapshot. This preserves
+    # the real last-success date when an API is unavailable on the next run.
+    snapshot_dates = {}
+    snapshot_generated_at = ""
+    snapshot = ROOT / "public" / "data" / "indicators.json"
+    if snapshot.exists():
+        try:
+            payload = json.loads(snapshot.read_text(encoding="utf-8"))
+            snapshot_generated_at = payload.get("generatedAt") or ""
+            snapshot_dates = {
+                (row.get("territory"), row.get("indicator")): row.get("last_updated")
+                for row in payload.get("rows", [])
+                if row.get("last_updated")
+            }
+        except (OSError, ValueError):
+            snapshot_dates = {}
+    for row in rows:
+        if not row.get("last_updated"):
+            row["last_updated"] = snapshot_dates.get(
+                (row.get("territory"), row.get("indicator")),
+                snapshot_generated_at,
+            )
+    return rows
+
+
+def retain_last_good(rows, previous_rows):
+    """Retain observations missing from this run and label them stale.
+
+    A temporary API failure must not silently erase a previously successful
+    observation. Identity intentionally matches the snapshot DB key; a newly
+    fetched row replaces the old one, while a missing row remains visible with a
+    stale marker until the source recovers.
+    """
+    current_keys = {(row["territory"], row["indicator"]) for row in rows}
+    retained = 0
+    for old in previous_rows:
+        key = (old["territory"], old["indicator"])
+        if (key in current_keys
+                or old["indicator"] in DEPRECATED_INDICATORS
+                or old["indicator"] in VOLATILE_INDICATORS):
+            continue
+        source = old.get("source", "")
+        if not source.startswith("STALE —"):
+            source = f"STALE — retained from previous successful run; {source}"
+        old = dict(old, source=source)
+        rows.append(old)
+        current_keys.add(key)
+        retained += 1
+    print(f"  [last-good] retained {retained} stale rows missing from this run")
+    return retained
 
 
 # ---------------------------------------------------------------- 1. data.gov.my
 def pull_datagovmy(rows):
     """Sabah & Sarawak — state level (keyless). ESG + pillar indicators."""
     states = ("Sabah", "Sarawak")
+
+    # Population is published as a stable, machine-readable DOSM CSV rather than
+    # a conventional REST endpoint. Keep the annual observations for provenance;
+    # data_model selects the latest official population as its current-resident
+    # denominator and explicitly discloses both population and production years.
+    population_url = "https://storage.dosm.gov.my/population/population_state.csv"
+    try:
+        population_records = csv.DictReader(get_text(population_url, timeout=180).splitlines())
+        selected = [
+            record for record in population_records
+            if record.get("state") in states
+            and record.get("sex") == "both"
+            and record.get("age") == "overall"
+            and record.get("ethnicity") == "overall"
+            and record.get("population") not in (None, "")
+        ]
+        for record in sorted(selected, key=lambda item: (item["state"], item["date"])):
+            add(
+                rows,
+                record["state"],
+                "Population",
+                record["date"][:4],
+                round(float(record["population"]) * 1000),
+                "people",
+                "Department of Statistics Malaysia (DOSM) — population_state.csv",
+                "state",
+            )
+    except Exception as e:
+        print(f"  [DOSM:population_state] FAILED: {e}")
 
     def latest(recs, field, pred=lambda r: True):
         recs = [r for r in recs if pred(r) and r.get(field) is not None]
@@ -177,8 +283,12 @@ def pull_datagovmy(rows):
          lambda r: latest(r, "households")),
         ("hh_poverty_state", "Poverty rate (absolute)", "%",
          lambda r: latest(r, "poverty_absolute")),
-        ("electricity_access", "Electricity access", "households",  # Hexagon: Energy
-         lambda r: latest(r, "households")),
+        # HIES survey percentage of households with electricity at home. This is
+        # scoreable and comparable between Sabah and Sarawak; the dataset currently
+        # ends in 2022 even though the API itself remains online.
+        ("hh_access_amenities", "Electricity access", "%",  # Hexagon: Energy
+         lambda r: latest(r, "electricity",
+                          lambda x: x.get("district") == "All Districts")),
     ]
     for index, (ds, indicator, unit, sel) in enumerate(specs):
         if index:
@@ -219,6 +329,8 @@ def pull_worldbank(rows):
         ("EG.ELC.ACCS.ZS", "Electricity access", "%"),         # Energy
         ("ST.INT.ARVL", "Tourist arrivals", "arrivals"),       # Entertainment
         ("AG.LND.AGRI.ZS", "Agricultural land", "% land"),     # Food
+        ("SP.POP.TOTL", "Population", "people"),
+        ("IT.NET.USER.ZS", "Internet use", "%"),
     ]
     for code, indicator, unit in pulls:
         # mrv=5 (most-recent values) is reliable; mrnev is flaky. Pick latest non-null.
@@ -231,8 +343,16 @@ def pull_worldbank(rows):
         except Exception as e:
             print(f"  [WorldBank:{code}] FAILED: {e}")
             continue
-        add(rows, "Brunei", indicator, rec["date"], rec["value"], unit,
-            "World Bank", "national")
+        if code == "SP.POP.TOTL":
+            # Retain the available annual series for provenance and future trends.
+            # Sorted oldest -> newest means the snapshot DB's (territory, indicator)
+            # key retains the latest official current-population row.
+            for observation in sorted(series, key=lambda x: x["date"]):
+                add(rows, "Brunei", indicator, observation["date"],
+                    observation["value"], unit, "World Bank", "national")
+        else:
+            add(rows, "Brunei", indicator, rec["date"], rec["value"], unit,
+                "World Bank", "national")
 
 
 # ---------------------------------------------------------------- 2b. Governance (WGI)
@@ -610,8 +730,70 @@ def _in_borneo(r):
         return False
 
 
+def _point_in_ring(lon, lat, ring):
+    """Dependency-free ray casting for one GeoJSON linear ring."""
+    inside = False
+    previous = ring[-1]
+    for current in ring:
+        x1, y1 = previous[:2]
+        x2, y2 = current[:2]
+        if (y1 > lat) != (y2 > lat):
+            crossing_x = (x2 - x1) * (lat - y1) / (y2 - y1) + x1
+            if lon < crossing_x:
+                inside = not inside
+        previous = current
+    return inside
+
+
+def _point_in_geometry(lon, lat, geometry):
+    coordinates = geometry.get("coordinates") or []
+    polygons = [coordinates] if geometry.get("type") == "Polygon" else coordinates
+    for polygon in polygons:
+        if not polygon or not _point_in_ring(lon, lat, polygon[0]):
+            continue
+        if not any(_point_in_ring(lon, lat, hole) for hole in polygon[1:]):
+            return True
+    return False
+
+
+def _load_territory_geometries():
+    features = []
+    for path in (
+        ROOT / "public" / "data" / "borneo_districts.geojson",
+        ROOT / "public" / "data" / "brunei.geojson",
+    ):
+        with path.open(encoding="utf-8") as handle:
+            features.extend(json.load(handle).get("features", []))
+    return [
+        (feature.get("properties", {}).get("parent"), feature.get("geometry", {}))
+        for feature in features
+        if feature.get("properties", {}).get("parent")
+    ]
+
+
+def _firms_partition(records):
+    """Assign FIRMS points to dashboard/state territories using local boundaries."""
+    geometries = _load_territory_geometries()
+    counts, unmatched = {}, 0
+    for record in records:
+        try:
+            lon, lat = float(record["longitude"]), float(record["latitude"])
+        except (KeyError, TypeError, ValueError):
+            unmatched += 1
+            continue
+        parent = next(
+            (name for name, geometry in geometries if _point_in_geometry(lon, lat, geometry)),
+            None,
+        )
+        if parent:
+            counts[parent] = counts.get(parent, 0) + 1
+        else:
+            unmatched += 1
+    return counts, unmatched
+
+
 def pull_firms(rows, key):
-    """Whole Borneo — satellite. Active fire hotspot count, last 1 day.
+    """Territory-level satellite hotspot detections over the latest 24 hours.
     Primary: the FIRMS area API (needs key). Fallback: NASA's static regional
     24h CSV (same VIIRS NOAA-20 product, no key) filtered to the Borneo bbox —
     used when the API service is down (it 403s/hangs intermittently)."""
@@ -644,8 +826,23 @@ def pull_firms(rows, key):
     if not reader:
         print("  [FIRMS] empty response")
         return
-    add(rows, "Borneo (all)", "Active fire hotspots (1d)",
-        reader[0]["acq_date"][:4], len(reader), "count", source, "satellite")
+    snapshot_date = max(record.get("acq_date", "") for record in reader)
+    counts, unmatched = _firms_partition(reader)
+    kalimantan_count = sum(
+        count for territory, count in counts.items() if territory.startswith("Kalimantan ")
+    )
+    dashboard_counts = {
+        "Sabah": counts.get("Sabah", 0),
+        "Sarawak": counts.get("Sarawak", 0),
+        "Brunei": counts.get("Brunei", 0),
+        "Kalimantan": kalimantan_count,
+    }
+    coverage = f"{len(reader) - unmatched}/{len(reader)} bbox detections spatially matched"
+    for territory, count in dashboard_counts.items():
+        add(rows, territory, "Active fire hotspots (24h)", snapshot_date,
+            count, "detections", f"{source}; {coverage}", "satellite")
+    add(rows, "Borneo (all)", "Active fire hotspots (24h)", snapshot_date,
+        len(reader), "detections", f"{source}; {coverage}", "satellite")
 
 
 # ---------------------------------------------------------------- 7. WAQI
@@ -708,13 +905,27 @@ def aggregate_kalimantan(rows):
     city's air quality) are NOT rolled up — a single city isn't a provincial value."""
     from collections import defaultdict
     groups = defaultdict(list)
+    explicit = {
+        (r["indicator"], r["unit"])
+        for r in rows if r["territory"] == "Kalimantan"
+    }
     for r in rows:
         t = r["territory"]
         if (t.startswith("Kalimantan ") and t != "Kalimantan"
                 and r["data_level"] in ("province", "satellite")):
-            groups[(r["indicator"], r["unit"])].append(r)
+            groups[(r["indicator"], r["unit"], r["year"])].append(r)
     made = 0
-    for (indicator, unit), rs in groups.items():
+    selected_groups = {}
+    for (indicator, unit, year), rs in groups.items():
+        key = (indicator, unit)
+        candidate = (len(rs), str(year), rs)
+        if key not in selected_groups or candidate[:2] > selected_groups[key][:2]:
+            selected_groups[key] = candidate
+    for (indicator, unit), (_, year, rs) in selected_groups.items():
+        # A reviewed territory aggregate (for example ESDM's household-weighted
+        # electricity ratio) takes precedence over an unweighted approximation.
+        if (indicator, unit) in explicit:
+            continue
         vals = []
         for r in rs:
             try:
@@ -724,7 +935,6 @@ def aggregate_kalimantan(rows):
         if not vals:
             continue
         n = len(vals)
-        year = max(r["year"] for r in rs)
         src = rs[0]["source"]
         if unit in _SUM_UNITS:
             value = round(sum(vals), 2)
@@ -871,6 +1081,7 @@ def pull_gdl(rows, token):
 
 def main():
     env = load_env()
+    previous_rows = load_previous_rows()
     rows = []
     print("1. data.gov.my (Sabah/Sarawak, state):")
     pull_datagovmy(rows)
@@ -898,15 +1109,21 @@ def main():
     pull_unesco(rows)
     print("9. Global Data Lab (mean years schooling; Sabah/Sarawak/Brunei, modeled):")
     pull_gdl(rows, env.get("GDL_API_TOKEN"))
+    print("10. Reviewed official fixed publications:")
+    pull_verified_reference_data(rows)
     # Reference figure (official census, not an API): Brunei household count. DEPS
     # publishes it only in the census report, so it's cited here, not auto-pulled.
     print("7b. Reference data (cited, non-API):")
     add(rows, "Brunei", "Households", 2021, 87137, "households",
         "DEPS Brunei Population & Housing Census 2021", "national")
-    print("8. Kalimantan roll-up (province -> territory aggregate):")
+    print("11. Kalimantan roll-up (province -> territory aggregate):")
     aggregate_kalimantan(rows)
+    retain_last_good(rows, previous_rows)
 
-    fields = ["territory", "indicator", "year", "value", "unit", "source", "data_level"]
+    fields = [
+        "territory", "indicator", "year", "value", "unit", "source",
+        "data_level", "last_updated",
+    ]
     out = OUT_CSV
     try:
         f = open(out, "w", newline="", encoding="utf-8")
@@ -915,7 +1132,7 @@ def main():
         print(f"\n  ! {OUT_CSV.name} is locked (open in Excel?) — writing {out.name} instead")
         f = open(out, "w", newline="", encoding="utf-8")
     with f:
-        w = csv.DictWriter(f, fieldnames=fields)
+        w = csv.DictWriter(f, fieldnames=fields, lineterminator="\n")
         w.writeheader()
         w.writerows(rows)
 

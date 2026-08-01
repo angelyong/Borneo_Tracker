@@ -19,6 +19,14 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Check required refresh secrets
+        env:
+          BPS_API_KEY: ${{ secrets.BPS_API_KEY }}
+          GFW_API_KEY: ${{ secrets.GFW_API_KEY }}
+          WAQI_TOKEN: ${{ secrets.WAQI_TOKEN }}
+          GDL_API_TOKEN: ${{ secrets.GDL_API_TOKEN }}
+        run: python check_required_secrets.py
+
       - name: Run data pipeline (ingest -> SQLite -> JSON -> manifest)
         env:
           BPS_API_KEY: ${{ secrets.BPS_API_KEY }}
@@ -52,6 +60,7 @@ jobs:
           # and keeps the committed manifest an accurate description of the committed
           # bytes (unchanged data => unchanged hashes => the old manifest still holds).
           git add borneo_tracker_poc.csv borneo_tracker_history.csv \
+                  gdl_msch_cache.csv \
                   public/data/indicators.json public/data/resilience.json \
                   public/data/districts.json
           if git diff --cached --quiet; then

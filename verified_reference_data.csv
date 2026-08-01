@@ -1,0 +1,13 @@
+territory,indicator,year,value,unit,source,data_level
+Kalimantan Barat,Electrification ratio,2024,99.85,%,"Indonesia Ministry of Energy and Mineral Resources (ESDM), Electricity Statistics 2024, Table 7, printed page 9; PLN + non-PLN households",province
+Kalimantan Tengah,Electrification ratio,2024,98.05,%,"Indonesia Ministry of Energy and Mineral Resources (ESDM), Electricity Statistics 2024, Table 7, printed page 9; PLN + non-PLN households",province
+Kalimantan Selatan,Electrification ratio,2024,99.99,%,"Indonesia Ministry of Energy and Mineral Resources (ESDM), Electricity Statistics 2024, Table 7, printed page 9; PLN + non-PLN households",province
+Kalimantan Timur,Electrification ratio,2024,99.99,%,"Indonesia Ministry of Energy and Mineral Resources (ESDM), Electricity Statistics 2024, Table 7, printed page 9; PLN + non-PLN households",province
+Kalimantan Utara,Electrification ratio,2024,99.99,%,"Indonesia Ministry of Energy and Mineral Resources (ESDM), Electricity Statistics 2024, Table 7, printed page 9; PLN + non-PLN households",province
+Kalimantan,Electrification ratio,2024,99.65,%,"Derived from ESDM Electricity Statistics 2024 Table 7: household-weighted (5264705 electrified / 5283206 total), official PDF https://gatrik.esdm.go.id/assets/uploads/download_index/files/91fa8-buku-statistik-ketenagalistrikan-2024.pdf",territory
+Kalimantan Barat,Population,2025,5766000,people,"Statistics Indonesia (BPS), Statistics Indonesia 2025, Table 3.1.1, Population (thousand), 2025 column",province
+Kalimantan Tengah,Population,2025,2845000,people,"Statistics Indonesia (BPS), Statistics Indonesia 2025, Table 3.1.1, Population (thousand), 2025 column",province
+Kalimantan Selatan,Population,2025,4323300,people,"Statistics Indonesia (BPS), Statistics Indonesia 2025, Table 3.1.1, Population (thousand), 2025 column",province
+Kalimantan Timur,Population,2025,4267600,people,"Statistics Indonesia (BPS), Statistics Indonesia 2025, Table 3.1.1, Population (thousand), 2025 column",province
+Kalimantan Utara,Population,2025,749400,people,"Statistics Indonesia (BPS), Statistics Indonesia 2025, Table 3.1.1, Population (thousand), 2025 column",province
+Kalimantan,Population,2025,17951300,people,"Derived sum of all 5 provinces from Statistics Indonesia (BPS), Statistics Indonesia 2025, Table 3.1.1",territory

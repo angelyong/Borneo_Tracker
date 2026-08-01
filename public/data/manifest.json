@@ -1,21 +1,21 @@
 {
-  "generatedAt": "2026-08-01T13:04:21Z",
+  "generatedAt": "2026-08-01T17:43:45Z",
   "runId": "local",
   "files": {
     "public/data/indicators.json": {
-      "sha256": "441e6c802c1922dd1972a0bf9a779b0c4df922bd5c22650551655444686edd7e",
-      "bytes": 103985,
-      "generatedAt": "2026-07-31"
+      "sha256": "dfcca2c2ce971db2d903f56c72d4384bc3010cf296ccb27d72d636531de052cf",
+      "bytes": 114013,
+      "generatedAt": "2026-08-02"
     },
     "public/data/resilience.json": {
-      "sha256": "ec6ed25e54c7278d257f3e319564b493d159982b631865dfd2e279e19a740a4c",
-      "bytes": 11277,
-      "generatedAt": "2026-07-31"
+      "sha256": "58356935c4b3150944cab2444aec7839de339f963d93688ec118ab6cebb019c5",
+      "bytes": 13779,
+      "generatedAt": "2026-08-02"
     },
     "public/data/districts.json": {
-      "sha256": "e69e0cee7dc894d83d7f04ecf066b7a70e143caddbc94111d820d1af76758e6c",
-      "bytes": 470169,
-      "generatedAt": "2026-07-10"
+      "sha256": "f3fc393be66cffac885ce33d4c9825b50f038817a40424959e28c35b27405222",
+      "bytes": 580218,
+      "generatedAt": "2026-08-02"
     }
   }
 }

@@ -403,8 +403,29 @@ def validate(rows):
         seen.add(k)
 
 
+def retain_last_good(rows, previous_rows):
+    current = {(r["territory"], r["indicator"], r["year"]) for r in rows}
+    retained = 0
+    for old in previous_rows:
+        key = (old["territory"], old["indicator"], old["year"])
+        if key in current:
+            continue
+        old = dict(old)
+        source = old.get("source", "")
+        if not source.startswith("STALE —"):
+            old["source"] = f"STALE — retained from previous successful run; {source}"
+        rows.append(old)
+        current.add(key)
+        retained += 1
+    print(f"  [history:last-good] retained {retained} stale observations")
+
+
 def main():
     env = load_env()
+    previous_rows = []
+    if OUT_CSV.exists():
+        with OUT_CSV.open(newline="", encoding="utf-8") as handle:
+            previous_rows = list(csv.DictReader(handle))
     rows = []
     print(">>> [history 1/3] data.gov.my annual series")
     pull_datagovmy_history(rows)
@@ -412,9 +433,10 @@ def main():
     pull_worldbank_history(rows)
     print(">>> [history 3/3] GFW yearly fire + tree cover loss")
     pull_gfw_history(rows, env.get("GFW_API_KEY"))
+    retain_last_good(rows, previous_rows)
     validate(rows)
     with OUT_CSV.open("w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=FIELDNAMES)
+        writer = csv.DictWriter(f, fieldnames=FIELDNAMES, lineterminator="\n")
         writer.writeheader()
         writer.writerows(rows)
     territories = sorted({r["territory"] for r in rows})

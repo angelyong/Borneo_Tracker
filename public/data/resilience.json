@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-31",
+  "generatedAt": "2026-08-02",
   "method": "linear 0-100 vs documented bounds; pillar = mean of scored indicators; index = mean of scored pillars; indexStrict = geometric mean (weakest-link strict mode); unscored pillars excluded, never imputed",
   "ragThresholds": {
     "green": 70,
@@ -13,7 +13,7 @@
       "ragStrict": "amber",
       "weakestPillar": "Food",
       "pillarScores": {
-        "Food": 28.7,
+        "Food": 28.6,
         "Energy": 75.2,
         "Education": 45.0,
         "Shelter": 61.0,
@@ -33,12 +33,13 @@
         "Food": [
           {
             "indicator": "Paddy production per capita",
-            "value": 28.7,
+            "value": 28.6,
             "unit": "kg/capita",
-            "score": 28.7,
+            "score": 28.6,
             "confidence": "medium",
-            "source": "Derived: data.gov.my / OpenDOSM \u00f7 population 3,751,000",
-            "year": "2022"
+            "source": "Derived: 2022 production (data.gov.my / OpenDOSM) \u00f7 population 3,767,000 (2026; Department of Statistics Malaysia (DOSM) \u2014 population_state.csv). Production/population years may differ; this is production per current resident and stale production is tracked in docs/DATA_INTAKE_ROADMAP.md.",
+            "year": "2022",
+            "last_updated": "2026-08-02"
           }
         ],
         "Energy": [
@@ -48,8 +49,9 @@
             "unit": "%",
             "score": 75.2,
             "confidence": "high",
-            "source": "data.gov.my / DOSM \u2014 Access to Basic Amenities (% households with electricity, all districts)",
-            "year": "2022"
+            "source": "data.gov.my / OpenDOSM",
+            "year": "2022",
+            "last_updated": "2026-08-02"
           }
         ],
         "Education": [
@@ -60,7 +62,8 @@
             "score": 45.0,
             "confidence": "medium",
             "source": "Global Data Lab \u2014 Subnational HDI, mean years schooling, 2023",
-            "year": "2023"
+            "year": "2023",
+            "last_updated": "2026-08-02"
           }
         ],
         "Shelter": [
@@ -71,7 +74,8 @@
             "score": 61.0,
             "confidence": "high",
             "source": "data.gov.my / OpenDOSM",
-            "year": "2022"
+            "year": "2022",
+            "last_updated": "2026-08-02"
           }
         ],
         "Healthcare": [
@@ -82,7 +86,8 @@
             "score": 76.5,
             "confidence": "manual",
             "source": "Manual report: DOSM Abridged Life Tables Malaysia 2024 \u2014 Life expectancy at birth (both sexes); reported via DOSM/Bernama 2024 release \u2014 https://www.dosm.gov.my/portal-main/release-content/abridged-life-tables-malaysia-2024",
-            "year": "2024"
+            "year": "2024",
+            "last_updated": "2026-06-29"
           }
         ],
         "Entertainment": [
@@ -93,20 +98,21 @@
             "score": 96.0,
             "confidence": "medium",
             "source": "DOSM ICT Use & Access Survey 2024 (Malaysia national 98.0%, applied to state)",
-            "year": "2024"
+            "year": "2024",
+            "last_updated": "2026-08-02"
           }
         ]
       }
     },
     "Sarawak": {
-      "index": 72.5,
+      "index": 70.6,
       "rag": "green",
-      "indexStrict": 69.5,
+      "indexStrict": 68.6,
       "ragStrict": "amber",
       "weakestPillar": "Education",
       "pillarScores": {
-        "Food": 50.7,
-        "Energy": 98.8,
+        "Food": 58.0,
+        "Energy": 80.0,
         "Education": 45.0,
         "Shelter": 67.4,
         "Healthcare": 77.0,
@@ -125,23 +131,25 @@
         "Food": [
           {
             "indicator": "Paddy production per capita",
-            "value": 50.7,
+            "value": 58.0,
             "unit": "kg/capita",
-            "score": 50.7,
+            "score": 58.0,
             "confidence": "medium",
-            "source": "Derived: data.gov.my / OpenDOSM \u00f7 population 2,907,500",
-            "year": "2022"
+            "source": "Derived: 2022 production (data.gov.my / OpenDOSM) \u00f7 population 2,539,800 (2026; Department of Statistics Malaysia (DOSM) \u2014 population_state.csv). Production/population years may differ; this is production per current resident and stale production is tracked in docs/DATA_INTAKE_ROADMAP.md.",
+            "year": "2022",
+            "last_updated": "2026-08-02"
           }
         ],
         "Energy": [
           {
-            "indicator": "Electrification ratio",
-            "value": 99.4,
+            "indicator": "Electricity access",
+            "value": 90.0,
             "unit": "%",
-            "score": 98.8,
-            "confidence": "manual",
-            "source": "Manual report: Sarawak Energy (via Bernama) \u2014 Domestic electrification rate end-2023 (rural coverage 98.4%) \u2014 https://bernama.com/en/news.php?id=2281533",
-            "year": "2023"
+            "score": 80.0,
+            "confidence": "high",
+            "source": "data.gov.my / OpenDOSM",
+            "year": "2022",
+            "last_updated": "2026-08-02"
           }
         ],
         "Education": [
@@ -152,7 +160,8 @@
             "score": 45.0,
             "confidence": "medium",
             "source": "Global Data Lab \u2014 Subnational HDI, mean years schooling, 2023",
-            "year": "2023"
+            "year": "2023",
+            "last_updated": "2026-08-02"
           }
         ],
         "Shelter": [
@@ -163,7 +172,8 @@
             "score": 67.4,
             "confidence": "high",
             "source": "data.gov.my / OpenDOSM",
-            "year": "2022"
+            "year": "2022",
+            "last_updated": "2026-08-02"
           }
         ],
         "Healthcare": [
@@ -174,7 +184,8 @@
             "score": 77.0,
             "confidence": "manual",
             "source": "Manual report: DOSM Abridged Life Tables Malaysia 2024 \u2014 Life expectancy at birth (both sexes); reported via DOSM/Bernama 2024 release \u2014 https://www.dosm.gov.my/portal-main/release-content/abridged-life-tables-malaysia-2024",
-            "year": "2024"
+            "year": "2024",
+            "last_updated": "2026-06-29"
           }
         ],
         "Entertainment": [
@@ -185,24 +196,25 @@
             "score": 96.0,
             "confidence": "medium",
             "source": "DOSM ICT Use & Access Survey 2024 (Malaysia national 98.0%, applied to state)",
-            "year": "2024"
+            "year": "2024",
+            "last_updated": "2026-08-02"
           }
         ]
       }
     },
     "Brunei": {
-      "index": 79.0,
+      "index": 78.0,
       "rag": "green",
-      "indexStrict": 61.8,
+      "indexStrict": 60.9,
       "ragStrict": "amber",
       "weakestPillar": "Food",
       "pillarScores": {
-        "Food": 8.1,
+        "Food": 7.9,
         "Energy": 100.0,
         "Education": 90.2,
         "Shelter": 100.0,
         "Healthcare": 77.5,
-        "Entertainment": 98.0
+        "Entertainment": 92.6
       },
       "scoredPillars": [
         "Education",
@@ -217,12 +229,13 @@
         "Food": [
           {
             "indicator": "Paddy production per capita",
-            "value": 8.1,
+            "value": 7.9,
             "unit": "kg/capita",
-            "score": 8.1,
+            "score": 7.9,
             "confidence": "medium",
-            "source": "Derived: Manual report: FAO / Brunei Dept of Agriculture & Agrifood \u2014 Approx paddy production 2023 (FAO ~3.7k t); small-scale local rice \u2014 https://www.agriculture.gov.bn/ \u00f7 population 455,500",
-            "year": "2023"
+            "source": "Derived: 2023 production (Manual report: FAO / Brunei Dept of Agriculture & Agrifood \u2014 Approx paddy production 2023 (FAO ~3.7k t); small-scale local rice \u2014 https://www.agriculture.gov.bn/) \u00f7 population 466,330 (2025; World Bank). Production/population years may differ; this is production per current resident and stale production is tracked in docs/DATA_INTAKE_ROADMAP.md.",
+            "year": "2023",
+            "last_updated": "2026-06-29"
           }
         ],
         "Energy": [
@@ -233,7 +246,8 @@
             "score": 100.0,
             "confidence": "high",
             "source": "World Bank",
-            "year": "2024"
+            "year": "2024",
+            "last_updated": "2026-08-02"
           }
         ],
         "Education": [
@@ -244,7 +258,8 @@
             "score": 90.2,
             "confidence": "high",
             "source": "World Bank",
-            "year": "2011"
+            "year": "2011",
+            "last_updated": "2026-08-02"
           }
         ],
         "Shelter": [
@@ -255,7 +270,8 @@
             "score": 100.0,
             "confidence": "high",
             "source": "World Bank",
-            "year": "2024"
+            "year": "2024",
+            "last_updated": "2026-08-02"
           },
           {
             "indicator": "Clean water access",
@@ -264,7 +280,8 @@
             "score": 100.0,
             "confidence": "high",
             "source": "World Bank",
-            "year": "2024"
+            "year": "2024",
+            "last_updated": "2026-08-02"
           }
         ],
         "Healthcare": [
@@ -275,31 +292,33 @@
             "score": 77.5,
             "confidence": "high",
             "source": "World Bank",
-            "year": "2024"
+            "year": "2024",
+            "last_updated": "2026-08-02"
           }
         ],
         "Entertainment": [
           {
             "indicator": "Internet use",
-            "value": 99.0,
+            "value": 96.29828801,
             "unit": "%",
-            "score": 98.0,
+            "score": 92.6,
             "confidence": "high",
-            "source": "ITU / World Bank \u2014 individuals using the Internet (% of population), 2023",
-            "year": "2024"
+            "source": "World Bank",
+            "year": "2024",
+            "last_updated": "2026-08-02"
           }
         ]
       }
     },
     "Kalimantan": {
-      "index": 68.5,
-      "rag": "amber",
-      "indexStrict": 66.7,
+      "index": 70.1,
+      "rag": "green",
+      "indexStrict": 67.9,
       "ragStrict": "amber",
       "weakestPillar": "Education",
       "pillarScores": {
-        "Food": 93.9,
-        "Energy": 86.2,
+        "Food": 90.3,
+        "Energy": 99.3,
         "Education": 51.3,
         "Shelter": 66.0,
         "Healthcare": 61.6,
@@ -318,23 +337,25 @@
         "Food": [
           {
             "indicator": "Paddy production per capita",
-            "value": 93.9,
+            "value": 90.3,
             "unit": "kg/capita",
-            "score": 93.9,
+            "score": 90.3,
             "confidence": "medium",
-            "source": "Derived: BPS Indonesia (sum of 5/5 provinces) \u00f7 population 17,259,155",
-            "year": "2025"
+            "source": "Derived: 2025 production (STALE \u2014 retained from previous successful run; BPS Indonesia (sum of 5/5 provinces)) \u00f7 population 17,951,300 (2025; Derived sum of all 5 provinces from Statistics Indonesia (BPS), Statistics Indonesia 2025, Table 3.1.1). Production/population years may differ; this is production per current resident and stale production is tracked in docs/DATA_INTAKE_ROADMAP.md.",
+            "year": "2025",
+            "last_updated": "2026-07-31"
           }
         ],
         "Energy": [
           {
             "indicator": "Electrification ratio",
-            "value": 93.09,
+            "value": 99.65,
             "unit": "%",
-            "score": 86.2,
+            "score": 99.3,
             "confidence": "high",
-            "source": "BPS Indonesia (unweighted mean of 1/5 provinces, approx)",
-            "year": "2022"
+            "source": "Derived from ESDM Electricity Statistics 2024 Table 7: household-weighted (5264705 electrified / 5283206 total), official PDF https://gatrik.esdm.go.id/assets/uploads/download_index/files/91fa8-buku-statistik-ketenagalistrikan-2024.pdf",
+            "year": "2024",
+            "last_updated": "2026-08-02"
           }
         ],
         "Education": [
@@ -344,8 +365,9 @@
             "unit": "years",
             "score": 51.3,
             "confidence": "high",
-            "source": "BPS Indonesia (unweighted mean of 5/5 provinces, approx)",
-            "year": "2025"
+            "source": "STALE \u2014 retained from previous successful run; BPS Indonesia (unweighted mean of 5/5 provinces, approx)",
+            "year": "2025",
+            "last_updated": "2026-07-31"
           }
         ],
         "Shelter": [
@@ -355,8 +377,9 @@
             "unit": "%",
             "score": 66.0,
             "confidence": "high",
-            "source": "BPS Indonesia (national by-province) (unweighted mean of 5/5 provinces, approx)",
-            "year": "2025"
+            "source": "STALE \u2014 retained from previous successful run; BPS Indonesia (national by-province) (unweighted mean of 5/5 provinces, approx)",
+            "year": "2025",
+            "last_updated": "2026-07-31"
           }
         ],
         "Healthcare": [
@@ -366,8 +389,9 @@
             "unit": "years",
             "score": 61.6,
             "confidence": "high",
-            "source": "BPS Indonesia (unweighted mean of 5/5 provinces, approx)",
-            "year": "2025"
+            "source": "STALE \u2014 retained from previous successful run; BPS Indonesia (unweighted mean of 5/5 provinces, approx)",
+            "year": "2025",
+            "last_updated": "2026-07-31"
           }
         ],
         "Entertainment": [
@@ -378,7 +402,8 @@
             "score": 52.2,
             "confidence": "medium",
             "source": "BPS \u2014 Kalimantan region internet access, 2024",
-            "year": "2024"
+            "year": "2024",
+            "last_updated": "2026-08-02"
           }
         ]
       }

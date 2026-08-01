@@ -50,6 +50,7 @@ BOUNDS = {
     # Energy
     "Electricity access":                 {"unit": "%",     "best": 100, "worst": 50},
     "Electrification ratio":              {"unit": "%",     "best": 100, "worst": 50},
+    "Domestic electrification ratio":     {"unit": "%",     "best": 100, "worst": 50},
     "Renewable electricity (% output)":   {"unit": "%",     "best": 100, "worst": 0},
     # Education
     "Adult literacy":                     {"unit": "%",     "best": 100, "worst": 60},
@@ -113,7 +114,8 @@ def rag_band(value):
 
 def load_canonical_rows():
     query = """
-        SELECT territory, indicator, value, unit, hexagon_pillar, confidence, source, year
+        SELECT territory, indicator, value, unit, hexagon_pillar, confidence, source, year,
+               last_updated
         FROM indicators
         WHERE canonical = 1 AND territory IN (?, ?, ?, ?)
     """
@@ -152,6 +154,7 @@ def compute(rows):
                         "confidence": row["confidence"],
                         "source": row["source"],
                         "year": row["year"],
+                        "last_updated": row.get("last_updated") or "",
                     })
             if scored:
                 pillar_scores[pillar] = round(sum(s["score"] for s in scored) / len(scored), 1)

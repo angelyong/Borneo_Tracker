@@ -48,6 +48,13 @@ ROOT = Path(__file__).parent
 # churn, catch a collapse.
 MIN_COUNT_RATIO = 0.90
 
+# Last-good rows are useful for continuity, but they need an honest expiry.
+# Annual/quarterly snapshots may remain visible for a short outage; after 45
+# days the workflow fails rather than presenting them as a current refresh.
+MAX_STALE_AGE_DAYS = 45
+MAX_SCORED_STALE_RATIO = 0.20
+VOLATILE_INDICATORS = {"Air quality (AQI, live)", "Active fire hotspots (24h)"}
+
 # districts.json has no Brunei layer: Brunei has no ADM2 (district) statistical
 # series in the sources we use, so only these parents are expected there.
 REQUIRED_DISTRICT_PARENTS = ["Sabah", "Sarawak"]
@@ -163,6 +170,26 @@ def check_generated_at(report, scope, current, previous, previous_skip):
     )
 
 
+def check_artifact_freshness(report, scope, artifact, today=None,
+                             maximum_days=MAX_STALE_AGE_DAYS):
+    """Catch an entire pipeline step retaining an old artifact unchanged."""
+    today = today or date.today()
+    generated = parse_generated_at(artifact.get("generatedAt"))
+    if generated is None:
+        report.check(
+            scope, f"artifact is no older than {maximum_days} days", False,
+            f"invalid generatedAt={artifact.get('generatedAt')!r}",
+        )
+        return
+    age = (today - generated).days
+    report.check(
+        scope,
+        f"artifact is no older than {maximum_days} days",
+        0 <= age <= maximum_days,
+        f"generated {generated}; age {age} day(s)",
+    )
+
+
 def check_count(report, scope, label, current_count, previous_count, previous_skip):
     """Record count must stay at or above MIN_COUNT_RATIO of the committed count."""
     if previous_count is None:
@@ -188,6 +215,61 @@ def scored_indicator_count(resilience):
     return total
 
 
+def is_stale(row):
+    return "STALE" in str(row.get("source") or "")
+
+
+def check_stale_ratio(report, scope, label, rows, maximum=MAX_SCORED_STALE_RATIO):
+    stale = sum(1 for row in rows if is_stale(row))
+    ratio = stale / len(rows) if rows else 0.0
+    report.check(
+        scope,
+        label,
+        ratio <= maximum,
+        f"{stale}/{len(rows)} stale ({ratio:.1%}); maximum {maximum:.0%}",
+    )
+
+
+def check_stale_freshness(report, scope, rows, today=None, maximum_days=MAX_STALE_AGE_DAYS):
+    """Require every retained row to identify a recent, real last-success date."""
+    today = today or date.today()
+    stale_rows = [row for row in rows if is_stale(row)]
+    problems = []
+    ages = []
+    for row in stale_rows:
+        refreshed = parse_generated_at(row.get("last_updated"))
+        identity = f"{row.get('territory', '?')} / {row.get('indicator', '?')}"
+        if refreshed is None:
+            problems.append(f"{identity}: invalid last_updated={row.get('last_updated')!r}")
+            continue
+        age = (today - refreshed).days
+        ages.append(age)
+        if age < 0:
+            problems.append(f"{identity}: last_updated is {abs(age)} day(s) in the future")
+        elif age > maximum_days:
+            problems.append(f"{identity}: {age} days stale")
+    detail = (
+        "; ".join(problems[:3]) + (f"; +{len(problems) - 3} more" if len(problems) > 3 else "")
+        if problems else
+        f"{len(stale_rows)} stale row(s); oldest {max(ages) if ages else 0} day(s)"
+    )
+    report.check(scope, f"stale rows are no older than {maximum_days} days", not problems, detail)
+
+
+def check_no_volatile_stale(report, scope, rows):
+    offenders = [
+        row for row in rows
+        if is_stale(row) and row.get("indicator") in VOLATILE_INDICATORS
+    ]
+    report.check(
+        scope,
+        "volatile live indicators are never retained stale",
+        not offenders,
+        ", ".join(sorted({row.get("indicator", "?") for row in offenders}))
+        if offenders else "none retained",
+    )
+
+
 # -------------------------------------------------------------- file checks
 def validate_indicators(report):
     scope = "indicators.json"
@@ -211,7 +293,10 @@ def validate_indicators(report):
 
     check_count(report, scope, "row count", len(rows),
                 len(previous.get("rows") or []) if previous else None, previous_skip)
+    check_stale_freshness(report, scope, rows)
+    check_no_volatile_stale(report, scope, rows)
     check_generated_at(report, scope, current, previous, previous_skip)
+    check_artifact_freshness(report, scope, current)
 
 
 def validate_resilience(report):
@@ -237,7 +322,18 @@ def validate_resilience(report):
 
     check_count(report, scope, "scored indicator count", scored_indicator_count(current),
                 scored_indicator_count(previous) if previous else None, previous_skip)
+    scored_entries = [
+        entry
+        for territory in territories.values()
+        for entries in (territory.get("detail") or {}).values()
+        for entry in entries
+    ]
+    check_stale_ratio(
+        report, scope, "scored stale ratio is acceptable", scored_entries
+    )
+    check_stale_freshness(report, scope, scored_entries)
     check_generated_at(report, scope, current, previous, previous_skip)
+    check_artifact_freshness(report, scope, current)
 
 
 def validate_districts(report):
@@ -276,7 +372,9 @@ def validate_districts(report):
     check_count(report, scope, "district count", district_count, previous_districts, previous_skip)
     check_count(report, scope, "row count", len(rows),
                 len(previous.get("rows") or []) if previous else None, previous_skip)
+    check_stale_freshness(report, scope, rows)
     check_generated_at(report, scope, current, previous, previous_skip)
+    check_artifact_freshness(report, scope, current)
 
 
 # ------------------------------------------------------------------- entry point
@@ -284,6 +382,8 @@ def main():
     print("=" * 72)
     print("Borneo Tracker - data validation gate")
     print(f"  record-count floor: {int(MIN_COUNT_RATIO * 100)}% of the last committed count")
+    print(f"  retained-data expiry: {MAX_STALE_AGE_DAYS} days")
+    print(f"  scored stale ceiling: {int(MAX_SCORED_STALE_RATIO * 100)}%")
     print("=" * 72)
     report = Report()
     validate_indicators(report)

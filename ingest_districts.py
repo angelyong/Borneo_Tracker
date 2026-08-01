@@ -17,7 +17,8 @@ Row schema mirrors indicators.json so the frontend helpers work unchanged, with
 `territory` set to the DISTRICT name plus an extra `parent` (state/province):
 
   territory | parent | indicator | dashboard_concept | year | value | unit |
-  source | data_level | esg_pillar | sdg_goal | hexagon_pillar | confidence | canonical
+  source | data_level | esg_pillar | sdg_goal | hexagon_pillar | confidence |
+  canonical | last_updated
 
 Stdlib only (urllib/csv/json) so it runs on a bare Python 3, consistent with the
 rest of the pipeline. Run standalone:  python ingest_districts.py
@@ -84,6 +85,25 @@ def year_of(date_str):
     return text[:4] if len(text) >= 4 and text[:4].isdigit() else text
 
 
+def valid_refresh_date(value):
+    """Return an ISO date for a real refresh timestamp, or an empty string."""
+    text = str(value or "")[:10]
+    try:
+        return date.fromisoformat(text).isoformat()
+    except ValueError:
+        return ""
+
+
+def last_success_date(row, artifact_generated_at=""):
+    """Preserve a true last-success date; migrate legacy rows from artifact time."""
+    existing = valid_refresh_date(row.get("last_updated"))
+    # Old builds used the observation year (for example "2022") as if it were a
+    # refresh date. A bare year is not a successful-fetch timestamp.
+    if existing:
+        return existing
+    return valid_refresh_date(artifact_generated_at)
+
+
 def latest_by_district(rows, value_key, state_filter=("Sabah", "Sarawak"), where=None):
     """Collapse rows to the single latest-year observation per (state, district).
 
@@ -125,6 +145,7 @@ def make_row(state, district, indicator, concept, pillar, sdg, unit, obs, source
         "hexagon_pillar": hexagon,
         "confidence": confidence,
         "canonical": canonical,
+        "last_updated": TODAY,
     }
 
 
@@ -249,6 +270,15 @@ def build_parents(rows):
 
 def main():
     env = load_env()
+    previous_rows = []
+    previous_generated_at = ""
+    if OUTPUT.exists():
+        try:
+            previous_payload = json.loads(OUTPUT.read_text(encoding="utf-8"))
+            previous_rows = previous_payload.get("rows", [])
+            previous_generated_at = previous_payload.get("generatedAt") or ""
+        except (OSError, ValueError):
+            previous_rows = []
     rows = []
 
     rows.extend(build_dosm())
@@ -267,6 +297,25 @@ def main():
         pass
 
     reconcile_names(rows)  # canonicalizes display names and stamps row["key"]
+    for row in rows:
+        row.setdefault("last_updated", TODAY)
+    current_keys = {
+        (row.get("parent"), row.get("key"), row.get("indicator")) for row in rows
+    }
+    retained = 0
+    for old in previous_rows:
+        key = (old.get("parent"), old.get("key"), old.get("indicator"))
+        if key in current_keys:
+            continue
+        old = dict(old)
+        source = old.get("source", "")
+        if not source.startswith("STALE —"):
+            old["source"] = f"STALE — retained from previous successful run; {source}"
+        old["last_updated"] = last_success_date(old, previous_generated_at)
+        rows.append(old)
+        current_keys.add(key)
+        retained += 1
+    print(f"  [districts:last-good] retained {retained} stale rows")
     rows = dedupe_rows(rows)  # one row per (parent, key, indicator)
 
     parents = build_parents(rows)
