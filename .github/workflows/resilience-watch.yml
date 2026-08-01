@@ -1,0 +1,45 @@
+name: Resilience shift watch
+
+# Informational loop (loop engineering). After each daily "Refresh dashboard data"
+# run, diff the new resilience.json against the previous committed one and surface
+# NOTABLE shifts — a pillar drop, a RAG-band flip, a weakest-pillar change, or a
+# generatedAt that did not advance — as a run summary + ::warning:: annotations.
+#
+# It NEVER fails the run: a real-world change is legitimate, the point is that a
+# human eyeballs the dashboard when the story moves. The HARD data gate is
+# validate_data.py inside the refresh; this is the soft "did the story change?" watch.
+
+on:
+  # Fire right after the daily data refresh. workflow_run (like schedule) only runs
+  # from the default branch (master).
+  workflow_run:
+    workflows: ["Refresh dashboard data"]
+    types: [completed]
+    branches: [master]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  watch:
+    name: Detect notable resilience shifts
+    runs-on: ubuntu-latest
+    # Only look after a SUCCESSFUL refresh.
+    if: >-
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion == 'success'
+    steps:
+      - name: Checkout (full history to diff the previous resilience.json)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_branch || github.ref }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Detect resilience shifts
+        run: python detect_resilience_shifts.py
