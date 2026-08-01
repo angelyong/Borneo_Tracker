@@ -14,6 +14,16 @@
     "readMore": "Read more",
     "somethingWentWrong": "Something went wrong. Please try again."
   },
+  "freshness": {
+    "dataAsOf": "Data as of {{date}} · daily snapshot",
+    "dateUnknown": "Data date unknown · daily snapshot",
+    "ageFresh": "up to date",
+    "ageDays_one": "{{count}} day old",
+    "ageDays_other": "{{count}} days old",
+    "ageStalled": "refresh may have stalled",
+    "tooltip": "This dashboard is rebuilt from a daily pipeline; the date shown is when the data was generated, not when the page was loaded.",
+    "tooltipUnknown": "This dashboard is rebuilt from a daily pipeline, but this dataset did not record when it was generated."
+  },
   "sidebar": {
     "dashboard": "Dashboard",
     "regionalDetails": "Regional Details",
@@ -87,7 +97,7 @@
     "coverage": "Coverage:",
     "noCanonicalIndicators": "No canonical indicators for this pillar yet.",
     "loadingIndicatorData": "Loading indicator data…",
-    "liveLayer": "Live Layer: {{layer}}",
+    "mapLayer": "Map Layer: {{layer}}",
     "none": "None",
     "loadingMapData": "Loading map data…",
     "noData": "No data",

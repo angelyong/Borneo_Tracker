@@ -9,6 +9,7 @@ import {
   titleCaseConfidence,
   useIndicators,
 } from '../../data/useIndicators';
+import DataFreshness from '../../components/DataFreshness';
 import ExportMenu from '../../components/ExportMenu';
 
 const CATEGORIES = ['Environment', 'Social', 'Governance'];
@@ -22,7 +23,7 @@ const ESGIndicator = () => {
   const { t } = useTranslation();
   const [selectedRegion, setSelectedRegion]   = useState('Sarawak');
   const [selectedCategory, setSelectedCategory] = useState('Environment');
-  const { data, loading, error } = useIndicators();
+  const { data, loading, error, generatedAt } = useIndicators();
   const contentRef = useRef(null);
 
   const rows = useMemo(() => {
@@ -47,6 +48,10 @@ const ESGIndicator = () => {
             <div style={styles.headerLeft}>
               <h1 style={styles.pageTitle}>{t('esg.title')}</h1>
               <p style={styles.pageSubtitle}>{t('esg.subtitle')}</p>
+              {/* Sits inside contentRef, so exported PNG/PDF carries the date too. */}
+              <div style={styles.freshnessRow}>
+                <DataFreshness generatedAt={generatedAt} loading={loading} />
+              </div>
             </div>
             <div style={styles.headerRight}>
               <select
@@ -200,6 +205,7 @@ const styles = {
     color:    'var(--color-muted)',
     margin:   '4px 0 0 0',
   },
+  freshnessRow: { marginTop: '8px', display: 'flex', alignItems: 'center', flexWrap: 'wrap' },
   dropdown: {
     padding:         '10px 16px',
     borderRadius:    '8px',

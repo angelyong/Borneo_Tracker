@@ -14,6 +14,15 @@
     "readMore": "Baca lagi",
     "somethingWentWrong": "Sesuatu tidak kena. Sila cuba lagi."
   },
+  "freshness": {
+    "dataAsOf": "Data setakat {{date}} · gambaran harian",
+    "dateUnknown": "Tarikh data tidak diketahui · gambaran harian",
+    "ageFresh": "terkini",
+    "ageDays_other": "berusia {{count}} hari",
+    "ageStalled": "penyegaran mungkin terhenti",
+    "tooltip": "Papan pemuka ini dibina semula daripada saluran data harian; tarikh yang dipaparkan ialah masa data dijana, bukan masa halaman dimuatkan.",
+    "tooltipUnknown": "Papan pemuka ini dibina semula daripada saluran data harian, tetapi set data ini tidak merekodkan masa ia dijana."
+  },
   "sidebar": {
     "dashboard": "Papan Pemuka",
     "regionalDetails": "Butiran Wilayah",
@@ -87,7 +96,7 @@
     "coverage": "Liputan:",
     "noCanonicalIndicators": "Belum ada penunjuk kanonik untuk tunjang ini.",
     "loadingIndicatorData": "Memuatkan data penunjuk…",
-    "liveLayer": "Lapisan Langsung: {{layer}}",
+    "mapLayer": "Lapisan Peta: {{layer}}",
     "none": "Tiada",
     "loadingMapData": "Memuatkan data peta…",
     "noData": "Tiada data",

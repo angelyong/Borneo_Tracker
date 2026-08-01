@@ -1,0 +1,6 @@
+{"bytes": 103450, "file": "public/data/indicators.json", "generatedAt": "2026-07-27", "runId": "local", "sha256": "470b0914b081e979b034b542ccde3ce003422f78e40b1733d427346d190264f7", "ts": "2026-07-28T02:23:10Z"}
+{"bytes": 11277, "file": "public/data/resilience.json", "generatedAt": "2026-07-27", "runId": "local", "sha256": "1bfc2bf16996b728c3cff8b425b771b1ef16fb9a4101104a1836795494749486", "ts": "2026-07-28T02:23:10Z"}
+{"bytes": 487665, "file": "public/data/districts.json", "generatedAt": "2026-07-10", "runId": "local", "sha256": "c95251311f0226036d6092fc61ea75a1e6ffef774fd97180a289bfae968df8cf", "ts": "2026-07-28T02:23:10Z"}
+{"bytes": 103985, "file": "public/data/indicators.json", "generatedAt": "2026-07-31", "runId": "local", "sha256": "441e6c802c1922dd1972a0bf9a779b0c4df922bd5c22650551655444686edd7e", "ts": "2026-08-01T13:04:21Z"}
+{"bytes": 11277, "file": "public/data/resilience.json", "generatedAt": "2026-07-31", "runId": "local", "sha256": "ec6ed25e54c7278d257f3e319564b493d159982b631865dfd2e279e19a740a4c", "ts": "2026-08-01T13:04:21Z"}
+{"bytes": 470169, "file": "public/data/districts.json", "generatedAt": "2026-07-10", "runId": "local", "sha256": "e69e0cee7dc894d83d7f04ecf066b7a70e143caddbc94111d820d1af76758e6c", "ts": "2026-08-01T13:04:21Z"}
