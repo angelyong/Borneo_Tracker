@@ -31,7 +31,11 @@ The app needs one unified identity system for both **end users** and **admins**.
 
 **DONE & merged to master.** Phases **0–6 and 8 complete**: Supabase auth is live in the app (`src/auth/AuthProvider.jsx` implements `signUp / signIn / signOut / resetPasswordForEmail / resendSignup / updatePassword`, with `role / isAdmin` driven off the `profiles` table), the auth pages are Supabase-wired, `/admin/*` is role-gated, and the figma-redesign **UserManagement** admin page was rebuilt on Supabase (`src/pages/admin/UserManagement.jsx` + `src/services/adminUserService.js` reading `profiles`). The manual browser flow passed and the branch merged to `master`.
 
-**Still pending (both waiting on the live domain):** Phase 7 **production deployment** (waits on the DirectAdmin domain) and **custom SMTP** (still on Supabase's built-in, rate-limited email).
+**Update 2026-08-01 — the site is deployed and HTTPS is clean.** Phase 7 is done except SMTP: the build is live at **https://borneotracker.rentsmartprop.com.my** with a valid Let's Encrypt wildcard cert, the SPA rewrite works on every route, and Supabase's Site URL + Redirect URLs now point at the production domain instead of `localhost:5173`.
+
+**Custom SMTP is now configured too** (2026-08-01) — auth email goes out through the DirectAdmin mailbox `noreply@rentsmartprop.com.my` instead of Supabase's rate-limited built-in sender. SPF and DKIM were already correct for that domain, so no DNS changes were needed; see Phase 7 for the settings and the reasoning. **Phase 7 is complete.** Outstanding verification: confirm a real inbox shows `SPF: PASS` / `DKIM: PASS` / `DMARC: PASS` and that the message does not land in spam.
+
+**Also 2026-08-01 — the database is finally versioned.** The `profiles` table, its RLS, the `handle_new_user` trigger and `current_user_role()` had lived only in the Supabase console since this migration; they were exported into [`supabase/auth_schema.sql`](../supabase/auth_schema.sql). Along the way `supabase/schema.sql` was found to still carry the pre-migration `authenticated reads all` / `authenticated updates` policies under *different names* than the live admin-only ones — re-running it would have OR'd the permissive pair back in and re-opened the news publish gate. Fixed. See [`SUPABASE_SETUP.md`](SUPABASE_SETUP.md) for the run order.
 
 ## Legend
 🔸 = decision to lock first · ⏳ = do only after the DirectAdmin domain is live · everything else = doable now.
@@ -52,7 +56,7 @@ The app needs one unified identity system for both **end users** and **admins**.
 
 ## Phase 1 — Supabase console config ✅
 - [x] Enable **Email** auth provider (email + password)
-- [x] Auth settings: Site URL = `http://localhost:5173`; add Redirect URLs
+- [x] Auth settings: Site URL + Redirect URLs — was `http://localhost:5173` during the build; **repointed at the production domain on 2026-08-01** (see Phase 7), with localhost kept in the redirect allow-list for dev
 - [x] Create **`profiles`** table: `id` (FK → `auth.users`), `first_name`, `last_name`, `role` (default `user`), `status` (default `active`), `created_at`
 - [x] Trigger `handle_new_user`: auto-insert a `profiles` row on signup
 - [x] `current_user_role()` SECURITY DEFINER helper (avoids RLS self-recursion)
@@ -96,14 +100,39 @@ The app needs one unified identity system for both **end users** and **admins**.
 - [x] **Manual:** forgot password → reset password end-to-end
 - [x] **Manual:** role gate — normal user blocked from `/admin/news`; admin allowed
 
-## Phase 7 — ⏳ Deploy prep (after DirectAdmin domain is live)
-- [ ] Production build env: `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`
-- [ ] Supabase Auth: add the **production domain** to Site URL + Redirect URLs (else verify/reset links point wrong)
-- [ ] Configure **custom SMTP** (Resend / DirectAdmin mailbox) so auth emails come from your domain and skip the built-in rate limit
-- [ ] Verify no case-sensitive import bugs (`sidebar` vs `Sidebar` etc.) before the Linux/DirectAdmin build
-- [ ] `npm run build` → upload `dist/` to `public_html`
-- [ ] Add `.htaccess` (SPA route rewrite → `index.html`)
-- [ ] Point the domain / document root at `dist`
+## Phase 7 — Deploy prep — mostly DONE (verified from outside 2026-08-01)
+
+Live at **https://borneotracker.rentsmartprop.com.my**.
+
+- [x] Production build env: `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` — confirmed: the deployed bundle (`/assets/index-DUmk8C_C.js`) contains the project ref and a `supabase.co` URL, so both were baked in at build time
+- [x] Supabase Auth: production domain added to **Site URL** + **Redirect URLs** (`https://borneotracker.rentsmartprop.com.my/**`, localhost kept for dev) — 2026-08-01
+- [x] `npm run build` → `dist/` uploaded to `public_html`
+- [x] `.htaccess` SPA rewrite — confirmed: `/login`, `/register`, `/forgot-password`, `/reset-password`, `/check-email`, `/news`, `/admin/news`, `/admin/users`, `/profile` all return `index.html` instead of 404
+- [x] Domain / document root pointed at `dist`
+- [x] **HTTPS** — Let's Encrypt wildcard `*.rentsmartprop.com.my`, strict TLS validation passes. ⚠️ **Expires 2026-10-29**; wildcards renew over DNS-01, which fails more often than HTTP-01, so re-check the expiry in mid-October or the site silently reverts to a full-page cert warning
+- [x] Configure **custom SMTP** — 2026-08-01, using the **DirectAdmin mailbox**, not a third-party sender. Supabase → Project Settings → Authentication → SMTP Settings:
+
+  | Field | Value |
+  |---|---|
+  | Host | `mail.rentsmartprop.com.my` (→ 160.30.208.11, the same box that serves the site) |
+  | Port | `587` (STARTTLS) — `465` also open as a fallback |
+  | Username / Sender | `noreply@rentsmartprop.com.my` (the **full address**; `noreply` alone fails auth) |
+  | Sender name | `Borneo Tracker` |
+
+  Auth email rate limits raised afterwards under Authentication → Rate Limits.
+
+  **Why the main domain and not a `borneotracker.*` sending subdomain** — measured 2026-08-01, not assumed:
+  - SPF already passes with **zero DNS changes**: `rentsmartprop.com.my` publishes `v=spf1 a mx ip4:160.30.208.11 include:spf.mxyeet.net ~all`, and `160.30.208.11` is the sending host.
+  - DKIM is already signing: selector `x` is published at `x._domainkey.rentsmartprop.com.my`.
+  - DMARC is `v=DMARC1; p=none` — monitoring only, so it will not reject.
+  - The mail server presents the same Let's Encrypt wildcard as the website, so Supabase's SMTP client gets a valid certificate.
+
+  Moving the sender to a subdomain would have discarded all four and required rebuilding SPF and DKIM there. **Never add a second SPF record to `rentsmartprop.com.my`** — the domain runs live business mail (MX → `mx1/2/3.mxfilter.net`) and a domain may carry only one SPF record; a second one is an instant permerror for the company's existing mail.
+
+  Known limits: the server advertises `MAILMAX=100` per connection (irrelevant at this volume), but DirectAdmin shared hosting usually also imposes a per-hour outbound cap that is not visible externally — if auth mail ever stops arriving in bursts, check that first. The one thing that cannot be measured from outside is the shared IP's sender reputation.
+- [ ] Verify no case-sensitive import bugs (`sidebar` vs `Sidebar` etc.) — **still open, and not disproven by the live site**: the upload was built on Windows, where the mismatch is harmless. It only bites if the build ever moves to Linux/CI
+
+**Not part of this plan, but true of the deployment:** DirectAdmin shared hosting is not git-connected, so `refresh-data.yml`'s daily commit does not by itself reach the live site — the site serves the hand-uploaded **2026-07-23** build. That gap is what [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml) exists to close (build → upload → verify against the live URL); it is written and merged but **deliberately no-ops until the repo owner adds the SFTP secrets** — see [`DEPLOYMENT_SETUP.md`](DEPLOYMENT_SETUP.md). Until then the dashboard data on production stays frozen. `/news` is the exception either way — it reads Supabase at runtime, so approved news appears live with no rebuild at all.
 
 ## Phase 8 — Merge back ✅
 - [x] PR `feature/supabase-auth` → `master`; review

@@ -9,13 +9,14 @@ import {
   titleCaseConfidence,
   useIndicators,
 } from '../../data/useIndicators';
+import DataFreshness from '../../components/DataFreshness';
 import ExportMenu from '../../components/ExportMenu';
 
 const SDGProgress = () => {
   const { t } = useTranslation();
   const [selectedRegion, setSelectedRegion] = useState('Sarawak');
   const [selectedGoal, setSelectedGoal] = useState('SDG1');
-  const { data, loading, error } = useIndicators();
+  const { data, loading, error, generatedAt } = useIndicators();
   const contentRef = useRef(null);
 
   const rows = useMemo(() => {
@@ -38,6 +39,10 @@ const SDGProgress = () => {
             <p style={styles.pageSubtitle}>
               {t('sdg.subtitle')}
             </p>
+            {/* Sits inside contentRef, so exported PNG/PDF carries the date too. */}
+            <div style={styles.freshnessRow}>
+              <DataFreshness generatedAt={generatedAt} loading={loading} />
+            </div>
           </div>
           <div style={styles.headerRight}>
             <select
@@ -193,6 +198,12 @@ const styles = {
     fontSize: '14px',
     color: 'var(--color-muted)',
     margin: '4px 0 0 0',
+  },
+  freshnessRow: {
+    marginTop: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    flexWrap: 'wrap',
   },
   headerRight: {
     flexShrink: 0,

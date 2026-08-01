@@ -1,0 +1,940 @@
+name: Deploy to DirectAdmin
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# Closes the production loop:  validate -> build -> assert -> upload -> VERIFY.
+#
+# WHY THIS EXISTS
+#   `refresh-data.yml` regenerates public/data/*.json every morning and commits
+#   them to the repo — but nothing ever pushed them to the web server, so
+#   production stayed frozen at the 2026-07-23 hand-uploaded ZIP while the
+#   Actions dashboard went green every single day. That is an *open loop that
+#   lies*. This workflow closes it, and — just as important — it VERIFIES the
+#   result against the live URL, because a deploy you did not verify is still an
+#   open loop.
+#
+#   Implements "Option A" of docs/DIRECTADMIN_DASHBOARD_DATA_UPDATE_OPTIONS.md.
+#   Owner setup checklist: docs/DEPLOYMENT_SETUP.md.
+#
+# ─── SECRETS THE REPO OWNER MUST CREATE ───────────────────────────────────────
+#   Settings -> Secrets and variables -> Actions -> "Secrets" tab -> New secret
+#
+#   SFTP_HOST          Hostname of the DirectAdmin server (e.g. sg-shared01.dapanel.net).
+#                      Host name only — no scheme, no path, no port.
+#   SFTP_PORT          Connection port. 22 for SFTP, 21 for FTPS. (Optional —
+#                      defaults to 22 for sftp / 21 for ftps.)
+#   SFTP_USER          Deployment username.
+#   SFTP_KEY           *** PRIMARY authentication method. *** The full OpenSSH
+#                      PRIVATE key (BEGIN ... END lines included) of a key whose
+#                      public half is in the deploy account's authorized_keys.
+#                      Preferred because it is revocable on its own, cannot be
+#                      reused to log into DirectAdmin's web panel, and never
+#                      needs to be typed anywhere.
+#   SFTP_PASSWORD      FALLBACK, only if the host will not accept a key. Used
+#                      instead of SFTP_KEY when SFTP_KEY is absent.
+#   SFTP_REMOTE_DIR    Absolute remote path to deploy into. (Optional — defaults
+#                      to /domains/borneotracker.rentsmartprop.com.my/public_html.
+#                      If the deploy account is chrooted to its own home this
+#                      will instead be something like /public_html.)
+#   SFTP_KNOWN_HOSTS   (Optional but RECOMMENDED, SFTP only.) The server's SSH
+#                      host key line(s), i.e. the output of
+#                      `ssh-keyscan -p <port> <host>`. Pinning this makes the
+#                      connection resistant to a man-in-the-middle. Without it
+#                      the workflow falls back to trust-on-first-use and prints
+#                      the fingerprint it accepted so you can check it.
+#   VITE_SUPABASE_URL       Production Supabase project URL. REQUIRED: the build
+#   VITE_SUPABASE_ANON_KEY  is env-gated (src/services/supabaseClient.js). Ship
+#                           without these and production silently regresses to
+#                           the local mock auth/news store.
+#
+# ─── VARIABLES THE OWNER MAY SET ──────────────────────────────────────────────
+#   Same screen, "Variables" tab. All optional; sane defaults below.
+#
+#   PRODUCTION_URL            Public base URL to smoke-test.
+#                             Default: https://borneotracker.rentsmartprop.com.my
+#   SMOKE_ALLOW_INSECURE_TLS  "true" (default) = smoke test passes `--insecure`
+#                             to curl, because as of 2026-07-28 the server's TLS
+#                             certificate does NOT list the `borneotracker`
+#                             subdomain. Set to "false" the moment the hosting
+#                             admin reissues the certificate — the workflow
+#                             tells you when that has happened.
+#   DEPLOY_PROTOCOL           "sftp" (default) or "ftps".
+#   FTPS_VERIFY_CERT          "yes" (default) / "no" — FTPS control-channel
+#                             certificate verification. Only read for ftps.
+#
+# ─── THINGS THIS WORKFLOW DELIBERATELY DOES NOT DO ────────────────────────────
+#   * It never DELETES remote files (see the mirror step). First iteration is
+#     strictly additive/overwriting, per §2.4 of the DirectAdmin options doc.
+#   * It never echoes a secret. Only secret NAMES appear in the log.
+#   * It uses only first-party `actions/*` actions, pinned by major version.
+#     No third-party marketplace SFTP action is used: those run with the deploy
+#     credentials in scope, and an unpinned one is an unreviewed supply-chain
+#     hole aimed straight at production.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+on:
+  # 1. After the daily data refresh succeeds. This trigger is REQUIRED, not a
+  #    nicety: refresh-data.yml pushes with GITHUB_TOKEN, and pushes made with
+  #    GITHUB_TOKEN do NOT fire `push` events — so without workflow_run the fresh
+  #    data would never trigger a deploy.
+  #    NOTE: like `schedule`, `workflow_run` only fires from the repo's DEFAULT
+  #    branch (master). Until this file is merged there, test with "Run workflow".
+  workflow_run:
+    workflows: ["Refresh dashboard data"]
+    types: [completed]
+    branches: [master]
+  # 2. Any code change landing on master.
+  push:
+    branches: [master]
+  # 3. Manual, for the first run and for rollbacks (pick an older tag/branch).
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Build + verify only. Do NOT upload and do NOT smoke-test."
+        type: boolean
+        default: false
+
+# A deploy must never be cancelled halfway. `cancel-in-progress: true` — correct
+# for CI, where the newest commit is the only one that matters — would be free to
+# kill lftp mid-mirror and leave public_html holding half the new asset hashes
+# with an index.html pointing at files that are not there yet. So we QUEUE
+# instead: one deploy at a time, each allowed to finish. A superseded deploy
+# costs a few wasted minutes; a shredded public_html costs a manual ZIP upload.
+concurrency:
+  group: deploy-directadmin-production
+  cancel-in-progress: false
+
+# Read-only. This workflow publishes; it never writes back to the repository.
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Build, upload and verify
+    runs-on: ubuntu-latest
+    # Only proceed for a SUCCESSFUL upstream run. A failed/cancelled data
+    # refresh must never reach production.
+    if: >-
+      github.event_name != 'workflow_run' ||
+      github.event.workflow_run.conclusion == 'success'
+    timeout-minutes: 30
+    environment:
+      name: production
+      url: ${{ vars.PRODUCTION_URL || 'https://borneotracker.rentsmartprop.com.my' }}
+
+    env:
+      PRODUCTION_URL: ${{ vars.PRODUCTION_URL || 'https://borneotracker.rentsmartprop.com.my' }}
+      DEFAULT_REMOTE_DIR: /domains/borneotracker.rentsmartprop.com.my/public_html
+
+    steps:
+      # ─────────────────────────────────────────────────────────────────────
+      # 0. Secret gate.
+      #
+      # None of the SFTP secrets exist yet — the hosting admin has not issued a
+      # deploy account. If this job simply failed, the Actions tab would be
+      # permanently red and everyone would learn to ignore it, which is exactly
+      # the failure mode this whole effort is meant to kill. So: detect the
+      # missing secrets, say so LOUDLY, and finish green.
+      #
+      # `secrets` is not available in `if:` expressions, so the check has to be
+      # a step that publishes an output the later steps key off.
+      # ─────────────────────────────────────────────────────────────────────
+      - name: Check deployment secrets
+        id: gate
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_USER: ${{ secrets.SFTP_USER }}
+          SFTP_KEY: ${{ secrets.SFTP_KEY }}
+          SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          DRY_RUN_INPUT: ${{ github.event.inputs.dry_run || 'false' }}
+          DEPLOY_PROTOCOL: ${{ vars.DEPLOY_PROTOCOL || 'sftp' }}
+        run: |
+          set -euo pipefail
+
+          echo "dry_run=${DRY_RUN_INPUT}" >> "$GITHUB_OUTPUT"
+          echo "protocol=${DEPLOY_PROTOCOL}" >> "$GITHUB_OUTPUT"
+
+          missing=""
+          # Only NAMES are ever printed. Values stay in the masked env.
+          [ -n "${SFTP_HOST:-}" ]              || missing="${missing} SFTP_HOST"
+          [ -n "${SFTP_USER:-}" ]              || missing="${missing} SFTP_USER"
+          [ -n "${VITE_SUPABASE_URL:-}" ]      || missing="${missing} VITE_SUPABASE_URL"
+          [ -n "${VITE_SUPABASE_ANON_KEY:-}" ] || missing="${missing} VITE_SUPABASE_ANON_KEY"
+          if [ -z "${SFTP_KEY:-}" ] && [ -z "${SFTP_PASSWORD:-}" ]; then
+            missing="${missing} SFTP_KEY_or_SFTP_PASSWORD"
+          fi
+
+          if [ -n "$missing" ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Deployment skipped — credentials not configured::Missing repository secrets:${missing}. Production was NOT updated. See docs/DEPLOYMENT_SETUP.md."
+            {
+              echo "## Deployment SKIPPED — not yet configured"
+              echo
+              echo "This run finished green **on purpose**. Nothing was uploaded and production is unchanged."
+              echo
+              echo "The following repository secrets are missing:"
+              echo
+              for name in ${missing}; do echo "- \`${name}\`"; done
+              echo
+              echo "Until the hosting admin issues a deploy account for"
+              echo "\`/domains/borneotracker.rentsmartprop.com.my/public_html\`, the live site keeps"
+              echo "serving whatever was last uploaded by hand (2026-07-23), even though the daily"
+              echo "data refresh keeps succeeding."
+              echo
+              echo "Fix: **Settings -> Secrets and variables -> Actions**, then follow"
+              echo "\`docs/DEPLOYMENT_SETUP.md\`. The request to send the hosting admin is §2.3 of"
+              echo "\`docs/DIRECTADMIN_DASHBOARD_DATA_UPDATE_OPTIONS.md\`."
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo ""
+            echo "############################################################"
+            echo "#  DEPLOY SKIPPED — credentials not configured             #"
+            echo "#  Missing:${missing}"
+            echo "#  Production was NOT updated. This is not a build failure. #"
+            echo "############################################################"
+            exit 0
+          fi
+
+          echo "ready=true" >> "$GITHUB_OUTPUT"
+          if [ -n "${SFTP_KEY:-}" ]; then
+            echo "auth=key" >> "$GITHUB_OUTPUT"
+            echo "Auth method: SSH private key (SFTP_KEY)."
+          else
+            echo "auth=password" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Password authentication in use::SFTP_KEY is not set, falling back to SFTP_PASSWORD. A key is preferred — see docs/DEPLOYMENT_SETUP.md."
+          fi
+          echo "All required deployment secrets are present. Protocol: ${DEPLOY_PROTOCOL}."
+
+      # ─────────────────────────────────────────────────────────────────────
+      # 1. Checkout.
+      #
+      # For workflow_run we must check out the TIP OF THE BRANCH, not
+      # `workflow_run.head_sha`: head_sha is the commit the refresh started
+      # from, i.e. the state BEFORE it committed today's data. Using it would
+      # deploy yesterday's numbers — a silent, very hard to spot regression.
+      # ─────────────────────────────────────────────────────────────────────
+      - name: Checkout
+        if: steps.gate.outputs.ready == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_branch || github.ref }}
+
+      - name: Record the exact commit being deployed
+        if: steps.gate.outputs.ready == 'true'
+        id: rev
+        run: |
+          set -euo pipefail
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "short=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+          echo "subject=$(git log -1 --pretty=%s)" >> "$GITHUB_OUTPUT"
+          git log -1 --pretty='Deploying %h %s (%ci)'
+
+      # ─────────────────────────────────────────────────────────────────────
+      # 2. Data validation gate. Nothing gets past here if the data is bad.
+      # ─────────────────────────────────────────────────────────────────────
+      - name: Set up Python
+        if: steps.gate.outputs.ready == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Validate dashboard data (blocking gate)
+        if: steps.gate.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          if [ ! -f validate_data.py ]; then
+            echo "::error title=Data validation script missing::validate_data.py is not in the repository. Refusing to publish unvalidated data to production."
+            exit 1
+          fi
+          if [ -f requirements.txt ]; then
+            python -m pip install --disable-pip-version-check --quiet -r requirements.txt
+          fi
+          echo "Running validate_data.py ..."
+          python validate_data.py
+
+      # ─────────────────────────────────────────────────────────────────────
+      # 3. Build.
+      # ─────────────────────────────────────────────────────────────────────
+      - name: Set up Node
+        if: steps.gate.outputs.ready == 'true'
+        uses: actions/setup-node@v4
+        with:
+          # Pinned major. Vite 8 requires ^20.19 || >=22.12; 22 is the active
+          # LTS and matches the version the site was last built with locally.
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        if: steps.gate.outputs.ready == 'true'
+        run: npm ci
+
+      - name: Build production bundle
+        if: steps.gate.outputs.ready == 'true'
+        env:
+          # Env-gated in src/services/supabaseClient.js. Without these the build
+          # silently falls back to the local mock news/auth store.
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: npm run build
+
+      # ─────────────────────────────────────────────────────────────────────
+      # 4. Post-build assertions — the last chance to stop before production.
+      #
+      # The manifest helper is written to RUNNER_TEMP rather than committed so
+      # that the deploy contract lives in exactly one reviewable file (this one)
+      # and so the smoke test and the pre-upload check cannot drift apart: both
+      # normalise the manifest with the same code.
+      # ─────────────────────────────────────────────────────────────────────
+      - name: Write manifest helper
+        if: steps.gate.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/manifest_tool.py" <<'PYEOF'
+          #!/usr/bin/env python3
+          """Deploy-time manifest helper. Generated by .github/workflows/deploy.yml.
+
+          Tolerates any of the plausible shapes of public/data/manifest.json:
+              {"files": {"indicators.json": {"sha256": "..."}}}
+              {"files": [{"path": "indicators.json", "sha256": "..."}]}
+              {"generatedAt": "...", "indicators.json": "<64 hex>"}
+          A value only counts as a hash if it is 64 lowercase hex chars, which
+          keeps sibling metadata (generatedAt, version, ...) out of the map.
+          """
+          import hashlib
+          import json
+          import os
+          import re
+          import sys
+
+          HEX64 = re.compile(r"^[0-9a-f]{64}$")
+          REQUIRED = ("indicators.json", "resilience.json", "districts.json")
+
+
+          def normalise(manifest):
+              out = {}
+
+              def add(name, sha):
+                  if not name or not sha:
+                      return
+                  sha = str(sha).strip().lower()
+                  if not HEX64.match(sha):
+                      return
+                  out[os.path.basename(str(name))] = sha
+
+              node = manifest
+              if isinstance(manifest, dict) and isinstance(manifest.get("files"), (dict, list)):
+                  node = manifest["files"]
+
+              if isinstance(node, dict):
+                  for key, val in node.items():
+                      if isinstance(val, dict):
+                          add(val.get("path") or val.get("file") or val.get("name") or key,
+                              val.get("sha256") or val.get("sha_256") or val.get("hash"))
+                      elif isinstance(val, str):
+                          add(key, val)
+              elif isinstance(node, list):
+                  for val in node:
+                      if isinstance(val, dict):
+                          add(val.get("path") or val.get("file") or val.get("name"),
+                              val.get("sha256") or val.get("hash"))
+              return out
+
+
+          def load(path):
+              with open(path, "rb") as fh:
+                  return json.loads(fh.read().decode("utf-8"))
+
+
+          def sha256_of(path):
+              digest = hashlib.sha256()
+              with open(path, "rb") as fh:
+                  for chunk in iter(lambda: fh.read(1 << 20), b""):
+                      digest.update(chunk)
+              return digest.hexdigest()
+
+
+          def die(msg):
+              print("::error title=Pre-upload assertion failed::%s" % msg)
+              sys.exit(1)
+
+
+          def verify_local(data_dir, out_path):
+              manifest_path = os.path.join(data_dir, "manifest.json")
+              try:
+                  manifest = load(manifest_path)
+              except Exception as exc:  # noqa: BLE001 - want the reason in the log
+                  die("%s is not valid JSON: %s" % (manifest_path, exc))
+              declared = normalise(manifest)
+              if not declared:
+                  die("%s declares no sha256 entries — nothing could be verified." % manifest_path)
+
+              problems = []
+              for name in REQUIRED:
+                  if name not in declared:
+                      problems.append("manifest.json has no sha256 entry for required file '%s'" % name)
+
+              for name, expected in sorted(declared.items()):
+                  path = os.path.join(data_dir, name)
+                  if not os.path.isfile(path):
+                      problems.append("manifest.json declares '%s' but dist/data/%s does not exist" % (name, name))
+                      continue
+                  actual = sha256_of(path)
+                  status = "ok" if actual == expected else "MISMATCH"
+                  print("  %-28s %s  %s" % (name, actual[:16] + "...", status))
+                  if actual != expected:
+                      problems.append(
+                          "sha256 mismatch for %s: manifest says %s, built file is %s" % (name, expected, actual)
+                      )
+
+              if problems:
+                  for problem in problems:
+                      print("::error title=Pre-upload assertion failed::%s" % problem)
+                  sys.exit(1)
+
+              indicators = load(os.path.join(data_dir, "indicators.json"))
+              generated_at = indicators.get("generatedAt")
+              if not generated_at:
+                  die("dist/data/indicators.json has no generatedAt field.")
+
+              with open(out_path, "w", encoding="utf-8") as fh:
+                  json.dump({"generatedAt": generated_at, "hashes": declared}, fh, indent=2, sort_keys=True)
+              print("generatedAt=%s" % generated_at)
+              print("verified %d manifest entries" % len(declared))
+
+
+          def compare_remote(remote_manifest_path, expected_path):
+              expected = load(expected_path)
+              try:
+                  remote = normalise(load(remote_manifest_path))
+              except Exception as exc:  # noqa: BLE001
+                  print("::error title=Smoke test failed::production /data/manifest.json is not valid JSON: %s" % exc)
+                  sys.exit(1)
+              bad = 0
+              for name, sha in sorted(expected["hashes"].items()):
+                  got = remote.get(name)
+                  if got is None:
+                      print("::error title=Smoke test failed::production manifest is missing '%s'" % name)
+                      bad += 1
+                  elif got != sha:
+                      print("::error title=Smoke test failed::production '%s' is %s, we built %s" % (name, got, sha))
+                      bad += 1
+                  else:
+                      print("  %-28s %s  matches production" % (name, sha[:16] + "..."))
+              sys.exit(1 if bad else 0)
+
+
+          def assert_generated_at(remote_indicators_path, expected_path):
+              expected = load(expected_path)["generatedAt"]
+              try:
+                  got = load(remote_indicators_path).get("generatedAt")
+              except Exception as exc:  # noqa: BLE001
+                  print("::error title=Smoke test failed::production /data/indicators.json is not valid JSON: %s" % exc)
+                  sys.exit(1)
+              if got != expected:
+                  print("::error title=Smoke test failed::production indicators.json generatedAt=%r, expected %r" % (got, expected))
+                  sys.exit(1)
+              print("  generatedAt %s  matches production" % expected)
+
+
+          if __name__ == "__main__":
+              mode = sys.argv[1]
+              if mode == "verify-local":
+                  verify_local(sys.argv[2], sys.argv[3])
+              elif mode == "compare-remote":
+                  compare_remote(sys.argv[2], sys.argv[3])
+              elif mode == "assert-generated-at":
+                  assert_generated_at(sys.argv[2], sys.argv[3])
+              else:
+                  raise SystemExit("unknown mode %r" % mode)
+          PYEOF
+          # Fail here rather than three steps later if the heredoc ever gets mangled.
+          python -c "import ast,os;ast.parse(open(os.path.join(os.environ['RUNNER_TEMP'],'manifest_tool.py'),encoding='utf-8').read())"
+          echo "manifest_tool.py written and parsed OK."
+
+      - name: Assert the build is publishable
+        if: steps.gate.outputs.ready == 'true'
+        id: assert
+        run: |
+          set -euo pipefail
+          fail=0
+
+          # `-s` = exists AND is non-empty. The non-empty part matters most for
+          # .htaccess: shipping a zero-byte one would silently remove the SPA
+          # rewrite and 404 every deep link (/news, /reports, /admin, ...).
+          for f in \
+            dist/index.html \
+            dist/.htaccess \
+            dist/data/indicators.json \
+            dist/data/resilience.json \
+            dist/data/districts.json \
+            dist/data/manifest.json
+          do
+            if [ -s "$f" ]; then
+              printf '  ok      %-32s %s bytes\n' "$f" "$(stat -c%s "$f")"
+            else
+              echo "::error title=Pre-upload assertion failed::$f is missing or empty — refusing to deploy."
+              fail=1
+            fi
+          done
+
+          # dist/.htaccess comes from public/.htaccess (Vite copies public/ as-is).
+          # Confirm it still carries the rewrite, not just that a file exists.
+          if [ -s dist/.htaccess ] && ! grep -qi 'RewriteEngine' dist/.htaccess; then
+            echo "::error title=Pre-upload assertion failed::dist/.htaccess does not contain a RewriteEngine directive — SPA deep links would break."
+            fail=1
+          fi
+
+          [ "$fail" -eq 0 ] || exit 1
+
+          echo ""
+          echo "Verifying every data file against dist/data/manifest.json:"
+          python "$RUNNER_TEMP/manifest_tool.py" verify-local dist/data "$RUNNER_TEMP/expected.json"
+
+          GENERATED_AT="$(python -c "import json,os;print(json.load(open(os.path.join(os.environ['RUNNER_TEMP'],'expected.json')))['generatedAt'])")"
+          echo "generated_at=${GENERATED_AT}" >> "$GITHUB_OUTPUT"
+
+      # ─────────────────────────────────────────────────────────────────────
+      # 5. Upload.
+      #
+      # WHY lftp AND NOT A MARKETPLACE ACTION
+      #   Whatever runs this step holds credentials that can overwrite a live
+      #   public_html. A third-party action pulled in by a floating tag is an
+      #   unreviewed dependency with exactly that power. lftp is a 25-year-old
+      #   Debian-packaged client installed from Ubuntu's own repo; the whole
+      #   transfer script is right here in the diff and can be read line by line.
+      #
+      # NON-DESTRUCTIVE BY DESIGN
+      #   `mirror -R` with NO `--delete`, per §2.4 of the DirectAdmin doc:
+      #   observe several clean runs before anything is allowed to remove files.
+      #   CONSEQUENCE / FOLLOW-UP: Vite emits content-hashed asset filenames, so
+      #   every build that changes a chunk leaves the previous hashed file behind
+      #   forever. They are harmless (nothing links to them) but they accumulate
+      #   and eat the hosting quota. Follow-up once this has run cleanly for a
+      #   week or two: either a periodic manual cleanup of dist/assets/ via the
+      #   DirectAdmin File Manager, or a second phase that adds
+      #   `--delete --only-existing` scoped to assets/ alone.
+      #
+      # ORDERING
+      #   Assets and data go up FIRST, then index.html and .htaccess LAST. If the
+      #   connection dies mid-run, the live index.html still points at the old
+      #   (still present, because we never delete) assets, so the site keeps
+      #   working instead of white-screening on a missing chunk.
+      # ─────────────────────────────────────────────────────────────────────
+      - name: Install lftp
+        if: steps.gate.outputs.ready == 'true' && steps.gate.outputs.dry_run != 'true'
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          # sshpass is only pulled in for the password fallback; with a key it is
+          # unused. `-e` makes it read the password from $SSHPASS, so it never
+          # appears in the process table.
+          sudo apt-get install -y -qq lftp sshpass
+          lftp --version | head -1
+
+      - name: Prepare credentials
+        if: steps.gate.outputs.ready == 'true' && steps.gate.outputs.dry_run != 'true'
+        id: creds
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_PORT: ${{ secrets.SFTP_PORT }}
+          SFTP_KEY: ${{ secrets.SFTP_KEY }}
+          SFTP_KNOWN_HOSTS: ${{ secrets.SFTP_KNOWN_HOSTS }}
+          PROTOCOL: ${{ steps.gate.outputs.protocol }}
+          AUTH: ${{ steps.gate.outputs.auth }}
+        run: |
+          set -euo pipefail
+          umask 077
+
+          if [ "$PROTOCOL" != "sftp" ] && [ "$PROTOCOL" != "ftps" ]; then
+            echo "::error title=Bad configuration::DEPLOY_PROTOCOL must be 'sftp' or 'ftps', got '${PROTOCOL}'."
+            exit 1
+          fi
+          if [ "$PROTOCOL" = "ftps" ] && [ "$AUTH" = "key" ]; then
+            echo "::error title=Bad configuration::FTPS cannot use an SSH key. Set SFTP_PASSWORD, or switch DEPLOY_PROTOCOL back to sftp."
+            exit 1
+          fi
+
+          PORT="${SFTP_PORT:-}"
+          if [ -z "$PORT" ]; then
+            if [ "$PROTOCOL" = "ftps" ]; then PORT=21; else PORT=22; fi
+            echo "SFTP_PORT not set; defaulting to ${PORT} for ${PROTOCOL}."
+          fi
+          echo "port=${PORT}" >> "$GITHUB_OUTPUT"
+
+          if [ "$PROTOCOL" = "sftp" ]; then
+            KNOWN="$RUNNER_TEMP/known_hosts"
+            if [ -n "${SFTP_KNOWN_HOSTS:-}" ]; then
+              printf '%s\n' "$SFTP_KNOWN_HOSTS" > "$KNOWN"
+              echo "Host key pinned from the SFTP_KNOWN_HOSTS secret."
+            else
+              # Trust-on-first-use. Better than StrictHostKeyChecking=no because
+              # the fingerprint we accepted is printed and can be checked against
+              # what the hosting admin says it should be — and then pinned.
+              ssh-keyscan -p "$PORT" -H "$SFTP_HOST" > "$KNOWN" 2>/dev/null || true
+              if [ ! -s "$KNOWN" ]; then
+                echo "::error title=Cannot reach the SFTP host::ssh-keyscan returned nothing for port ${PORT}. Wrong host/port, or the server blocks GitHub Actions runners (see §2.3 item 8-9 of the DirectAdmin doc)."
+                exit 1
+              fi
+              echo "::warning title=SSH host key not pinned::Accepted the host key on first use. Check the fingerprint below with the hosting admin, then store the output of 'ssh-keyscan -p ${PORT} <host>' as the SFTP_KNOWN_HOSTS secret."
+              echo "Accepted host key fingerprints:"
+              ssh-keygen -lf "$KNOWN" || true
+            fi
+            chmod 600 "$KNOWN"
+
+            if [ "$AUTH" = "key" ]; then
+              KEYFILE="$RUNNER_TEMP/deploy_key"
+              # printf (not echo) guarantees the trailing newline OpenSSH insists on.
+              printf '%s\n' "$SFTP_KEY" > "$KEYFILE"
+              chmod 600 "$KEYFILE"
+              if ! ssh-keygen -y -f "$KEYFILE" > /dev/null 2>&1; then
+                echo "::error title=Unusable SSH key::SFTP_KEY is not a readable OpenSSH private key (passphrase-protected keys are not supported). Re-paste the full file, BEGIN/END lines included."
+                exit 1
+              fi
+              echo "SSH private key loaded and parsed."
+            fi
+          fi
+
+      - name: Upload dist/ to DirectAdmin (non-destructive)
+        if: steps.gate.outputs.ready == 'true' && steps.gate.outputs.dry_run != 'true'
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_USER: ${{ secrets.SFTP_USER }}
+          SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+          SFTP_REMOTE_DIR: ${{ secrets.SFTP_REMOTE_DIR }}
+          PROTOCOL: ${{ steps.gate.outputs.protocol }}
+          AUTH: ${{ steps.gate.outputs.auth }}
+          PORT: ${{ steps.creds.outputs.port }}
+          FTPS_VERIFY_CERT: ${{ vars.FTPS_VERIFY_CERT || 'yes' }}
+        run: |
+          set -euo pipefail
+          umask 077
+
+          REMOTE_DIR="${SFTP_REMOTE_DIR:-$DEFAULT_REMOTE_DIR}"
+          echo "Remote directory: ${REMOTE_DIR}"
+          BACKUP_DIR="$RUNNER_TEMP/predeploy"
+          mkdir -p "$BACKUP_DIR"
+
+          SCRIPT="$RUNNER_TEMP/lftp.script"
+          : > "$SCRIPT"
+          chmod 600 "$SCRIPT"
+
+          {
+            echo "set cmd:fail-exit yes"
+            echo "set net:max-retries 3"
+            echo "set net:reconnect-interval-base 5"
+            echo "set net:timeout 30"
+            # One transfer at a time: §2.3 item 8 of the DirectAdmin doc flags a
+            # possible connection-rate limit on shared hosting, and a throttled
+            # deploy is better than a banned IP.
+            echo "set mirror:parallel-transfer-count 1"
+            echo "set xfer:clobber on"
+          } >> "$SCRIPT"
+
+          if [ "$PROTOCOL" = "sftp" ]; then
+            if [ "$AUTH" = "key" ]; then
+              echo "set sftp:connect-program \"ssh -a -x -i $RUNNER_TEMP/deploy_key -o UserKnownHostsFile=$RUNNER_TEMP/known_hosts -o StrictHostKeyChecking=yes -o BatchMode=yes -p $PORT\"" >> "$SCRIPT"
+            else
+              export SSHPASS="$SFTP_PASSWORD"
+              echo "set sftp:connect-program \"sshpass -e ssh -a -x -o UserKnownHostsFile=$RUNNER_TEMP/known_hosts -o StrictHostKeyChecking=yes -o PubkeyAuthentication=no -p $PORT\"" >> "$SCRIPT"
+            fi
+            echo "open sftp://${SFTP_USER}@${SFTP_HOST}" >> "$SCRIPT"
+          else
+            # Escape the two characters lftp treats specially inside a quoted
+            # string. A newline in the password cannot be escaped, so reject it
+            # with a clear message instead of producing a corrupt script.
+            if [ "$(printf '%s' "$SFTP_PASSWORD" | wc -l)" -gt 0 ]; then
+              echo "::error title=Unusable password::SFTP_PASSWORD contains a newline. Re-enter the secret without a trailing line break."
+              exit 1
+            fi
+            esc_user="$(printf '%s' "$SFTP_USER"     | sed 's/\\/\\\\/g; s/"/\\"/g')"
+            esc_pass="$(printf '%s' "$SFTP_PASSWORD" | sed 's/\\/\\\\/g; s/"/\\"/g')"
+            {
+              echo "set ftp:ssl-force true"
+              echo "set ftp:ssl-protect-data true"
+              echo "set ssl:verify-certificate ${FTPS_VERIFY_CERT}"
+              # The password lives in this 0600 file rather than on lftp's
+              # command line, so it never shows up in `ps`.
+              echo "open -u \"${esc_user}\",\"${esc_pass}\" ftps://${SFTP_HOST}:${PORT}"
+            } >> "$SCRIPT"
+          fi
+
+          {
+            # Best-effort snapshot of whatever .htaccess is live right now, so a
+            # bad deploy can have that one file put back by hand immediately.
+            echo "set cmd:fail-exit no"
+            echo "get \"${REMOTE_DIR}/.htaccess\" -o \"${BACKUP_DIR}/htaccess.live\""
+            echo "set cmd:fail-exit yes"
+
+            # `cd` first: if REMOTE_DIR is wrong (e.g. the account is chrooted)
+            # this fails immediately, before a single byte is written anywhere.
+            echo "cd \"${REMOTE_DIR}\""
+            echo "lcd dist"
+
+            # Pass 1 — everything except the two entry-point files. No --delete.
+            echo "mirror --reverse --no-delete --verbose --exclude-glob index.html --exclude-glob .htaccess . ."
+
+            # Pass 2 — flip the entry point last.
+            echo "put index.html"
+            echo "put .htaccess"
+            echo "bye"
+          } >> "$SCRIPT"
+
+          echo "--- lftp transfer plan (credentials redacted by GitHub) ---"
+          grep -v -e '^open' -e 'connect-program' "$SCRIPT" || true
+          echo "-----------------------------------------------------------"
+
+          lftp -f "$SCRIPT"
+          rm -f "$SCRIPT"
+
+          if [ -s "$BACKUP_DIR/htaccess.live" ]; then
+            if cmp -s "$BACKUP_DIR/htaccess.live" dist/.htaccess; then
+              echo "Live .htaccess was already identical to the one in the repo."
+            else
+              echo "::warning title=Server .htaccess replaced::The live .htaccess differed from public/.htaccess and has been overwritten with the repo version. The previous copy is attached to this run as the 'predeploy-htaccess' artifact. If the hosting admin had added rules there by hand, fold them into public/.htaccess."
+            fi
+          else
+            echo "No pre-existing remote .htaccess was found (or it could not be read)."
+          fi
+
+          echo "Upload complete."
+
+      - name: Keep the previous .htaccess for rollback
+        if: always() && steps.gate.outputs.ready == 'true' && steps.gate.outputs.dry_run != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: predeploy-htaccess
+          path: ${{ runner.temp }}/predeploy/htaccess.live
+          if-no-files-found: ignore
+          retention-days: 30
+
+      # ─────────────────────────────────────────────────────────────────────
+      # 6. Smoke test — the reason this workflow exists.
+      #
+      # A deploy that is not verified is still an open loop. So we do not check
+      # "did lftp exit 0", we check "is production now byte-identical to what we
+      # just built".
+      #
+      # TRAP THIS GUARDS AGAINST: public/.htaccess rewrites any non-existent
+      # path to index.html, so a MISSING /data/manifest.json answers 200 with
+      # HTML. Status codes alone are worthless here — every JSON check therefore
+      # also asserts the content type and actually parses the body.
+      # ─────────────────────────────────────────────────────────────────────
+      - name: Smoke-test production
+        if: steps.gate.outputs.ready == 'true' && steps.gate.outputs.dry_run != 'true'
+        id: smoke
+        env:
+          ALLOW_INSECURE: ${{ vars.SMOKE_ALLOW_INSECURE_TLS || 'true' }}
+        run: |
+          set -uo pipefail
+          BASE="${PRODUCTION_URL%/}"
+          OUT="$RUNNER_TEMP/smoke"
+          TOOL="$RUNNER_TEMP/manifest_tool.py"
+          EXPECTED="$RUNNER_TEMP/expected.json"
+          mkdir -p "$OUT"
+          : > "$OUT/curl.err"
+          fail=0
+
+          # ---- TLS policy ---------------------------------------------------
+          CURL=(curl --silent --show-error --location --max-time 30
+                --retry 2 --retry-delay 3 --retry-connrefused
+                -H 'Cache-Control: no-cache' -H 'Pragma: no-cache')
+          if [ "$ALLOW_INSECURE" = "true" ]; then
+            CURL+=(--insecure)
+            echo "::warning title=Smoke test is NOT verifying TLS::SMOKE_ALLOW_INSECURE_TLS is true, so certificate errors are ignored. As of 2026-07-28 the certificate on this host covers rentsmartprop.com.my, apexseo.*, hybrid.*, invoice.*, mail.*, packaging.* and webmail.* but NOT the 'borneotracker' subdomain — so every real visitor gets a browser security warning. Ask the hosting admin to reissue/extend the certificate (or issue a free Let's Encrypt cert for the subdomain in DirectAdmin -> SSL Certificates), then set the repository variable SMOKE_ALLOW_INSECURE_TLS to false."
+            echo "TLS VERIFICATION DISABLED for this smoke test (see the warning above)."
+          else
+            echo "TLS verification: STRICT."
+          fi
+
+          # fetch <url> <body-file>  -> prints "<http_code> <content_type>"
+          fetch() {
+            local out=""
+            out="$("${CURL[@]}" -o "$2" -w '%{http_code} %{content_type}' "$1" 2>>"$OUT/curl.err")" || true
+            if [ -z "$out" ]; then out="000 none"; fi
+            printf '%s' "$out"
+          }
+
+          # check_html <path> <label> <body-file>
+          check_html() {
+            local res code ctype
+            res="$(fetch "${BASE}$1" "$3")"
+            code="${res%% *}"
+            ctype="${res#* }"
+            if [ "$code" != "200" ]; then
+              echo "::error title=Smoke test failed::$2 (${BASE}$1) returned HTTP ${code}, expected 200."
+              return 1
+            fi
+            case "$ctype" in
+              *text/html*) ;;
+              *)
+                echo "::error title=Smoke test failed::$2 returned content-type '${ctype}', expected text/html."
+                return 1 ;;
+            esac
+            if ! grep -q 'id="root"' "$3"; then
+              echo "::error title=Smoke test failed::$2 returned 200 but the body is not the Borneo Tracker app shell."
+              return 1
+            fi
+            echo "  ok  $2 -> 200 ${ctype}"
+            return 0
+          }
+
+          echo "=== 1. Home page ==="
+          if ! check_html "/" "home page" "$OUT/home.html"; then fail=1; fi
+
+          echo ""
+          echo "=== 2. SPA deep link (proves .htaccess survived the upload) ==="
+          # /news is a client-side route with no file behind it, so without the
+          # rewrite rule from .htaccess this 404s.
+          if ! check_html "/news" "deep link /news" "$OUT/news.html"; then fail=1; fi
+
+          echo ""
+          echo "=== 3. Production is byte-identical to the build we just made ==="
+          # Short retry loop: the web server can keep serving a cached copy for a
+          # few seconds after the upload lands.
+          matched=0
+          for attempt in 1 2 3 4 5 6; do
+            m_res="$(fetch "${BASE}/data/manifest.json" "$OUT/manifest.json")"
+            i_res="$(fetch "${BASE}/data/indicators.json" "$OUT/indicators.json")"
+            m_code="${m_res%% *}"; m_type="${m_res#* }"
+            i_code="${i_res%% *}"; i_type="${i_res#* }"
+
+            # A file that is NOT on the server answers 200 + text/html here (the
+            # SPA rewrite catches it), so the content type is the real check.
+            if [ "$m_code" = "200" ] && [ "$i_code" = "200" ] \
+               && [ "${m_type#*json}" != "$m_type" ] && [ "${i_type#*json}" != "$i_type" ]; then
+              if python "$TOOL" compare-remote "$OUT/manifest.json" "$EXPECTED" > "$OUT/cmp.log" 2>&1 \
+                 && python "$TOOL" assert-generated-at "$OUT/indicators.json" "$EXPECTED" >> "$OUT/cmp.log" 2>&1; then
+                matched=1
+                cat "$OUT/cmp.log"
+                break
+              fi
+            else
+              echo "  attempt ${attempt}: manifest.json -> ${m_code} ${m_type}; indicators.json -> ${i_code} ${i_type}"
+            fi
+            if [ "$attempt" -lt 6 ]; then
+              echo "  attempt ${attempt}: production does not match yet; retrying in 10s..."
+              sleep 10
+            fi
+          done
+
+          if [ "$matched" -ne 1 ]; then
+            fail=1
+            cat "$OUT/cmp.log" 2>/dev/null || true
+            # Last probe, with a cache-buster. If THAT matches, the new bytes
+            # really are on the server and the problem is an edge/page cache —
+            # a completely different fix from "the upload never landed".
+            if "${CURL[@]}" -o "$OUT/manifest.cb.json" "${BASE}/data/manifest.json?cachebust=${GITHUB_RUN_ID}" >/dev/null 2>&1 \
+               && python "$TOOL" compare-remote "$OUT/manifest.cb.json" "$EXPECTED" >/dev/null 2>&1; then
+              echo "::error title=Stale cache, not a failed upload::The new files ARE on the server — they match when fetched with a cache-buster — but the plain URL still serves an old copy. Flush LiteSpeed/LSCache (or the CDN) for this domain."
+            else
+              echo "::error title=Smoke test failed::Production /data/manifest.json does not match the build that was just uploaded."
+            fi
+          fi
+
+          # ---- 4. Advisory: has the certificate been fixed yet? --------------
+          # This runs regardless of the variable, so the log tells the owner the
+          # day the certificate starts validating and the check can be tightened.
+          echo ""
+          echo "=== 4. TLS certificate status ==="
+          if [ "${BASE#https://}" = "$BASE" ]; then
+            echo "  skipped: ${BASE} is not an https URL."
+            echo "tls=not-https" >> "$GITHUB_OUTPUT"
+          elif curl --silent --show-error --max-time 20 -o /dev/null "${BASE}/" 2>"$OUT/tls.err"; then
+            if [ "$ALLOW_INSECURE" = "true" ]; then
+              echo "::warning title=TLS certificate now validates — tighten the smoke test::A strict TLS request to ${BASE}/ succeeded, so the certificate problem appears to be fixed. Set the repository variable SMOKE_ALLOW_INSECURE_TLS to false so every future deploy verifies the certificate."
+              echo "tls=fixed-but-not-enforced" >> "$GITHUB_OUTPUT"
+            else
+              echo "  ok  strict TLS handshake succeeded."
+              echo "tls=strict-ok" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "  strict TLS check FAILED: $(head -1 "$OUT/tls.err" 2>/dev/null)"
+            echo "tls=broken" >> "$GITHUB_OUTPUT"
+            if [ "$ALLOW_INSECURE" != "true" ]; then
+              echo "::error title=Smoke test failed::SMOKE_ALLOW_INSECURE_TLS is false but the certificate for ${BASE} is still not valid."
+              fail=1
+            fi
+          fi
+
+          if [ "$fail" -ne 0 ]; then
+            echo "result=fail" >> "$GITHUB_OUTPUT"
+            echo ""
+            echo "--- curl stderr ---"
+            cat "$OUT/curl.err" 2>/dev/null || true
+            echo ""
+            echo "SMOKE TEST FAILED — production is not serving what we built. See 'If the smoke test fails' in docs/DEPLOYMENT_SETUP.md."
+            exit 1
+          fi
+          echo "result=pass" >> "$GITHUB_OUTPUT"
+          echo ""
+          echo "SMOKE TEST PASSED — production is byte-identical to this build."
+
+      # ─────────────────────────────────────────────────────────────────────
+      # 7. Summary. Runs even on failure so the run page always says what
+      #    happened and what is live.
+      # ─────────────────────────────────────────────────────────────────────
+      - name: Write deployment summary
+        if: always() && steps.gate.outputs.ready == 'true'
+        env:
+          TRIGGER: ${{ github.event_name }}
+          COMMIT: ${{ steps.rev.outputs.sha }}
+          COMMIT_SHORT: ${{ steps.rev.outputs.short }}
+          COMMIT_SUBJECT: ${{ steps.rev.outputs.subject }}
+          GENERATED_AT: ${{ steps.assert.outputs.generated_at }}
+          SMOKE: ${{ steps.smoke.outputs.result }}
+          TLS: ${{ steps.smoke.outputs.tls }}
+          DRY_RUN: ${{ steps.gate.outputs.dry_run }}
+          PROTOCOL: ${{ steps.gate.outputs.protocol }}
+          AUTH: ${{ steps.gate.outputs.auth }}
+        run: |
+          set -uo pipefail
+          {
+            if [ "${DRY_RUN}" = "true" ]; then
+              echo "## Dry run — nothing was uploaded"
+            elif [ "${SMOKE}" = "pass" ]; then
+              echo "## Deployed and verified"
+            elif [ "${SMOKE}" = "fail" ]; then
+              echo "## Deploy ran but VERIFICATION FAILED"
+            else
+              echo "## Deploy did not complete"
+            fi
+            echo
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Target | ${PRODUCTION_URL} |"
+            echo "| Trigger | \`${TRIGGER}\` |"
+            echo "| Commit | \`${COMMIT_SHORT}\` — ${COMMIT_SUBJECT} |"
+            echo "| Data \`generatedAt\` | **${GENERATED_AT:-unknown}** |"
+            echo "| Transport | ${PROTOCOL} (${AUTH} auth), non-destructive mirror |"
+            echo "| Smoke test | ${SMOKE:-not run} |"
+            echo "| TLS | ${TLS:-not checked} |"
+            echo
+
+            if [ -f "$RUNNER_TEMP/expected.json" ]; then
+              echo "### Manifest shipped"
+              echo
+              echo "| File | SHA-256 |"
+              echo "|---|---|"
+              python - <<'PY'
+          import json, os
+          data = json.load(open(os.path.join(os.environ["RUNNER_TEMP"], "expected.json")))
+          for name, sha in sorted(data["hashes"].items()):
+              print("| `%s` | `%s` |" % (name, sha))
+          PY
+              echo
+            fi
+
+            if [ "${SMOKE}" = "fail" ]; then
+              echo "### What to do"
+              echo
+              echo "Production is **not** serving this build. Read the \"Smoke-test production\" step"
+              echo "above for the specific assertion that failed, then see the rollback section of"
+              echo "\`docs/DEPLOYMENT_SETUP.md\`."
+            fi
+            if [ "${TLS}" = "fixed-but-not-enforced" ]; then
+              echo "### Certificate looks fixed"
+              echo
+              echo "Set the repository variable \`SMOKE_ALLOW_INSECURE_TLS\` to \`false\` to start"
+              echo "enforcing certificate validation on every deploy."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
