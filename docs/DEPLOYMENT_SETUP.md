@@ -25,24 +25,51 @@ done.**
 
 ---
 
-## 1. Ask the hosting admin for a deploy account
+## 1. Get a deploy account
 
-Send section **2.3** of
+> ### ⚠️ Measured 2026-08-02 — the protocol question is already answered: **FTPS, not SFTP**
+>
+> Probed from outside against `borneotracker.rentsmartprop.com.my`:
+>
+> | Port | Result |
+> |---|---|
+> | 21 | **OPEN** — `220 Welcome to Pure-FTPd [privsep] [TLS]` → explicit FTPS available |
+> | 22 | closed / filtered → **SFTP is not offered** |
+> | 990 | closed / filtered → no implicit FTPS |
+> | 2222 | OPEN — the DirectAdmin control panel |
+>
+> So **do not generate an SSH key, do not run `ssh-keyscan`, and do not ask for SFTP** — none of
+> it applies to this host. `SFTP_KEY` and `SFTP_KNOWN_HOSTS` are dead options here; the workflow
+> handles this natively (`deploy.yml:548-559`) when you set the variable `DEPLOY_PROTOCOL=ftps`,
+> which also switches the default port to 21. FTPS authenticates with `SFTP_PASSWORD`; it
+> cannot use a key.
+>
+> (Caveat worth one line: port 22 was probed from a single vantage point, so an IP allowlist
+> could in principle be hiding it. If the hosting admin says SSH *is* available for a
+> specific source, SFTP is still the better option — but do not wait on that.)
+>
+> **You may not need to ask anyone.** Creating an FTP account is a normal user-level function in
+> DirectAdmin: **FTP Management → Create FTP Account**. If that menu is available to you, make
+> the account yourself and skip straight to Step 2. Only if it is missing or disabled do you need
+> the request below.
+
+If you do need to ask, send section **2.3** of
 [`DIRECTADMIN_DASHBOARD_DATA_UPDATE_OPTIONS.md`](./DIRECTADMIN_DASHBOARD_DATA_UPDATE_OPTIONS.md#23-information-or-access-required-from-the-supervisor)
-— it is already written as a request and lists all nine items (connection type, host, port,
-username, key/password, remote directory, directory restriction, firewall/rate limits, whether
-GitHub Actions runners may connect). Do not re-type it here; that document is the one that was
-sent out.
+— it is already written as a request — but **amend item 1**: that document still asks for SFTP
+in preference to FTPS, which the measurement above rules out. Ask for an **FTPS account on port
+21**, the username and password, and the correct remote directory.
 
-Two additions worth asking for at the same time:
+Two things worth asking at the same time, neither of which blocks deployment:
 
-1. **An SSH *public key* upload instead of a password.** Generate the pair yourself:
-   ```bash
-   ssh-keygen -t ed25519 -C "borneo-tracker-deploy" -f borneo_deploy -N ""
-   ```
-   Send them `borneo_deploy.pub` (the `.pub` file only — never the other one). Keep
-   `borneo_deploy` for Step 2. A key is preferred because it can be revoked on its own and
-   cannot be used to log into the DirectAdmin control panel.
+1. **Is Let's Encrypt auto-renewal enabled for the wildcard certificate?** It expires
+   **2026-10-29** — see the note below.
+2. **What is the account's hourly outbound mail limit?** Supabase now sends auth email through
+   `noreply@rentsmartprop.com.my` on this same server; exceeding an unseen cap fails silently.
+
+And for the record:
+
+1. ~~**An SSH *public key* upload instead of a password.**~~ **Not applicable — port 22 is
+   closed on this host.** See the measurement above.
 2. ~~**A TLS certificate that covers `borneotracker.rentsmartprop.com.my`.**~~ **DONE — do not
    ask for this.** Resolved on 2026-08-01 via DirectAdmin's Let's Encrypt integration. The
    server now presents a **wildcard** `*.rentsmartprop.com.my` (+ the apex), issued 2026-07-31
@@ -56,13 +83,12 @@ Two additions worth asking for at the same time:
    warning. Once `SMOKE_ALLOW_INSECURE_TLS` is flipped to `false` (§5) the deploy smoke test
    catches this for you, which is the durable fix; until then it is a diary entry.
 
-Then get the server's SSH host key so the connection can be pinned:
-
-```bash
-ssh-keyscan -p 22 <host>
-```
-
-Save that output — it goes into `SFTP_KNOWN_HOSTS`.
+~~Then get the server's SSH host key so the connection can be pinned.~~ **Skip this too** — host-key
+pinning is an SSH concept and there is no SSH here. The FTPS equivalent is already in place: leave
+`FTPS_VERIFY_CERT` at its default `yes` and the control channel is validated against the server's
+real certificate. For that to work, `SFTP_HOST` **must** be `borneotracker.rentsmartprop.com.my` —
+the wildcard covers `*.rentsmartprop.com.my` but **not** `sg-shared01.dapanel.net`, so using the
+panel hostname would force you to disable certificate verification and throw away the TLS fix.
 
 ---
 
@@ -70,17 +96,23 @@ Save that output — it goes into `SFTP_KNOWN_HOSTS`.
 
 **Settings → Secrets and variables → Actions → "Secrets" tab → New repository secret.**
 
-| Secret | Required | Value |
+The secret names still say `SFTP_*` because that is what `deploy.yml` reads; on this host they
+carry **FTPS** values. Concrete settings for `borneotracker.rentsmartprop.com.my`:
+
+| Secret | Required | Value on this host |
 |---|---|---|
-| `SFTP_HOST` | yes | Hostname only, e.g. `sg-shared01.dapanel.net`. No `https://`, no path, no port. |
-| `SFTP_USER` | yes | Deployment username. |
-| `SFTP_KEY` | **primary** | The whole private key file, `-----BEGIN`/`-----END` lines included. Must have **no passphrase** — CI cannot type one. |
-| `SFTP_PASSWORD` | fallback | Only if the host refuses key auth. Used automatically when `SFTP_KEY` is empty. Avoid `"` `\` and leading/trailing spaces; a newline is rejected outright. |
-| `SFTP_PORT` | no | Defaults to `22` for SFTP, `21` for FTPS. |
-| `SFTP_REMOTE_DIR` | no | Defaults to `/domains/borneotracker.rentsmartprop.com.my/public_html`. **If the account is chrooted to its own home, this is wrong** — it will be something like `/public_html`. Ask which. |
-| `SFTP_KNOWN_HOSTS` | recommended | Output of `ssh-keyscan -p <port> <host>`. Without it the first run trusts the host key blindly (and prints the fingerprint it accepted so you can check and then pin it). |
-| `VITE_SUPABASE_URL` | **yes** | Production Supabase project URL. |
-| `VITE_SUPABASE_ANON_KEY` | **yes** | Production Supabase anon key. Safe in the browser bundle — RLS restricts anon to `status = 'published'`. |
+| `SFTP_HOST` | yes | **`borneotracker.rentsmartprop.com.my`** — not `sg-shared01.dapanel.net`, or FTPS certificate verification fails (see §1). Hostname only: no `https://`, no path, no port. |
+| `SFTP_USER` | yes | The FTP account username. |
+| `SFTP_PASSWORD` | **yes here** | FTPS cannot use a key, so this is the only auth method available. Avoid `"` `\` and leading/trailing spaces; a newline is rejected outright. |
+| `SFTP_PORT` | yes here | **`21`**. (It would default to 21 anyway once `DEPLOY_PROTOCOL=ftps`, but set it explicitly so the value is visible.) |
+| `SFTP_REMOTE_DIR` | depends | If the FTP account lands you directly inside `public_html`, this is **`/`**. If it lands in the account home, it is `/domains/borneotracker.rentsmartprop.com.my/public_html`. Log in once with any FTP client and look: seeing `index.html` + `assets/` means `/`; seeing `domains/` + `logs/` means the full path. Getting this wrong deploys into a nested folder that nothing serves. |
+| ~~`SFTP_KEY`~~ | n/a | **Not usable** — port 22 is closed on this host. |
+| ~~`SFTP_KNOWN_HOSTS`~~ | n/a | **Not usable** — SSH host-key pinning does not apply to FTPS. |
+| `VITE_SUPABASE_URL` | **yes** | Production Supabase project URL. ✅ already set (2026-08-01). |
+| `VITE_SUPABASE_ANON_KEY` | **yes** | Production Supabase anon key. Safe in the browser bundle — RLS restricts anon to `status = 'published'`. ✅ already set (2026-08-01). |
+
+**And one variable is mandatory on this host** — without it the workflow tries SSH and fails:
+`DEPLOY_PROTOCOL` = `ftps` (Variables tab, see below).
 
 > The two `VITE_*` values are not optional. `src/services/supabaseClient.js` is env-gated: build
 > without them and the deployed site silently falls back to the local **mock** auth and news
@@ -94,7 +126,7 @@ Save that output — it goes into `SFTP_KNOWN_HOSTS`.
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `SMOKE_ALLOW_INSECURE_TLS` | `true` | `true` = the smoke test ignores certificate errors, because the certificate does not currently cover this subdomain. **Set to `false` once the certificate is fixed** — see Step 5. |
+| `SMOKE_ALLOW_INSECURE_TLS` | `true` | The default dates from when the certificate did not cover this subdomain. **It does now** (2026-08-01) — **set this to `false`**, so a certificate regression fails the deploy instead of being ignored. See Step 5. |
 | `PRODUCTION_URL` | `https://borneotracker.rentsmartprop.com.my` | The URL the smoke test checks. |
 | `DEPLOY_PROTOCOL` | `sftp` | Set to `ftps` if the host only offers FTPS. (FTPS requires `SFTP_PASSWORD`; it cannot use a key.) |
 | `FTPS_VERIFY_CERT` | `yes` | FTPS only. Set to `no` if the host's FTPS certificate is self-signed. |

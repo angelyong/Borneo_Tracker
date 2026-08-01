@@ -85,17 +85,22 @@ DirectAdmin serves the updated dashboard
 
 ### 2.3 Information or Access Required from the Supervisor
 
+> **Update 2026-08-02 — items 1, 2 and 3 have since been answered by measurement, so please do
+> not spend the supervisor's time on them.** Probing `borneotracker.rentsmartprop.com.my` from
+> outside: **port 21 is open** and answers `220 Welcome to Pure-FTPd [privsep] [TLS]`, i.e.
+> explicit **FTPS** is supported; **port 22 is closed/filtered**, so **SFTP is not offered**;
+> port 990 is closed (no implicit FTPS); port 2222 is the DirectAdmin panel. The ask is therefore
+> an **FTPS account on port 21 with a password** — an SSH key cannot be used.
+>
+> Also note that creating an FTP account is a normal user-level function in DirectAdmin
+> (**FTP Management → Create FTP Account**), so this request is only needed if that menu is
+> unavailable to the team. See [`DEPLOYMENT_SETUP.md`](./DEPLOYMENT_SETUP.md) §1.
+
 Please confirm whether a deployment account can be created specifically for the Borneo Tracker subdomain and provide the following:
 
-1. Supported connection type:
-   - **SFTP preferred**
-   - FTPS
-   - Standard FTP is not recommended because it provides weaker protection for credentials and transferred data.
-2. Server hostname, for example:
-   `sg-shared01.dapanel.net`
-3. Connection port:
-   - SFTP commonly uses port `22`.
-   - The hosting administrator should confirm the actual FTPS or FTP port.
+1. ~~Supported connection type~~ — **answered: FTPS on port 21** (see the note above). Standard, unencrypted FTP must not be used, as it exposes the credentials and the transferred files.
+2. ~~Server hostname~~ — **use `borneotracker.rentsmartprop.com.my`**, not `sg-shared01.dapanel.net`: the server's Let's Encrypt certificate is a wildcard for `*.rentsmartprop.com.my`, so connecting by the panel hostname would fail certificate verification.
+3. ~~Connection port~~ — **answered: `21`**.
 4. Deployment username.
 5. Password or SSH private key.
 6. Correct remote deployment directory:
