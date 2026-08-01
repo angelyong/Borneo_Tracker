@@ -277,8 +277,38 @@ def fetch_publisher_raw(url):
     return ET.fromstring(data).findall(".//item")
 
 
-def collect_publisher(days, cutoff, per_feed, seen):
-    """Pull, tag, and filter the confirmed-live publisher feeds. Returns item dicts."""
+def _outlet(source):
+    """Distinct-outlet identity for corroboration counting (by publisher name)."""
+    return (source.get("name") or "").strip().lower()
+
+
+def register_or_merge(index, key, item):
+    """De-duplicate by story `key`, but COUNT corroboration instead of silently
+    dropping duplicates (the old behaviour dropped the dupe and hard-coded
+    sourceCount=1 — i.e. it claimed a corroboration signal it never computed).
+
+    Returns True if `item` is a NEW story (caller should append it), False if it
+    merged into an already-seen story as another corroborating source.
+
+    Conservative on purpose: it only merges stories the existing key rule already
+    treats as identical, so it can never OVER-count corroboration (over-claiming =
+    an E-moat violation). It may under-count, which is the honest failure mode."""
+    existing = index.get(key)
+    if existing is None:
+        index[key] = item
+        return True
+    have = {_outlet(s) for s in existing["sources"] if _outlet(s)}
+    for s in item.get("sources", []):
+        if _outlet(s) and _outlet(s) not in have:
+            existing["sources"].append(s)
+            have.add(_outlet(s))
+    existing["sourceCount"] = len(have)
+    return False
+
+
+def collect_publisher(days, cutoff, per_feed, index):
+    """Pull, tag, and filter the confirmed-live publisher feeds. Returns the NEW item
+    dicts; cross-feed duplicates are merged (counted) into `index`, not dropped."""
     out = []
     now = dt.datetime.now(dt.timezone.utc)
     for feed in PUBLISHER_FEEDS:
@@ -315,18 +345,13 @@ def collect_publisher(days, cutoff, per_feed, seen):
                 terrs = [feed["default_territory"]]
             country = TERR_COUNTRY.get(terrs[0], "Indonesia")
 
-            key = title.lower()[:60]
-            if key in seen:
-                continue
             published = parse_pubdate(it.findtext("pubDate"))
             if published and published < cutoff:
                 continue
-            seen.add(key)
-            kept += 1
 
             snippet = desc[:600].strip()
             published_iso = (published or now).isoformat()
-            out.append({
+            item = {
                 "id": slugify(title),
                 "title": title,
                 # Real publisher snippet (fuller than the headline). Marked raw until digest.
@@ -346,7 +371,11 @@ def collect_publisher(days, cutoff, per_feed, seen):
                 "createdAt": now.isoformat(),
                 "publishedAt": None,
                 "isFeatured": False,
-            })
+            }
+            # Same story from another feed → count it as corroboration, don't drop it.
+            if register_or_merge(index, title.lower()[:60], item):
+                out.append(item)
+                kept += 1
     return out
 
 
@@ -368,13 +397,13 @@ def main():
     args = ap.parse_args()
 
     cutoff = dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=args.days)
-    seen = set()
+    index = {}  # story key -> item, shared across sources so duplicates COUNT as corroboration
     items = []
 
     # 1) Publisher-native feeds FIRST — richer bodies + real links + images win dedupe.
     n_pub = 0
     if args.publisher:
-        pub = collect_publisher(args.days, cutoff, args.per_feed, seen)
+        pub = collect_publisher(args.days, cutoff, args.per_feed, index)
         items.extend(pub)
         n_pub = len(pub)
         print(f"Publisher RSS: {n_pub} in-scope items from {len(PUBLISHER_FEEDS)} feeds.")
@@ -398,18 +427,13 @@ def main():
                 link = it.findtext("link") or ""
                 if not title or not link:
                     continue
-                key = title.lower()[:60]
-                if key in seen:
-                    continue
                 published = parse_pubdate(it.findtext("pubDate"))
                 if published and published < cutoff:
                     continue
-                seen.add(key)
-                kept += 1
                 src_el = it.find("source")
                 source_name = strip_html(src_el.text) if src_el is not None else "Google News"
                 published_iso = (published or dt.datetime.now(dt.timezone.utc)).isoformat()
-                items.append({
+                item = {
                     "id": slugify(title),
                     "title": title,
                     "body": strip_html(it.findtext("description") or "") or title,
@@ -428,7 +452,11 @@ def main():
                     "createdAt": dt.datetime.now(dt.timezone.utc).isoformat(),
                     "publishedAt": None,
                     "isFeatured": False,
-                })
+                }
+                # Same story from another source → count corroboration, don't drop.
+                if register_or_merge(index, title.lower()[:60], item):
+                    items.append(item)
+                    kept += 1
 
     # 3) Full article text for real (non-Google) links so the AI summarizes the
     #    actual story, not just the headline. Bounded to keep runtime sane.
