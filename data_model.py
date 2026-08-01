@@ -25,6 +25,18 @@ POPULATION = {
     "Kalimantan": 17_259_155,  # BPS 2024 (mid-2023, 5 provinces combined)
 }
 
+# The reference year of the POPULATION figures above. Carried into the per-capita
+# provenance so the (often older) paddy PRODUCTION year and this POPULATION year are
+# BOTH visible instead of silently mixed. Figures are ~2024 (Kalimantan is a mid-2023
+# BPS projection reported for 2024). We deliberately keep the CURRENT population as the
+# denominator ("per current resident") rather than chase historical per-year figures:
+# DOSM rebased state population after the 2020 census, so a raw 2022 figure is a
+# different series and would inject a bigger artefact than the ~1-2 kg/capita it fixes.
+# The real lag is stale PRODUCTION (Sabah/Sarawak paddy is 2022) — tracked in
+# docs/DATA_INTAKE_ROADMAP.md. North-star (not built): population as an ingested ANNUAL
+# series so per-capita auto year-matches and this snapshot constant disappears.
+POPULATION_YEAR = "2024"
+
 # Internet use — the Entertainment-pillar proxy (Phase 1, C2=B). % of individuals
 # using the internet. Multi-agency sources with slightly different definitions, so
 # scored but flagged (confidence follows data_level): value, source, data_level.
@@ -486,7 +498,12 @@ def build_percapita_food_rows(rows):
                 "year": source_row["year"],
                 "value": str(kg_per_capita),
                 "unit": "kg/capita",
-                "source": f"Derived: {source_row['source']} ÷ population {population:,}",
+                "source": (
+                    f"Derived: {source_row['source']} ÷ {POPULATION_YEAR} population "
+                    f"{population:,}. Latest available production ({source_row['year']}) "
+                    f"per current resident; production-year lag tracked in "
+                    f"docs/DATA_INTAKE_ROADMAP.md."
+                ),
                 "data_level": "territory",
             }
         )

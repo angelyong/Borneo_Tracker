@@ -25,6 +25,15 @@ _Status updated: 2026-07-20 — an admin site now **partially exists** (user man
   seeded cache. `manual_overrides.csv` now 11 rows (was 18). **FAOSTAT still pending (521 outage).**
   **UNESCO + GDL go live on the next full `run_pipeline.py` / daily Action run** (DB + JSON not
   regenerated yet — poc CSV newer than DB, avoided a risky partial re-ingest).
+- 2026-08-01 — **Food per-capita year-mismatch logged (surfaced during loop-engineering / Impact-Simulator prep).**
+  `build_percapita_food_rows` (`data_model.py`) divides paddy PRODUCTION by the `POPULATION` 2024 snapshot, but
+  production years differ per territory: **Sabah/Sarawak 2022, Brunei 2023, Kalimantan 2025**. Decision **A+**
+  (Henry, 2026-08-01): do NOT chase historical per-year population (DOSM rebased state population after the 2020
+  census → a raw 2022 figure is a different series and would add a bigger artefact than the ~1-2 kg/capita it
+  fixes). Instead: keep the **current-population** denominator, make the provenance state **both** years
+  ("production YYYY ÷ 2024 population"), and treat the root cause as a **production-freshness** TODO here — the
+  real fix is fresher state paddy, not the divisor. Numeric impact ~±1-2 kg/capita; changes no weakest-pillar or
+  RAG story. North-star: population as an annual series so per-capita auto year-matches.
 
 > ⚠️ **READ THIS WHEN YOU START BUILDING THE ADMIN SITE.** This work was intentionally
 > parked until then. Do not forget it — it is the plan for turning our 18 hand-typed
@@ -80,6 +89,9 @@ Buckets A & B need neither front-end nor back-end and could be done anytime. Buc
 - [ ] Write GDL puller (needs token in secrets; tag `data_level=modeled/academic`).
 - [ ] **Re-test FAOSTAT endpoint.** If up, write paddy puller; if down, route to Bucket C.
 - [ ] Bucket A: add WB-national fallback with `data_level=national` where sub-national is missing.
+- [ ] **Refresh Sabah/Sarawak state paddy production** (currently **2022** via data.gov.my/OpenDOSM) — the Food
+      per-capita is anchored to the production year, so 2022 is the stalest input feeding the Resilience Index.
+      Fixing this (not the population divisor) is the real fix for the Food per-capita year mismatch.
 
 **Assisted intake (Lane 2, bucket C) — with the admin front + back:**
 - [ ] Scheduled collector (GitHub Action): per stale cell, run targeted search → candidate sources.
