@@ -7,6 +7,92 @@ export type AIChatRequest = {
   language: string;
 };
 
+export type ComparabilityDecision =
+  | 'ALLOW'
+  | 'ALLOW_WITH_WARNING'
+  | 'DOWNGRADE'
+  | 'REJECT'
+  | 'NEEDS_CLARIFICATION';
+
+export type ComparabilityOperation =
+  | 'compare'
+  | 'rank'
+  | 'trend'
+  | 'sdg_progress'
+  | 'district_answer'
+  | 'describe';
+
+export type ConceptComparabilityRule = {
+  concept: string;
+  crossTerritoryComparable: boolean;
+  comparableBasis?: string;
+  blockedReasons?: string[];
+  requiresSameIndicator?: boolean;
+  requiresSameUnit?: boolean;
+  requiresSameDenominator?: boolean;
+  requiresNormalization?: string;
+  inheritedNationalValue?: boolean;
+  trendAvailable?: boolean;
+  methodologyBreaks?: number[];
+  disclosures?: string[];
+};
+
+export type ComparabilityMetadataRow = {
+  territory?: string;
+  parent?: string;
+  indicator?: string;
+  dashboard_concept?: string;
+  year?: string | number;
+  unit?: string;
+  source?: string;
+  data_level?: string;
+  confidence?: string;
+  canonical?: string | number | boolean;
+  is_derived?: string | number | boolean;
+  derived_from?: string;
+  denominator?: string;
+  measurement_definition?: string;
+};
+
+export type ComparabilityInput = {
+  intent?: string;
+  entities?: string[];
+  concepts?: string[];
+  indicators?: string[];
+  territories?: string[];
+  years?: Array<string | number>;
+  operations?: ComparabilityOperation[];
+  metadata?: {
+    rows?: ComparabilityMetadataRow[];
+    series?: Record<string, Record<string, unknown>>;
+    districts?: {
+      generatedAt?: string;
+      rows?: ComparabilityMetadataRow[];
+      parents?: Record<string, string[]>;
+    };
+  };
+  freshness?: {
+    now?: string;
+    staleAfterDays?: number;
+    districtsGeneratedAt?: string;
+  };
+  options?: {
+    explicitHistoricalComparison?: boolean;
+    normalizedComparisonBasis?: string;
+    rankingClaim?: boolean;
+  };
+};
+
+export type ComparabilityResult = {
+  decision: ComparabilityDecision;
+  reasons: string[];
+  warnings: string[];
+  blockedOperations: string[];
+  allowedOperations: string[];
+  requiredDisclosures: string[];
+  normalizedComparisonBasis?: string;
+};
+
 export type AIChatResponse = {
   answer: string;
   mode: 'gemini-test';

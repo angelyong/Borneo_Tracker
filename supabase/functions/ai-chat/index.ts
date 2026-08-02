@@ -4,6 +4,7 @@ import {
   parseJsonBody,
   validateChatRequest,
 } from './contracts.ts';
+import { evaluateComparability, inferComparabilityInputFromRequest } from './comparabilityGate.ts';
 import { generateGeminiAnswer } from './geminiClient.ts';
 
 declare const Deno:
@@ -18,6 +19,13 @@ export async function handleAiChatRequest(request: Request): Promise<Response> {
   try {
     const body = await parseJsonBody(request);
     const chatRequest = validateChatRequest(body);
+    const comparability = evaluateComparability(inferComparabilityInputFromRequest(chatRequest));
+    console.info('ai-chat comparability', {
+      decision: comparability.decision,
+      blockedOperations: comparability.blockedOperations,
+      allowedOperations: comparability.allowedOperations,
+      disclosureCount: comparability.requiredDisclosures.length,
+    });
     const answer = await generateGeminiAnswer(chatRequest);
     return jsonResponse({
       answer,
