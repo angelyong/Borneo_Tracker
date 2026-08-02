@@ -855,8 +855,10 @@ jobs:
             echo "cd \"${REMOTE_DIR}\""
             echo "lcd dist"
 
-            # Pass 1 — everything except the two entry-point files. No --delete.
-            echo "mirror --reverse --no-delete --verbose --exclude-glob index.html --exclude-glob .htaccess . ."
+            # Pass 1 — everything except the two entry-point files.  lftp is
+            # non-destructive by default; do NOT add --delete (or the invalid
+            # --no-delete option) here.
+            echo "mirror --reverse --verbose --exclude-glob index.html --exclude-glob .htaccess . ."
 
             # Pass 2 — flip the entry point last.
             echo "put index.html"

@@ -87,6 +87,22 @@ class DeployWorkflowContractTests(unittest.TestCase):
     def test_connection_test_and_dry_run_are_mutually_exclusive(self):
         self.assertIn("Choose either dry_run or connection_test_only, not both.", self.text)
 
+    def test_real_mirror_is_non_destructive_with_supported_lftp_flags(self):
+        upload = step_block(
+            self.text,
+            "- name: Upload dist/ to DirectAdmin (non-destructive)",
+            "- name: Keep the previous .htaccess for rollback",
+        )
+        self.assertIn(
+            'mirror --reverse --verbose --exclude-glob index.html --exclude-glob .htaccess . .',
+            upload,
+        )
+        mirror_line = next(
+            line for line in upload.splitlines() if 'echo "mirror ' in line
+        )
+        self.assertNotIn("--delete", mirror_line)
+        self.assertNotIn("--no-delete", mirror_line)
+
     def test_transport_config_is_validated_before_lftp(self):
         prepare = step_block(
             self.text,
