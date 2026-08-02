@@ -695,6 +695,81 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     expect(news.geminiClient).toHaveBeenCalledWith(expect.objectContaining({ message: 'Show latest Borneo news.' }));
   });
 
+  it('retrieves BORNEO_NEWS internally without sending news content to Gemini', async () => {
+    const logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+    const newsRepository = {
+      findPublished: vi.fn().mockResolvedValue([{
+        id: 'safe-published-news',
+        title: 'Safe published title',
+        summary: 'Safe published summary.',
+        publishedAt: '2026-07-13T00:00:00Z',
+        territory: 'Sabah',
+        language: 'en',
+        publisher: 'Safe Publisher',
+        url: 'https://example.com/safe-news',
+      }]),
+      countPending: vi.fn().mockResolvedValue(3),
+    };
+    const geminiClient = vi.fn().mockResolvedValue('News response from existing path.');
+    const handler = createAiChatHandler({ geminiClient, newsRepository, logger });
+
+    const response = await handler(request({ ...validPayload, message: 'Show latest conservation news in Sabah.', region: '' }));
+    const body = await response.json();
+    const newsLog = logger.info.mock.calls.find(([event]) => event === 'news_query_executed')?.[1];
+    const completed = logger.info.mock.calls.find(([event]) => event === 'request_completed')?.[1];
+
+    expect(response.status).toBe(200);
+    expect(body).toMatchObject({
+      answer: 'News response from existing path.',
+      mode: 'gemini-test',
+      sources: [],
+    });
+    expect(newsRepository.findPublished).toHaveBeenCalledWith(expect.objectContaining({
+      territories: ['Sabah'],
+      latest: true,
+      limit: 5,
+    }));
+    expect(newsRepository.countPending).toHaveBeenCalledWith(expect.objectContaining({
+      territories: ['Sabah'],
+    }));
+    expect(geminiClient).toHaveBeenCalledTimes(1);
+    expect(geminiClient.mock.calls[0]).toHaveLength(1);
+    expect(JSON.stringify(geminiClient.mock.calls)).not.toContain('Safe published title');
+    expect(newsLog).toMatchObject({
+      newsQueryExecuted: true,
+      territoryCount: 1,
+      publishedCount: 1,
+      pendingCount: 3,
+      dateFilterUsed: false,
+      limit: 5,
+      languagePreferenceUsed: true,
+      warningCodes: [],
+    });
+    expect(JSON.stringify(logger.info.mock.calls)).not.toContain('Safe published title');
+    expect(JSON.stringify(logger.info.mock.calls)).not.toContain('https://example.com/safe-news');
+    expect(completed.newsRetrieval).toMatchObject({
+      publishedCount: 1,
+      pendingCount: 3,
+      territoryCount: 1,
+    });
+  });
+
+  it('does not invoke news repository for dashboard, site knowledge, or out-of-scope intents', async () => {
+    const newsRepository = {
+      findPublished: vi.fn(),
+      countPending: vi.fn(),
+    };
+    const geminiClient = vi.fn().mockResolvedValue('Integrated response.');
+    const handler = createAiChatHandler({ geminiClient, newsRepository, logger: silentLogger });
+
+    await handler(request({ ...validPayload, message: "What is Sabah's resilience score?", region: '' }));
+    await handler(request({ ...validPayload, message: 'What is Borneo Tracker?', region: '' }));
+    await handler(request({ ...validPayload, message: 'Write me a poem about clouds.', region: '' }));
+
+    expect(newsRepository.findPublished).not.toHaveBeenCalled();
+    expect(newsRepository.countPending).not.toHaveBeenCalled();
+  });
+
   it('runs dashboard facts through lever retrieval before prompt construction', async () => {
     const logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
     const leverRetriever = vi.fn().mockReturnValue({

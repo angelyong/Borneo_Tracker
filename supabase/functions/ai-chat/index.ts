@@ -2,6 +2,7 @@ import {
   type AIChatRequest,
   AIChatHttpError,
   type AIChatPrompt,
+  type AIChatNewsResult,
   type AIChatStructuredAnswer,
   type FallbackReason,
   type LeverRetrievalResult,
@@ -20,6 +21,9 @@ import { FactDataRepository } from './factDataRepository.ts';
 import { generateGeminiAnswer } from './geminiClient.ts';
 import { LeverRepository } from './leverRepository.ts';
 import { retrieveVerifiedLevers } from './leverRetriever.ts';
+import { LocalNewsRepository } from './localNewsRepository.ts';
+import type { AIChatNewsRepository } from './newsRepository.ts';
+import { retrieveAIChatNews } from './newsRetriever.ts';
 import { routeAiChatIntent } from './intentRouter.ts';
 import { consoleSafeLogger, errorLogFields, type SafeLogger } from './logger.ts';
 import { buildGroundedPrompt } from './promptBuilder.ts';
@@ -39,6 +43,7 @@ type GeminiAnswerClient = (request: AIChatRequest, prompt?: AIChatPrompt) => Pro
 type StructuredAnswerClient = (input: Parameters<typeof buildStructuredAnswer>[0]) => AIChatStructuredAnswer;
 type PromptBuilderClient = (input: Parameters<typeof buildGroundedPrompt>[0]) => AIChatPrompt;
 type LeverRetrieverClient = (input: Parameters<typeof retrieveVerifiedLevers>[0]) => LeverRetrievalResult;
+type NewsRetrieverClient = (input: Parameters<typeof retrieveAIChatNews>[0]) => Promise<AIChatNewsResult>;
 
 type HandlerOptions = {
   env?: EnvLike;
@@ -48,6 +53,8 @@ type HandlerOptions = {
   promptBuilder?: PromptBuilderClient;
   leverRepository?: LeverRepository;
   leverRetriever?: LeverRetrieverClient;
+  newsRepository?: AIChatNewsRepository;
+  newsRetriever?: NewsRetrieverClient;
   logger?: SafeLogger;
 };
 
@@ -62,6 +69,8 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
   const leverRetriever =
     options.leverRetriever ||
     ((query: Parameters<typeof retrieveVerifiedLevers>[0]) => retrieveVerifiedLevers(query, leverRepository));
+  const newsRepository = options.newsRepository || new LocalNewsRepository();
+  const newsRetriever = options.newsRetriever || retrieveAIChatNews;
 
   return async function handleAiChatRequest(request: Request): Promise<Response> {
     const corsHeaders = buildCorsHeaders(request, parseCorsConfig(options.env));
@@ -85,6 +94,7 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
     let route: ReturnType<typeof routeAiChatIntent> | undefined;
     let structuredAnswer: AIChatStructuredAnswer | undefined;
     let groundedPrompt: AIChatPrompt | undefined;
+    let newsResult: AIChatNewsResult | undefined;
 
     try {
       const body = await parseJsonBody(request);
@@ -119,6 +129,24 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
             repository: options.factRepository,
           })
         : undefined;
+      if (route.intent === 'BORNEO_NEWS') {
+        newsResult = await newsRetriever({
+          intent: route,
+          entities,
+          language: entities.language || route.language || chatRequest.language,
+          repository: newsRepository,
+        });
+        logger.info('news_query_executed', {
+          newsQueryExecuted: true,
+          territoryCount: newsResult.queryApplied.territories.length,
+          publishedCount: newsResult.published.length,
+          pendingCount: newsResult.pending.count,
+          dateFilterUsed: Boolean(newsResult.queryApplied.fromDate || newsResult.queryApplied.toDate),
+          limit: newsResult.queryApplied.limit,
+          languagePreferenceUsed: Boolean(entities.language || route.language || chatRequest.language),
+          warningCodes: newsResult.warnings,
+        });
+      }
       const levers = factObject && factObject.availability !== 'BLOCKED' && comparability.decision !== 'NEEDS_CLARIFICATION'
         ? leverRetriever({
             concepts: factObject.concepts,
@@ -377,6 +405,14 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
           matchedBy: levers.matchedBy,
           warningCount: levers.warnings.length,
           emptyReason: levers.emptyReason,
+        } : undefined,
+        newsRetrieval: newsResult ? {
+          publishedCount: newsResult.published.length,
+          pendingCount: newsResult.pending.count,
+          territoryCount: newsResult.queryApplied.territories.length,
+          dateFilterUsed: Boolean(newsResult.queryApplied.fromDate || newsResult.queryApplied.toDate),
+          limit: newsResult.queryApplied.limit,
+          warningCodes: newsResult.warnings,
         } : undefined,
         page: chatRequest.currentPage,
         region: chatRequest.region,

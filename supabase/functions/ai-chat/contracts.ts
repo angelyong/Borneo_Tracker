@@ -264,6 +264,60 @@ export type LeverBuildReport = {
   outputFiles: string[];
 };
 
+export type AIChatNewsStatus =
+  | 'published'
+  | 'pending';
+
+export type AIChatNewsTerritory =
+  | 'Sabah'
+  | 'Sarawak'
+  | 'Brunei'
+  | 'Kalimantan'
+  | 'Borneo-wide'
+  | 'unknown';
+
+export type AIChatNewsLanguage =
+  | 'en'
+  | 'ms'
+  | 'unknown';
+
+export type AIChatPublishedNewsItem = {
+  id: string;
+  title: string;
+  summary: string;
+  publishedAt: string;
+  publisher?: string;
+  url?: string;
+  territory: AIChatNewsTerritory;
+  language?: AIChatNewsLanguage;
+  sourceFile?: string;
+};
+
+export type AIChatNewsQuery = {
+  territories: string[];
+  fromDate?: string;
+  toDate?: string;
+  latest?: boolean;
+  limit?: number;
+  language?: string;
+};
+
+export type AIChatPendingNewsSummary = {
+  count: number;
+};
+
+export type AIChatNewsResult = {
+  published: AIChatPublishedNewsItem[];
+  pending: AIChatPendingNewsSummary;
+  warnings: string[];
+  queryApplied: {
+    territories: string[];
+    fromDate?: string;
+    toDate?: string;
+    limit: number;
+  };
+};
+
 export type FactWarning = {
   code: string;
   message: string;
