@@ -20,6 +20,7 @@ import { generateGeminiAnswer } from './geminiClient.ts';
 import { routeAiChatIntent } from './intentRouter.ts';
 import { consoleSafeLogger, errorLogFields, type SafeLogger } from './logger.ts';
 import { buildGroundedPrompt } from './promptBuilder.ts';
+import { validateGeminiResponse } from './responseValidator.ts';
 import { buildStructuredAnswer } from './structuredAnswerBuilder.ts';
 import {
   buildTemplateFallback,
@@ -116,6 +117,32 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
             comparability,
           })
         : undefined;
+      if (structuredAnswer?.blocked || structuredAnswer?.clarificationRequired) {
+        const reason: FallbackReason = structuredAnswer.clarificationRequired
+          ? 'DETERMINISTIC_CLARIFICATION'
+          : 'DETERMINISTIC_BLOCKED';
+        const fallback = buildTemplateFallback({
+          structuredAnswer,
+          reason,
+          language: structuredAnswer.language,
+          intent: route,
+        });
+        logger.info('request_fallback', {
+          fallbackUsed: true,
+          fallbackReason: reason,
+          intent: route.intent,
+          structuredAnswerAvailability: structuredAnswer.availability,
+          blocked: structuredAnswer.blocked,
+          clarificationRequired: structuredAnswer.clarificationRequired,
+          sourceCount: fallback.sources.length,
+        });
+        return jsonResponse({
+          answer: fallback.answer,
+          mode: fallback.mode,
+          sources: fallback.sources,
+          fallback: fallbackPublicMetadata(fallback.fallback),
+        }, 200, corsHeaders);
+      }
       groundedPrompt = factObject && structuredAnswer
         ? promptBuilder({
             userQuestion: chatRequest.message,
@@ -130,6 +157,125 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
       const answer = groundedPrompt
         ? await geminiClient(chatRequest, groundedPrompt)
         : await geminiClient(chatRequest);
+      if (groundedPrompt && factObject && structuredAnswer) {
+        const validation = validateGeminiResponse({
+          answer,
+          factObject,
+          structuredAnswer,
+          comparability,
+          prompt: groundedPrompt,
+        });
+        logger.info('response_validation', {
+          responseValidated: true,
+          valid: validation.valid,
+          issueCodes: validation.issues.map((issue) => issue.code),
+          issueCount: validation.issues.length,
+          numericTokenCount: validation.detectedNumericTokens.length,
+          yearTokenCount: validation.detectedYearTokens.length,
+          urlCount: validation.detectedUrls.length,
+          intent: route.intent,
+          fallbackUsed: !validation.valid,
+          blocked: structuredAnswer.blocked,
+          clarificationRequired: structuredAnswer.clarificationRequired,
+        });
+        if (!validation.valid) {
+          const fallback = buildTemplateFallback({
+            structuredAnswer,
+            reason: 'GEMINI_RESPONSE_REJECTED',
+            language: structuredAnswer.language,
+            intent: route,
+          });
+          logger.info('request_fallback', {
+            fallbackUsed: true,
+            fallbackReason: 'GEMINI_RESPONSE_REJECTED',
+            intent: route.intent,
+            validationIssueCodes: validation.issues.map((issue) => issue.code),
+            validationIssueCount: validation.issues.length,
+            structuredAnswerAvailability: structuredAnswer.availability,
+            blocked: structuredAnswer.blocked,
+            clarificationRequired: structuredAnswer.clarificationRequired,
+            sourceCount: fallback.sources.length,
+          });
+          return jsonResponse({
+            answer: fallback.answer,
+            mode: fallback.mode,
+            sources: fallback.sources,
+            fallback: fallbackPublicMetadata(fallback.fallback),
+          }, 200, corsHeaders);
+        }
+        logger.info('request_completed', {
+          mode: 'gemini-test',
+          intent: route.intent,
+          promptBuilt: true,
+          groundingAvailability: groundedPrompt.groundingPayload.answerStatus,
+          groundedLanguage: structuredAnswer.language,
+          groundedBlocked: groundedPrompt.groundingPayload.blocked,
+          groundedClarificationRequired: groundedPrompt.groundingPayload.clarificationRequired,
+          groundedNumericTokenCount: groundedPrompt.groundingPayload.approvedNumericTokens.length,
+          groundedYearTokenCount: groundedPrompt.groundingPayload.approvedYearTokens.length,
+          groundedSourceCount: groundedPrompt.groundingPayload.sources.length,
+          intentConfidence: route.confidence,
+          entityCounts: {
+            territories: entities.territories.length,
+            concepts: entities.concepts.length,
+            indicators: entities.indicators.length,
+            pillars: entities.pillars.length,
+            districts: entities.districts.length,
+            years: entities.years.length,
+            ambiguities: entities.ambiguities.length,
+          },
+          operations: entities.operations,
+          comparability: {
+            decision: comparability.decision,
+            blockedOperations: comparability.blockedOperations,
+            allowedOperations: comparability.allowedOperations,
+            disclosureCount: comparability.requiredDisclosures.length,
+          },
+          factObject: {
+            availability: factObject.availability,
+            territories: factObject.territories.length,
+            concepts: factObject.concepts.length,
+            indicators: factObject.indicators.length,
+            pillars: factObject.pillars.length,
+            districts: factObject.districts.length,
+            values: {
+              rawValues: factObject.values.rawValues.length,
+              indicatorScores: factObject.values.indicatorScores.length,
+              pillarScores: factObject.values.pillarScores.length,
+              hasOverallResilience: Boolean(factObject.values.overallResilience),
+              hasTarget: Boolean(factObject.values.target),
+              hasGap: Boolean(factObject.values.gap),
+              trends: factObject.values.trends?.length || 0,
+              districtValues: factObject.values.districtValues?.length || 0,
+            },
+            warningCount: factObject.warnings.length,
+            sourceCount: factObject.sources.length,
+            approvedNumericTokenCount: factObject.approvedNumericTokens.length,
+            approvedYearTokenCount: factObject.approvedYearTokens.length,
+          },
+          structuredAnswer: {
+            availability: structuredAnswer.availability,
+            language: structuredAnswer.language,
+            blocked: structuredAnswer.blocked,
+            clarificationRequired: structuredAnswer.clarificationRequired,
+            layerStatuses: Object.fromEntries(
+              Object.entries(structuredAnswer.layers).map(([name, layer]) => [name, layer.status])
+            ),
+            warningCount: structuredAnswer.warnings.length,
+            sourceCount: structuredAnswer.sources.length,
+            approvedNumericTokenCount: structuredAnswer.approvedNumericTokens.length,
+            approvedYearTokenCount: structuredAnswer.approvedYearTokens.length,
+          },
+          page: chatRequest.currentPage,
+          region: chatRequest.region,
+          language: chatRequest.language,
+        });
+        return jsonResponse({
+          answer: validation.normalizedAnswer,
+          mode: 'gemini-test',
+          sources: structuredAnswer.sources,
+        }, 200, corsHeaders);
+      }
       logger.info('request_completed', {
         mode: 'gemini-test',
         intent: route.intent,

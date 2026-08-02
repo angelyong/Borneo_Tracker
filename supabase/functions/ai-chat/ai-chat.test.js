@@ -383,18 +383,30 @@ describe('ai-chat endpoint', () => {
 });
 
 describe('ai-chat Stage 3B/3C internal integration', () => {
+  function safeDashboardAnswer(prompt) {
+    if (!prompt) return 'Integrated response.';
+    return [
+      prompt.groundingPayload.conclusion,
+      prompt.groundingPayload.diagnosis,
+      prompt.groundingPayload.gap,
+      prompt.groundingPayload.impact,
+      prompt.groundingPayload.lever,
+    ].filter(Boolean).join(' ');
+  }
+
   async function runIntegratedRequest(payload) {
     const logger = {
       info: vi.fn(),
       warn: vi.fn(),
       error: vi.fn(),
     };
-    const geminiClient = vi.fn().mockResolvedValue('Integrated response.');
+    const geminiClient = vi.fn((_, prompt) => Promise.resolve(safeDashboardAnswer(prompt)));
     const handler = createAiChatHandler({ geminiClient, logger });
     const response = await handler(request(payload));
     const body = await response.json();
     const completed = logger.info.mock.calls.find(([event]) => event === 'request_completed')?.[1];
-    return { response, body, logger, geminiClient, completed };
+    const fallbackLog = logger.info.mock.calls.find(([event]) => event === 'request_fallback')?.[1];
+    return { response, body, logger, geminiClient, completed, fallbackLog };
   }
 
   it('runs request through intent, entities, and comparability for forest cover comparison', async () => {
@@ -405,10 +417,13 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     });
 
     expect(result.response.status).toBe(200);
-    expect(result.completed.intent).toBe('DASHBOARD_DATA');
-    expect(result.completed.entityCounts.territories).toBe(2);
-    expect(result.completed.comparability.decision).toBe('REJECT');
-    expect(result.completed.comparability.blockedOperations).toContain('compare');
+    expect(result.completed).toBeUndefined();
+    expect(result.fallbackLog).toMatchObject({
+      intent: 'DASHBOARD_DATA',
+      fallbackReason: 'DETERMINISTIC_BLOCKED',
+      blocked: true,
+    });
+    expect(result.geminiClient).not.toHaveBeenCalled();
   });
 
   it('allows a Sabah resilience score question without comparison', async () => {
@@ -431,9 +446,12 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
       language: 'ms',
     });
 
-    expect(result.completed.intent).toBe('DASHBOARD_DATA');
-    expect(result.completed.language).toBe('ms');
-    expect(result.completed.comparability.decision).toBe('REJECT');
+    expect(result.completed).toBeUndefined();
+    expect(result.fallbackLog).toMatchObject({
+      intent: 'DASHBOARD_DATA',
+      fallbackReason: 'DETERMINISTIC_BLOCKED',
+      blocked: true,
+    });
   });
 
   it('downgrades SDG progress internally without exposing it publicly', async () => {
@@ -445,11 +463,8 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
 
     expect(result.completed.comparability.decision).toBe('DOWNGRADE');
     expect(result.completed.comparability.blockedOperations).toContain('sdg_progress');
-    expect(result.body).toEqual({
-      answer: 'Integrated response.',
-      mode: 'gemini-test',
-      sources: [],
-    });
+    expect(result.body.mode).toBe('gemini-test');
+    expect(result.body.fallback).toBeUndefined();
   });
 
   it('requires clarification internally for an ambiguous district question', async () => {
@@ -555,10 +570,13 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
       region: '',
     });
 
-    expect(result.body).toEqual({
-      answer: 'Integrated response.',
-      mode: 'gemini-test',
-      sources: [],
+    expect(result.body).toMatchObject({
+      mode: 'template-fallback',
+      fallback: {
+        used: true,
+        reason: 'DETERMINISTIC_BLOCKED',
+        degraded: true,
+      },
     });
     expect(result.body.intent).toBeUndefined();
     expect(result.body.entities).toBeUndefined();
@@ -657,21 +675,10 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
       message: 'Show dashboard data for Kota district.',
       region: '',
     });
-    const [, blockedPrompt] = blocked.geminiClient.mock.calls[0];
-    const [, clarificationPrompt] = clarification.geminiClient.mock.calls[0];
-
-    expect(blockedPrompt.groundingPayload).toMatchObject({
-      answerStatus: 'BLOCKED',
-      blocked: true,
-      clarificationRequired: false,
-    });
-    expect(blockedPrompt.systemInstruction).toContain('For blocked answers, explain the limitation clearly');
-    expect(clarificationPrompt.groundingPayload).toMatchObject({
-      answerStatus: 'BLOCKED',
-      blocked: true,
-      clarificationRequired: true,
-    });
-    expect(clarificationPrompt.systemInstruction).toContain('For clarification answers, ask only for the missing detail');
+    expect(blocked.geminiClient).not.toHaveBeenCalled();
+    expect(clarification.geminiClient).not.toHaveBeenCalled();
+    expect(blocked.body.fallback.reason).toBe('DETERMINISTIC_BLOCKED');
+    expect(clarification.body.fallback.reason).toBe('DETERMINISTIC_CLARIFICATION');
   });
 });
 
@@ -722,7 +729,13 @@ describe('ai-chat Stage 4C template fallback', () => {
 
   it('keeps grounded Gemini success compatible and does not use fallback', async () => {
     const logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
-    const geminiClient = vi.fn().mockResolvedValue('Gemini answer.');
+    const geminiClient = vi.fn((_, prompt) => Promise.resolve([
+      prompt.groundingPayload.conclusion,
+      prompt.groundingPayload.diagnosis,
+      prompt.groundingPayload.gap,
+      prompt.groundingPayload.impact,
+      prompt.groundingPayload.lever,
+    ].filter(Boolean).join(' ')));
     const handler = createAiChatHandler({ geminiClient, logger });
 
     const response = await handler(request({ ...validPayload, message: "What is Sabah's resilience score?", region: '' }));
@@ -730,7 +743,6 @@ describe('ai-chat Stage 4C template fallback', () => {
 
     expect(response.status).toBe(200);
     expect(body).toMatchObject({
-      answer: 'Gemini answer.',
       mode: 'gemini-test',
     });
     expect(Array.isArray(body.sources)).toBe(true);

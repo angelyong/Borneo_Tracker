@@ -277,6 +277,9 @@ export type FallbackReason =
   | 'GEMINI_MALFORMED_RESPONSE'
   | 'GEMINI_EMPTY_RESPONSE'
   | 'GEMINI_NOT_CONFIGURED'
+  | 'GEMINI_RESPONSE_REJECTED'
+  | 'DETERMINISTIC_BLOCKED'
+  | 'DETERMINISTIC_CLARIFICATION'
   | 'QUOTA_UNAVAILABLE';
 
 export type AIChatFallbackMetadata = {
@@ -323,6 +326,50 @@ export type AIChatPrompt = {
   systemInstruction: string;
   userContent: string;
   groundingPayload: AIChatGroundingPayload;
+};
+
+export type ResponseValidationFailureCode =
+  | 'EMPTY_ANSWER'
+  | 'ANSWER_TOO_LONG'
+  | 'UNAPPROVED_NUMBER'
+  | 'UNAPPROVED_YEAR'
+  | 'URL_IN_BODY'
+  | 'UNVERIFIED_SOURCE'
+  | 'UNSUPPORTED_COMPARISON'
+  | 'BLOCKED_STATE_BYPASSED'
+  | 'CLARIFICATION_STATE_BYPASSED'
+  | 'UNVERIFIED_RECOMMENDATION'
+  | 'SECRET_DISCLOSURE'
+  | 'SYSTEM_INSTRUCTION_DISCLOSURE'
+  | 'INTERNAL_METADATA_DISCLOSURE'
+  | 'UNSUPPORTED_RANKING'
+  | 'UNSUPPORTED_TREND'
+  | 'UNSUPPORTED_TARGET_OR_GAP'
+  | 'MALFORMED_OUTPUT';
+
+export type ResponseValidationIssue = {
+  code: ResponseValidationFailureCode;
+  message: string;
+  token?: string;
+  severity: 'blocking';
+};
+
+export type AIChatResponseValidationResult = {
+  valid: boolean;
+  issues: ResponseValidationIssue[];
+  detectedNumericTokens: string[];
+  detectedYearTokens: string[];
+  detectedUrls: string[];
+  normalizedAnswer?: string;
+};
+
+export type AIChatResponseValidationInput = {
+  answer: unknown;
+  factObject: AIChatFactObject;
+  structuredAnswer: AIChatStructuredAnswer;
+  comparability: ComparabilityResult;
+  prompt: AIChatPrompt;
+  maxAnswerLength?: number;
 };
 
 export type AIChatSuccessResponse = {
