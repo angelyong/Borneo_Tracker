@@ -138,6 +138,90 @@ export type ComparabilityResult = {
   normalizedComparisonBasis?: string;
 };
 
+export type FactAvailability =
+  | 'AVAILABLE'
+  | 'PARTIAL'
+  | 'UNAVAILABLE'
+  | 'BLOCKED';
+
+export type FactValueStatus = 'direct' | 'calculated' | 'derived' | 'inherited';
+
+export type FactValue = {
+  value: number | string;
+  formattedValue: string;
+  unit?: string;
+  year?: number;
+  status: FactValueStatus;
+  label?: string;
+  territory?: string;
+  concept?: string;
+  indicator?: string;
+  pillar?: string;
+  sourcePath?: string;
+};
+
+export type FactSource = {
+  id?: string;
+  publisher?: string;
+  title?: string;
+  year?: number;
+  url?: string;
+  sourceFile: string;
+  sourcePath?: string;
+};
+
+export type FactWarning = {
+  code: string;
+  message: string;
+  severity: 'info' | 'warning' | 'blocking';
+};
+
+export type AIChatFactObject = {
+  availability: FactAvailability;
+  intent: AIChatIntent;
+  territories: string[];
+  concepts: string[];
+  indicators: string[];
+  pillars: string[];
+  districts: string[];
+  conclusion?: {
+    code: string;
+    text: string;
+  };
+  diagnosis?: {
+    weakestPillar?: string;
+    strongestPillar?: string;
+    supportingPillars?: string[];
+  };
+  values: {
+    rawValues: FactValue[];
+    indicatorScores: FactValue[];
+    pillarScores: FactValue[];
+    overallResilience?: FactValue;
+    target?: FactValue;
+    gap?: FactValue;
+    trends?: FactValue[];
+    districtValues?: FactValue[];
+  };
+  comparison: {
+    requested: boolean;
+    allowed: boolean;
+    basis?: string;
+    decision: ComparabilityDecision;
+  };
+  impact?: {
+    available: boolean;
+    description?: string;
+    method?: string;
+  };
+  methodologyNotes: string[];
+  requiredDisclosures: string[];
+  warnings: FactWarning[];
+  sources: FactSource[];
+  approvedNumericTokens: string[];
+  approvedYearTokens: string[];
+};
+
 export type AIChatSuccessResponse = {
   answer: string;
   mode: 'gemini-test';

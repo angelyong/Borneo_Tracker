@@ -10,6 +10,8 @@ import districtsData from '../../../public/data/districts.json';
 import { evaluateComparability } from './comparabilityGate.ts';
 import { buildCorsHeaders, type EnvLike, parseCorsConfig } from './config.ts';
 import { resolveAiChatEntities } from './entityResolver.ts';
+import { buildAIChatFactObject } from './factObjectBuilder.ts';
+import { FactDataRepository } from './factDataRepository.ts';
 import { generateGeminiAnswer } from './geminiClient.ts';
 import { routeAiChatIntent } from './intentRouter.ts';
 import { consoleSafeLogger, errorLogFields, type SafeLogger } from './logger.ts';
@@ -23,6 +25,7 @@ type GeminiAnswerClient = (request: AIChatRequest) => Promise<string>;
 type HandlerOptions = {
   env?: EnvLike;
   geminiClient?: GeminiAnswerClient;
+  factRepository?: FactDataRepository;
   logger?: SafeLogger;
 };
 
@@ -75,6 +78,15 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
           districtsGeneratedAt: districtsData.generatedAt,
         },
       });
+      const factObject = route.intent === 'DASHBOARD_DATA'
+        ? buildAIChatFactObject({
+            intent: route,
+            entities,
+            comparability,
+          }, {
+            repository: options.factRepository,
+          })
+        : undefined;
       const answer = await geminiClient(chatRequest);
       logger.info('request_completed', {
         mode: 'gemini-test',
@@ -96,6 +108,28 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
           allowedOperations: comparability.allowedOperations,
           disclosureCount: comparability.requiredDisclosures.length,
         },
+        factObject: factObject ? {
+          availability: factObject.availability,
+          territories: factObject.territories.length,
+          concepts: factObject.concepts.length,
+          indicators: factObject.indicators.length,
+          pillars: factObject.pillars.length,
+          districts: factObject.districts.length,
+          values: {
+            rawValues: factObject.values.rawValues.length,
+            indicatorScores: factObject.values.indicatorScores.length,
+            pillarScores: factObject.values.pillarScores.length,
+            hasOverallResilience: Boolean(factObject.values.overallResilience),
+            hasTarget: Boolean(factObject.values.target),
+            hasGap: Boolean(factObject.values.gap),
+            trends: factObject.values.trends?.length || 0,
+            districtValues: factObject.values.districtValues?.length || 0,
+          },
+          warningCount: factObject.warnings.length,
+          sourceCount: factObject.sources.length,
+          approvedNumericTokenCount: factObject.approvedNumericTokens.length,
+          approvedYearTokenCount: factObject.approvedYearTokens.length,
+        } : undefined,
         page: chatRequest.currentPage,
         region: chatRequest.region,
         language: chatRequest.language,

@@ -396,6 +396,23 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     expect(result.completed.comparability.blockedOperations).toContain('rank');
   });
 
+  it('builds an internal fact object summary without exposing it publicly', async () => {
+    const result = await runIntegratedRequest({
+      ...validPayload,
+      message: "What is Sabah's resilience score?",
+      region: '',
+    });
+
+    expect(result.completed.factObject).toMatchObject({
+      availability: 'AVAILABLE',
+      territories: 1,
+      values: {
+        hasOverallResilience: true,
+      },
+    });
+    expect(result.body.factObject).toBeUndefined();
+  });
+
   it('keeps the public response contract unchanged', async () => {
     const result = await runIntegratedRequest({
       ...validPayload,
@@ -411,5 +428,20 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     expect(result.body.intent).toBeUndefined();
     expect(result.body.entities).toBeUndefined();
     expect(result.body.comparability).toBeUndefined();
+    expect(result.body.factObject).toBeUndefined();
+  });
+
+  it('continues to call Gemini with the original request only', async () => {
+    const result = await runIntegratedRequest({
+      ...validPayload,
+      message: "What is Sabah's resilience score?",
+      region: '',
+    });
+
+    expect(result.geminiClient).toHaveBeenCalledWith({
+      ...validPayload,
+      message: "What is Sabah's resilience score?",
+      region: '',
+    });
   });
 });
