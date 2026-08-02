@@ -10,6 +10,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "ai-chat:golden:validate": "node scripts/evaluate-ai-chat-golden.js --validate-only",
+    "ai-chat:golden": "node scripts/evaluate-ai-chat-golden.js",
     "knowledge:build": "node scripts/build-knowledge.js",
     "knowledge:validate": "node scripts/build-knowledge.js --validate-only",
     "levers:build": "node scripts/build-levers.js",

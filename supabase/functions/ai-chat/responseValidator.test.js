@@ -3,6 +3,7 @@ import {
   DEFAULT_MAX_GEMINI_ANSWER_LENGTH,
   extractResponseNumericTokens,
   validateGeminiResponse,
+  validateSiteKnowledgeGeminiResponse,
 } from './responseValidator.ts';
 
 function baseInput(overrides = {}) {
@@ -333,5 +334,56 @@ describe('Gemini response validator security and internals', () => {
     ['TypeError: failed\n at handler (index.ts:10)', 'INTERNAL_METADATA_DISCLOSURE'],
   ])('rejects unsafe disclosure: %s', (answer, code) => {
     expect(codes(validateGeminiResponse(baseInput({ answer })))).toContain(code);
+  });
+});
+
+describe('site knowledge Gemini response validator', () => {
+  function siteInput(overrides = {}) {
+    const knowledgeAnswer = {
+      answer: 'Borneo Tracker Overview: Borneo Tracker uses verified site knowledge in 2026.',
+      language: 'en',
+      status: 'FOUND',
+      recordIds: ['about'],
+      sources: [{ id: 'about', publisher: 'Borneo Tracker', title: 'Borneo Tracker Overview', sourceFile: 'src/i18n/locales/en.json' }],
+      approvedNumericTokens: [],
+      approvedYearTokens: ['2026'],
+      warnings: [],
+    };
+    const prompt = {
+      systemInstruction: 'Use only selected knowledge.',
+      userContent: '{}',
+      groundingPayload: {
+        answerStatus: 'FOUND',
+        language: 'en',
+        answer: knowledgeAnswer.answer,
+        recordIds: ['about'],
+        selectedRecords: [{ id: 'about', title: 'Borneo Tracker Overview', category: 'site-overview', content: 'Borneo Tracker uses verified site knowledge in 2026.', language: 'en' }],
+        warnings: [],
+        approvedNumericTokens: [],
+        approvedYearTokens: ['2026'],
+        sources: [{ publisher: 'Borneo Tracker', title: 'Borneo Tracker Overview' }],
+      },
+    };
+    return {
+      answer: 'Borneo Tracker uses verified site knowledge in 2026.',
+      knowledgeAnswer,
+      prompt,
+      ...overrides,
+    };
+  }
+
+  it('accepts a valid grounded site-knowledge answer', () => {
+    expect(validateSiteKnowledgeGeminiResponse(siteInput()).valid).toBe(true);
+  });
+
+  it.each([
+    ['Read https://example.com for details.', 'URL_IN_BODY'],
+    ['The dashboard score is 63.7.', 'UNAPPROVED_NUMBER'],
+    ['Borneo Tracker started in 2025.', 'UNAPPROVED_YEAR'],
+    ['According to Unknown Source, Borneo Tracker uses data.', 'UNVERIFIED_SOURCE'],
+    ['Authorities should improve resilience.', 'UNVERIFIED_RECOMMENDATION'],
+    ['The sourcePath is src/i18n/locales/en.json.', 'URL_IN_BODY'],
+  ])('rejects unsafe site-knowledge answer: %s', (answer, code) => {
+    expect(codes(validateSiteKnowledgeGeminiResponse(siteInput({ answer })))).toContain(code);
   });
 });

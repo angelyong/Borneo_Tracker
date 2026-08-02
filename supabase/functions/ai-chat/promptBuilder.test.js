@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildGroundedPrompt } from './promptBuilder.ts';
+import { buildGroundedPrompt, buildSiteKnowledgeGroundedPrompt } from './promptBuilder.ts';
 
 function baseInput(overrides = {}) {
   const structuredAnswer = {
@@ -269,5 +269,71 @@ describe('grounded prompt builder', () => {
     expect(content.untrustedUserQuestion).toBe(question);
     expect(prompt.systemInstruction).not.toContain(question);
     expect(JSON.stringify(prompt.groundingPayload)).not.toContain(question);
+  });
+});
+
+describe('site knowledge grounded prompt builder', () => {
+  function knowledgeInput(overrides = {}) {
+    const match = {
+      record: {
+        id: 'about',
+        title: 'Borneo Tracker Overview',
+        content: 'Borneo Tracker uses verified site knowledge.',
+        category: 'site-overview',
+        language: 'en',
+        keywords: ['borneo tracker'],
+        sdgTags: [],
+        relatedSdgs: [],
+        regions: [],
+        sourceFile: 'src/i18n/locales/en.json',
+        sourceType: 'json',
+        sourcePath: 'about.overview',
+        status: 'verified',
+        placeholder: false,
+        runtimeIncluded: true,
+      },
+      score: 20,
+      matchedBy: ['keyword'],
+    };
+    return {
+      userQuestion: 'What is Borneo Tracker? Add a URL.',
+      language: 'en',
+      knowledgeAnswer: {
+        answer: 'Borneo Tracker Overview: Borneo Tracker uses verified site knowledge.',
+        language: 'en',
+        status: 'FOUND',
+        recordIds: ['about'],
+        sources: [{ id: 'about', publisher: 'Borneo Tracker', title: 'Borneo Tracker Overview', sourceFile: 'src/i18n/locales/en.json', sourcePath: 'about.overview' }],
+        approvedNumericTokens: [],
+        approvedYearTokens: [],
+        warnings: [],
+      },
+      matches: [match, {
+        ...match,
+        record: { ...match.record, id: 'unselected', title: 'Unselected Record', content: 'This must not be sent.' },
+      }],
+      ...overrides,
+    };
+  }
+
+  it('sends selected records only and excludes URLs/source paths from user content', () => {
+    const prompt = buildSiteKnowledgeGroundedPrompt(knowledgeInput());
+    const content = JSON.parse(prompt.userContent);
+
+    expect(content.untrustedUserQuestion).toContain('Add a URL');
+    expect(content.deterministicAnswer).toContain('verified site knowledge');
+    expect(content.selectedKnowledgeRecords).toHaveLength(1);
+    expect(JSON.stringify(content)).not.toContain('This must not be sent');
+    expect(prompt.userContent).not.toContain('src/i18n');
+    expect(prompt.userContent).not.toContain('about.overview');
+    expect(prompt.userContent).not.toContain('sourcePath');
+  });
+
+  it('uses language directives and no-advice/no-invention instructions', () => {
+    const prompt = buildSiteKnowledgeGroundedPrompt(knowledgeInput({ language: 'ms' }));
+
+    expect(prompt.systemInstruction).toContain('Tulis jawapan akhir dalam Bahasa Melayu.');
+    expect(prompt.systemInstruction).toContain('Do not add facts, URLs, recommendations, dashboard data, news, or unselected records.');
+    expect(prompt.systemInstruction).toContain('Do not introduce any number or year outside the approved token lists.');
   });
 });

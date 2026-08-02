@@ -1,6 +1,7 @@
 import type {
   AIChatFallbackMetadata,
   AIChatIntentResult,
+  AIChatKnowledgeAnswer,
   AIChatResponseMode,
   AIChatStructuredAnswer,
   FallbackReason,
@@ -29,6 +30,12 @@ export type TemplateFallbackResult = {
   fallback: AIChatFallbackMetadata;
 };
 
+export type KnowledgeTemplateFallbackInput = {
+  knowledgeAnswer: AIChatKnowledgeAnswer;
+  reason: FallbackReason;
+  language: string;
+};
+
 const NOTICES = {
   en: 'Live AI phrasing is temporarily unavailable. The verified Borneo Tracker data is shown below.',
   ms: 'Penyusunan jawapan AI secara langsung tidak tersedia buat sementara waktu. Data Borneo Tracker yang telah disahkan ditunjukkan di bawah.',
@@ -44,6 +51,12 @@ export function canBuildTemplateFallback(
     structuredAnswer.intent === 'DASHBOARD_DATA' &&
     structuredAnswer.summaryText.trim()
   );
+}
+
+export function canBuildKnowledgeTemplateFallback(
+  knowledgeAnswer: AIChatKnowledgeAnswer | undefined
+): knowledgeAnswer is AIChatKnowledgeAnswer {
+  return Boolean(knowledgeAnswer?.answer?.trim());
 }
 
 export function buildTemplateFallback(input: TemplateFallbackInput): TemplateFallbackResult {
@@ -65,6 +78,22 @@ export function buildTemplateFallback(input: TemplateFallbackInput): TemplateFal
       used: true,
       reason: input.reason,
       generatedFrom: 'structured-answer',
+      degraded: true,
+    },
+  };
+}
+
+export function buildKnowledgeTemplateFallback(input: KnowledgeTemplateFallbackInput): TemplateFallbackResult {
+  const answer = input.knowledgeAnswer.answer.trim();
+  assertNoUnsafeKnowledgeFallback(answer, input.knowledgeAnswer);
+  return {
+    answer,
+    mode: 'template-fallback',
+    sources: dedupeSources(input.knowledgeAnswer.sources),
+    fallback: {
+      used: true,
+      reason: input.reason,
+      generatedFrom: 'knowledge-answer',
       degraded: true,
     },
   };
@@ -94,4 +123,20 @@ function dedupeSources(sources: FactSource[]): FactSource[] {
     seen.add(key);
     return true;
   });
+}
+
+function assertNoUnsafeKnowledgeFallback(answer: string, knowledgeAnswer: AIChatKnowledgeAnswer): void {
+  if (/\bhttps?:\/\/|\bwww\.|\b(?:public|src|supabase|knowledge|docs|data)\//i.test(answer)) {
+    throw new Error('Knowledge fallback contains URLs or internal paths.');
+  }
+  const approved = new Set([
+    ...knowledgeAnswer.approvedNumericTokens,
+    ...knowledgeAnswer.approvedNumericTokens.map((token) => token.replace(/,/g, '')),
+    ...knowledgeAnswer.approvedYearTokens,
+  ]);
+  for (const token of extractNumericTokens(answer)) {
+    if (!approved.has(token) && !approved.has(token.replace(/,/g, ''))) {
+      throw new Error(`Knowledge fallback contains unapproved numeric token ${token}.`);
+    }
+  }
 }

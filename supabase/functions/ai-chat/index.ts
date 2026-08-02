@@ -1,7 +1,10 @@
 import {
   type AIChatRequest,
   AIChatHttpError,
+  type AIChatKnowledgeAnswer,
+  type AIChatKnowledgeRetrievalResult,
   type AIChatPrompt,
+  type AIChatSiteKnowledgePrompt,
   type AIChatNewsResult,
   type AIChatStructuredAnswer,
   type FallbackReason,
@@ -19,6 +22,9 @@ import { resolveAiChatEntities } from './entityResolver.ts';
 import { buildAIChatFactObject } from './factObjectBuilder.ts';
 import { FactDataRepository } from './factDataRepository.ts';
 import { generateGeminiAnswer } from './geminiClient.ts';
+import { buildKnowledgeAnswer } from './knowledgeAnswerBuilder.ts';
+import { KnowledgeRepository } from './knowledgeRepository.ts';
+import { retrieveStaticKnowledge } from './knowledgeRetriever.ts';
 import { LeverRepository } from './leverRepository.ts';
 import { retrieveVerifiedLevers } from './leverRetriever.ts';
 import { LocalNewsRepository } from './localNewsRepository.ts';
@@ -26,11 +32,13 @@ import type { AIChatNewsRepository } from './newsRepository.ts';
 import { retrieveAIChatNews } from './newsRetriever.ts';
 import { routeAiChatIntent } from './intentRouter.ts';
 import { consoleSafeLogger, errorLogFields, type SafeLogger } from './logger.ts';
-import { buildGroundedPrompt } from './promptBuilder.ts';
-import { validateGeminiResponse } from './responseValidator.ts';
+import { buildGroundedPrompt, buildSiteKnowledgeGroundedPrompt } from './promptBuilder.ts';
+import { validateGeminiResponse, validateSiteKnowledgeGeminiResponse } from './responseValidator.ts';
 import { buildStructuredAnswer } from './structuredAnswerBuilder.ts';
 import {
+  buildKnowledgeTemplateFallback,
   buildTemplateFallback,
+  canBuildKnowledgeTemplateFallback,
   canBuildTemplateFallback,
   fallbackPublicMetadata,
 } from './templateFallback.ts';
@@ -39,11 +47,12 @@ declare const Deno:
   | { serve?: (handler: (request: Request) => Response | Promise<Response>) => void }
   | undefined;
 
-type GeminiAnswerClient = (request: AIChatRequest, prompt?: AIChatPrompt) => Promise<string>;
+type GeminiAnswerClient = (request: AIChatRequest, prompt?: AIChatPrompt | AIChatSiteKnowledgePrompt) => Promise<string>;
 type StructuredAnswerClient = (input: Parameters<typeof buildStructuredAnswer>[0]) => AIChatStructuredAnswer;
 type PromptBuilderClient = (input: Parameters<typeof buildGroundedPrompt>[0]) => AIChatPrompt;
 type LeverRetrieverClient = (input: Parameters<typeof retrieveVerifiedLevers>[0]) => LeverRetrievalResult;
 type NewsRetrieverClient = (input: Parameters<typeof retrieveAIChatNews>[0]) => Promise<AIChatNewsResult>;
+type KnowledgeRetrieverClient = (input: Parameters<typeof retrieveStaticKnowledge>[0], repository?: KnowledgeRepository) => AIChatKnowledgeRetrievalResult;
 
 type HandlerOptions = {
   env?: EnvLike;
@@ -55,6 +64,8 @@ type HandlerOptions = {
   leverRetriever?: LeverRetrieverClient;
   newsRepository?: AIChatNewsRepository;
   newsRetriever?: NewsRetrieverClient;
+  knowledgeRepository?: KnowledgeRepository;
+  knowledgeRetriever?: KnowledgeRetrieverClient;
   logger?: SafeLogger;
 };
 
@@ -71,6 +82,8 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
     ((query: Parameters<typeof retrieveVerifiedLevers>[0]) => retrieveVerifiedLevers(query, leverRepository));
   const newsRepository = options.newsRepository || new LocalNewsRepository();
   const newsRetriever = options.newsRetriever || retrieveAIChatNews;
+  const knowledgeRepository = options.knowledgeRepository || new KnowledgeRepository();
+  const knowledgeRetriever = options.knowledgeRetriever || retrieveStaticKnowledge;
 
   return async function handleAiChatRequest(request: Request): Promise<Response> {
     const corsHeaders = buildCorsHeaders(request, parseCorsConfig(options.env));
@@ -94,6 +107,8 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
     let route: ReturnType<typeof routeAiChatIntent> | undefined;
     let structuredAnswer: AIChatStructuredAnswer | undefined;
     let groundedPrompt: AIChatPrompt | undefined;
+    let knowledgeAnswer: AIChatKnowledgeAnswer | undefined;
+    let knowledgePrompt: AIChatSiteKnowledgePrompt | undefined;
     let newsResult: AIChatNewsResult | undefined;
 
     try {
@@ -146,6 +161,114 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
           languagePreferenceUsed: Boolean(entities.language || route.language || chatRequest.language),
           warningCodes: newsResult.warnings,
         });
+      }
+      if (route.intent === 'SITE_KNOWLEDGE') {
+        const retrieval = knowledgeRetriever({
+          question: chatRequest.message,
+          language: entities.language || route.language || chatRequest.language,
+          currentPage: chatRequest.currentPage,
+          territories: entities.territories,
+          concepts: entities.concepts,
+          limit: 3,
+        }, knowledgeRepository);
+        logger.info('knowledge_query_executed', {
+          knowledgeQueryExecuted: true,
+          retrievalStatus: retrieval.status,
+          matchCount: retrieval.matches.length,
+          topScoreBucket: scoreBucket(retrieval.matches[0]?.score),
+          languageFallback: retrieval.status === 'LANGUAGE_FALLBACK',
+          categoryCount: new Set(retrieval.matches.map((match) => match.record.category)).size,
+          sourceCount: retrieval.matches.length,
+          warningCodes: retrieval.warnings,
+        });
+        knowledgeAnswer = buildKnowledgeAnswer(retrieval, entities.language || route.language || chatRequest.language);
+        if (retrieval.status === 'NO_MATCH' || retrieval.status === 'AMBIGUOUS') {
+          const reason: FallbackReason = retrieval.status === 'NO_MATCH' ? 'KNOWLEDGE_NO_MATCH' : 'KNOWLEDGE_AMBIGUOUS';
+          const fallback = buildKnowledgeTemplateFallback({
+            knowledgeAnswer,
+            reason,
+            language: knowledgeAnswer.language,
+          });
+          logger.info('request_fallback', {
+            fallbackUsed: true,
+            fallbackReason: reason,
+            intent: route.intent,
+            retrievalStatus: retrieval.status,
+            sourceCount: fallback.sources.length,
+          });
+          return jsonResponse({
+            answer: fallback.answer,
+            mode: fallback.mode,
+            sources: fallback.sources,
+            fallback: fallbackPublicMetadata(fallback.fallback),
+          }, 200, corsHeaders);
+        }
+        knowledgePrompt = buildSiteKnowledgeGroundedPrompt({
+          userQuestion: chatRequest.message,
+          language: knowledgeAnswer.language,
+          knowledgeAnswer,
+          matches: retrieval.matches,
+        });
+        const answer = await geminiClient(chatRequest, knowledgePrompt);
+        const validation = validateSiteKnowledgeGeminiResponse({
+          answer,
+          knowledgeAnswer,
+          prompt: knowledgePrompt,
+        });
+        logger.info('response_validation', {
+          responseValidated: true,
+          valid: validation.valid,
+          issueCodes: validation.issues.map((issue) => issue.code),
+          issueCount: validation.issues.length,
+          numericTokenCount: validation.detectedNumericTokens.length,
+          yearTokenCount: validation.detectedYearTokens.length,
+          urlCount: validation.detectedUrls.length,
+          intent: route.intent,
+          fallbackUsed: !validation.valid,
+        });
+        if (!validation.valid) {
+          const fallback = buildKnowledgeTemplateFallback({
+            knowledgeAnswer,
+            reason: 'KNOWLEDGE_RESPONSE_REJECTED',
+            language: knowledgeAnswer.language,
+          });
+          logger.info('request_fallback', {
+            fallbackUsed: true,
+            fallbackReason: 'KNOWLEDGE_RESPONSE_REJECTED',
+            intent: route.intent,
+            validationIssueCodes: validation.issues.map((issue) => issue.code),
+            validationIssueCount: validation.issues.length,
+            retrievalStatus: retrieval.status,
+            sourceCount: fallback.sources.length,
+          });
+          return jsonResponse({
+            answer: fallback.answer,
+            mode: fallback.mode,
+            sources: fallback.sources,
+            fallback: fallbackPublicMetadata(fallback.fallback),
+          }, 200, corsHeaders);
+        }
+        logger.info('request_completed', {
+          mode: 'gemini-test',
+          intent: route.intent,
+          promptBuilt: true,
+          retrievalStatus: retrieval.status,
+          matchCount: retrieval.matches.length,
+          selectedRecordCount: knowledgeAnswer.recordIds.length,
+          groundedLanguage: knowledgeAnswer.language,
+          groundedNumericTokenCount: knowledgeAnswer.approvedNumericTokens.length,
+          groundedYearTokenCount: knowledgeAnswer.approvedYearTokens.length,
+          groundedSourceCount: knowledgeAnswer.sources.length,
+          intentConfidence: route.confidence,
+          page: chatRequest.currentPage,
+          region: chatRequest.region,
+          language: chatRequest.language,
+        });
+        return jsonResponse({
+          answer: validation.normalizedAnswer,
+          mode: 'gemini-test',
+          sources: knowledgeAnswer.sources,
+        }, 200, corsHeaders);
       }
       const levers = factObject && factObject.availability !== 'BLOCKED' && comparability.decision !== 'NEEDS_CLARIFICATION'
         ? leverRetriever({
@@ -456,10 +579,43 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
           return errorResponse(fallbackError, corsHeaders);
         }
       }
+      if (fallbackReason && canBuildKnowledgeTemplateFallback(knowledgeAnswer)) {
+        try {
+          const fallback = buildKnowledgeTemplateFallback({
+            knowledgeAnswer,
+            reason: fallbackReason === 'GEMINI_RESPONSE_REJECTED' ? 'KNOWLEDGE_RESPONSE_REJECTED' : 'KNOWLEDGE_GEMINI_UNAVAILABLE',
+            language: knowledgeAnswer.language,
+          });
+          logger.info('request_fallback', {
+            fallbackUsed: true,
+            fallbackReason: fallback.fallback.reason,
+            intent: route?.intent,
+            retrievalStatus: knowledgeAnswer.status,
+            sourceCount: fallback.sources.length,
+          });
+          return jsonResponse({
+            answer: fallback.answer,
+            mode: fallback.mode,
+            sources: fallback.sources,
+            fallback: fallbackPublicMetadata(fallback.fallback),
+          }, 200, corsHeaders);
+        } catch (fallbackError) {
+          logger.error('request_failed', errorLogFields(fallbackError));
+          return errorResponse(fallbackError, corsHeaders);
+        }
+      }
       logger.error('request_failed', errorLogFields(error));
       return errorResponse(error, corsHeaders);
     }
   };
+}
+
+function scoreBucket(score?: number): string | undefined {
+  if (typeof score !== 'number') return undefined;
+  if (score >= 20) return 'high';
+  if (score >= 12) return 'medium';
+  if (score >= 8) return 'low';
+  return 'below-threshold';
 }
 
 export function mapFallbackReason(error: unknown): FallbackReason | undefined {

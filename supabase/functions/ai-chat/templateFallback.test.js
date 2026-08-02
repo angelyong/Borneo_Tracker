@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   buildTemplateFallback,
+  buildKnowledgeTemplateFallback,
   canBuildTemplateFallback,
+  canBuildKnowledgeTemplateFallback,
   extractFallbackNumericTokens,
 } from './templateFallback.ts';
 
@@ -101,5 +103,54 @@ describe('template fallback builder', () => {
     expect(canBuildTemplateFallback(structuredAnswer({ summaryText: '' }), route)).toBe(false);
     expect(canBuildTemplateFallback(structuredAnswer({ intent: 'SITE_KNOWLEDGE' }), route)).toBe(false);
     expect(canBuildTemplateFallback(structuredAnswer(), { ...route, intent: 'BORNEO_NEWS' })).toBe(false);
+  });
+});
+
+describe('knowledge template fallback builder', () => {
+  function knowledgeAnswer(overrides = {}) {
+    return {
+      answer: 'Borneo Tracker Overview: Verified site knowledge from 2026.',
+      language: 'en',
+      status: 'FOUND',
+      recordIds: ['about'],
+      sources: [
+        { id: 'about', sourceFile: 'src/i18n/locales/en.json', sourcePath: 'about.overview', publisher: 'Borneo Tracker', title: 'Borneo Tracker Overview' },
+      ],
+      approvedNumericTokens: [],
+      approvedYearTokens: ['2026'],
+      warnings: [],
+      ...overrides,
+    };
+  }
+
+  it('uses deterministic knowledge answer text directly', () => {
+    const result = buildKnowledgeTemplateFallback({
+      knowledgeAnswer: knowledgeAnswer(),
+      reason: 'KNOWLEDGE_GEMINI_UNAVAILABLE',
+      language: 'en',
+    });
+
+    expect(result.mode).toBe('template-fallback');
+    expect(result.answer).toBe('Borneo Tracker Overview: Verified site knowledge from 2026.');
+    expect(result.fallback).toMatchObject({
+      used: true,
+      reason: 'KNOWLEDGE_GEMINI_UNAVAILABLE',
+      generatedFrom: 'knowledge-answer',
+      degraded: true,
+    });
+    expect(result.sources).toHaveLength(1);
+  });
+
+  it('detects buildable knowledge fallback answers', () => {
+    expect(canBuildKnowledgeTemplateFallback(knowledgeAnswer())).toBe(true);
+    expect(canBuildKnowledgeTemplateFallback(knowledgeAnswer({ answer: ' ' }))).toBe(false);
+  });
+
+  it('rejects unsafe knowledge fallback prose', () => {
+    expect(() => buildKnowledgeTemplateFallback({
+      knowledgeAnswer: knowledgeAnswer({ answer: 'See https://example.com/2026.' }),
+      reason: 'KNOWLEDGE_RESPONSE_REJECTED',
+      language: 'en',
+    })).toThrow(/URLs|paths|unapproved numeric/i);
   });
 });

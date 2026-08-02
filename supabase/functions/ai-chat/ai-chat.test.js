@@ -414,6 +414,7 @@ describe('ai-chat endpoint', () => {
 describe('ai-chat Stage 3B/3C internal integration', () => {
   function safeDashboardAnswer(prompt) {
     if (!prompt) return 'Integrated response.';
+    if (prompt.groundingPayload.answer) return prompt.groundingPayload.answer;
     return [
       prompt.groundingPayload.conclusion,
       prompt.groundingPayload.diagnosis,
@@ -675,7 +676,7 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     expect(prompt.structuredAnswer).toBeUndefined();
   });
 
-  it('does not attach dashboard grounding to site knowledge or news intents', async () => {
+  it('grounds site knowledge but does not attach dashboard grounding to news intents', async () => {
     const site = await runIntegratedRequest({
       ...validPayload,
       message: 'What is Borneo Tracker?',
@@ -688,11 +689,74 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     });
 
     expect(site.completed.intent).toBe('SITE_KNOWLEDGE');
-    expect(site.completed.promptBuilt).toBe(false);
-    expect(site.geminiClient).toHaveBeenCalledWith(expect.objectContaining({ message: 'What is Borneo Tracker?' }));
+    expect(site.completed.promptBuilt).toBe(true);
+    expect(site.completed.retrievalStatus).toBe('FOUND');
+    expect(site.geminiClient).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'What is Borneo Tracker?' }),
+      expect.objectContaining({
+        groundingPayload: expect.objectContaining({
+          answerStatus: 'FOUND',
+          selectedRecords: expect.any(Array),
+        }),
+      })
+    );
     expect(news.completed.intent).toBe('BORNEO_NEWS');
     expect(news.completed.promptBuilt).toBe(false);
     expect(news.geminiClient).toHaveBeenCalledWith(expect.objectContaining({ message: 'Show latest Borneo news.' }));
+  });
+
+  it('falls back to deterministic knowledge answer when Gemini is unavailable', async () => {
+    const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(500, 'MISSING_GEMINI_API_KEY', 'missing'));
+    const handler = createAiChatHandler({ geminiClient, logger: silentLogger });
+
+    const response = await handler(request({ ...validPayload, message: 'How do I generate a report?', currentPage: '/reports', region: '' }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.mode).toBe('template-fallback');
+    expect(body.fallback.reason).toBe('KNOWLEDGE_GEMINI_UNAVAILABLE');
+    expect(body.answer.toLowerCase()).toContain('report');
+    expect(body.sources.length).toBeGreaterThan(0);
+  });
+
+  it('bypasses Gemini for knowledge no-match and ambiguity', async () => {
+    const geminiClient = vi.fn();
+    const knowledgeRetriever = vi.fn()
+      .mockReturnValueOnce({ status: 'NO_MATCH', matches: [], warnings: [] })
+      .mockReturnValueOnce({
+        status: 'AMBIGUOUS',
+        matches: [{
+          record: {
+            id: 'a',
+            title: 'A',
+            content: 'A',
+            category: 'a',
+            language: 'en',
+            regions: [],
+            sdgTags: [],
+            relatedSdgs: [],
+            keywords: [],
+            sourceFile: 'fixture.json',
+            sourceType: 'json',
+            status: 'verified',
+            placeholder: false,
+            runtimeIncluded: true,
+          },
+          score: 8,
+          matchedBy: [],
+        }],
+        warnings: ['KNOWLEDGE_AMBIGUOUS'],
+      });
+    const handler = createAiChatHandler({ geminiClient, knowledgeRetriever, logger: silentLogger });
+
+    const noMatch = await handler(request({ ...validPayload, message: 'What is Borneo Tracker?', region: '' }));
+    const ambiguous = await handler(request({ ...validPayload, message: 'What is Borneo Tracker?', region: '' }));
+    const noMatchBody = await noMatch.json();
+    const ambiguousBody = await ambiguous.json();
+
+    expect(geminiClient).not.toHaveBeenCalled();
+    expect(noMatchBody.fallback.reason).toBe('KNOWLEDGE_NO_MATCH');
+    expect(ambiguousBody.fallback.reason).toBe('KNOWLEDGE_AMBIGUOUS');
   });
 
   it('retrieves BORNEO_NEWS internally without sending news content to Gemini', async () => {
@@ -1010,13 +1074,17 @@ describe('ai-chat Stage 4C template fallback', () => {
       new AIChatHttpError(500, 'MISSING_GEMINI_API_KEY', 'not configured')
     );
 
-    expect(site.response.status).toBe(500);
-    expect(site.body.code).toBe('MISSING_GEMINI_API_KEY');
+    expect(site.response.status).toBe(200);
+    expect(site.body.mode).toBe('template-fallback');
+    expect(site.body.fallback.reason).toBe('KNOWLEDGE_GEMINI_UNAVAILABLE');
     expect(news.response.status).toBe(500);
     expect(news.body.code).toBe('MISSING_GEMINI_API_KEY');
     expect(outOfScope.response.status).toBe(500);
     expect(outOfScope.body.code).toBe('MISSING_GEMINI_API_KEY');
-    expect(site.fallbackLog).toBeUndefined();
+    expect(site.fallbackLog).toMatchObject({
+      fallbackReason: 'KNOWLEDGE_GEMINI_UNAVAILABLE',
+      intent: 'SITE_KNOWLEDGE',
+    });
     expect(news.fallbackLog).toBeUndefined();
     expect(outOfScope.fallbackLog).toBeUndefined();
   });

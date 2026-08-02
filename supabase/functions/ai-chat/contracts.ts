@@ -170,6 +170,81 @@ export type FactSource = {
   sourcePath?: string;
 };
 
+export type AIChatKnowledgeRecord = {
+  id: string;
+  title: string;
+  content: string;
+  category: string;
+  language: string;
+  pageUrl?: string;
+  region?: string;
+  regions: string[];
+  concept?: string;
+  sdgTags: string[];
+  relatedSdgs: string[];
+  keywords: string[];
+  searchableText?: string;
+  sourceFile: string;
+  sourceType: string;
+  sourceId?: string;
+  sourcePath?: string;
+  sourceName?: string;
+  sourceUrl?: string;
+  status: string;
+  placeholder: boolean;
+  runtimeIncluded: boolean;
+  provenance?: {
+    sourceFile?: string;
+    sourceType?: string;
+    sourceId?: string;
+    sourceName?: string;
+    sourceUrl?: string;
+    pageUrl?: string;
+    route?: string;
+    language?: string;
+    sourcePath?: string;
+    extractedAt?: string | null;
+  };
+};
+
+export type AIChatKnowledgeQuery = {
+  question: string;
+  language: string;
+  currentPage?: string;
+  territories: string[];
+  concepts: string[];
+  limit?: number;
+};
+
+export type AIChatKnowledgeMatch = {
+  record: AIChatKnowledgeRecord;
+  score: number;
+  matchedBy: string[];
+};
+
+export type AIChatKnowledgeRetrievalStatus =
+  | 'FOUND'
+  | 'NO_MATCH'
+  | 'AMBIGUOUS'
+  | 'LANGUAGE_FALLBACK';
+
+export type AIChatKnowledgeRetrievalResult = {
+  matches: AIChatKnowledgeMatch[];
+  status: AIChatKnowledgeRetrievalStatus;
+  warnings: string[];
+};
+
+export type AIChatKnowledgeAnswer = {
+  answer: string;
+  language: string;
+  status: AIChatKnowledgeRetrievalStatus;
+  recordIds: string[];
+  sources: FactSource[];
+  approvedNumericTokens: string[];
+  approvedYearTokens: string[];
+  warnings: string[];
+};
+
 export type LeverActor =
   | 'government'
   | 'local_authority'
@@ -428,12 +503,16 @@ export type FallbackReason =
   | 'GEMINI_RESPONSE_REJECTED'
   | 'DETERMINISTIC_BLOCKED'
   | 'DETERMINISTIC_CLARIFICATION'
-  | 'QUOTA_UNAVAILABLE';
+  | 'QUOTA_UNAVAILABLE'
+  | 'KNOWLEDGE_NO_MATCH'
+  | 'KNOWLEDGE_AMBIGUOUS'
+  | 'KNOWLEDGE_GEMINI_UNAVAILABLE'
+  | 'KNOWLEDGE_RESPONSE_REJECTED';
 
 export type AIChatFallbackMetadata = {
   used: boolean;
   reason?: FallbackReason;
-  generatedFrom: 'structured-answer';
+  generatedFrom: 'structured-answer' | 'knowledge-answer';
   degraded: boolean;
 };
 
@@ -489,6 +568,37 @@ export type AIChatPrompt = {
   groundingPayload: AIChatGroundingPayload;
 };
 
+export type AIChatSiteKnowledgeGroundingPayload = {
+  answerStatus: AIChatKnowledgeRetrievalStatus;
+  language: string;
+  answer: string;
+  recordIds: string[];
+  selectedRecords: Array<{
+    id: string;
+    title: string;
+    category: string;
+    content: string;
+    language: string;
+  }>;
+  warnings: string[];
+  approvedNumericTokens: string[];
+  approvedYearTokens: string[];
+  sources: AIChatSourceLabel[];
+};
+
+export type AIChatSiteKnowledgePrompt = {
+  systemInstruction: string;
+  userContent: string;
+  groundingPayload: AIChatSiteKnowledgeGroundingPayload;
+};
+
+export type AIChatSiteKnowledgePromptInput = {
+  userQuestion: string;
+  language: string;
+  knowledgeAnswer: AIChatKnowledgeAnswer;
+  matches: AIChatKnowledgeMatch[];
+};
+
 export type ResponseValidationFailureCode =
   | 'EMPTY_ANSWER'
   | 'ANSWER_TOO_LONG'
@@ -530,6 +640,13 @@ export type AIChatResponseValidationInput = {
   structuredAnswer: AIChatStructuredAnswer;
   comparability: ComparabilityResult;
   prompt: AIChatPrompt;
+  maxAnswerLength?: number;
+};
+
+export type AIChatSiteKnowledgeResponseValidationInput = {
+  answer: unknown;
+  knowledgeAnswer: AIChatKnowledgeAnswer;
+  prompt: AIChatSiteKnowledgePrompt;
   maxAnswerLength?: number;
 };
 

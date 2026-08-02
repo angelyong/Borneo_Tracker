@@ -1,6 +1,7 @@
 import type {
   AIChatResponseValidationInput,
   AIChatResponseValidationResult,
+  AIChatSiteKnowledgeResponseValidationInput,
   ComparabilityResult,
   ResponseValidationFailureCode,
   ResponseValidationIssue,
@@ -120,6 +121,38 @@ export function validateGeminiResponse(input: AIChatResponseValidationInput): AI
     validateRecommendation(input, answer, issues);
     validateSecurity(answer, issues);
     validateRequiredDisclosures(input, answer, issues);
+  }
+
+  return {
+    valid: issues.length === 0,
+    issues,
+    detectedNumericTokens,
+    detectedYearTokens,
+    detectedUrls,
+    ...(issues.length === 0 && typeof answer === 'string' ? { normalizedAnswer: answer } : {}),
+  };
+}
+
+export function validateSiteKnowledgeGeminiResponse(
+  input: AIChatSiteKnowledgeResponseValidationInput
+): AIChatResponseValidationResult {
+  const issues: ResponseValidationIssue[] = [];
+  const answer = normalizeAnswer(input.answer, issues, input.maxAnswerLength ?? DEFAULT_MAX_GEMINI_ANSWER_LENGTH);
+  const detectedUrls = typeof answer === 'string' ? extractUrls(answer) : [];
+  const numericTokens = typeof answer === 'string' ? extractNumericTokens(answer) : [];
+  const detectedYearTokens = dedupe(numericTokens.filter(isYearToken));
+  const detectedNumericTokens = dedupe(numericTokens.filter((token) => !isYearToken(token)));
+
+  if (typeof answer === 'string') {
+    if (detectedUrls.length || URL_PATTERN.test(answer) || SOURCE_PATH_PATTERN.test(answer)) {
+      addIssue(issues, 'URL_IN_BODY', 'Answer contains URL, link, bare domain, or source-path-like content.', detectedUrls[0]);
+    }
+    validateKnowledgeNumbers(input, detectedNumericTokens, issues);
+    validateKnowledgeYears(input, answer, detectedYearTokens, issues);
+    validateKnowledgeSources(input, answer, issues);
+    validateKnowledgeRecommendation(answer, issues);
+    validateKnowledgeDashboardInjection(answer, issues);
+    validateSecurity(answer, issues);
   }
 
   return {
@@ -284,6 +317,88 @@ function validateSecurity(answer: string, issues: ResponseValidationIssue[]): vo
   }
   if (INTERNAL_METADATA_PATTERNS.some((pattern) => pattern.test(answer))) {
     addIssue(issues, 'INTERNAL_METADATA_DISCLOSURE', 'Answer appears to disclose internal metadata.');
+  }
+}
+
+function validateKnowledgeNumbers(
+  input: AIChatSiteKnowledgeResponseValidationInput,
+  detectedNumericTokens: string[],
+  issues: ResponseValidationIssue[]
+): void {
+  const approved = new Set([
+    ...input.knowledgeAnswer.approvedNumericTokens,
+    ...input.prompt.groundingPayload.approvedNumericTokens,
+  ].flatMap((token) => [token, normalizeNumericToken(token)]));
+  for (const token of detectedNumericTokens) {
+    if (!approved.has(token) && !approved.has(normalizeNumericToken(token))) {
+      addIssue(issues, 'UNAPPROVED_NUMBER', 'Answer contains a numeric token that was not approved.', token);
+    }
+  }
+}
+
+function validateKnowledgeYears(
+  input: AIChatSiteKnowledgeResponseValidationInput,
+  answer: string,
+  detectedYearTokens: string[],
+  issues: ResponseValidationIssue[]
+): void {
+  const approved = new Set([
+    ...input.knowledgeAnswer.approvedYearTokens,
+    ...input.prompt.groundingPayload.approvedYearTokens,
+  ]);
+  for (const token of detectedYearTokens) {
+    if (!approved.has(token)) addIssue(issues, 'UNAPPROVED_YEAR', 'Answer contains a year that was not approved.', token);
+  }
+  const range = answer.match(YEAR_RANGE_PATTERN);
+  if (range) {
+    const compactRange = `${range[1]}-${range[2]}`;
+    if (!approved.has(range[0]) && !approved.has(compactRange)) {
+      addIssue(issues, 'UNAPPROVED_YEAR', 'Answer contains an unapproved year range form.', range[0]);
+    }
+  }
+}
+
+function validateKnowledgeSources(
+  input: AIChatSiteKnowledgeResponseValidationInput,
+  answer: string,
+  issues: ResponseValidationIssue[]
+): void {
+  if (/\baccording to Gemini\b/i.test(answer) || /\bexternal study\b/i.test(answer) || UNSUPPORTED_CITATION_PATTERN.test(answer)) {
+    addIssue(issues, 'UNVERIFIED_SOURCE', 'Answer contains an unsupported source or citation claim.');
+    return;
+  }
+  const allowed = dedupe([
+    ...input.prompt.groundingPayload.sources.flatMap((source) => [
+      source.publisher || '',
+      source.title || '',
+      source.year ? String(source.year) : '',
+    ]),
+    ...input.knowledgeAnswer.sources.flatMap((source) => [
+      source.publisher || '',
+      source.title || '',
+      source.year ? String(source.year) : '',
+    ]),
+  ].map(compactText).filter(Boolean));
+  for (const pattern of SOURCE_CLAIM_PATTERNS) {
+    pattern.lastIndex = 0;
+    for (const match of answer.matchAll(pattern)) {
+      const claim = cleanSourceClaim(match[1] || '');
+      if (claim && !phraseAppearsInSet(claim, allowed)) {
+        addIssue(issues, 'UNVERIFIED_SOURCE', 'Answer cites a source label that was not supplied in the grounded prompt.', claim);
+      }
+    }
+  }
+}
+
+function validateKnowledgeRecommendation(answer: string, issues: ResponseValidationIssue[]): void {
+  if (RECOMMENDATION_PATTERNS.some((pattern) => pattern.test(answer))) {
+    addIssue(issues, 'UNVERIFIED_RECOMMENDATION', 'Site knowledge answer contains recommendation language.');
+  }
+}
+
+function validateKnowledgeDashboardInjection(answer: string, issues: ResponseValidationIssue[]): void {
+  if (/\b(?:resilience score|dashboard score|skor daya tahan|skor papan pemuka)\b.{0,80}\b\d+(?:\.\d+)?%?/i.test(answer)) {
+    addIssue(issues, 'UNAPPROVED_NUMBER', 'Site knowledge answer appears to introduce dashboard score data.');
   }
 }
 

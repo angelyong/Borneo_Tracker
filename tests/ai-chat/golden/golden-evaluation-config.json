@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "deterministicBuildId": "stage-6-golden-1970-01-01",
+  "supportedLanguages": ["en", "ms", "mixed", "unsupported"],
+  "implementationStatuses": [
+    "IMPLEMENTED",
+    "PARTIALLY_IMPLEMENTED",
+    "NOT_IMPLEMENTED",
+    "BLOCKED_BY_SUPABASE",
+    "NO_VERIFIED_DATA"
+  ],
+  "supportedIntents": [
+    "SITE_KNOWLEDGE",
+    "DASHBOARD_DATA",
+    "BORNEO_NEWS",
+    "OUT_OF_SCOPE"
+  ],
+  "supportedTerritories": [
+    "Sabah",
+    "Sarawak",
+    "Brunei",
+    "Brunei Darussalam",
+    "Kalimantan",
+    "Borneo-wide",
+    "Borneo Malaysia"
+  ],
+  "supportedConcepts": [
+    "air_quality",
+    "clean_water_access",
+    "deforestation",
+    "economy",
+    "education",
+    "energy",
+    "entertainment",
+    "fire_hotspots",
+    "food",
+    "food_percapita",
+    "forest_cover",
+    "governance",
+    "healthcare",
+    "heritage",
+    "internet_use",
+    "poverty",
+    "protected_areas",
+    "resilience",
+    "shelter",
+    "unemployment_rate"
+  ],
+  "supportedPillars": [
+    "Food",
+    "Energy",
+    "Education",
+    "Shelter",
+    "Healthcare",
+    "Entertainment"
+  ],
+  "knownTags": [
+    "site_knowledge",
+    "dashboard",
+    "comparison",
+    "trend",
+    "sdg",
+    "district",
+    "news",
+    "out_of_scope",
+    "language",
+    "security",
+    "numeric",
+    "fallback",
+    "lever",
+    "privacy",
+    "safety"
+  ],
+  "thresholds": {
+    "routingAccuracy": 1,
+    "entityAccuracy": 1,
+    "operationAccuracy": 1,
+    "comparabilityAccuracy": 1,
+    "factAvailabilityAccuracy": 1,
+    "blockedClarificationAccuracy": 1,
+    "newsPrivacyPassRate": 1,
+    "numericValidatorPassRate": 1,
+    "fallbackBehaviorPassRate": 1
+  },
+  "statusHandling": {
+    "NOT_IMPLEMENTED": "skipUnsupported",
+    "BLOCKED_BY_SUPABASE": "skipLiveDependency",
+    "NO_VERIFIED_DATA": "skipCoverageClaim"
+  },
+  "unsupportedFeatureStatus": {
+    "knowledgeIndexAvailable": true,
+    "staticRetrieverImplemented": true,
+    "staticRetrievalStatus": "IMPLEMENTED",
+    "leverInfrastructureImplemented": true,
+    "verifiedRuntimeLeverCount": 0,
+    "verifiedRecommendationCoverage": 0,
+    "verifiedRecommendationStatus": "NO_VERIFIED_DATA",
+    "localNewsRepositoryEvaluated": true,
+    "liveSupabaseRepositoryEvaluated": false,
+    "liveStatus": "BLOCKED_BY_SUPABASE"
+  }
+}
