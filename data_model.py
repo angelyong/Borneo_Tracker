@@ -1,6 +1,7 @@
 import csv
-from datetime import date
 from pathlib import Path
+
+from project_time import project_today_iso
 
 ROOT = Path(__file__).parent
 CSV = ROOT / "borneo_tracker_poc.csv"
@@ -14,7 +15,7 @@ KALIMANTAN_PROVINCES = [
     "Kalimantan Utara",
 ]
 
-TODAY = date.today().isoformat()
+TODAY = project_today_iso()
 
 # Fallback population used only when the ingestion CSV has no machine-readable
 # population observation for the territory/year. Sabah, Sarawak and Brunei now

@@ -24,7 +24,6 @@ Run:  python ingest_history.py     (needs .env / env vars for the GFW pull)
 """
 
 import csv
-import datetime
 import time
 from urllib.parse import quote
 
@@ -35,9 +34,10 @@ from ingest_poc import (
     get_json_raw,
     load_env,
 )
+from project_time import project_today_iso
 
 OUT_CSV = ROOT / "borneo_tracker_history.csv"
-TODAY = datetime.date.today().isoformat()
+TODAY = project_today_iso()
 MIN_YEAR = 2000
 
 FIELDNAMES = [
