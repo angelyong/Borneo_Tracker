@@ -47,6 +47,20 @@ done.**
 > (Caveat worth one line: port 22 was probed from a single vantage point, so an IP allowlist
 > could in principle be hiding it. If the hosting admin says SSH *is* available for a
 > specific source, SFTP is still the better option — but do not wait on that.)
+
+### Explicit FTPS matters here
+
+There are two similarly named but different FTPS connection styles:
+
+| Style | Normal port | How the client starts | This host |
+|---|---:|---|---|
+| **Explicit FTPS** | 21 | Connect with ordinary `ftp://`, then require `AUTH TLS` before login/data | **Use this** |
+| Implicit FTPS | 990 | Start TLS immediately with `ftps://` | Not offered |
+
+The workflow deliberately uses `ftp://` plus `AUTH TLS`, `ftp:ssl-force`, and
+`ftp:ssl-protect-data` for port 21. This does **not** mean plain FTP is permitted: authentication
+and both control/data channels are required to be encrypted. Using `ftps://` on port 21 causes a
+TLS handshake error before login because it is the wrong style for Pure-FTPd's port 21 service.
 >
 > **You may not need to ask anyone.** Creating an FTP account is a normal user-level function in
 > DirectAdmin: **FTP Management → Create FTP Account**. If that menu is available to you, make
@@ -80,8 +94,8 @@ And for the record:
    ⚠️ **Renewal is now the risk.** Wildcards renew over DNS-01, which fails more often than the
    HTTP-01 method used for plain hostnames, and nothing here watches it. Re-check the expiry in
    **mid-October 2026** — if it lapses the whole site silently reverts to a full-page cert
-   warning. Once `SMOKE_ALLOW_INSECURE_TLS` is flipped to `false` (§5) the deploy smoke test
-   catches this for you, which is the durable fix; until then it is a diary entry.
+   warning. Strict TLS smoke testing is now the default (§5), so a certificate regression makes
+   the deployment fail visibly; until then it is still worth checking the renewal date.
 
 ~~Then get the server's SSH host key so the connection can be pinned.~~ **Skip this too** — host-key
 pinning is an SSH concept and there is no SSH here. The FTPS equivalent is already in place: leave
@@ -126,10 +140,10 @@ carry **FTPS** values. Concrete settings for `borneotracker.rentsmartprop.com.my
 
 | Variable | Default | Meaning |
 |---|---|---|
-| `SMOKE_ALLOW_INSECURE_TLS` | `true` | The default dates from when the certificate did not cover this subdomain. **It does now** (2026-08-01) — **set this to `false`**, so a certificate regression fails the deploy instead of being ignored. See Step 5. |
+| `SMOKE_ALLOW_INSECURE_TLS` | `false` | **Strict certificate validation is the default.** Set to `true` only for a short, explicitly approved diagnostic when the certificate problem is already being fixed; the run will warn loudly and it must be returned to `false` immediately. See Step 5. |
 | `PRODUCTION_URL` | `https://borneotracker.rentsmartprop.com.my` | The URL the smoke test checks. |
 | `DEPLOY_PROTOCOL` | `sftp` | Set to `ftps` if the host only offers FTPS. (FTPS requires `SFTP_PASSWORD`; it cannot use a key.) |
-| `FTPS_VERIFY_CERT` | `yes` | FTPS only. Set to `no` if the host's FTPS certificate is self-signed. |
+| `FTPS_VERIFY_CERT` | `yes` | FTPS only. Keep `yes` for every routine deployment. `no` is an emergency, temporary diagnostic override only; fix the hostname/certificate and restore `yes` before any normal deployment. |
 
 ---
 
@@ -142,6 +156,10 @@ Do **not** wait for the 05:00 MYT schedule to find out whether it works.
    the data, builds the site, and runs every pre-upload assertion. If this is red, the problem
    is in the repo, not in the hosting — fix it before going near production.
 
+   A Dry Run deliberately makes **zero** FTP/FTPS connections. Therefore a green Dry Run proves
+   the repository build and data contract, but it cannot prove the hostname, certificate,
+   password, passive-mode firewall, or remote directory are correct.
+
    Two pre-upload failures you are most likely to hit:
 
    - `sha256 mismatch` or `byte count mismatch` — the data files and
@@ -153,13 +171,22 @@ Do **not** wait for the 05:00 MYT schedule to find out whether it works.
    - `dist/.htaccess is missing or empty` — `public/.htaccess` was deleted or emptied. It is a
      tracked file and carries the SPA rewrite; restore it. The workflow refuses to upload
      without it precisely because losing it 404s every deep link on the live site.
-3. Run it again with `dry_run` **unticked**. Watch these steps:
-   - **Prepare credentials** — if `SFTP_KNOWN_HOSTS` was not set, this prints the host key
-     fingerprint it accepted. Check it with the hosting admin, then save
-     `ssh-keyscan -p <port> <host>` output as `SFTP_KNOWN_HOSTS`.
-   - **Upload dist/ to DirectAdmin** — prints the exact lftp plan (credentials filtered out).
+3. After a green Dry Run, run the workflow again with **only**
+   **`connection_test_only`** ticked. Do not tick it together with `dry_run`.
+
+   This authenticates through FTPS, verifies the FTPS certificate according to
+   `FTPS_VERIFY_CERT`, changes into `SFTP_REMOTE_DIR`, and lists the directory. It does **not**
+   upload, mirror, overwrite `.htaccess`, or run the public-site smoke test. A passing summary
+   says **“Connection test passed — nothing was uploaded.”** This is the safest way to diagnose a
+   wrong username/password, a certificate problem, a chroot/path mistake, or an FTP connectivity
+   problem before Production is touched.
+
+4. Only after both checks are green, run again with **both options unticked**. Watch these steps:
+   - **Prepare credentials** — validates only safe hostname/port/path forms before connecting.
+   - **Upload dist/ to DirectAdmin** — uses Explicit FTPS on port 21 and prints a credentials-free
+     transfer plan.
    - **Smoke-test production** — see Step 4.
-4. Repeat for at least three consecutive scheduled runs before trusting it, per §8 of the
+5. Repeat for at least three consecutive scheduled runs before trusting it, per §8 of the
    DirectAdmin options doc.
 
 ### What triggers a deploy afterwards
@@ -212,29 +239,29 @@ Read the annotation. It is written to tell you which of these it is:
 | `production 'indicators.json' is <hash>, we built <hash>` | Old data still being served. | Usually a cache — see the next row. |
 | `Stale cache, not a failed upload` | The new bytes **are** on the server (they match when fetched with a cache-buster) but the plain URL serves an old copy. | Flush LiteSpeed/LSCache for the domain in DirectAdmin. |
 | `deep link /news returned HTTP 404` | `.htaccess` is missing or was overwritten on the server. | Restore it (see rollback) and check the "Server .htaccess replaced" warning in the previous run. |
-| `SMOKE_ALLOW_INSECURE_TLS is false but the certificate ... is still not valid` | You tightened the variable too early, or the certificate expired/regressed. | Set it back to `true` and chase the hosting admin. |
+| `Strict TLS is enabled ... certificate ... is not valid` | The certificate expired, was issued for the wrong host, or otherwise regressed. | Do **not** normalize the error by leaving TLS disabled. Ask the hosting admin to fix the certificate. A temporary `SMOKE_ALLOW_INSECURE_TLS=true` diagnostic override needs explicit approval and must be removed immediately. |
 
 Nothing is rolled back automatically. Because the upload is **non-destructive**, the previous
 hashed asset files are all still on the server — see Step 6.
 
 ---
 
-## 5. Tightening TLS
+## 5. TLS is strict by default
 
-> **Status 2026-08-01: the certificate now validates** (wildcard `*.rentsmartprop.com.my`, see
-> §1.2). So the "flip it" step below is no longer hypothetical — set
-> `SMOKE_ALLOW_INSECURE_TLS` to `false` on the first real deploy. That is also what turns the
-> October renewal from something someone has to remember into something the pipeline catches.
+> **Status 2026-08-01: the certificate validates** (wildcard `*.rentsmartprop.com.my`, see
+> §1.2). The workflow therefore defaults `SMOKE_ALLOW_INSECURE_TLS` to `false`: every normal
+> deploy checks the real certificate. This turns an October renewal problem into a visible failed
+> deployment instead of an invisible browser warning.
 
-Every run does a *strict* TLS probe regardless of the variable, purely to report status.
+Every normal run performs strict TLS validation. `SMOKE_ALLOW_INSECURE_TLS=true` exists only for
+a short, explicitly approved diagnostic if a known certificate incident is being investigated:
 
-- While `SMOKE_ALLOW_INSECURE_TLS` is `true` and the certificate is still broken: you get a loud
-  warning naming the missing-certificate problem, on every deploy.
-- The moment the certificate starts validating, the run prints
-  **"TLS certificate now validates — tighten the smoke test"** and the summary tells you to flip
-  the variable.
-- Set `SMOKE_ALLOW_INSECURE_TLS` to `false`. From then on a certificate regression fails the
-  deploy instead of being silently ignored.
+- It emits a security warning on every run and makes the smoke test ignore certificate errors.
+- It does **not** make the site safe for visitors and must not be treated as a routine workaround.
+- If the strict probe succeeds while this override is set, the run tells you to remove the
+  override immediately.
+- Restore or keep `SMOKE_ALLOW_INSECURE_TLS=false`; a future certificate regression will then
+  fail the deploy visibly.
 
 ---
 

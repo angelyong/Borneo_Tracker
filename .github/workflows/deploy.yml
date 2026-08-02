@@ -51,15 +51,20 @@ name: Deploy to DirectAdmin
 #
 #   PRODUCTION_URL            Public base URL to smoke-test.
 #                             Default: https://borneotracker.rentsmartprop.com.my
-#   SMOKE_ALLOW_INSECURE_TLS  "true" (default) = smoke test passes `--insecure`
-#                             to curl, because as of 2026-07-28 the server's TLS
-#                             certificate does NOT list the `borneotracker`
-#                             subdomain. Set to "false" the moment the hosting
-#                             admin reissues the certificate — the workflow
-#                             tells you when that has happened.
+#   SMOKE_ALLOW_INSECURE_TLS  "false" (default) = smoke test validates the
+#                             public HTTPS certificate. Set to "true" only as a
+#                             temporary, explicitly approved diagnostic override;
+#                             every such run emits a security warning.
 #   DEPLOY_PROTOCOL           "sftp" (default) or "ftps".
 #   FTPS_VERIFY_CERT          "yes" (default) / "no" — FTPS control-channel
-#                             certificate verification. Only read for ftps.
+#                             certificate verification. Only read for ftps. "no"
+#                             is an emergency diagnostic override, never routine.
+#
+# ─── MANUAL WORKFLOW MODES ───────────────────────────────────────────────────
+#   dry_run                  Build + validate + assert only. No server contact.
+#   connection_test_only     Connect, authenticate, `cd` and list the configured
+#                            directory only. No upload or smoke test. This is the
+#                            safe first live test of an Explicit-FTPS account.
 #
 # ─── THINGS THIS WORKFLOW DELIBERATELY DOES NOT DO ────────────────────────────
 #   * It never DELETES remote files (see the mirror step). First iteration is
@@ -90,6 +95,10 @@ on:
     inputs:
       dry_run:
         description: "Build + verify only. Do NOT upload and do NOT smoke-test."
+        type: boolean
+        default: false
+      connection_test_only:
+        description: "Authenticate to DirectAdmin and list the remote directory only. Do NOT upload or smoke-test."
         type: boolean
         default: false
 
@@ -148,11 +157,34 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           DRY_RUN_INPUT: ${{ github.event.inputs.dry_run || 'false' }}
+          CONNECTION_TEST_INPUT: ${{ github.event.inputs.connection_test_only || 'false' }}
           DEPLOY_PROTOCOL: ${{ vars.DEPLOY_PROTOCOL || 'sftp' }}
+          SMOKE_ALLOW_INSECURE_TLS: ${{ vars.SMOKE_ALLOW_INSECURE_TLS || 'false' }}
         run: |
           set -euo pipefail
 
+          case "${DRY_RUN_INPUT}" in true|false) ;; *)
+            echo "::error title=Bad workflow input::dry_run must be true or false."
+            exit 1
+          esac
+          case "${CONNECTION_TEST_INPUT}" in true|false) ;; *)
+            echo "::error title=Bad workflow input::connection_test_only must be true or false."
+            exit 1
+          esac
+          if [ "${DRY_RUN_INPUT}" = "true" ] && [ "${CONNECTION_TEST_INPUT}" = "true" ]; then
+            echo "::error title=Bad workflow input::Choose either dry_run or connection_test_only, not both."
+            exit 1
+          fi
+          case "${SMOKE_ALLOW_INSECURE_TLS}" in true|false) ;; *)
+            echo "::error title=Bad configuration::SMOKE_ALLOW_INSECURE_TLS must be true or false (default: false)."
+            exit 1
+          esac
+          if [ "${SMOKE_ALLOW_INSECURE_TLS}" = "true" ]; then
+            echo "::warning title=TLS verification override enabled::SMOKE_ALLOW_INSECURE_TLS=true was explicitly configured. This run's public smoke test will ignore HTTPS certificate errors; restore false immediately after the approved diagnostic."
+          fi
+
           echo "dry_run=${DRY_RUN_INPUT}" >> "$GITHUB_OUTPUT"
+          echo "connection_test_only=${CONNECTION_TEST_INPUT}" >> "$GITHUB_OUTPUT"
           echo "protocol=${DEPLOY_PROTOCOL}" >> "$GITHUB_OUTPUT"
 
           missing=""
@@ -574,10 +606,13 @@ jobs:
         env:
           SFTP_HOST: ${{ secrets.SFTP_HOST }}
           SFTP_PORT: ${{ secrets.SFTP_PORT }}
+          SFTP_REMOTE_DIR: ${{ secrets.SFTP_REMOTE_DIR }}
+          SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
           SFTP_KEY: ${{ secrets.SFTP_KEY }}
           SFTP_KNOWN_HOSTS: ${{ secrets.SFTP_KNOWN_HOSTS }}
           PROTOCOL: ${{ steps.gate.outputs.protocol }}
           AUTH: ${{ steps.gate.outputs.auth }}
+          FTPS_VERIFY_CERT: ${{ vars.FTPS_VERIFY_CERT || 'yes' }}
         run: |
           set -euo pipefail
           umask 077
@@ -590,13 +625,48 @@ jobs:
             echo "::error title=Bad configuration::FTPS cannot use an SSH key. Set SFTP_PASSWORD, or switch DEPLOY_PROTOCOL back to sftp."
             exit 1
           fi
+          if [ "$PROTOCOL" = "ftps" ] && [ "$(printf '%s' "$SFTP_PASSWORD" | wc -l)" -gt 0 ]; then
+            echo "::error title=Unusable password::SFTP_PASSWORD contains a newline. Re-enter the secret without a trailing line break."
+            exit 1
+          fi
+
+          # Secrets are deliberately validated before lftp is invoked. In
+          # particular, `open` accepts URLs, while SFTP_HOST must be only a
+          # hostname: accepting a scheme, path, whitespace or a port here could
+          # redirect a deployment to an unintended endpoint.
+          if [[ -z "${SFTP_HOST:-}" || "$SFTP_HOST" =~ [[:space:]/:@] || "$SFTP_HOST" == *".."* || ! "$SFTP_HOST" =~ ^[A-Za-z0-9]([A-Za-z0-9.-]*[A-Za-z0-9])?$ ]]; then
+            echo "::error title=Bad configuration::SFTP_HOST must be a hostname only (no scheme, path, port, or whitespace)."
+            exit 1
+          fi
 
           PORT="${SFTP_PORT:-}"
           if [ -z "$PORT" ]; then
             if [ "$PROTOCOL" = "ftps" ]; then PORT=21; else PORT=22; fi
             echo "SFTP_PORT not set; defaulting to ${PORT} for ${PROTOCOL}."
           fi
+          if ! [[ "$PORT" =~ ^[0-9]+$ ]] || (( 10#$PORT < 1 || 10#$PORT > 65535 )); then
+            echo "::error title=Bad configuration::SFTP_PORT must be a number from 1 to 65535."
+            exit 1
+          fi
           echo "port=${PORT}" >> "$GITHUB_OUTPUT"
+
+          REMOTE_DIR="${SFTP_REMOTE_DIR:-$DEFAULT_REMOTE_DIR}"
+          # `/` is valid for an FTP account chrooted directly to public_html.
+          # All other accepted paths are absolute POSIX paths made of ordinary
+          # path components only; reject quotes/newlines/shell-like characters
+          # before interpolating the value into the lftp script.
+          if [[ "$REMOTE_DIR" == *$'\n'* || "$REMOTE_DIR" == *$'\r'* || "$REMOTE_DIR" == *\"* || "$REMOTE_DIR" == *\'* || "$REMOTE_DIR" == *\\* || "$REMOTE_DIR" == *"//"* || "$REMOTE_DIR" == *"/."* || ! "$REMOTE_DIR" =~ ^/([A-Za-z0-9._-]+/)*[A-Za-z0-9._-]*$ ]]; then
+            echo "::error title=Bad configuration::SFTP_REMOTE_DIR must be a safe absolute POSIX path (for example / or /domains/example/public_html)."
+            exit 1
+          fi
+
+          if [ "$PROTOCOL" = "ftps" ] && [ "$FTPS_VERIFY_CERT" != "yes" ] && [ "$FTPS_VERIFY_CERT" != "no" ]; then
+            echo "::error title=Bad configuration::FTPS_VERIFY_CERT must be yes or no (default: yes)."
+            exit 1
+          fi
+          if [ "$PROTOCOL" = "ftps" ] && [ "$FTPS_VERIFY_CERT" = "no" ]; then
+            echo "::warning title=FTPS certificate verification disabled::FTPS_VERIFY_CERT=no is an emergency temporary diagnostic override. Do not use it for routine production deployment; correct the hostname/certificate and restore yes."
+          fi
 
           if [ "$PROTOCOL" = "sftp" ]; then
             KNOWN="$RUNNER_TEMP/known_hosts"
@@ -631,8 +701,77 @@ jobs:
             fi
           fi
 
+      # A connection-only run is the safe first live check for an FTP account.
+      # It proves TLS, authentication, chroot/path and read permission without
+      # ever writing to the server. Dry runs stay entirely offline by design.
+      - name: Test DirectAdmin connection (read only)
+        if: steps.gate.outputs.ready == 'true' && steps.gate.outputs.dry_run != 'true' && steps.gate.outputs.connection_test_only == 'true'
+        id: connection
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_USER: ${{ secrets.SFTP_USER }}
+          SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+          SFTP_REMOTE_DIR: ${{ secrets.SFTP_REMOTE_DIR }}
+          PROTOCOL: ${{ steps.gate.outputs.protocol }}
+          AUTH: ${{ steps.gate.outputs.auth }}
+          PORT: ${{ steps.creds.outputs.port }}
+          FTPS_VERIFY_CERT: ${{ vars.FTPS_VERIFY_CERT || 'yes' }}
+        run: |
+          set -euo pipefail
+          umask 077
+
+          REMOTE_DIR="${SFTP_REMOTE_DIR:-$DEFAULT_REMOTE_DIR}"
+          SCRIPT="$RUNNER_TEMP/lftp.connection-test.script"
+          : > "$SCRIPT"
+          chmod 600 "$SCRIPT"
+          # The script contains the password for FTPS. Delete it even if lftp
+          # exits non-zero; GitHub destroys the runner too, but do not rely on it.
+          trap 'rm -f "$SCRIPT"' EXIT
+
+          {
+            echo "set cmd:fail-exit yes"
+            echo "set net:max-retries 1"
+            echo "set net:timeout 30"
+          } >> "$SCRIPT"
+
+          if [ "$PROTOCOL" = "sftp" ]; then
+            if [ "$AUTH" = "key" ]; then
+              echo "set sftp:connect-program \"ssh -a -x -i $RUNNER_TEMP/deploy_key -o UserKnownHostsFile=$RUNNER_TEMP/known_hosts -o StrictHostKeyChecking=yes -o BatchMode=yes -p $PORT\"" >> "$SCRIPT"
+            else
+              export SSHPASS="$SFTP_PASSWORD"
+              echo "set sftp:connect-program \"sshpass -e ssh -a -x -o UserKnownHostsFile=$RUNNER_TEMP/known_hosts -o StrictHostKeyChecking=yes -o PubkeyAuthentication=no -p $PORT\"" >> "$SCRIPT"
+            fi
+            echo "open sftp://${SFTP_USER}@${SFTP_HOST}" >> "$SCRIPT"
+          else
+            esc_user="$(printf '%s' "$SFTP_USER"     | sed 's/\\/\\\\/g; s/"/\\"/g')"
+            esc_pass="$(printf '%s' "$SFTP_PASSWORD" | sed 's/\\/\\\\/g; s/"/\\"/g')"
+            {
+              # Pure-FTPd on port 21 is Explicit FTPS: open plain ftp:// then
+              # upgrade the control channel using AUTH TLS. `ftps://` is only
+              # appropriate for implicit FTPS (normally port 990), which this
+              # DirectAdmin host does not offer.
+              echo "set ftp:ssl-auth TLS"
+              echo "set ftp:ssl-force true"
+              echo "set ftp:ssl-protect-data true"
+              echo "set ssl:verify-certificate ${FTPS_VERIFY_CERT}"
+              echo "open -u \"${esc_user}\",\"${esc_pass}\" ftp://${SFTP_HOST}:${PORT}"
+            } >> "$SCRIPT"
+          fi
+
+          {
+            echo "cd \"${REMOTE_DIR}\""
+            echo "pwd"
+            echo "cls -1"
+            echo "bye"
+          } >> "$SCRIPT"
+
+          echo "Testing ${PROTOCOL} transport, TLS/authentication and remote-directory read access (no files will be uploaded)."
+          lftp -f "$SCRIPT"
+          echo "result=pass" >> "$GITHUB_OUTPUT"
+          echo "Connection test passed. No files were uploaded."
+
       - name: Upload dist/ to DirectAdmin (non-destructive)
-        if: steps.gate.outputs.ready == 'true' && steps.gate.outputs.dry_run != 'true'
+        if: steps.gate.outputs.ready == 'true' && steps.gate.outputs.dry_run != 'true' && steps.gate.outputs.connection_test_only != 'true'
         env:
           SFTP_HOST: ${{ secrets.SFTP_HOST }}
           SFTP_USER: ${{ secrets.SFTP_USER }}
@@ -654,6 +793,10 @@ jobs:
           SCRIPT="$RUNNER_TEMP/lftp.script"
           : > "$SCRIPT"
           chmod 600 "$SCRIPT"
+          # `lftp -f` can fail during TLS/authentication. Keep the credential
+          # file private and remove it on every shell exit path, not only on a
+          # successful transfer.
+          trap 'rm -f "$SCRIPT"' EXIT
 
           {
             echo "set cmd:fail-exit yes"
@@ -686,12 +829,17 @@ jobs:
             esc_user="$(printf '%s' "$SFTP_USER"     | sed 's/\\/\\\\/g; s/"/\\"/g')"
             esc_pass="$(printf '%s' "$SFTP_PASSWORD" | sed 's/\\/\\\\/g; s/"/\\"/g')"
             {
+              # Port 21 on this DirectAdmin host is Explicit FTPS. `ftp://`
+              # starts the ordinary FTP control connection, then these settings
+              # require AUTH TLS before credentials/data can move. Do not use
+              # `ftps://` here: that is implicit FTPS and fails on port 21.
+              echo "set ftp:ssl-auth TLS"
               echo "set ftp:ssl-force true"
               echo "set ftp:ssl-protect-data true"
               echo "set ssl:verify-certificate ${FTPS_VERIFY_CERT}"
               # The password lives in this 0600 file rather than on lftp's
               # command line, so it never shows up in `ps`.
-              echo "open -u \"${esc_user}\",\"${esc_pass}\" ftps://${SFTP_HOST}:${PORT}"
+              echo "open -u \"${esc_user}\",\"${esc_pass}\" ftp://${SFTP_HOST}:${PORT}"
             } >> "$SCRIPT"
           fi
 
@@ -721,7 +869,6 @@ jobs:
           echo "-----------------------------------------------------------"
 
           lftp -f "$SCRIPT"
-          rm -f "$SCRIPT"
 
           if [ -s "$BACKUP_DIR/htaccess.live" ]; then
             if cmp -s "$BACKUP_DIR/htaccess.live" dist/.htaccess; then
@@ -736,7 +883,7 @@ jobs:
           echo "Upload complete."
 
       - name: Keep the previous .htaccess for rollback
-        if: always() && steps.gate.outputs.ready == 'true' && steps.gate.outputs.dry_run != 'true'
+        if: always() && steps.gate.outputs.ready == 'true' && steps.gate.outputs.dry_run != 'true' && steps.gate.outputs.connection_test_only != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: predeploy-htaccess
@@ -757,10 +904,10 @@ jobs:
       # also asserts the content type and actually parses the body.
       # ─────────────────────────────────────────────────────────────────────
       - name: Smoke-test production
-        if: steps.gate.outputs.ready == 'true' && steps.gate.outputs.dry_run != 'true'
+        if: steps.gate.outputs.ready == 'true' && steps.gate.outputs.dry_run != 'true' && steps.gate.outputs.connection_test_only != 'true'
         id: smoke
         env:
-          ALLOW_INSECURE: ${{ vars.SMOKE_ALLOW_INSECURE_TLS || 'true' }}
+          ALLOW_INSECURE: ${{ vars.SMOKE_ALLOW_INSECURE_TLS || 'false' }}
         run: |
           set -uo pipefail
           BASE="${PRODUCTION_URL%/}"
@@ -777,8 +924,8 @@ jobs:
                 -H 'Cache-Control: no-cache' -H 'Pragma: no-cache')
           if [ "$ALLOW_INSECURE" = "true" ]; then
             CURL+=(--insecure)
-            echo "::warning title=Smoke test is NOT verifying TLS::SMOKE_ALLOW_INSECURE_TLS is true, so certificate errors are ignored. As of 2026-07-28 the certificate on this host covers rentsmartprop.com.my, apexseo.*, hybrid.*, invoice.*, mail.*, packaging.* and webmail.* but NOT the 'borneotracker' subdomain — so every real visitor gets a browser security warning. Ask the hosting admin to reissue/extend the certificate (or issue a free Let's Encrypt cert for the subdomain in DirectAdmin -> SSL Certificates), then set the repository variable SMOKE_ALLOW_INSECURE_TLS to false."
-            echo "TLS VERIFICATION DISABLED for this smoke test (see the warning above)."
+            echo "::warning title=Smoke test is NOT verifying TLS::SMOKE_ALLOW_INSECURE_TLS=true is an explicit temporary diagnostic override, so this run ignores HTTPS certificate errors. This does not make a certificate problem safe; restore false immediately after the approved diagnostic."
+            echo "TLS verification is temporarily disabled for this smoke test (explicit override)."
           else
             echo "TLS verification: STRICT."
           fi
@@ -889,7 +1036,7 @@ jobs:
             echo "tls=not-https" >> "$GITHUB_OUTPUT"
           elif curl --silent --show-error --max-time 20 -o /dev/null "${BASE}/" 2>"$OUT/tls.err"; then
             if [ "$ALLOW_INSECURE" = "true" ]; then
-              echo "::warning title=TLS certificate now validates — tighten the smoke test::A strict TLS request to ${BASE}/ succeeded, so the certificate problem appears to be fixed. Set the repository variable SMOKE_ALLOW_INSECURE_TLS to false so every future deploy verifies the certificate."
+              echo "::warning title=TLS certificate now validates — remove override::A strict TLS request to ${BASE}/ succeeded. Remove the temporary SMOKE_ALLOW_INSECURE_TLS=true override (or set it to false) so every future deploy verifies the certificate."
               echo "tls=fixed-but-not-enforced" >> "$GITHUB_OUTPUT"
             else
               echo "  ok  strict TLS handshake succeeded."
@@ -899,7 +1046,7 @@ jobs:
             echo "  strict TLS check FAILED: $(head -1 "$OUT/tls.err" 2>/dev/null)"
             echo "tls=broken" >> "$GITHUB_OUTPUT"
             if [ "$ALLOW_INSECURE" != "true" ]; then
-              echo "::error title=Smoke test failed::SMOKE_ALLOW_INSECURE_TLS is false but the certificate for ${BASE} is still not valid."
+              echo "::error title=Smoke test failed::Strict TLS is enabled (SMOKE_ALLOW_INSECURE_TLS is false or unset), but the certificate for ${BASE} is not valid."
               fail=1
             fi
           fi
@@ -932,6 +1079,9 @@ jobs:
           SMOKE: ${{ steps.smoke.outputs.result }}
           TLS: ${{ steps.smoke.outputs.tls }}
           DRY_RUN: ${{ steps.gate.outputs.dry_run }}
+          CONNECTION_TEST_ONLY: ${{ steps.gate.outputs.connection_test_only }}
+          CONNECTION: ${{ steps.connection.outputs.result }}
+          CONNECTION_OUTCOME: ${{ steps.connection.outcome }}
           PROTOCOL: ${{ steps.gate.outputs.protocol }}
           AUTH: ${{ steps.gate.outputs.auth }}
         run: |
@@ -939,6 +1089,10 @@ jobs:
           {
             if [ "${DRY_RUN}" = "true" ]; then
               echo "## Dry run — nothing was uploaded"
+            elif [ "${CONNECTION_TEST_ONLY}" = "true" ] && [ "${CONNECTION}" = "pass" ]; then
+              echo "## Connection test passed — nothing was uploaded"
+            elif [ "${CONNECTION_TEST_ONLY}" = "true" ]; then
+              echo "## Connection test did not complete — nothing was uploaded"
             elif [ "${SMOKE}" = "pass" ]; then
               echo "## Deployed and verified"
             elif [ "${SMOKE}" = "fail" ]; then
@@ -953,7 +1107,12 @@ jobs:
             echo "| Trigger | \`${TRIGGER}\` |"
             echo "| Commit | \`${COMMIT_SHORT}\` — ${COMMIT_SUBJECT} |"
             echo "| Data \`generatedAt\` | **${GENERATED_AT:-unknown}** |"
-            echo "| Transport | ${PROTOCOL} (${AUTH} auth), non-destructive mirror |"
+            if [ "${CONNECTION_TEST_ONLY}" = "true" ]; then
+              echo "| Transport | ${PROTOCOL} (${AUTH} auth), read-only connection test |"
+              echo "| Connection test | ${CONNECTION:-${CONNECTION_OUTCOME:-not run}} |"
+            else
+              echo "| Transport | ${PROTOCOL} (${AUTH} auth), non-destructive mirror |"
+            fi
             echo "| Smoke test | ${SMOKE:-not run} |"
             echo "| TLS | ${TLS:-not checked} |"
             echo
@@ -982,7 +1141,7 @@ jobs:
             if [ "${TLS}" = "fixed-but-not-enforced" ]; then
               echo "### Certificate looks fixed"
               echo
-              echo "Set the repository variable \`SMOKE_ALLOW_INSECURE_TLS\` to \`false\` to start"
-              echo "enforcing certificate validation on every deploy."
+              echo "Remove the temporary \`SMOKE_ALLOW_INSECURE_TLS=true\` override (or set it"
+              echo "to \`false\`) so every future deploy validates the certificate."
             fi
           } >> "$GITHUB_STEP_SUMMARY"
