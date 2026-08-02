@@ -222,10 +222,79 @@ export type AIChatFactObject = {
   approvedYearTokens: string[];
 };
 
+export type AnswerLayerStatus =
+  | 'AVAILABLE'
+  | 'PARTIAL'
+  | 'UNAVAILABLE'
+  | 'BLOCKED'
+  | 'NOT_APPLICABLE';
+
+export type AnswerLayer = {
+  status: AnswerLayerStatus;
+  heading: string;
+  text: string;
+  codes: string[];
+  factReferences: string[];
+  warnings: string[];
+};
+
+export type EvidenceLeverLayer = AnswerLayer & {
+  leverIds: string[];
+  requiresGeminiPhrasing: boolean;
+};
+
+export type AIChatStructuredAnswer = {
+  availability: FactAvailability;
+  language: string;
+  intent: AIChatIntent;
+  layers: {
+    conclusion: AnswerLayer;
+    diagnosis: AnswerLayer;
+    gap: AnswerLayer;
+    impact: AnswerLayer;
+    lever: EvidenceLeverLayer;
+    honesty: AnswerLayer;
+  };
+  summaryText: string;
+  requiredDisclosures: string[];
+  warnings: FactWarning[];
+  sources: FactSource[];
+  approvedNumericTokens: string[];
+  approvedYearTokens: string[];
+  blocked: boolean;
+  clarificationRequired: boolean;
+};
+
+export type AIChatResponseMode =
+  | 'gemini-test'
+  | 'template-fallback';
+
+export type FallbackReason =
+  | 'GEMINI_TIMEOUT'
+  | 'GEMINI_RATE_LIMIT'
+  | 'GEMINI_UNAVAILABLE'
+  | 'GEMINI_HTTP_ERROR'
+  | 'GEMINI_MALFORMED_RESPONSE'
+  | 'GEMINI_EMPTY_RESPONSE'
+  | 'GEMINI_NOT_CONFIGURED'
+  | 'QUOTA_UNAVAILABLE';
+
+export type AIChatFallbackMetadata = {
+  used: boolean;
+  reason?: FallbackReason;
+  generatedFrom: 'structured-answer';
+  degraded: boolean;
+};
+
 export type AIChatSuccessResponse = {
   answer: string;
-  mode: 'gemini-test';
-  sources: [];
+  mode: AIChatResponseMode;
+  sources: FactSource[];
+  fallback?: {
+    used: true;
+    reason: FallbackReason;
+    degraded: true;
+  };
 };
 
 export type AIChatErrorResponse = {

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { validateChatRequest } from './contracts.ts';
+import { AIChatHttpError, MAX_MESSAGE_LENGTH, validateChatRequest } from './contracts.ts';
 import { generateGeminiAnswer } from './geminiClient.ts';
-import { createAiChatHandler, handleAiChatRequest } from './index.ts';
+import { createAiChatHandler, handleAiChatRequest, mapFallbackReason } from './index.ts';
 
 const validPayload = {
   message: 'Hello',
@@ -19,6 +19,15 @@ function request(payload, init = {}) {
   return new Request('http://localhost/ai-chat', {
     method: 'POST',
     body: JSON.stringify(payload),
+    headers: { 'Content-Type': 'application/json' },
+    ...init,
+  });
+}
+
+function rawRequest(body, init = {}) {
+  return new Request('http://localhost/ai-chat', {
+    method: 'POST',
+    body,
     headers: { 'Content-Type': 'application/json' },
     ...init,
   });
@@ -206,6 +215,28 @@ describe('Gemini client', () => {
   });
 });
 
+describe('Gemini fallback reason mapping', () => {
+  it.each([
+    ['GEMINI_TIMEOUT', 'GEMINI_TIMEOUT'],
+    ['GEMINI_RATE_LIMITED', 'GEMINI_RATE_LIMIT'],
+    ['MISSING_GEMINI_API_KEY', 'GEMINI_NOT_CONFIGURED'],
+    ['MALFORMED_GEMINI_RESPONSE', 'GEMINI_MALFORMED_RESPONSE'],
+    ['EMPTY_GEMINI_RESPONSE', 'GEMINI_EMPTY_RESPONSE'],
+    ['GEMINI_REQUEST_FAILED', 'GEMINI_UNAVAILABLE'],
+    ['GEMINI_HTTP_500', 'GEMINI_UNAVAILABLE'],
+    ['GEMINI_HTTP_503', 'GEMINI_UNAVAILABLE'],
+    ['GEMINI_HTTP_400', 'GEMINI_HTTP_ERROR'],
+  ])('maps %s to %s', (code, reason) => {
+    expect(mapFallbackReason(new AIChatHttpError(502, code, 'safe message'))).toBe(reason);
+  });
+
+  it('does not map request, config-shape, or programming errors', () => {
+    expect(mapFallbackReason(new AIChatHttpError(400, 'EMPTY_MESSAGE', 'safe message'))).toBeUndefined();
+    expect(mapFallbackReason(new AIChatHttpError(500, 'INVALID_AI_CHAT_CONFIG', 'safe message'))).toBeUndefined();
+    expect(mapFallbackReason(new Error('bug'))).toBeUndefined();
+  });
+});
+
 describe('ai-chat endpoint', () => {
   it('handles CORS preflight without requiring Gemini configuration', async () => {
     const handler = createAiChatHandler({
@@ -237,6 +268,32 @@ describe('ai-chat endpoint', () => {
     expect(response.status).toBe(405);
     expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
     expect(body.code).toBe('METHOD_NOT_ALLOWED');
+  });
+
+  it('does not trigger fallback for malformed JSON', async () => {
+    const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(504, 'GEMINI_TIMEOUT', 'timeout'));
+    const handler = createAiChatHandler({ geminiClient, logger: silentLogger });
+
+    const response = await handler(rawRequest('{'));
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body.code).toBe('INVALID_JSON');
+    expect(body.mode).toBeUndefined();
+    expect(geminiClient).not.toHaveBeenCalled();
+  });
+
+  it('does not trigger fallback for too-long messages', async () => {
+    const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(504, 'GEMINI_TIMEOUT', 'timeout'));
+    const handler = createAiChatHandler({ geminiClient, logger: silentLogger });
+
+    const response = await handler(request({ ...validPayload, message: 'x'.repeat(MAX_MESSAGE_LENGTH + 1) }));
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body.code).toBe('MESSAGE_TOO_LONG');
+    expect(body.mode).toBeUndefined();
+    expect(geminiClient).not.toHaveBeenCalled();
   });
 
   it('injects the Gemini dependency for handler tests', async () => {
@@ -413,6 +470,25 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     expect(result.body.factObject).toBeUndefined();
   });
 
+  it('builds an internal structured answer summary without exposing it publicly', async () => {
+    const result = await runIntegratedRequest({
+      ...validPayload,
+      message: "What is Sabah's resilience score?",
+      region: '',
+    });
+
+    expect(result.completed.structuredAnswer).toMatchObject({
+      availability: 'AVAILABLE',
+      language: 'en',
+      blocked: false,
+      clarificationRequired: false,
+      layerStatuses: {
+        conclusion: 'AVAILABLE',
+      },
+    });
+    expect(result.body.structuredAnswer).toBeUndefined();
+  });
+
   it('keeps the public response contract unchanged', async () => {
     const result = await runIntegratedRequest({
       ...validPayload,
@@ -429,6 +505,7 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     expect(result.body.entities).toBeUndefined();
     expect(result.body.comparability).toBeUndefined();
     expect(result.body.factObject).toBeUndefined();
+    expect(result.body.structuredAnswer).toBeUndefined();
   });
 
   it('continues to call Gemini with the original request only', async () => {
@@ -443,5 +520,264 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
       message: "What is Sabah's resilience score?",
       region: '',
     });
+  });
+
+  it('does not pass structured answer data to Gemini', async () => {
+    const structuredAnswerBuilder = vi.fn((input) => ({
+      availability: input.factObject.availability,
+      language: input.language,
+      intent: input.factObject.intent,
+      layers: {
+        conclusion: { status: 'AVAILABLE', heading: 'Conclusion', text: 'Safe.', codes: [], factReferences: [], warnings: [] },
+        diagnosis: { status: 'UNAVAILABLE', heading: 'Diagnosis', text: '', codes: [], factReferences: [], warnings: [] },
+        gap: { status: 'UNAVAILABLE', heading: 'Gap', text: '', codes: [], factReferences: [], warnings: [] },
+        impact: { status: 'UNAVAILABLE', heading: 'Impact', text: '', codes: [], factReferences: [], warnings: [] },
+        lever: { status: 'UNAVAILABLE', heading: 'Recommended action', text: '', codes: [], factReferences: [], warnings: [], leverIds: [], requiresGeminiPhrasing: false },
+        honesty: { status: 'AVAILABLE', heading: 'Limitations', text: '', codes: [], factReferences: [], warnings: [] },
+      },
+      summaryText: 'Conclusion: Safe.',
+      requiredDisclosures: [],
+      warnings: [],
+      sources: [],
+      approvedNumericTokens: [],
+      approvedYearTokens: [],
+      blocked: false,
+      clarificationRequired: false,
+    }));
+    const geminiClient = vi.fn().mockResolvedValue('Integrated response.');
+    const handler = createAiChatHandler({ geminiClient, structuredAnswerBuilder, logger: silentLogger });
+
+    await handler(request({ ...validPayload, message: "What is Sabah's resilience score?", region: '' }));
+
+    expect(structuredAnswerBuilder).toHaveBeenCalled();
+    expect(geminiClient).toHaveBeenCalledWith({
+      ...validPayload,
+      message: "What is Sabah's resilience score?",
+      region: '',
+    });
+  });
+});
+
+describe('ai-chat Stage 4C template fallback', () => {
+  async function runFallbackRequest(payload, geminiError, options = {}) {
+    const logger = {
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    };
+    const geminiClient = vi.fn().mockRejectedValue(geminiError);
+    const handler = createAiChatHandler({
+      geminiClient,
+      logger,
+      ...options,
+    });
+    const response = await handler(request(payload));
+    const body = await response.json();
+    const fallbackLog = logger.info.mock.calls.find(([event]) => event === 'request_fallback')?.[1];
+    return { response, body, logger, geminiClient, fallbackLog };
+  }
+
+  it('returns template fallback for a dashboard timeout', async () => {
+    const result = await runFallbackRequest(
+      { ...validPayload, message: "What is Sabah's resilience score?", region: '' },
+      new AIChatHttpError(504, 'GEMINI_TIMEOUT', 'raw timeout details')
+    );
+
+    expect(result.response.status).toBe(200);
+    expect(result.body.mode).toBe('template-fallback');
+    expect(result.body.fallback).toEqual({
+      used: true,
+      reason: 'GEMINI_TIMEOUT',
+      degraded: true,
+    });
+    expect(result.body.answer).toContain('Live AI phrasing is temporarily unavailable.');
+    expect(result.body.answer).toContain('Conclusion:');
+    expect(result.body.answer).not.toContain('raw timeout details');
+    expect(result.fallbackLog).toMatchObject({
+      fallbackUsed: true,
+      fallbackReason: 'GEMINI_TIMEOUT',
+      intent: 'DASHBOARD_DATA',
+      structuredAnswerAvailability: 'AVAILABLE',
+      blocked: false,
+      clarificationRequired: false,
+    });
+  });
+
+  it('keeps Gemini success unchanged and does not use fallback', async () => {
+    const logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+    const geminiClient = vi.fn().mockResolvedValue('Gemini answer.');
+    const handler = createAiChatHandler({ geminiClient, logger });
+
+    const response = await handler(request({ ...validPayload, message: "What is Sabah's resilience score?", region: '' }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({
+      answer: 'Gemini answer.',
+      mode: 'gemini-test',
+      sources: [],
+    });
+    expect(logger.info.mock.calls.some(([event]) => event === 'request_fallback')).toBe(false);
+  });
+
+  it.each([
+    ['GEMINI_RATE_LIMITED', 'GEMINI_RATE_LIMIT'],
+    ['GEMINI_HTTP_500', 'GEMINI_UNAVAILABLE'],
+    ['MALFORMED_GEMINI_RESPONSE', 'GEMINI_MALFORMED_RESPONSE'],
+    ['EMPTY_GEMINI_RESPONSE', 'GEMINI_EMPTY_RESPONSE'],
+    ['MISSING_GEMINI_API_KEY', 'GEMINI_NOT_CONFIGURED'],
+  ])('returns dashboard fallback for %s', async (code, reason) => {
+    const result = await runFallbackRequest(
+      { ...validPayload, message: 'What is the dashboard data for Sabah education SDG progress?', region: '' },
+      new AIChatHttpError(code === 'GEMINI_RATE_LIMITED' ? 429 : 502, code, 'safe upstream error')
+    );
+
+    expect(result.response.status).toBe(200);
+    expect(result.body.mode).toBe('template-fallback');
+    expect(result.body.fallback.reason).toBe(reason);
+    expect(result.body.answer).toContain('Conclusion:');
+    expect(result.body.answer).toContain('Limitations:');
+    expect(result.body.answer).not.toContain('safe upstream error');
+  });
+
+  it('returns deterministic blocked fallback for rejected comparisons', async () => {
+    const result = await runFallbackRequest(
+      { ...validPayload, message: 'Compare forest cover between Sabah and Brunei.', region: '' },
+      new AIChatHttpError(504, 'GEMINI_TIMEOUT', 'timeout')
+    );
+
+    expect(result.response.status).toBe(200);
+    expect(result.body.mode).toBe('template-fallback');
+    expect(result.body.answer).toContain('This comparison cannot be made reliably using the available data.');
+    expect(result.body.answer).toContain('Limitations: Important limitations and disclosures are attached');
+    expect(result.fallbackLog).toMatchObject({
+      structuredAnswerAvailability: 'BLOCKED',
+      blocked: true,
+    });
+  });
+
+  it('returns deterministic clarification fallback without guessing a district', async () => {
+    const result = await runFallbackRequest(
+      { ...validPayload, message: 'Show dashboard data for Kota district.', region: '' },
+      new AIChatHttpError(504, 'GEMINI_TIMEOUT', 'timeout')
+    );
+
+    expect(result.response.status).toBe(200);
+    expect(result.body.mode).toBe('template-fallback');
+    expect(result.body.answer).toContain('District-level answer requested without a resolved district name.');
+    expect(result.body.answer).not.toContain('Kota Kinabalu');
+    expect(result.fallbackLog).toMatchObject({
+      structuredAnswerAvailability: 'BLOCKED',
+      clarificationRequired: true,
+    });
+  });
+
+  it('returns partial and unavailable dashboard fallbacks safely', async () => {
+    const partial = await runFallbackRequest(
+      { ...validPayload, message: 'What is the dashboard data for Sabah education SDG progress?', region: '' },
+      new AIChatHttpError(429, 'GEMINI_RATE_LIMITED', 'rate limit')
+    );
+    const unavailable = await runFallbackRequest(
+      { ...validPayload, message: 'What is the dashboard data target gap for Sabah protected areas?', region: '' },
+      new AIChatHttpError(502, 'GEMINI_HTTP_500', 'server error')
+    );
+
+    expect(partial.response.status).toBe(200);
+    expect(partial.fallbackLog.structuredAnswerAvailability).toBe('PARTIAL');
+    expect(partial.body.answer).toContain('progress-to-target cannot be calculated');
+    expect(unavailable.response.status).toBe(200);
+    expect(['PARTIAL', 'UNAVAILABLE']).toContain(unavailable.fallbackLog.structuredAnswerAvailability);
+    expect(unavailable.body.answer).toContain('No verified compatible target is available');
+  });
+
+  it('does not use dashboard fallback for unsupported intents', async () => {
+    const site = await runFallbackRequest(
+      { ...validPayload, message: 'What is Borneo Tracker?', region: '' },
+      new AIChatHttpError(500, 'MISSING_GEMINI_API_KEY', 'not configured')
+    );
+    const news = await runFallbackRequest(
+      { ...validPayload, message: 'Show latest Borneo news.', region: '' },
+      new AIChatHttpError(500, 'MISSING_GEMINI_API_KEY', 'not configured')
+    );
+    const outOfScope = await runFallbackRequest(
+      { ...validPayload, message: 'Write code in Python.', region: '' },
+      new AIChatHttpError(500, 'MISSING_GEMINI_API_KEY', 'not configured')
+    );
+
+    expect(site.response.status).toBe(500);
+    expect(site.body.code).toBe('MISSING_GEMINI_API_KEY');
+    expect(news.response.status).toBe(500);
+    expect(news.body.code).toBe('MISSING_GEMINI_API_KEY');
+    expect(outOfScope.response.status).toBe(500);
+    expect(outOfScope.body.code).toBe('MISSING_GEMINI_API_KEY');
+    expect(site.fallbackLog).toBeUndefined();
+    expect(news.fallbackLog).toBeUndefined();
+    expect(outOfScope.fallbackLog).toBeUndefined();
+  });
+
+  it('preserves sources from structured answer without adding source URLs to prose', async () => {
+    const structuredAnswerBuilder = vi.fn((input) => ({
+      availability: 'AVAILABLE',
+      language: input.language,
+      intent: input.factObject.intent,
+      layers: {
+        conclusion: { status: 'AVAILABLE', heading: 'Conclusion', text: 'Safe answer.', codes: [], factReferences: [], warnings: [] },
+        diagnosis: { status: 'UNAVAILABLE', heading: 'Diagnosis', text: '', codes: [], factReferences: [], warnings: [] },
+        gap: { status: 'UNAVAILABLE', heading: 'Gap', text: '', codes: [], factReferences: [], warnings: [] },
+        impact: { status: 'UNAVAILABLE', heading: 'Impact', text: '', codes: [], factReferences: [], warnings: [] },
+        lever: { status: 'UNAVAILABLE', heading: 'Recommended action', text: '', codes: [], factReferences: [], warnings: [], leverIds: [], requiresGeminiPhrasing: false },
+        honesty: { status: 'UNAVAILABLE', heading: 'Limitations', text: '', codes: [], factReferences: [], warnings: [] },
+      },
+      summaryText: 'Conclusion: Safe answer.',
+      requiredDisclosures: [],
+      warnings: [],
+      sources: [
+        { publisher: 'Borneo Tracker', title: 'Dataset', year: 2026, url: 'https://example.com/source-2026', sourceFile: 'test.json' },
+        { publisher: 'Borneo Tracker', title: 'Dataset', year: 2026, url: 'https://example.com/source-2026', sourceFile: 'test.json' },
+      ],
+      approvedNumericTokens: [],
+      approvedYearTokens: [],
+      blocked: false,
+      clarificationRequired: false,
+    }));
+
+    const result = await runFallbackRequest(
+      { ...validPayload, message: "What is Sabah's resilience score?", region: '' },
+      new AIChatHttpError(502, 'EMPTY_GEMINI_RESPONSE', 'empty'),
+      { structuredAnswerBuilder }
+    );
+
+    expect(result.response.status).toBe(200);
+    expect(result.body.sources).toHaveLength(1);
+    expect(result.body.sources[0].url).toBe('https://example.com/source-2026');
+    expect(result.body.answer).not.toContain('https://example.com');
+    expect(result.body.sources.map((source) => source.title)).not.toContain('Gemini');
+  });
+
+  it('fallback introduces no unapproved numbers', async () => {
+    const result = await runFallbackRequest(
+      { ...validPayload, message: "What is Sabah's resilience score?", region: '' },
+      new AIChatHttpError(502, 'GEMINI_HTTP_500', 'server error')
+    );
+    const numericTokens = [...result.body.answer.matchAll(/\b\d+(?:\.\d+)?%?\b/g)].map((match) => match[0]);
+
+    expect(numericTokens.length).toBeGreaterThan(0);
+    expect(result.body.answer).not.toMatch(/https?:\/\//i);
+    expect(result.body.answer).not.toMatch(/\b500\b|\b429\b|\b504\b/);
+  });
+
+  it('logs fallback metadata without raw answer, question, API key, or source URLs', async () => {
+    const result = await runFallbackRequest(
+      { ...validPayload, message: "What is Sabah's resilience score?", region: '' },
+      new AIChatHttpError(500, 'MISSING_GEMINI_API_KEY', 'test-key')
+    );
+    const logs = JSON.stringify(result.logger.info.mock.calls);
+
+    expect(result.response.status).toBe(200);
+    expect(logs).toContain('fallbackReason');
+    expect(logs).not.toContain("What is Sabah's resilience score?");
+    expect(logs).not.toContain(result.body.answer);
+    expect(logs).not.toContain('test-key');
+    expect(logs).not.toContain('http');
   });
 });
