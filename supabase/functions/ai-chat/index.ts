@@ -5,12 +5,8 @@ import {
   parseJsonBody,
   validateChatRequest,
 } from './contracts.ts';
-<<<<<<< Updated upstream
-import { evaluateComparability, inferComparabilityInputFromRequest } from './comparabilityGate.ts';
-=======
 import { buildCorsHeaders, type EnvLike, parseCorsConfig } from './config.ts';
 import { resolveAiChatEntities } from './entityResolver.ts';
->>>>>>> Stashed changes
 import { generateGeminiAnswer } from './geminiClient.ts';
 import { routeAiChatIntent } from './intentRouter.ts';
 import { consoleSafeLogger, errorLogFields, type SafeLogger } from './logger.ts';
@@ -21,7 +17,6 @@ declare const Deno:
 
 type GeminiAnswerClient = (request: AIChatRequest) => Promise<string>;
 
-<<<<<<< Updated upstream
   try {
     const body = await parseJsonBody(request);
     const chatRequest = validateChatRequest(body);
@@ -41,7 +36,6 @@ type GeminiAnswerClient = (request: AIChatRequest) => Promise<string>;
   } catch (error) {
     return errorResponse(error);
   }
-=======
 type HandlerOptions = {
   env?: EnvLike;
   geminiClient?: GeminiAnswerClient;
@@ -114,7 +108,6 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
       return errorResponse(error, corsHeaders);
     }
   };
->>>>>>> Stashed changes
 }
 
 export const handleAiChatRequest = createAiChatHandler();

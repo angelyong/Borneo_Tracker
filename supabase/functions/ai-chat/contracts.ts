@@ -7,7 +7,6 @@ export type AIChatRequest = {
   language: string;
 };
 
-<<<<<<< Updated upstream
 export type ComparabilityDecision =
   | 'ALLOW'
   | 'ALLOW_WITH_WARNING'
@@ -92,7 +91,6 @@ export type ComparabilityResult = {
   allowedOperations: string[];
   requiredDisclosures: string[];
   normalizedComparisonBasis?: string;
-=======
 export type AIChatIntent =
   | 'SITE_KNOWLEDGE'
   | 'DASHBOARD_DATA'
@@ -133,7 +131,6 @@ export type AIChatEntityResult = {
   ambiguities: string[];
   matchedTerms: string[];
   language: string;
->>>>>>> Stashed changes
 };
 
 export type AIChatResponse = {
