@@ -1,6 +1,7 @@
 import {
   type AIChatRequest,
   AIChatHttpError,
+  type AIChatPrompt,
   type AIChatStructuredAnswer,
   type FallbackReason,
   errorResponse,
@@ -18,6 +19,7 @@ import { FactDataRepository } from './factDataRepository.ts';
 import { generateGeminiAnswer } from './geminiClient.ts';
 import { routeAiChatIntent } from './intentRouter.ts';
 import { consoleSafeLogger, errorLogFields, type SafeLogger } from './logger.ts';
+import { buildGroundedPrompt } from './promptBuilder.ts';
 import { buildStructuredAnswer } from './structuredAnswerBuilder.ts';
 import {
   buildTemplateFallback,
@@ -29,14 +31,16 @@ declare const Deno:
   | { serve?: (handler: (request: Request) => Response | Promise<Response>) => void }
   | undefined;
 
-type GeminiAnswerClient = (request: AIChatRequest) => Promise<string>;
+type GeminiAnswerClient = (request: AIChatRequest, prompt?: AIChatPrompt) => Promise<string>;
 type StructuredAnswerClient = (input: Parameters<typeof buildStructuredAnswer>[0]) => AIChatStructuredAnswer;
+type PromptBuilderClient = (input: Parameters<typeof buildGroundedPrompt>[0]) => AIChatPrompt;
 
 type HandlerOptions = {
   env?: EnvLike;
   geminiClient?: GeminiAnswerClient;
   factRepository?: FactDataRepository;
   structuredAnswerBuilder?: StructuredAnswerClient;
+  promptBuilder?: PromptBuilderClient;
   logger?: SafeLogger;
 };
 
@@ -44,8 +48,9 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
   const logger = options.logger || consoleSafeLogger;
   const geminiClient =
     options.geminiClient ||
-    ((chatRequest: AIChatRequest) => generateGeminiAnswer(chatRequest, { env: options.env }));
+    ((chatRequest: AIChatRequest, prompt?: AIChatPrompt) => generateGeminiAnswer(chatRequest, { env: options.env, prompt }));
   const structuredAnswerBuilder = options.structuredAnswerBuilder || buildStructuredAnswer;
+  const promptBuilder = options.promptBuilder || buildGroundedPrompt;
 
   return async function handleAiChatRequest(request: Request): Promise<Response> {
     const corsHeaders = buildCorsHeaders(request, parseCorsConfig(options.env));
@@ -68,6 +73,7 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
 
     let route: ReturnType<typeof routeAiChatIntent> | undefined;
     let structuredAnswer: AIChatStructuredAnswer | undefined;
+    let groundedPrompt: AIChatPrompt | undefined;
 
     try {
       const body = await parseJsonBody(request);
@@ -110,10 +116,31 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
             comparability,
           })
         : undefined;
-      const answer = await geminiClient(chatRequest);
+      groundedPrompt = factObject && structuredAnswer
+        ? promptBuilder({
+            userQuestion: chatRequest.message,
+            language: structuredAnswer.language,
+            intent: route.intent,
+            entities,
+            comparability,
+            factObject,
+            structuredAnswer,
+          })
+        : undefined;
+      const answer = groundedPrompt
+        ? await geminiClient(chatRequest, groundedPrompt)
+        : await geminiClient(chatRequest);
       logger.info('request_completed', {
         mode: 'gemini-test',
         intent: route.intent,
+        promptBuilt: Boolean(groundedPrompt),
+        groundingAvailability: groundedPrompt?.groundingPayload.answerStatus,
+        groundedLanguage: groundedPrompt ? structuredAnswer?.language : undefined,
+        groundedBlocked: groundedPrompt?.groundingPayload.blocked,
+        groundedClarificationRequired: groundedPrompt?.groundingPayload.clarificationRequired,
+        groundedNumericTokenCount: groundedPrompt?.groundingPayload.approvedNumericTokens.length,
+        groundedYearTokenCount: groundedPrompt?.groundingPayload.approvedYearTokens.length,
+        groundedSourceCount: groundedPrompt?.groundingPayload.sources.length,
         intentConfidence: route.confidence,
         entityCounts: {
           territories: entities.territories.length,
@@ -173,7 +200,7 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
       return jsonResponse({
         answer,
         mode: 'gemini-test',
-        sources: [],
+        sources: structuredAnswer?.sources || [],
       }, 200, corsHeaders);
     } catch (error) {
       const fallbackReason = mapFallbackReason(error);

@@ -1,4 +1,4 @@
-import { AIChatHttpError, type AIChatRequest } from './contracts.ts';
+import { AIChatHttpError, type AIChatPrompt, type AIChatRequest } from './contracts.ts';
 import { type EnvLike, parseAiChatConfig } from './config.ts';
 
 const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
@@ -7,6 +7,7 @@ type GeminiClientOptions = {
   env?: EnvLike;
   fetchImpl?: typeof fetch;
   timeoutMs?: number;
+  prompt?: AIChatPrompt;
 };
 
 type GeminiGenerateContentResponse = {
@@ -26,6 +27,16 @@ function buildPrompt(request: AIChatRequest): string {
     `Selected region: ${request.region || 'none'}`,
     `User message: ${request.message}`,
   ].join('\n');
+}
+
+function connectionTestSystemInstruction(): string {
+  return [
+    'You are Borneo Tracker AI.',
+    'Answer in the same language as the user.',
+    'This is a connection test only.',
+    'Return a short response confirming the chatbot backend is connected to Gemini.',
+    'Do not provide RAG, dashboard data, news, advice, or resilience calculations yet.',
+  ].join(' ');
 }
 
 function extractText(payload: GeminiGenerateContentResponse): string {
@@ -69,6 +80,8 @@ export async function generateGeminiAnswer(
   const config = parseAiChatConfig(options.env);
   const fetchImpl = options.fetchImpl || fetch;
   const timeoutMs = options.timeoutMs ?? config.geminiTimeoutMs;
+  const systemInstruction = options.prompt?.systemInstruction || connectionTestSystemInstruction();
+  const userContent = options.prompt?.userContent || buildPrompt(request);
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -82,18 +95,12 @@ export async function generateGeminiAnswer(
       body: JSON.stringify({
         systemInstruction: {
           parts: [{
-            text: [
-              'You are Borneo Tracker AI.',
-              'Answer in the same language as the user.',
-              'This is a connection test only.',
-              'Return a short response confirming the chatbot backend is connected to Gemini.',
-              'Do not provide RAG, dashboard data, news, advice, or resilience calculations yet.',
-            ].join(' '),
+            text: systemInstruction,
           }],
         },
         contents: [{
           role: 'user',
-          parts: [{ text: buildPrompt(request) }],
+          parts: [{ text: userContent }],
         }],
         generationConfig: {
           temperature: 0.2,

@@ -91,6 +91,43 @@ describe('Gemini client', () => {
     );
   });
 
+  it('sends grounded system instruction and user content when a prompt is supplied', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(geminiResponse('Grounded answer.'));
+    const prompt = {
+      systemInstruction: 'Grounded system instruction.',
+      userContent: '{"verifiedAnswerContent":{"conclusion":"Safe."}}',
+      groundingPayload: {
+        answerStatus: 'AVAILABLE',
+        blocked: false,
+        clarificationRequired: false,
+        conclusion: 'Safe.',
+        diagnosis: '',
+        gap: '',
+        impact: '',
+        lever: '',
+        honesty: '',
+        requiredDisclosures: [],
+        warnings: [],
+        approvedNumericTokens: [],
+        approvedYearTokens: [],
+        sources: [],
+      },
+    };
+
+    const answer = await generateGeminiAnswer(validPayload, {
+      env: { AICHATBOTGEMINI_API_KEY: 'test-key' },
+      fetchImpl,
+      prompt,
+    });
+    const [, init] = fetchImpl.mock.calls[0];
+    const body = JSON.parse(init.body);
+
+    expect(answer).toBe('Grounded answer.');
+    expect(body.systemInstruction.parts[0].text).toBe('Grounded system instruction.');
+    expect(body.contents[0].parts[0].text).toBe('{"verifiedAnswerContent":{"conclusion":"Safe."}}');
+    expect(init.headers['x-goog-api-key']).toBe('test-key');
+  });
+
   it('rejects a missing API key before calling Gemini', async () => {
     const fetchImpl = vi.fn();
     await expect(generateGeminiAnswer(validPayload, { env: {}, fetchImpl })).rejects.toMatchObject({
@@ -489,6 +526,28 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     expect(result.body.structuredAnswer).toBeUndefined();
   });
 
+  it('logs grounded prompt metadata without prompt content', async () => {
+    const result = await runIntegratedRequest({
+      ...validPayload,
+      message: "What is Sabah's resilience score?",
+      region: '',
+    });
+    const logs = JSON.stringify(result.logger.info.mock.calls);
+
+    expect(result.completed).toMatchObject({
+      promptBuilt: true,
+      groundingAvailability: 'AVAILABLE',
+      groundedLanguage: 'en',
+      groundedBlocked: false,
+      groundedClarificationRequired: false,
+    });
+    expect(result.completed.groundedNumericTokenCount).toBeGreaterThan(0);
+    expect(result.completed.groundedSourceCount).toBeGreaterThanOrEqual(0);
+    expect(logs).not.toContain('"untrustedUserQuestion"');
+    expect(logs).not.toContain('Use only the supplied verified grounding payload');
+    expect(logs).not.toContain("Sabah's overall resilience score is 63.7.");
+  });
+
   it('keeps the public response contract unchanged', async () => {
     const result = await runIntegratedRequest({
       ...validPayload,
@@ -508,7 +567,7 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     expect(result.body.structuredAnswer).toBeUndefined();
   });
 
-  it('continues to call Gemini with the original request only', async () => {
+  it('calls Gemini with the original request plus grounded prompt for dashboard data', async () => {
     const result = await runIntegratedRequest({
       ...validPayload,
       message: "What is Sabah's resilience score?",
@@ -519,10 +578,17 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
       ...validPayload,
       message: "What is Sabah's resilience score?",
       region: '',
-    });
+    }, expect.objectContaining({
+      systemInstruction: expect.stringContaining('Use only the supplied verified grounding payload.'),
+      userContent: expect.stringContaining('"untrustedUserQuestion": "What is Sabah\'s resilience score?"'),
+      groundingPayload: expect.objectContaining({
+        answerStatus: 'AVAILABLE',
+        conclusion: "Sabah's overall resilience score is 63.7.",
+      }),
+    }));
   });
 
-  it('does not pass structured answer data to Gemini', async () => {
+  it('passes only the grounded prompt, not raw fact or structured answer objects, to Gemini', async () => {
     const structuredAnswerBuilder = vi.fn((input) => ({
       availability: input.factObject.availability,
       language: input.language,
@@ -550,11 +616,62 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     await handler(request({ ...validPayload, message: "What is Sabah's resilience score?", region: '' }));
 
     expect(structuredAnswerBuilder).toHaveBeenCalled();
-    expect(geminiClient).toHaveBeenCalledWith({
+    const [, prompt] = geminiClient.mock.calls[0];
+    expect(prompt.groundingPayload).toMatchObject({
+      conclusion: 'Safe.',
+      approvedNumericTokens: [],
+      approvedYearTokens: [],
+    });
+    expect(prompt.factObject).toBeUndefined();
+    expect(prompt.structuredAnswer).toBeUndefined();
+  });
+
+  it('does not attach dashboard grounding to site knowledge or news intents', async () => {
+    const site = await runIntegratedRequest({
       ...validPayload,
-      message: "What is Sabah's resilience score?",
+      message: 'What is Borneo Tracker?',
       region: '',
     });
+    const news = await runIntegratedRequest({
+      ...validPayload,
+      message: 'Show latest Borneo news.',
+      region: '',
+    });
+
+    expect(site.completed.intent).toBe('SITE_KNOWLEDGE');
+    expect(site.completed.promptBuilt).toBe(false);
+    expect(site.geminiClient).toHaveBeenCalledWith(expect.objectContaining({ message: 'What is Borneo Tracker?' }));
+    expect(news.completed.intent).toBe('BORNEO_NEWS');
+    expect(news.completed.promptBuilt).toBe(false);
+    expect(news.geminiClient).toHaveBeenCalledWith(expect.objectContaining({ message: 'Show latest Borneo news.' }));
+  });
+
+  it('passes blocked and clarification dashboard states in grounded prompts', async () => {
+    const blocked = await runIntegratedRequest({
+      ...validPayload,
+      message: 'Compare forest cover between Sabah and Brunei.',
+      region: '',
+    });
+    const clarification = await runIntegratedRequest({
+      ...validPayload,
+      message: 'Show dashboard data for Kota district.',
+      region: '',
+    });
+    const [, blockedPrompt] = blocked.geminiClient.mock.calls[0];
+    const [, clarificationPrompt] = clarification.geminiClient.mock.calls[0];
+
+    expect(blockedPrompt.groundingPayload).toMatchObject({
+      answerStatus: 'BLOCKED',
+      blocked: true,
+      clarificationRequired: false,
+    });
+    expect(blockedPrompt.systemInstruction).toContain('For blocked answers, explain the limitation clearly');
+    expect(clarificationPrompt.groundingPayload).toMatchObject({
+      answerStatus: 'BLOCKED',
+      blocked: true,
+      clarificationRequired: true,
+    });
+    expect(clarificationPrompt.systemInstruction).toContain('For clarification answers, ask only for the missing detail');
   });
 });
 
@@ -603,7 +720,7 @@ describe('ai-chat Stage 4C template fallback', () => {
     });
   });
 
-  it('keeps Gemini success unchanged and does not use fallback', async () => {
+  it('keeps grounded Gemini success compatible and does not use fallback', async () => {
     const logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
     const geminiClient = vi.fn().mockResolvedValue('Gemini answer.');
     const handler = createAiChatHandler({ geminiClient, logger });
@@ -612,11 +729,12 @@ describe('ai-chat Stage 4C template fallback', () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(body).toEqual({
+    expect(body).toMatchObject({
       answer: 'Gemini answer.',
       mode: 'gemini-test',
-      sources: [],
     });
+    expect(Array.isArray(body.sources)).toBe(true);
+    expect(body.sources.length).toBeGreaterThan(0);
     expect(logger.info.mock.calls.some(([event]) => event === 'request_fallback')).toBe(false);
   });
 

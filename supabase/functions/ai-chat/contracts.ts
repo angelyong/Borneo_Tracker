@@ -286,6 +286,45 @@ export type AIChatFallbackMetadata = {
   degraded: boolean;
 };
 
+export type AIChatPromptInput = {
+  userQuestion: string;
+  language: string;
+  intent: AIChatIntent;
+  entities: AIChatEntityResult;
+  comparability: ComparabilityResult;
+  factObject: AIChatFactObject;
+  structuredAnswer: AIChatStructuredAnswer;
+};
+
+export type AIChatSourceLabel = {
+  publisher?: string;
+  title?: string;
+  year?: number;
+};
+
+export type AIChatGroundingPayload = {
+  answerStatus: FactAvailability;
+  blocked: boolean;
+  clarificationRequired: boolean;
+  conclusion: string;
+  diagnosis: string;
+  gap: string;
+  impact: string;
+  lever: string;
+  honesty: string;
+  requiredDisclosures: string[];
+  warnings: string[];
+  approvedNumericTokens: string[];
+  approvedYearTokens: string[];
+  sources: AIChatSourceLabel[];
+};
+
+export type AIChatPrompt = {
+  systemInstruction: string;
+  userContent: string;
+  groundingPayload: AIChatGroundingPayload;
+};
+
 export type AIChatSuccessResponse = {
   answer: string;
   mode: AIChatResponseMode;
