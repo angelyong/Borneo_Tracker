@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   CONCEPT_RULE_REGISTRY,
   evaluateComparability,
-  inferComparabilityInputFromRequest,
 } from './comparabilityGate.ts';
+import { resolveAiChatEntities } from './entityResolver.ts';
 
 const rows = [
   row('Brunei', 'Forest cover', 'forest_cover', 2023, '% land'),
@@ -165,7 +165,7 @@ describe('downgrades operations that still permit descriptive answers', () => {
 
 describe('clarification cases', () => {
   it('requires clarification for ambiguous district text', () => {
-    const result = gate({ entities: ['Kota'], operations: ['district_answer'] });
+    const result = gate({ districts: ['Kota'], operations: ['district_answer'] });
     expect(result.decision).toBe('NEEDS_CLARIFICATION');
   });
 
@@ -243,24 +243,24 @@ describe('year compatibility', () => {
 
 describe('district rules', () => {
   it('allows an exact district with freshness disclosure', () => {
-    const result = gate({ entities: ['Kuching'], operations: ['district_answer'] });
+    const result = gate({ districts: ['Kuching'], operations: ['district_answer'] });
     expect(result.decision).toBe('ALLOW_WITH_WARNING');
     expect(result.allowedOperations).toContain('district_answer');
     expect(result.requiredDisclosures.join(' ')).toMatch(/2026-07-10/);
   });
 
   it('adds a stale data warning', () => {
-    const result = gate({ entities: ['Kuching'], operations: ['district_answer'] });
+    const result = gate({ districts: ['Kuching'], operations: ['district_answer'] });
     expect(result.warnings.join(' ')).toMatch(/stale/i);
   });
 
   it('rejects unknown districts without guessing', () => {
-    const result = gate({ entities: ['Atlantis'], operations: ['district_answer'] });
+    const result = gate({ districts: ['Atlantis'], operations: ['district_answer'] });
     expect(result.decision).toBe('REJECT');
   });
 
   it('requires clarification for ambiguous districts', () => {
-    const result = gate({ entities: ['Kota'], operations: ['district_answer'] });
+    const result = gate({ districts: ['Kota'], operations: ['district_answer'] });
     expect(result.decision).toBe('NEEDS_CLARIFICATION');
   });
 });
@@ -281,26 +281,26 @@ describe('edge cases and bilingual routing hints', () => {
     expect(result.decision).toBe('NEEDS_CLARIFICATION');
   });
 
-  it('detects Malay comparison wording', () => {
-    const input = inferComparabilityInputFromRequest({
-      message: 'Bandingkan hutan Brunei dengan Sabah',
-      currentPage: '/dashboard',
-      region: '',
+  it('uses Stage 3B entities for Malay comparison wording', () => {
+    const entities = resolveAiChatEntities('Bandingkan litupan hutan Brunei dengan Sabah', {
       language: 'ms',
+      region: '',
     });
-    expect(input.operations).toContain('compare');
-    expect(input.concepts).toContain('forest_cover');
-    expect(input.territories).toEqual(['Sabah', 'Brunei']);
+    const result = gate({ entities });
+    expect(entities.operations.comparison).toBe(true);
+    expect(entities.concepts).toContain('forest_cover');
+    expect(result.decision).toBe('REJECT');
   });
 
-  it('detects mixed English and Malay wording', () => {
-    const input = inferComparabilityInputFromRequest({
-      message: 'Rank internet tertinggi Sabah vs Kalimantan',
-      currentPage: '/dashboard',
-      region: '',
+  it('uses Stage 3B entities for mixed English and Malay wording', () => {
+    const entities = resolveAiChatEntities('Rank internet tertinggi Sabah vs Kalimantan', {
       language: 'ms',
+      region: '',
     });
-    expect(input.operations).toEqual(expect.arrayContaining(['compare', 'rank']));
-    expect(input.concepts).toContain('internet_use');
+    const result = gate({ entities });
+    expect(entities.operations.comparison).toBe(true);
+    expect(entities.operations.ranking).toBe(true);
+    expect(entities.concepts).toContain('internet_use');
+    expect(result.decision).toBe('DOWNGRADE');
   });
 });

@@ -287,3 +287,129 @@ describe('ai-chat endpoint', () => {
 
   });
 });
+
+describe('ai-chat Stage 3B/3C internal integration', () => {
+  async function runIntegratedRequest(payload) {
+    const logger = {
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    };
+    const geminiClient = vi.fn().mockResolvedValue('Integrated response.');
+    const handler = createAiChatHandler({ geminiClient, logger });
+    const response = await handler(request(payload));
+    const body = await response.json();
+    const completed = logger.info.mock.calls.find(([event]) => event === 'request_completed')?.[1];
+    return { response, body, logger, geminiClient, completed };
+  }
+
+  it('runs request through intent, entities, and comparability for forest cover comparison', async () => {
+    const result = await runIntegratedRequest({
+      ...validPayload,
+      message: 'Compare forest cover between Sabah and Brunei.',
+      region: '',
+    });
+
+    expect(result.response.status).toBe(200);
+    expect(result.completed.intent).toBe('DASHBOARD_DATA');
+    expect(result.completed.entityCounts.territories).toBe(2);
+    expect(result.completed.comparability.decision).toBe('REJECT');
+    expect(result.completed.comparability.blockedOperations).toContain('compare');
+  });
+
+  it('allows a Sabah resilience score question without comparison', async () => {
+    const result = await runIntegratedRequest({
+      ...validPayload,
+      message: "What is Sabah's resilience score?",
+      region: '',
+    });
+
+    expect(result.completed.intent).toBe('DASHBOARD_DATA');
+    expect(result.completed.entityCounts.territories).toBe(1);
+    expect(result.completed.comparability.decision).toBe('ALLOW');
+  });
+
+  it('routes Malay comparison wording into a comparability rejection', async () => {
+    const result = await runIntegratedRequest({
+      ...validPayload,
+      message: 'Bandingkan litupan hutan Brunei dengan Sabah.',
+      region: '',
+      language: 'ms',
+    });
+
+    expect(result.completed.intent).toBe('DASHBOARD_DATA');
+    expect(result.completed.language).toBe('ms');
+    expect(result.completed.comparability.decision).toBe('REJECT');
+  });
+
+  it('downgrades SDG progress internally without exposing it publicly', async () => {
+    const result = await runIntegratedRequest({
+      ...validPayload,
+      message: 'What is the SDG progress for Sabah education?',
+      region: '',
+    });
+
+    expect(result.completed.comparability.decision).toBe('DOWNGRADE');
+    expect(result.completed.comparability.blockedOperations).toContain('sdg_progress');
+    expect(result.body).toEqual({
+      answer: 'Integrated response.',
+      mode: 'gemini-test',
+      sources: [],
+    });
+  });
+
+  it('requires clarification internally for an ambiguous district question', async () => {
+    const result = await runIntegratedRequest({
+      ...validPayload,
+      message: 'Show district data for Kota.',
+      region: '',
+    });
+
+    expect(result.completed.comparability.decision).toBe('NEEDS_CLARIFICATION');
+    expect(result.completed.comparability.blockedOperations).toContain('district_answer');
+  });
+
+  it('does not let currentPage override an explicit territory', async () => {
+    const result = await runIntegratedRequest({
+      ...validPayload,
+      message: 'What is Sarawak resilience?',
+      currentPage: '/dashboard/sabah',
+      region: 'Sabah',
+    });
+
+    expect(result.completed.entityCounts.territories).toBe(1);
+    expect(result.completed.region).toBe('Sabah');
+    expect(result.completed.comparability.decision).toBe('ALLOW');
+  });
+
+  it('passes entity operations into comparability', async () => {
+    const result = await runIntegratedRequest({
+      ...validPayload,
+      message: 'Rank internet tertinggi Sabah vs Kalimantan.',
+      region: '',
+      language: 'ms',
+    });
+
+    expect(result.completed.operations.comparison).toBe(true);
+    expect(result.completed.operations.ranking).toBe(true);
+    expect(result.completed.comparability.decision).toBe('DOWNGRADE');
+    expect(result.completed.comparability.blockedOperations).toContain('rank');
+  });
+
+  it('keeps the public response contract unchanged', async () => {
+    const result = await runIntegratedRequest({
+      ...validPayload,
+      message: 'Compare forest cover between Sabah and Brunei.',
+      region: '',
+    });
+
+    expect(result.body).toEqual({
+      answer: 'Integrated response.',
+      mode: 'gemini-test',
+      sources: [],
+    });
+    expect(result.body.intent).toBeUndefined();
+    expect(result.body.entities).toBeUndefined();
+    expect(result.body.comparability).toBeUndefined();
+  });
+});

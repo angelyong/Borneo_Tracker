@@ -321,18 +321,18 @@
     },
     {
       "id": "dashboard-map-layers-en",
-      "title": "Live Layer:",
+      "title": "Dashboard map layers",
       "category": "dashboard",
-      "content": "Search regions & districts… Across districts Coloured across the 4 regions Region District Live Layer: No district data for \"\" in yet. Poverty is available now; forest, fire & air layers arrive with the satellite feed. Hexagon pillars aren't mapped at district level yet - see the ESG & layer figures below for .",
+      "content": "Search regions & districts… Across districts Coloured across the 4 regions Region District No district data for \"\" in yet. Poverty is available now; forest, fire & air layers arrive with the satellite feed. Hexagon pillars aren't mapped at district level yet - see the ESG & layer figures below for .",
       "language": "en",
       "pageUrl": "/",
       "region": null,
       "concept": null,
       "sdgTags": [],
       "keywords": [
-        "live",
-        "layer",
         "dashboard",
+        "map",
+        "layers",
         "search",
         "regions",
         "districts",
@@ -350,10 +350,10 @@
         "forest",
         "fire",
         "air",
-        "layers",
         "arrive",
         "with",
-        "satellite"
+        "satellite",
+        "feed"
       ],
       "regions": [],
       "relatedSdgs": [],
@@ -381,22 +381,22 @@
         "sourcePath": "dashboard.map_layers",
         "extractedAt": null
       },
-      "searchableText": "live layer dashboard search regions districts across districts coloured across the 4 regions region district live layer no district data for in yet poverty is available now forest fire air layers arrive with the satellite feed hexagon pillars aren t mapped at district level yet - see the esg layer figures below for live layer dashboard search regions districts across coloured the region district data for yet poverty available now forest fire air layers arrive with satellite"
+      "searchableText": "dashboard map layers dashboard search regions districts across districts coloured across the 4 regions region district no district data for in yet poverty is available now forest fire air layers arrive with the satellite feed hexagon pillars aren t mapped at district level yet - see the esg layer figures below for dashboard map layers search regions districts across coloured the region district data for yet poverty available now forest fire air arrive with satellite feed"
     },
     {
       "id": "dashboard-map-layers-ms",
-      "title": "Lapisan Langsung:",
+      "title": "Dashboard map layers",
       "category": "dashboard",
-      "content": "Cari wilayah & daerah… Merentasi daerah Berwarna merentasi 4 wilayah Wilayah Daerah Lapisan Langsung: Belum ada data daerah untuk \"\" di . Data kemiskinan sudah tersedia; lapisan hutan, kebakaran & udara akan tiba melalui suapan satelit. Tunjang heksagon belum dipetakan pada peringkat daerah - lihat angka ESG & lapisan di bawah untuk .",
+      "content": "Cari wilayah & daerah… Merentasi daerah Berwarna merentasi 4 wilayah Wilayah Daerah Belum ada data daerah untuk \"\" di . Data kemiskinan sudah tersedia; lapisan hutan, kebakaran & udara akan tiba melalui suapan satelit. Tunjang heksagon belum dipetakan pada peringkat daerah - lihat angka ESG & lapisan di bawah untuk .",
       "language": "ms",
       "pageUrl": "/",
       "region": null,
       "concept": null,
       "sdgTags": [],
       "keywords": [
-        "lapisan",
-        "langsung",
         "dashboard",
+        "map",
+        "layers",
         "cari",
         "wilayah",
         "daerah",
@@ -409,6 +409,7 @@
         "kemiskinan",
         "sudah",
         "tersedia",
+        "lapisan",
         "hutan",
         "kebakaran",
         "udara",
@@ -416,8 +417,7 @@
         "tiba",
         "melalui",
         "suapan",
-        "satelit",
-        "tunjang"
+        "satelit"
       ],
       "regions": [],
       "relatedSdgs": [],
@@ -445,7 +445,7 @@
         "sourcePath": "dashboard.map_layers",
         "extractedAt": null
       },
-      "searchableText": "lapisan langsung dashboard cari wilayah daerah merentasi daerah berwarna merentasi 4 wilayah wilayah daerah lapisan langsung belum ada data daerah untuk di data kemiskinan sudah tersedia lapisan hutan kebakaran udara akan tiba melalui suapan satelit tunjang heksagon belum dipetakan pada peringkat daerah - lihat angka esg lapisan di bawah untuk lapisan langsung dashboard cari wilayah daerah merentasi berwarna belum ada data untuk kemiskinan sudah tersedia hutan kebakaran udara akan tiba melalui suapan satelit tunjang"
+      "searchableText": "dashboard map layers dashboard cari wilayah daerah merentasi daerah berwarna merentasi 4 wilayah wilayah daerah belum ada data daerah untuk di data kemiskinan sudah tersedia lapisan hutan kebakaran udara akan tiba melalui suapan satelit tunjang heksagon belum dipetakan pada peringkat daerah - lihat angka esg lapisan di bawah untuk dashboard map layers cari wilayah daerah merentasi berwarna belum ada data untuk kemiskinan sudah tersedia lapisan hutan kebakaran udara akan tiba melalui suapan satelit"
     },
     {
       "id": "dashboard-resilience-en",

@@ -5,6 +5,9 @@ import {
   parseJsonBody,
   validateChatRequest,
 } from './contracts.ts';
+import indicatorsData from '../../../public/data/indicators.json';
+import districtsData from '../../../public/data/districts.json';
+import { evaluateComparability } from './comparabilityGate.ts';
 import { buildCorsHeaders, type EnvLike, parseCorsConfig } from './config.ts';
 import { resolveAiChatEntities } from './entityResolver.ts';
 import { generateGeminiAnswer } from './geminiClient.ts';
@@ -17,25 +20,6 @@ declare const Deno:
 
 type GeminiAnswerClient = (request: AIChatRequest) => Promise<string>;
 
-  try {
-    const body = await parseJsonBody(request);
-    const chatRequest = validateChatRequest(body);
-    const comparability = evaluateComparability(inferComparabilityInputFromRequest(chatRequest));
-    console.info('ai-chat comparability', {
-      decision: comparability.decision,
-      blockedOperations: comparability.blockedOperations,
-      allowedOperations: comparability.allowedOperations,
-      disclosureCount: comparability.requiredDisclosures.length,
-    });
-    const answer = await generateGeminiAnswer(chatRequest);
-    return jsonResponse({
-      answer,
-      mode: 'gemini-test',
-      sources: [],
-    });
-  } catch (error) {
-    return errorResponse(error);
-  }
 type HandlerOptions = {
   env?: EnvLike;
   geminiClient?: GeminiAnswerClient;
@@ -79,6 +63,18 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
         region: chatRequest.region,
         language: chatRequest.language,
       });
+      const comparability = evaluateComparability({
+        intent: route,
+        entities,
+        metadata: {
+          rows: indicatorsData.rows,
+          series: indicatorsData.series,
+          districts: districtsData,
+        },
+        freshness: {
+          districtsGeneratedAt: districtsData.generatedAt,
+        },
+      });
       const answer = await geminiClient(chatRequest);
       logger.info('request_completed', {
         mode: 'gemini-test',
@@ -94,6 +90,12 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
           ambiguities: entities.ambiguities.length,
         },
         operations: entities.operations,
+        comparability: {
+          decision: comparability.decision,
+          blockedOperations: comparability.blockedOperations,
+          allowedOperations: comparability.allowedOperations,
+          disclosureCount: comparability.requiredDisclosures.length,
+        },
         page: chatRequest.currentPage,
         region: chatRequest.region,
         language: chatRequest.language,

@@ -1,5 +1,5 @@
 import type {
-  AIChatRequest,
+  AIChatEntityResult,
   ComparabilityInput,
   ComparabilityMetadataRow,
   ComparabilityOperation,
@@ -199,52 +199,42 @@ export function getConceptRuleRegistry(): Record<string, ConceptComparabilityRul
   return CONCEPT_RULE_REGISTRY;
 }
 
-export function inferComparabilityInputFromRequest(request: AIChatRequest): ComparabilityInput {
-  const text = `${request.message} ${request.region || ''}`;
-  const lower = normalize(text);
-  const concepts = inferConcepts(lower);
-  const territories = TERRITORIES.filter((territory) => lower.includes(territory.toLowerCase()));
-  if (request.region && TERRITORIES.includes(request.region) && !territories.includes(request.region)) {
-    territories.push(request.region);
-  }
-
-  return {
-    intent: inferIntent(lower),
-    entities: territories,
-    concepts,
-    territories,
-    years: inferYears(lower),
-    operations: inferOperations(lower),
-    options: {
-      explicitHistoricalComparison: /\b(historical|history|over time|from \d{4} to \d{4}|sejarah|dari \d{4})\b/i.test(text),
-      normalizedComparisonBasis: inferNormalizedBasis(lower),
-      rankingClaim: /\b(rank|ranking|highest|lowest|best|worst|tertinggi|terendah|kedudukan|paling)\b/i.test(text),
-    },
-  };
-}
-
 export function evaluateComparability(input: ComparabilityInput): ComparabilityResult {
   const result = baseResult();
-  const operations = input.operations?.length ? input.operations : ['describe'];
-  const concepts = unique(input.concepts || []);
-  const territories = unique(input.territories || input.entities || []);
+  const entityResult = input.entities;
+  const operations = resolveOperations(input);
+  const concepts = unique(input.concepts || entityResult?.concepts || []);
+  const territories = unique((input.territories || entityResult?.regions || entityResult?.territories || []).map(normalizeTerritory));
+  const districts = unique(input.districts || entityResult?.districts || []);
+  const years = input.years || entityResult?.years || [];
+  const ambiguities = input.ambiguities || entityResult?.ambiguities || [];
   const rows = input.metadata?.rows || [];
+  const resolvedInput = { ...input, concepts, territories, districts, years, operations, ambiguities };
 
   if (operations.every((operation) => operation === 'describe') && concepts.length <= 1) {
     allowOperation(result, 'describe');
   }
 
-  if (operations.some((operation) => operation !== 'describe') && concepts.length === 0 && territories.length === 0) {
+  if (
+    operations.some((operation) => operation !== 'describe') &&
+    !operations.includes('district_answer') &&
+    concepts.length === 0 &&
+    territories.length === 0
+  ) {
     requireClarification(result, 'No resolved concept or entity was available for this data operation.', operations);
     return finalize(result);
   }
 
-  if (concepts.length > 1 && !input.indicators?.length) {
+  const hasHardBlockedCrossTerritoryConcept = concepts.some((concept) => {
+    const rule = CONCEPT_RULE_REGISTRY[concept];
+    return rule && !rule.crossTerritoryComparable && territories.length > 1;
+  });
+  if (concepts.length > 1 && !input.indicators?.length && !hasHardBlockedCrossTerritoryConcept) {
     requireClarification(result, 'Multiple concepts were requested without selecting an exact indicator.', operations);
     return finalize(result);
   }
 
-  evaluateDistricts(input, result);
+  evaluateDistricts(resolvedInput, result);
   if (result.decision === 'NEEDS_CLARIFICATION' || result.decision === 'REJECT') return finalize(result);
 
   if (operations.includes('sdg_progress')) {
@@ -255,23 +245,27 @@ export function evaluateComparability(input: ComparabilityInput): ComparabilityR
   for (const concept of concepts) {
     const rule = CONCEPT_RULE_REGISTRY[concept];
     if (!rule) {
-      warn(result, `No concept comparability rule exists for ${concept}; answer descriptively only.`);
-      downgrade(result, `Unsupported concept rule for ${concept}.`, concept);
+      if (operations.every((operation) => operation === 'describe')) {
+        allowOperation(result, 'describe');
+      } else {
+        warn(result, `No concept comparability rule exists for ${concept}; answer descriptively only.`);
+        downgrade(result, `Unsupported concept rule for ${concept}.`, concept);
+      }
       continue;
     }
     result.requiredDisclosures.push(...(rule.disclosures || []));
 
     const conceptRows = filterRows(rows, concept, territories);
-    if (input.operations?.includes('compare') && territories.length > 1 && !rule.crossTerritoryComparable) {
-      evaluateComparisonBasis(input, result, rule, territories, conceptRows);
+    if (operations.includes('compare') && territories.length > 1 && !rule.crossTerritoryComparable) {
+      evaluateComparisonBasis(resolvedInput, result, rule, territories, conceptRows);
     } else {
-      evaluateIndicatorChoice(input, result, concept, conceptRows);
+      evaluateIndicatorChoice(resolvedInput, result, concept, conceptRows);
       if (result.decision === 'NEEDS_CLARIFICATION') break;
-      evaluateComparisonBasis(input, result, rule, territories, conceptRows);
+      evaluateComparisonBasis(resolvedInput, result, rule, territories, conceptRows);
     }
-    evaluateRanking(input, result, rule, territories, conceptRows);
-    evaluateTrend(input, result, rule, concept, territories, conceptRows);
-    evaluateYears(input, result, conceptRows);
+    evaluateRanking(resolvedInput, result, rule, territories, conceptRows);
+    evaluateTrend(resolvedInput, result, rule, concept, territories, conceptRows);
+    evaluateYears(resolvedInput, result, conceptRows);
     evaluateDerivedValues(result, conceptRows);
   }
 
@@ -335,57 +329,27 @@ function requireClarification(result: ComparabilityResult, reason: string, opera
   result.blockedOperations.push(...operations);
 }
 
-function inferIntent(lower: string): string {
-  if (/\b(sdg|sdgs|matlamat pembangunan mampan)\b/.test(lower)) return 'SDG_PROGRESS';
-  if (/\b(district|daerah|kabupaten|kota)\b/.test(lower)) return 'DISTRICT_DATA';
-  if (/\b(compare|versus|vs|banding|bandingkan|berbanding|ranking|rank|highest|lowest|trend|progress)\b/.test(lower)) return 'DASHBOARD_DATA';
-  return 'UNKNOWN';
-}
-
-function inferOperations(lower: string): ComparabilityOperation[] {
-  const operations: ComparabilityOperation[] = [];
-  if (/\b(compare|compared|versus|vs|against|banding|bandingkan|berbanding)\b/.test(lower)) operations.push('compare');
-  if (/\b(rank|ranking|highest|lowest|best|worst|tertinggi|terendah|kedudukan|paling)\b/.test(lower)) operations.push('rank');
-  if (/\b(trend|over time|meningkat|menurun|trend)\b/.test(lower)) operations.push('trend');
-  if (/\b(sdg|sdgs|progress|kemajuan)\b/.test(lower)) operations.push('sdg_progress');
-  if (/\b(district|daerah|kabupaten|kota)\b/.test(lower)) operations.push('district_answer');
+function resolveOperations(input: ComparabilityInput): ComparabilityOperation[] {
+  if (input.operations?.length) return input.operations;
+  if (!input.entities) return ['describe'];
+  const operations = entityOperationsToComparabilityOperations(input.entities);
   return operations.length ? operations : ['describe'];
 }
 
-function inferConcepts(lower: string): string[] {
-  const aliases: Record<string, string[]> = {
-    forest_cover: ['forest cover', 'forest', 'hutan'],
-    economy: ['economy', 'gdp', 'ekonomi', 'kdnk'],
-    education: ['education', 'school', 'literacy', 'pendidikan'],
-    energy: ['energy', 'electricity', 'tenaga', 'elektrik'],
-    shelter: ['shelter', 'housing', 'sanitation', 'rumah', 'perumahan', 'sanitasi'],
-    poverty: ['poverty', 'poor', 'kemiskinan', 'miskin'],
-    entertainment: ['tourism', 'tourist', 'entertainment', 'pelancongan', 'hiburan'],
-    internet_use: ['internet', 'connectivity', 'digital'],
-    governance: ['governance', 'corruption', 'wgi', 'tadbir urus', 'rasuah'],
-    fire_hotspots: ['fire', 'hotspot', 'hotspots', 'kebakaran', 'titik panas'],
-    protected_areas: ['protected area', 'protected areas', 'national park', 'taman negara'],
-    deforestation: ['deforestation', 'tree cover loss', 'penyahhutanan'],
-    clean_water_access: ['clean water', 'water access', 'air bersih'],
-    healthcare: ['health', 'healthcare', 'hospital', 'kesihatan'],
-    unemployment_rate: ['unemployment', 'jobless', 'pengangguran'],
-    heritage: ['heritage', 'unesco', 'warisan'],
-    food: ['food', 'paddy', 'rice', 'makanan', 'padi'],
-  };
-  return Object.entries(aliases)
-    .filter(([, terms]) => terms.some((term) => lower.includes(term)))
-    .map(([concept]) => concept);
+function entityOperationsToComparabilityOperations(entityResult: AIChatEntityResult): ComparabilityOperation[] {
+  const operations: ComparabilityOperation[] = [];
+  if (entityResult.operations.comparison) operations.push('compare');
+  if (entityResult.operations.ranking) operations.push('rank');
+  if (entityResult.operations.trend) operations.push('trend');
+  if (entityResult.operations.sdgProgress) operations.push('sdg_progress');
+  if (entityResult.operations.districtLevel || entityResult.districts.length) operations.push('district_answer');
+  return operations;
 }
 
-function inferYears(lower: string): number[] {
-  return unique(lower.match(/\b(19|20)\d{2}\b/g) || []).map(Number);
-}
-
-function inferNormalizedBasis(lower: string): string {
-  if (/\b(per\s*1,?000\s*km2|per\s*1000\s*km|area[- ]normalized|by area|per km|mengikut keluasan)\b/.test(lower)) return 'area';
-  if (/\b(percent(?:age)? of land|% land|share of land|peratus tanah)\b/.test(lower)) return 'percentage_of_land';
-  if (/\b(per capita|per population|per person|per kapita)\b/.test(lower)) return 'population';
-  return '';
+function normalizeTerritory(value: string): string {
+  if (value === 'Brunei Darussalam') return 'Brunei';
+  if (value === 'Borneo Malaysia' || value === 'Borneo-wide') return value;
+  return value;
 }
 
 function filterRows(rows: ComparabilityMetadataRow[], concept: string, territories: string[]): ComparabilityMetadataRow[] {
@@ -549,9 +513,13 @@ function evaluateDerivedValues(result: ComparabilityResult, rows: ComparabilityM
 
 function evaluateDistricts(input: ComparabilityInput, result: ComparabilityResult): void {
   if (!input.operations?.includes('district_answer')) return;
-  const requested = unique(input.entities || input.territories || []);
+  const requested = unique(input.districts || []);
   const districts = input.metadata?.districts;
   const districtRows = districts?.rows || [];
+  if (input.ambiguities?.length) {
+    requireClarification(result, input.ambiguities[0], ['district_answer']);
+    return;
+  }
   if (!requested.length) {
     requireClarification(result, 'District-level answer requested without a resolved district name.', ['district_answer']);
     return;
