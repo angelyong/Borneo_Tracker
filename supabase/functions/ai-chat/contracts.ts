@@ -170,6 +170,100 @@ export type FactSource = {
   sourcePath?: string;
 };
 
+export type LeverActor =
+  | 'government'
+  | 'local_authority'
+  | 'community'
+  | 'private_sector'
+  | 'civil_society'
+  | 'research_institution'
+  | 'multiple'
+  | 'unspecified';
+
+export type LeverHorizon =
+  | 'short'
+  | 'medium'
+  | 'long'
+  | 'unspecified';
+
+export type LeverEvidenceStatus =
+  | 'VERIFIED'
+  | 'INCOMPLETE'
+  | 'PLACEHOLDER'
+  | 'REJECTED';
+
+export type LeverEvidence = {
+  publisher?: string;
+  year?: number;
+  title?: string;
+  url?: string;
+  sourceFile: string;
+  sourcePath?: string;
+  whatItActuallySays: string;
+};
+
+export type LeverRecord = {
+  id: string;
+  concept: string;
+  pillars: string[];
+  territories: string[];
+  title: string;
+  summary: string;
+  whoActs: LeverActor[];
+  horizon: LeverHorizon;
+  mechanism: string;
+  appliesWhen: string[];
+  doesNotApplyWhen: string[];
+  expectedDirection?: 'improve' | 'reduce_risk' | 'maintain';
+  evidence: LeverEvidence[];
+  evidenceStatus: LeverEvidenceStatus;
+  language: 'en' | 'ms';
+  keywords: string[];
+  translationGroupId?: string;
+};
+
+export type LeverQuery = {
+  concepts: string[];
+  pillars: string[];
+  territories: string[];
+  language: string;
+  factObject?: AIChatFactObject;
+  limit?: number;
+};
+
+export type LeverRetrievalResult = {
+  records: LeverRecord[];
+  matchedBy: string[];
+  warnings: string[];
+  emptyReason?: 'NO_VERIFIED_APPLICABLE_LEVER' | 'BLOCKED_OR_CLARIFICATION' | 'NO_LEVER_LIBRARY_RECORDS';
+};
+
+export type LeverLibraryArtifact = {
+  schemaVersion: number;
+  generatedAt: string;
+  recordCount: number;
+  records: LeverRecord[];
+};
+
+export type LeverBuildReport = {
+  buildTimestamp: string;
+  inputFiles: string[];
+  counts: Record<LeverEvidenceStatus, number>;
+  runtimeRecords: number;
+  invalidRecords: Array<{
+    id?: string;
+    sourceFile?: string;
+    errors: string[];
+  }>;
+  excludedRecords: Array<{
+    id: string;
+    evidenceStatus: LeverEvidenceStatus;
+    reason: string;
+  }>;
+  warnings: string[];
+  outputFiles: string[];
+};
+
 export type FactWarning = {
   code: string;
   message: string;
@@ -297,12 +391,24 @@ export type AIChatPromptInput = {
   comparability: ComparabilityResult;
   factObject: AIChatFactObject;
   structuredAnswer: AIChatStructuredAnswer;
+  levers?: LeverRetrievalResult;
 };
 
 export type AIChatSourceLabel = {
   publisher?: string;
   title?: string;
   year?: number;
+};
+
+export type AIChatPromptLever = {
+  id: string;
+  title: string;
+  summary: string;
+  whoActs: LeverActor[];
+  horizon: LeverHorizon;
+  mechanism: string;
+  appliesWhen: string[];
+  evidence: AIChatSourceLabel[];
 };
 
 export type AIChatGroundingPayload = {
@@ -320,6 +426,7 @@ export type AIChatGroundingPayload = {
   approvedNumericTokens: string[];
   approvedYearTokens: string[];
   sources: AIChatSourceLabel[];
+  levers: AIChatPromptLever[];
 };
 
 export type AIChatPrompt = {

@@ -73,6 +73,7 @@ function baseInput(overrides = {}) {
       approvedNumericTokens: ['63.7'],
       approvedYearTokens: ['2024'],
       sources: [{ publisher: 'Borneo Tracker', title: 'Resilience Index', year: 2024 }],
+      levers: [],
     },
   };
   return {
@@ -236,6 +237,25 @@ describe('Gemini response validator comparability, levers, and disclosures', () 
     expect(validateGeminiResponse(baseInput()).valid).toBe(true);
   });
 
+  it('allows bounded verified lever recommendation phrasing', () => {
+    const input = verifiedLeverInput({
+      answer: 'A documented option is to restore idle paddy fields. The mechanism targets domestic paddy production, and the actor is government.',
+    });
+
+    expect(validateGeminiResponse(input).valid).toBe(true);
+  });
+
+  it.each([
+    ['Authorities should build solar microgrids instead.', 'UNVERIFIED_RECOMMENDATION'],
+    ['The community should restore idle paddy fields.', 'UNVERIFIED_RECOMMENDATION'],
+    ['This will improve Food resilience.', 'UNVERIFIED_RECOMMENDATION'],
+    ['Restore idle paddy fields to reach 100 target.', 'UNAPPROVED_NUMBER'],
+    ['According to Unknown Institute, restore idle paddy fields.', 'UNVERIFIED_SOURCE'],
+    ['Read https://example.com to restore idle paddy fields.', 'URL_IN_BODY'],
+  ])('rejects unsafe verified-lever expansion: %s', (answer, code) => {
+    expect(codes(validateGeminiResponse(verifiedLeverInput({ answer })))).toContain(code);
+  });
+
   it.each([
     ['No verified compatible target is available for this value.', 'UNSUPPORTED_TARGET_OR_GAP'],
     ['The system can describe SDG coverage or mapping only; progress-to-target cannot be calculated.', 'UNSUPPORTED_TARGET_OR_GAP'],
@@ -261,6 +281,46 @@ describe('Gemini response validator comparability, levers, and disclosures', () 
     expect(codes(result)).toContain(code);
   });
 });
+
+function verifiedLeverInput(overrides = {}) {
+  const base = baseInput();
+  return {
+    ...base,
+    answer: 'A documented option is to restore idle paddy fields. The mechanism targets domestic paddy production, and the actor is government.',
+    structuredAnswer: {
+      ...base.structuredAnswer,
+      layers: {
+        ...base.structuredAnswer.layers,
+        lever: {
+          ...base.structuredAnswer.layers.lever,
+          status: 'AVAILABLE',
+          text: 'Restore idle paddy fields: The mechanism targets domestic paddy production. Actor: government. Horizon: medium.',
+          leverIds: ['food-001'],
+          requiresGeminiPhrasing: true,
+          warnings: [],
+        },
+      },
+    },
+    prompt: {
+      ...base.prompt,
+      groundingPayload: {
+        ...base.prompt.groundingPayload,
+        lever: 'Restore idle paddy fields: The mechanism targets domestic paddy production. Actor: government. Horizon: medium.',
+        levers: [{
+          id: 'food-001',
+          title: 'Restore idle paddy fields',
+          summary: 'Use documented paddy field restoration as the verified intervention.',
+          whoActs: ['government'],
+          horizon: 'medium',
+          mechanism: 'Targets domestic paddy production.',
+          appliesWhen: ['Food pillar is weak.'],
+          evidence: [{ publisher: 'Borneo Tracker documentation', title: 'AI Chatbot Concept and Plan', year: 2026 }],
+        }],
+      },
+    },
+    ...overrides,
+  };
+}
 
 describe('Gemini response validator security and internals', () => {
   it.each([

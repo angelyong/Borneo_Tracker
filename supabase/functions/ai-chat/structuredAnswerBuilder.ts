@@ -9,6 +9,8 @@ import type {
   FactSource,
   FactValue,
   FactWarning,
+  LeverRecord,
+  LeverRetrievalResult,
 } from './contracts.ts';
 
 export type StructuredAnswerTemplates = Partial<Record<SupportedLanguage, Partial<TemplateSet>>>;
@@ -18,6 +20,7 @@ export type StructuredAnswerBuilderInput = {
   factObject: AIChatFactObject;
   entities: AIChatEntityResult;
   comparability: ComparabilityResult;
+  levers?: LeverRetrievalResult;
   templates?: StructuredAnswerTemplates;
 };
 
@@ -123,6 +126,7 @@ export function buildStructuredAnswer(input: StructuredAnswerBuilderInput): AICh
     fact: input.factObject,
     entities: input.entities,
     comparability: input.comparability,
+    levers: input.levers,
     templates,
     language: language.value,
     warnings,
@@ -150,7 +154,10 @@ export function buildStructuredAnswer(input: StructuredAnswerBuilderInput): AICh
     summaryText,
     requiredDisclosures: dedupe(input.factObject.requiredDisclosures),
     warnings: dedupeWarnings(warnings),
-    sources: dedupeSources(input.factObject.sources),
+    sources: dedupeSources([
+      ...input.factObject.sources,
+      ...leverSources(input.levers?.records || []),
+    ]),
     approvedNumericTokens: [...input.factObject.approvedNumericTokens],
     approvedYearTokens: [...input.factObject.approvedYearTokens],
     blocked: input.factObject.availability === 'BLOCKED',
@@ -288,6 +295,19 @@ function buildLeverLayer(context: BuilderContext): EvidenceLeverLayer {
   const { fact, templates } = context;
   const base = baseLayer('lever', 'UNAVAILABLE', templates.headings.lever);
   const status = fact.availability === 'BLOCKED' ? 'NOT_APPLICABLE' : 'UNAVAILABLE';
+  const verifiedLever = context.levers?.records[0];
+  if (verifiedLever && fact.availability !== 'BLOCKED') {
+    return {
+      ...base,
+      status: 'AVAILABLE',
+      text: leverText(verifiedLever),
+      codes: ['VERIFIED_LEVER_AVAILABLE'],
+      factReferences: ['levers.records'],
+      warnings: context.levers?.warnings || [],
+      leverIds: [verifiedLever.id],
+      requiresGeminiPhrasing: true,
+    };
+  }
   return {
     ...base,
     status,
@@ -315,7 +335,8 @@ function buildHonestyLayer(context: BuilderContext): AnswerLayer {
     warningTexts.push(templates.sourceLimitations);
   }
   if (!fact.impact?.available) warningTexts.push(templates.impactUnavailable);
-  warningTexts.push(templates.leverUnavailable);
+  if (!context.levers?.records.length) warningTexts.push(templates.leverUnavailable);
+  warningTexts.push(...(context.levers?.warnings || []));
 
   return {
     status: warningTexts.length ? (fact.availability === 'BLOCKED' ? 'BLOCKED' : 'PARTIAL') : 'AVAILABLE',
@@ -410,6 +431,22 @@ function buildSummaryText(layers: AIChatStructuredAnswer['layers']): string {
     .filter((layer) => layer.status !== 'NOT_APPLICABLE' && layer.text)
     .map((layer) => `${layer.heading}: ${layer.text}`)
     .join('\n');
+}
+
+function leverText(record: LeverRecord): string {
+  const actors = record.whoActs.join(', ');
+  return `${record.title}: ${record.summary} Mechanism: ${record.mechanism} Actor: ${actors}. Horizon: ${record.horizon}.`;
+}
+
+function leverSources(records: LeverRecord[]): FactSource[] {
+  return records.flatMap((record) => record.evidence.map((evidence) => ({
+    publisher: evidence.publisher,
+    title: evidence.title,
+    year: evidence.year,
+    url: evidence.url,
+    sourceFile: evidence.sourceFile,
+    sourcePath: evidence.sourcePath,
+  })));
 }
 
 export function assertApprovedSummaryNumbers(
@@ -517,6 +554,7 @@ type BuilderContext = {
   fact: AIChatFactObject;
   entities: AIChatEntityResult;
   comparability: ComparabilityResult;
+  levers?: LeverRetrievalResult;
   templates: TemplateSet;
   language: SupportedLanguage;
   warnings: FactWarning[];

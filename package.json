@@ -11,7 +11,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "knowledge:build": "node scripts/build-knowledge.js",
-    "knowledge:validate": "node scripts/build-knowledge.js --validate-only"
+    "knowledge:validate": "node scripts/build-knowledge.js --validate-only",
+    "levers:build": "node scripts/build-levers.js",
+    "levers:validate": "node scripts/build-levers.js --validate-only"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.6",

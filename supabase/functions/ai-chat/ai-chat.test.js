@@ -53,6 +53,34 @@ const silentLogger = {
   error: vi.fn(),
 };
 
+function verifiedLeverRecord(overrides = {}) {
+  return {
+    id: 'food-001',
+    concept: 'food',
+    pillars: ['Food'],
+    territories: ['Sabah'],
+    title: 'Restore idle paddy fields',
+    summary: 'Use documented paddy field restoration as the verified intervention.',
+    whoActs: ['government'],
+    horizon: 'medium',
+    mechanism: 'Targets domestic paddy production.',
+    appliesWhen: ['Food pillar is weak.'],
+    doesNotApplyWhen: ['No paddy context is present.'],
+    evidence: [{
+      publisher: 'Borneo Tracker documentation',
+      title: 'AI Chatbot Concept and Plan',
+      year: 2026,
+      sourceFile: 'docs/AI_CHATBOT_CONCEPT_AND_PLAN.md',
+      sourcePath: '10. lever library',
+      whatItActuallySays: 'The source supports the verified lever record.',
+    }],
+    evidenceStatus: 'VERIFIED',
+    language: 'en',
+    keywords: ['food'],
+    ...overrides,
+  };
+}
+
 describe('ai-chat request validation', () => {
   it('accepts a valid request', () => {
     expect(validateChatRequest(validPayload)).toEqual(validPayload);
@@ -111,6 +139,7 @@ describe('Gemini client', () => {
         approvedNumericTokens: [],
         approvedYearTokens: [],
         sources: [],
+        levers: [],
       },
     };
 
@@ -391,6 +420,7 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
       prompt.groundingPayload.gap,
       prompt.groundingPayload.impact,
       prompt.groundingPayload.lever,
+      ...prompt.groundingPayload.warnings,
     ].filter(Boolean).join(' ');
   }
 
@@ -625,6 +655,7 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
       sources: [],
       approvedNumericTokens: [],
       approvedYearTokens: [],
+      levers: [],
       blocked: false,
       clarificationRequired: false,
     }));
@@ -662,6 +693,76 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     expect(news.completed.intent).toBe('BORNEO_NEWS');
     expect(news.completed.promptBuilt).toBe(false);
     expect(news.geminiClient).toHaveBeenCalledWith(expect.objectContaining({ message: 'Show latest Borneo news.' }));
+  });
+
+  it('runs dashboard facts through lever retrieval before prompt construction', async () => {
+    const logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+    const leverRetriever = vi.fn().mockReturnValue({
+      records: [verifiedLeverRecord()],
+      matchedBy: ['concept', 'pillar'],
+      warnings: [],
+    });
+    const geminiClient = vi.fn((_, prompt) => Promise.resolve(safeDashboardAnswer(prompt)));
+    const handler = createAiChatHandler({ geminiClient, leverRetriever, logger });
+
+    const response = await handler(request({ ...validPayload, message: "What is Sabah's food score?", region: '' }));
+    const body = await response.json();
+    const [, prompt] = geminiClient.mock.calls[0];
+    expect(response.status).toBe(200);
+    expect(body.mode).toBe('gemini-test');
+    expect(body.answer).toContain('Restore idle paddy fields');
+    expect(body.sources).toContainEqual(expect.objectContaining({ sourceFile: 'docs/AI_CHATBOT_CONCEPT_AND_PLAN.md' }));
+    expect(leverRetriever).toHaveBeenCalledWith(expect.objectContaining({
+      concepts: expect.arrayContaining(['food']),
+      territories: ['Sabah'],
+    }));
+    expect(prompt.groundingPayload.levers).toHaveLength(1);
+    expect(prompt.userContent).not.toContain('sourcePath');
+  });
+
+  it('Gemini failure fallback includes deterministic verified lever text', async () => {
+    const leverRetriever = vi.fn().mockReturnValue({
+      records: [verifiedLeverRecord()],
+      matchedBy: ['concept'],
+      warnings: [],
+    });
+    const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(504, 'GEMINI_TIMEOUT', 'timeout'));
+    const handler = createAiChatHandler({ geminiClient, leverRetriever, logger: silentLogger });
+
+    const response = await handler(request({ ...validPayload, message: "What is Sabah's food score?", region: '' }));
+    const body = await response.json();
+
+    expect(body.mode).toBe('template-fallback');
+    expect(body.answer).toContain('Recommended action: Restore idle paddy fields');
+    expect(body.fallback.reason).toBe('GEMINI_TIMEOUT');
+  });
+
+  it('invalid Gemini lever expansion is rejected without retry', async () => {
+    const leverRetriever = vi.fn().mockReturnValue({
+      records: [verifiedLeverRecord()],
+      matchedBy: ['concept'],
+      warnings: [],
+    });
+    const geminiClient = vi.fn().mockResolvedValue('Authorities should build solar microgrids instead.');
+    const handler = createAiChatHandler({ geminiClient, leverRetriever, logger: silentLogger });
+
+    const response = await handler(request({ ...validPayload, message: "What is Sabah's food score?", region: '' }));
+    const body = await response.json();
+
+    expect(geminiClient).toHaveBeenCalledTimes(1);
+    expect(body.mode).toBe('template-fallback');
+    expect(body.fallback.reason).toBe('GEMINI_RESPONSE_REJECTED');
+    expect(body.answer).toContain('Restore idle paddy fields');
+  });
+
+  it('blocked and clarification flows skip lever retrieval', async () => {
+    const leverRetriever = vi.fn();
+    const handler = createAiChatHandler({ geminiClient: vi.fn(), leverRetriever, logger: silentLogger });
+
+    await handler(request({ ...validPayload, message: 'Compare forest cover between Sabah and Brunei.', region: '' }));
+    await handler(request({ ...validPayload, message: 'Show dashboard data for Kota district.', region: '' }));
+
+    expect(leverRetriever).not.toHaveBeenCalled();
   });
 
   it('passes blocked and clarification dashboard states in grounded prompts', async () => {

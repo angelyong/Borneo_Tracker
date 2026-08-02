@@ -39,6 +39,19 @@ const DETERMINISTIC_LEVER_UNAVAILABLE = [
   /tiada intervensi yang telah disahkan diperoleh/i,
 ];
 
+const GUARANTEED_OUTCOME_PATTERN = /\b(?:will|guarantees?|guaranteed|ensures?|certain to|always)\b.{0,80}\b(?:improve|increase|reduce|raise|lower|restore|solve|fix)\b/i;
+const ACTOR_PATTERN = /\b(?:government|authorities|local authority|community|private sector|business|civil society|research institution|kerajaan|pihak berkuasa|komuniti|sektor swasta)\b/ig;
+const ACTOR_ALIASES: Record<string, string[]> = {
+  government: ['government', 'kerajaan'],
+  local_authority: ['local authority', 'authorities', 'pihak berkuasa'],
+  community: ['community', 'komuniti'],
+  private_sector: ['private sector', 'business', 'sektor swasta'],
+  civil_society: ['civil society'],
+  research_institution: ['research institution'],
+  multiple: ['government', 'authorities', 'local authority', 'community', 'private sector', 'business', 'civil society', 'research institution', 'kerajaan', 'pihak berkuasa', 'komuniti', 'sektor swasta'],
+  unspecified: [],
+};
+
 const SECRET_PATTERNS = [
   /\bapi key\b/i,
   /\bAICHATBOTGEMINI_API_KEY\b/,
@@ -214,7 +227,10 @@ function validateComparability(
 function validateRecommendation(input: AIChatResponseValidationInput, answer: string, issues: ResponseValidationIssue[]): void {
   const lever = input.structuredAnswer.layers.lever;
   const leverUnavailable = !lever.leverIds.length || ['UNAVAILABLE', 'NOT_APPLICABLE'].includes(lever.status);
-  if (!leverUnavailable) return;
+  if (!leverUnavailable) {
+    validateAvailableLeverRecommendation(input, answer, issues);
+    return;
+  }
   const withoutDeterministicUnavailable = DETERMINISTIC_LEVER_UNAVAILABLE.reduce(
     (text, pattern) => text.replace(pattern, ''),
     answer
@@ -222,6 +238,41 @@ function validateRecommendation(input: AIChatResponseValidationInput, answer: st
   if (RECOMMENDATION_PATTERNS.some((pattern) => pattern.test(withoutDeterministicUnavailable))) {
     addIssue(issues, 'UNVERIFIED_RECOMMENDATION', 'Answer contains recommendation language without a verified lever.');
   }
+}
+
+function validateAvailableLeverRecommendation(
+  input: AIChatResponseValidationInput,
+  answer: string,
+  issues: ResponseValidationIssue[]
+): void {
+  if (GUARANTEED_OUTCOME_PATTERN.test(answer)) {
+    addIssue(issues, 'UNVERIFIED_RECOMMENDATION', 'Answer claims a guaranteed lever outcome.');
+  }
+  const promptLevers = input.prompt.groundingPayload.levers;
+  if (!promptLevers.length) {
+    addIssue(issues, 'UNVERIFIED_RECOMMENDATION', 'Structured answer has lever IDs but prompt contains no bounded lever.');
+    return;
+  }
+  if (!boundedLeverTextAppears(answer, promptLevers)) {
+    addIssue(issues, 'UNVERIFIED_RECOMMENDATION', 'Answer recommendation is not bounded by the verified lever content.');
+  }
+  const allowedActors = new Set(promptLevers.flatMap((lever) => lever.whoActs.flatMap((actor) => ACTOR_ALIASES[actor] || [])));
+  const actorClaims = [...answer.matchAll(ACTOR_PATTERN)].map((match) => match[0].toLowerCase());
+  for (const actor of actorClaims) {
+    if (allowedActors.size && !allowedActors.has(actor)) {
+      addIssue(issues, 'UNVERIFIED_RECOMMENDATION', 'Answer introduces an actor not present in the verified lever.', actor);
+    }
+  }
+}
+
+function boundedLeverTextAppears(answer: string, levers: AIChatResponseValidationInput['prompt']['groundingPayload']['levers']): boolean {
+  const compactAnswer = compactText(answer);
+  return levers.some((lever) => {
+    const anchors = [lever.title, lever.summary, lever.mechanism]
+      .flatMap((text) => compactText(text).split(' ').filter((token) => token.length >= 5))
+      .slice(0, 10);
+    return anchors.length > 0 && anchors.some((token) => compactAnswer.includes(token));
+  });
 }
 
 function validateSecurity(answer: string, issues: ResponseValidationIssue[]): void {

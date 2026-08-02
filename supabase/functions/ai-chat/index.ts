@@ -4,6 +4,7 @@ import {
   type AIChatPrompt,
   type AIChatStructuredAnswer,
   type FallbackReason,
+  type LeverRetrievalResult,
   errorResponse,
   jsonResponse,
   parseJsonBody,
@@ -17,6 +18,8 @@ import { resolveAiChatEntities } from './entityResolver.ts';
 import { buildAIChatFactObject } from './factObjectBuilder.ts';
 import { FactDataRepository } from './factDataRepository.ts';
 import { generateGeminiAnswer } from './geminiClient.ts';
+import { LeverRepository } from './leverRepository.ts';
+import { retrieveVerifiedLevers } from './leverRetriever.ts';
 import { routeAiChatIntent } from './intentRouter.ts';
 import { consoleSafeLogger, errorLogFields, type SafeLogger } from './logger.ts';
 import { buildGroundedPrompt } from './promptBuilder.ts';
@@ -35,6 +38,7 @@ declare const Deno:
 type GeminiAnswerClient = (request: AIChatRequest, prompt?: AIChatPrompt) => Promise<string>;
 type StructuredAnswerClient = (input: Parameters<typeof buildStructuredAnswer>[0]) => AIChatStructuredAnswer;
 type PromptBuilderClient = (input: Parameters<typeof buildGroundedPrompt>[0]) => AIChatPrompt;
+type LeverRetrieverClient = (input: Parameters<typeof retrieveVerifiedLevers>[0]) => LeverRetrievalResult;
 
 type HandlerOptions = {
   env?: EnvLike;
@@ -42,6 +46,8 @@ type HandlerOptions = {
   factRepository?: FactDataRepository;
   structuredAnswerBuilder?: StructuredAnswerClient;
   promptBuilder?: PromptBuilderClient;
+  leverRepository?: LeverRepository;
+  leverRetriever?: LeverRetrieverClient;
   logger?: SafeLogger;
 };
 
@@ -52,6 +58,10 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
     ((chatRequest: AIChatRequest, prompt?: AIChatPrompt) => generateGeminiAnswer(chatRequest, { env: options.env, prompt }));
   const structuredAnswerBuilder = options.structuredAnswerBuilder || buildStructuredAnswer;
   const promptBuilder = options.promptBuilder || buildGroundedPrompt;
+  const leverRepository = options.leverRepository || new LeverRepository();
+  const leverRetriever =
+    options.leverRetriever ||
+    ((query: Parameters<typeof retrieveVerifiedLevers>[0]) => retrieveVerifiedLevers(query, leverRepository));
 
   return async function handleAiChatRequest(request: Request): Promise<Response> {
     const corsHeaders = buildCorsHeaders(request, parseCorsConfig(options.env));
@@ -109,12 +119,23 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
             repository: options.factRepository,
           })
         : undefined;
+      const levers = factObject && factObject.availability !== 'BLOCKED' && comparability.decision !== 'NEEDS_CLARIFICATION'
+        ? leverRetriever({
+            concepts: factObject.concepts,
+            pillars: factObject.pillars,
+            territories: factObject.territories,
+            language: entities.language || route.language || chatRequest.language,
+            factObject,
+            limit: 2,
+          })
+        : undefined;
       structuredAnswer = factObject
         ? structuredAnswerBuilder({
             language: entities.language || route.language || chatRequest.language,
             factObject,
             entities,
             comparability,
+            levers,
           })
         : undefined;
       if (structuredAnswer?.blocked || structuredAnswer?.clarificationRequired) {
@@ -134,6 +155,7 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
           structuredAnswerAvailability: structuredAnswer.availability,
           blocked: structuredAnswer.blocked,
           clarificationRequired: structuredAnswer.clarificationRequired,
+          leverRetrieved: false,
           sourceCount: fallback.sources.length,
         });
         return jsonResponse({
@@ -152,6 +174,7 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
             comparability,
             factObject,
             structuredAnswer,
+            levers,
           })
         : undefined;
       const answer = groundedPrompt
@@ -177,6 +200,7 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
           fallbackUsed: !validation.valid,
           blocked: structuredAnswer.blocked,
           clarificationRequired: structuredAnswer.clarificationRequired,
+          leverCount: levers?.records.length || 0,
         });
         if (!validation.valid) {
           const fallback = buildTemplateFallback({
@@ -194,6 +218,7 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
             structuredAnswerAvailability: structuredAnswer.availability,
             blocked: structuredAnswer.blocked,
             clarificationRequired: structuredAnswer.clarificationRequired,
+            leverCount: levers?.records.length || 0,
             sourceCount: fallback.sources.length,
           });
           return jsonResponse({
@@ -265,7 +290,14 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
             sourceCount: structuredAnswer.sources.length,
             approvedNumericTokenCount: structuredAnswer.approvedNumericTokens.length,
             approvedYearTokenCount: structuredAnswer.approvedYearTokens.length,
+            leverIds: structuredAnswer.layers.lever.leverIds,
           },
+          leverRetrieval: levers ? {
+            recordCount: levers.records.length,
+            matchedBy: levers.matchedBy,
+            warningCount: levers.warnings.length,
+            emptyReason: levers.emptyReason,
+          } : undefined,
           page: chatRequest.currentPage,
           region: chatRequest.region,
           language: chatRequest.language,
@@ -338,6 +370,13 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
           sourceCount: structuredAnswer.sources.length,
           approvedNumericTokenCount: structuredAnswer.approvedNumericTokens.length,
           approvedYearTokenCount: structuredAnswer.approvedYearTokens.length,
+          leverIds: structuredAnswer.layers.lever.leverIds,
+        } : undefined,
+        leverRetrieval: levers ? {
+          recordCount: levers.records.length,
+          matchedBy: levers.matchedBy,
+          warningCount: levers.warnings.length,
+          emptyReason: levers.emptyReason,
         } : undefined,
         page: chatRequest.currentPage,
         region: chatRequest.region,

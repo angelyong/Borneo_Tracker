@@ -42,6 +42,7 @@ function buildFactAndAnswer(message, options = {}) {
     factObject,
     entities,
     comparability,
+    levers: options.levers,
     templates: options.templates,
   });
   return { route, entities, comparability, factObject, answer };
@@ -452,6 +453,91 @@ describe('structured answer diagnosis, gap, impact, and lever details', () => {
 
   it('keeps lever IDs empty until retrieval exists', () => {
     const { answer } = buildFactAndAnswer("What is Sabah's resilience score?");
+    expect(answer.layers.lever.leverIds).toEqual([]);
+  });
+
+  it('populates layer five from a verified retrieved lever', () => {
+    const { factObject, entities, comparability } = buildFactAndAnswer("What is Sabah's food weakness?");
+    const answer = buildStructuredAnswer({
+      language: 'en',
+      factObject,
+      entities,
+      comparability,
+      levers: {
+        records: [{
+          id: 'food-001',
+          concept: 'food',
+          pillars: ['Food'],
+          territories: ['Sabah'],
+          title: 'Restore documented idle paddy fields',
+          summary: 'Use a verified food intervention.',
+          whoActs: ['government'],
+          horizon: 'medium',
+          mechanism: 'Targets domestic paddy production.',
+          appliesWhen: ['Food pillar is weak.'],
+          doesNotApplyWhen: ['No paddy context is present.'],
+          evidence: [{
+            publisher: 'Borneo Tracker documentation',
+            title: 'AI Chatbot Concept and Plan',
+            year: 2026,
+            url: 'https://example.com/lever',
+            sourceFile: 'docs/AI_CHATBOT_CONCEPT_AND_PLAN.md',
+            sourcePath: '10. lever library',
+            whatItActuallySays: 'The source supports the verified lever record.',
+          }],
+          evidenceStatus: 'VERIFIED',
+          language: 'en',
+          keywords: ['food'],
+        }],
+        matchedBy: ['concept', 'pillar'],
+        warnings: [],
+      },
+    });
+
+    expect(answer.layers.lever).toMatchObject({
+      status: 'AVAILABLE',
+      codes: ['VERIFIED_LEVER_AVAILABLE'],
+      leverIds: ['food-001'],
+      requiresGeminiPhrasing: true,
+    });
+    expect(answer.layers.lever.text).toContain('Restore documented idle paddy fields');
+    expect(answer.layers.honesty.warnings).not.toContain('No verified intervention has been retrieved for this answer yet.');
+    expect(answer.sources).toContainEqual(expect.objectContaining({
+      publisher: 'Borneo Tracker documentation',
+      sourceFile: 'docs/AI_CHATBOT_CONCEPT_AND_PLAN.md',
+    }));
+  });
+
+  it('blocked answers do not expose retrieved lever records', () => {
+    const answer = buildStructuredAnswer({
+      language: 'en',
+      factObject: baseFact({ availability: 'BLOCKED' }),
+      entities: baseEntities(),
+      comparability: baseComparability({ decision: 'REJECT', reasons: ['Blocked.'] }),
+      levers: {
+        records: [{
+          id: 'food-001',
+          concept: 'food',
+          pillars: ['Food'],
+          territories: ['Sabah'],
+          title: 'Restore documented idle paddy fields',
+          summary: 'Use a verified food intervention.',
+          whoActs: ['government'],
+          horizon: 'medium',
+          mechanism: 'Targets domestic paddy production.',
+          appliesWhen: ['Food pillar is weak.'],
+          doesNotApplyWhen: ['No paddy context is present.'],
+          evidence: [{ sourceFile: 'docs/AI_CHATBOT_CONCEPT_AND_PLAN.md', whatItActuallySays: 'x' }],
+          evidenceStatus: 'VERIFIED',
+          language: 'en',
+          keywords: ['food'],
+        }],
+        matchedBy: [],
+        warnings: [],
+      },
+    });
+
+    expect(answer.layers.lever.status).toBe('NOT_APPLICABLE');
     expect(answer.layers.lever.leverIds).toEqual([]);
   });
 });
