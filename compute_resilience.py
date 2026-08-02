@@ -28,6 +28,7 @@ import sqlite3
 from pathlib import Path
 
 from data_model import DASHBOARD_TERRITORIES, TODAY
+from json_artifacts import write_json_lf
 
 ROOT = Path(__file__).parent
 DB = ROOT / "borneo_tracker.db"
@@ -190,7 +191,7 @@ def main():
         "territories": scores,
     }
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    write_json_lf(OUTPUT, payload)
     for territory, data in scores.items():
         print(f"  {territory}: index={data['index']} ({data['rag']})  strict={data['indexStrict']} "
               f"({data['ragStrict']})  weakest={data['weakestPillar']} "

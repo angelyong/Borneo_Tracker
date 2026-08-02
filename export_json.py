@@ -4,6 +4,7 @@ import sqlite3
 from pathlib import Path
 
 from data_model import DASHBOARD_TERRITORIES, TODAY, dashboard_rows, load_indicator_rows
+from json_artifacts import write_json_lf
 
 ROOT = Path(__file__).parent
 OUTPUT = ROOT / "public" / "data" / "indicators.json"
@@ -167,7 +168,7 @@ def main(allow_model_fallback=False):
         "rows": rows,
         "series": series,
     }
-    OUTPUT.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    write_json_lf(OUTPUT, payload)
     print(f"Wrote {len(rows)} dashboard rows + {series_count} trend series -> {OUTPUT.relative_to(ROOT)}")
     return 0
 
