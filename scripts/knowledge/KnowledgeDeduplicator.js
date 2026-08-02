@@ -8,9 +8,12 @@ export class KnowledgeDeduplicator {
 
     records.forEach((record) => {
       const key = [
-        normalizeSearchText(record.title),
         normalizeSearchText(record.content),
-        record.sourceFile,
+        record.language || 'en',
+        record.category || '',
+        record.region || '',
+        record.concept || '',
+        (record.sdgTags || []).join(','),
       ].join('|');
       const existing = seen.get(key);
       if (existing) {

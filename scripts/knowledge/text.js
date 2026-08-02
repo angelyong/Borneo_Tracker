@@ -1,19 +1,34 @@
 export function slugify(value) {
   return String(value || '')
     .toLowerCase()
+    .normalize('NFKD')
     .replace(/['"]/g, '')
+    .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 96);
 }
 
 export function normalizeWhitespace(value) {
-  return String(value || '').replace(/\s+/g, ' ').trim();
+  return String(value || '')
+    .replace(/[“”]/g, '"')
+    .replace(/[‘’]/g, "'")
+    .replace(/[–—]/g, '-')
+    .replace(/Â·/g, ' ')
+    .replace(/â€¦/g, '...')
+    .replace(/â€”/g, '-')
+    .replace(/â€“/g, '-')
+    .replace(/â€œ|â€�/g, '"')
+    .replace(/\{\{[^}]+\}\}/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 export function normalizeSearchText(value) {
   return String(value || '')
     .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9\s-]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
@@ -39,6 +54,7 @@ export function stripMarkdown(value) {
       .replace(/```[\s\S]*?```/g, ' ')
       .replace(/`([^`]+)`/g, '$1')
       .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      .replace(/^\s*\|.*\|\s*$/gm, ' ')
       .replace(/[#>*_-]+/g, ' ')
   );
 }

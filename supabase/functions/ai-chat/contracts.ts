@@ -7,6 +7,7 @@ export type AIChatRequest = {
   language: string;
 };
 
+<<<<<<< Updated upstream
 export type ComparabilityDecision =
   | 'ALLOW'
   | 'ALLOW_WITH_WARNING'
@@ -91,6 +92,48 @@ export type ComparabilityResult = {
   allowedOperations: string[];
   requiredDisclosures: string[];
   normalizedComparisonBasis?: string;
+=======
+export type AIChatIntent =
+  | 'SITE_KNOWLEDGE'
+  | 'DASHBOARD_DATA'
+  | 'BORNEO_NEWS'
+  | 'OUT_OF_SCOPE';
+
+export type AIChatIntentResult = {
+  intent: AIChatIntent;
+  confidence: number;
+  reasons: string[];
+  matchedTerms: string[];
+  language: string;
+};
+
+export type AIChatEntityResult = {
+  territories: string[];
+  regions: string[];
+  concepts: string[];
+  indicators: string[];
+  pillars: string[];
+  districts: string[];
+  years: number[];
+  yearRange?: {
+    start: number;
+    end: number;
+  };
+  operations: {
+    comparison: boolean;
+    ranking: boolean;
+    trend: boolean;
+    weakest: boolean;
+    strongest: boolean;
+    targetGap: boolean;
+    sdgProgress: boolean;
+    districtLevel: boolean;
+    latest: boolean;
+  };
+  ambiguities: string[];
+  matchedTerms: string[];
+  language: string;
+>>>>>>> Stashed changes
 };
 
 export type AIChatResponse = {
@@ -161,22 +204,31 @@ export function validateChatRequest(body: unknown): AIChatRequest {
   };
 }
 
-export function jsonResponse(payload: AIChatResponse | ErrorPayload, status = 200): Response {
+function responseHeaders(extraHeaders?: HeadersInit): Headers {
+  const headers = new Headers(extraHeaders);
+  headers.set('Content-Type', 'application/json');
+  headers.set('Cache-Control', 'no-store');
+  return headers;
+}
+
+export function jsonResponse(
+  payload: AIChatResponse | ErrorPayload,
+  status = 200,
+  extraHeaders?: HeadersInit
+): Response {
   return new Response(JSON.stringify(payload), {
     status,
-    headers: {
-      'Content-Type': 'application/json',
-      'Cache-Control': 'no-store',
-    },
+    headers: responseHeaders(extraHeaders),
   });
 }
 
-export function errorResponse(error: unknown): Response {
+export function errorResponse(error: unknown, extraHeaders?: HeadersInit): Response {
   if (error instanceof AIChatHttpError) {
-    return jsonResponse({ error: error.message, code: error.code }, error.status);
+    return jsonResponse({ error: error.message, code: error.code }, error.status, extraHeaders);
   }
   return jsonResponse(
     { error: 'The AI assistant could not respond right now.', code: 'AI_CHAT_ERROR' },
-    500
+    500,
+    extraHeaders
   );
 }

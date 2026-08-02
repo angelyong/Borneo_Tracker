@@ -4,6 +4,8 @@ import { hasSecretLikeText, hasUnsupportedNumericalClaim } from './text.js';
 
 const VALID_CATEGORIES = new Set([
   'site-overview',
+  'dashboard',
+  'regional',
   'regions',
   'esg-indicators',
   'environmental',
@@ -14,6 +16,11 @@ const VALID_CATEGORIES = new Set([
   'generate-report',
   'website-usage',
   'faq',
+  'policies',
+  'methodology',
+  'reports',
+  'news',
+  'community',
 ]);
 
 function validPageUrl(value) {
@@ -25,7 +32,7 @@ export class KnowledgeValidator {
     const errors = [];
     const warnings = [];
 
-    ['id', 'title', 'category', 'content', 'sourceFile', 'sourceType', 'status'].forEach((field) => {
+    ['id', 'title', 'category', 'content', 'language', 'sourceFile', 'sourceType', 'status'].forEach((field) => {
       if (!record[field]) errors.push(`Missing required field: ${field}`);
     });
 
@@ -55,6 +62,12 @@ export class KnowledgeValidator {
     }
     if (!record.sourceFile || !record.sourceType) {
       errors.push('Missing source traceability');
+    }
+    if (!record.provenance || record.provenance.sourceFile !== record.sourceFile) {
+      errors.push('Missing provenance metadata');
+    }
+    if (!['verified', 'placeholder', 'incomplete'].includes(record.status)) {
+      errors.push(`Invalid status: ${record.status}`);
     }
 
     return { valid: errors.length === 0, errors, warnings };

@@ -1,11 +1,10 @@
 import { AIChatHttpError, type AIChatRequest } from './contracts.ts';
+import { type EnvLike, parseAiChatConfig } from './config.ts';
 
 const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
-const DEFAULT_MODEL = 'gemini-3.6-flash';
-const DEFAULT_TIMEOUT_MS = 30000;
 
 type GeminiClientOptions = {
-  env?: Record<string, string | undefined>;
+  env?: EnvLike;
   fetchImpl?: typeof fetch;
   timeoutMs?: number;
 };
@@ -19,32 +18,6 @@ type GeminiGenerateContentResponse = {
     };
   }>;
 };
-
-function readRuntimeEnv(name: string): string | undefined {
-  const deno = globalThis as typeof globalThis & {
-    Deno?: { env?: { get?: (key: string) => string | undefined } };
-    process?: { env?: Record<string, string | undefined> };
-  };
-  return deno.Deno?.env?.get?.(name) || deno.process?.env?.[name];
-}
-
-function envValue(env: Record<string, string | undefined> | undefined, name: string): string {
-  return (env?.[name] ?? readRuntimeEnv(name) ?? '').trim();
-}
-
-function timeoutFromEnv(env: Record<string, string | undefined> | undefined): number {
-  const raw = envValue(env, 'AI_CHAT_TIMEOUT_MS');
-  const parsed = Number(raw);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_TIMEOUT_MS;
-}
-
-function modelFromEnv(env: Record<string, string | undefined> | undefined): string {
-  return envValue(env, 'GEMINI_MODEL') || DEFAULT_MODEL;
-}
-
-function apiKeyFromEnv(env: Record<string, string | undefined> | undefined): string {
-  return envValue(env, 'AICHATBOTGEMINI_API_KEY') || envValue(env, 'GEMINI_API_KEY');
-}
 
 function buildPrompt(request: AIChatRequest): string {
   return [
@@ -93,28 +66,18 @@ export async function generateGeminiAnswer(
   request: AIChatRequest,
   options: GeminiClientOptions = {}
 ): Promise<string> {
-  const env = options.env;
-  const apiKey = apiKeyFromEnv(env);
-  if (!apiKey) {
-    throw new AIChatHttpError(
-      500,
-      'MISSING_GEMINI_API_KEY',
-      'The AI assistant is not configured yet.'
-    );
-  }
-
+  const config = parseAiChatConfig(options.env);
   const fetchImpl = options.fetchImpl || fetch;
-  const model = modelFromEnv(env);
-  const timeoutMs = options.timeoutMs ?? timeoutFromEnv(env);
+  const timeoutMs = options.timeoutMs ?? config.geminiTimeoutMs;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const response = await fetchImpl(`${GEMINI_BASE_URL}/${encodeURIComponent(model)}:generateContent`, {
+    const response = await fetchImpl(`${GEMINI_BASE_URL}/${encodeURIComponent(config.geminiModel)}:generateContent`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-goog-api-key': apiKey,
+        'x-goog-api-key': config.apiKey,
       },
       body: JSON.stringify({
         systemInstruction: {

@@ -10,6 +10,20 @@ import { KnowledgeWriter } from './KnowledgeWriter.js';
 import { createBuildReport } from './KnowledgeBuildReport.js';
 import { hasSecretLikeText } from './text.js';
 
+function increment(map, key) {
+  const normalized = key || 'unknown';
+  map[normalized] = (map[normalized] || 0) + 1;
+}
+
+function summarizeRecords(report, records) {
+  records.forEach((record) => {
+    increment(report.countsBySource, record.sourceId || record.sourceFile);
+    increment(report.countsByCategory, record.category);
+    increment(report.countsByLanguage, record.language);
+    increment(report.countsByStatus, record.status);
+  });
+}
+
 export class KnowledgeBuilder {
   constructor({
     scanner = new ContentSourceScanner(),
@@ -80,8 +94,12 @@ export class KnowledgeBuilder {
     const deduped = this.deduplicator.deduplicate(extractedRecords);
     report.duplicateRecords = deduped.duplicates;
     const validation = this.validator.validateRecords(deduped.unique);
+    const runtimeRecords = validation.valid.filter((record) => record.runtimeIncluded);
+    summarizeRecords(report, runtimeRecords);
 
-    report.recordsCreated = validation.valid.length;
+    report.recordsCreated = runtimeRecords.length;
+    report.recordsValidated = validation.valid.length;
+    report.runtimeRecords = runtimeRecords.length;
     report.recordsSkipped = validation.invalid.length + deduped.duplicates.length;
     report.invalidRecords = validation.invalid.map((item) => ({
       id: item.record.id,
@@ -95,14 +113,14 @@ export class KnowledgeBuilder {
     report.warnings = validation.warnings;
 
     const criticalErrors = report.errors.length > 0 || report.invalidRecords.length > 0;
-    if (!validateOnly && validation.valid.length > 0) {
-      const written = this.writer.write(validation.valid, report);
+    if (!validateOnly && runtimeRecords.length > 0) {
+      const written = this.writer.write(runtimeRecords, report);
       report.outputFiles = written.outputFiles;
     }
 
     return {
       ok: !criticalErrors,
-      records: validation.valid,
+      records: runtimeRecords,
       report,
     };
   }

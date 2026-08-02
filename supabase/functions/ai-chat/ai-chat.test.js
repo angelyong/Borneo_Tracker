@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { validateChatRequest } from './contracts.ts';
 import { generateGeminiAnswer } from './geminiClient.ts';
-import { handleAiChatRequest } from './index.ts';
+import { createAiChatHandler, handleAiChatRequest } from './index.ts';
 
 const validPayload = {
   message: 'Hello',
@@ -37,6 +37,12 @@ function geminiResponse(text) {
     }),
   };
 }
+
+const silentLogger = {
+  info: vi.fn(),
+  warn: vi.fn(),
+  error: vi.fn(),
+};
 
 describe('ai-chat request validation', () => {
   it('accepts a valid request', () => {
@@ -83,6 +89,55 @@ describe('Gemini client', () => {
       code: 'MISSING_GEMINI_API_KEY',
     });
     expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it('falls back to GEMINI_API_KEY when the chatbot-specific key is absent', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(geminiResponse('Fallback key worked.'));
+    const answer = await generateGeminiAnswer(validPayload, {
+      env: { GEMINI_API_KEY: 'fallback-key' },
+      fetchImpl,
+    });
+
+    expect(answer).toBe('Fallback key worked.');
+    expect(fetchImpl).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        headers: expect.objectContaining({ 'x-goog-api-key': 'fallback-key' }),
+      })
+    );
+  });
+
+  it('rejects an invalid timeout configuration before calling Gemini', async () => {
+    const fetchImpl = vi.fn();
+
+    await expect(generateGeminiAnswer(validPayload, {
+      env: {
+        AICHATBOTGEMINI_API_KEY: 'test-key',
+        AI_CHAT_TIMEOUT_MS: '0',
+      },
+      fetchImpl,
+    })).rejects.toMatchObject({
+      status: 500,
+      code: 'INVALID_AI_CHAT_CONFIG',
+    });
+    expect(fetchImpl).not.toHaveBeenCalled();
+  });
+
+  it('uses the configured timeout from environment', async () => {
+    const fetchImpl = vi.fn((_, init) => new Promise((resolve, reject) => {
+      init.signal.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')));
+    }));
+
+    await expect(generateGeminiAnswer(validPayload, {
+      env: {
+        AICHATBOTGEMINI_API_KEY: 'test-key',
+        AI_CHAT_TIMEOUT_MS: '1',
+      },
+      fetchImpl,
+    })).rejects.toMatchObject({
+      status: 504,
+      code: 'GEMINI_TIMEOUT',
+    });
   });
 
   it('returns a safe timeout error', async () => {
@@ -152,6 +207,69 @@ describe('Gemini client', () => {
 });
 
 describe('ai-chat endpoint', () => {
+  it('handles CORS preflight without requiring Gemini configuration', async () => {
+    const handler = createAiChatHandler({
+      env: { AI_CHAT_CORS_ORIGINS: 'https://example.com' },
+      logger: silentLogger,
+    });
+
+    const response = await handler(new Request('http://localhost/ai-chat', {
+      method: 'OPTIONS',
+      headers: { origin: 'https://example.com' },
+    }));
+
+    expect(response.status).toBe(204);
+    expect(response.headers.get('Access-Control-Allow-Origin')).toBe('https://example.com');
+    expect(response.headers.get('Access-Control-Allow-Methods')).toContain('POST');
+  });
+
+  it('adds CORS headers to errors', async () => {
+    const handler = createAiChatHandler({
+      env: { AI_CHAT_CORS_ORIGINS: '*' },
+      logger: silentLogger,
+    });
+
+    const response = await handler(new Request('http://localhost/ai-chat', {
+      method: 'GET',
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(405);
+    expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
+    expect(body.code).toBe('METHOD_NOT_ALLOWED');
+  });
+
+  it('injects the Gemini dependency for handler tests', async () => {
+    const geminiClient = vi.fn().mockResolvedValue('Injected response.');
+    const handler = createAiChatHandler({ geminiClient, logger: silentLogger });
+
+    const response = await handler(request(validPayload));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(geminiClient).toHaveBeenCalledWith(validPayload);
+    expect(body.answer).toBe('Injected response.');
+  });
+
+  it('logs safe error metadata without secrets', async () => {
+    const logger = {
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    };
+    const handler = createAiChatHandler({
+      geminiClient: vi.fn().mockRejectedValue(new Error('api-key test-key leaked')),
+      logger,
+    });
+
+    const response = await handler(request(validPayload));
+    const body = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(body.code).toBe('AI_CHAT_ERROR');
+    expect(JSON.stringify(logger.error.mock.calls)).not.toContain('test-key');
+  });
+
   it('returns the final Stage 1A response contract on Gemini success', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(geminiResponse('Connected.')));
     vi.stubEnv('AICHATBOTGEMINI_API_KEY', 'test-key');

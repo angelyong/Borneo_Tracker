@@ -5,6 +5,46 @@
       "type": "json",
       "path": "src/i18n/locales/en.json",
       "category": "site-overview",
+      "kind": "i18n",
+      "language": "en",
+      "enabled": true
+    },
+    {
+      "id": "site-copy-ms",
+      "type": "json",
+      "path": "src/i18n/locales/ms.json",
+      "category": "site-overview",
+      "kind": "i18n",
+      "language": "ms",
+      "enabled": true
+    },
+    {
+      "id": "report-content",
+      "type": "page",
+      "path": "src/pages/reports/reportContent.js",
+      "category": "reports",
+      "kind": "report-content",
+      "language": "en",
+      "route": "/reports",
+      "enabled": true
+    },
+    {
+      "id": "policy-page",
+      "type": "page",
+      "path": "src/pages/policies/PolicyPage.jsx",
+      "category": "policies",
+      "kind": "policy",
+      "language": "en",
+      "enabled": true
+    },
+    {
+      "id": "resilience-methodology",
+      "type": "markdown",
+      "path": "borneo_tracker_resilience_index_methodology.md",
+      "category": "methodology",
+      "language": "en",
+      "concept": "resilience_index",
+      "pageUrl": "/about",
       "enabled": true
     },
     {

@@ -24,8 +24,11 @@ export class MarkdownContentExtractor {
         category: source.category,
         content: stripMarkdown(section.lines.join('\n')),
         sourceName: 'Borneo Tracker documentation',
-        pageUrl: '/about',
+        pageUrl: source.pageUrl || '/about',
+        language: source.language || 'en',
+        concept: source.concept || null,
+        sourcePath: section.title,
       }))
-      .filter((record) => record.content.length >= 40);
+      .filter((record) => record.content.length >= 80);
   }
 }
