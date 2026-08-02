@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
+    "verify:data": "python verify_manifest.py verify public/data && python verify_manifest.py verify dist/data",
     "test:watch": "vitest"
   },
   "dependencies": {

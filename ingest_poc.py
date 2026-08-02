@@ -27,11 +27,12 @@ import http.client
 import json
 import os
 import time
-from datetime import date
 from pathlib import Path
 import urllib.request
 import urllib.error
 from urllib.parse import quote, urlsplit
+
+from project_time import project_today, project_today_iso
 
 ROOT = Path(__file__).parent
 OUT_CSV = ROOT / "borneo_tracker_poc.csv"
@@ -41,7 +42,7 @@ DEPRECATED_INDICATORS = {"Active fire hotspots (1d)"}
 # materially misleading, so a failed refresh removes them instead of invoking
 # the general last-good fallback used for slower annual/quarterly indicators.
 VOLATILE_INDICATORS = {"Air quality (AQI, live)", "Active fire hotspots (24h)"}
-TODAY = date.today().isoformat()
+TODAY = project_today_iso()
 UA = "Mozilla/5.0 (Borneo-Tracker-POC)"  # BPS firewall blocks bare clients
 
 
@@ -1033,7 +1034,7 @@ def pull_gdl(rows, token):
         print("  [GDL] no GDL_API_TOKEN — skipped (mean years schooling absent this run)")
         return
 
-    today = datetime.date.today()
+    today = project_today()
     text = None
     if GDL_CACHE.exists():
         raw = GDL_CACHE.read_text(encoding="utf-8")

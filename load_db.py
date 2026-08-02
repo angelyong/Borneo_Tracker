@@ -7,6 +7,7 @@ import tempfile
 from pathlib import Path
 
 from data_model import DASHBOARD_TERRITORIES, load_indicator_rows
+from project_time import project_today_iso
 
 ROOT = Path(__file__).parent
 HISTORY_CSV = ROOT / "borneo_tracker_history.csv"
@@ -322,7 +323,7 @@ def publish_db_file(source_path, target_path):
 
 
 def main():
-    run_ts = datetime.date.today().isoformat()
+    run_ts = project_today_iso()
     RUNTIME_DB.unlink(missing_ok=True)
     rows = load_indicator_rows()
     expected_keys = validate_source_rows(rows)

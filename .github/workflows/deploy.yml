@@ -313,13 +313,13 @@ jobs:
           def normalise(manifest):
               out = {}
 
-              def add(name, sha):
+              def add(name, sha, byte_count):
                   if not name or not sha:
                       return
                   sha = str(sha).strip().lower()
                   if not HEX64.match(sha):
                       return
-                  out[os.path.basename(str(name))] = sha
+                  out[os.path.basename(str(name))] = {"sha256": sha, "bytes": byte_count}
 
               node = manifest
               if isinstance(manifest, dict) and isinstance(manifest.get("files"), (dict, list)):
@@ -329,14 +329,15 @@ jobs:
                   for key, val in node.items():
                       if isinstance(val, dict):
                           add(val.get("path") or val.get("file") or val.get("name") or key,
-                              val.get("sha256") or val.get("sha_256") or val.get("hash"))
+                              val.get("sha256") or val.get("sha_256") or val.get("hash"),
+                              val.get("bytes"))
                       elif isinstance(val, str):
-                          add(key, val)
+                          add(key, val, None)
               elif isinstance(node, list):
                   for val in node:
                       if isinstance(val, dict):
                           add(val.get("path") or val.get("file") or val.get("name"),
-                              val.get("sha256") or val.get("hash"))
+                              val.get("sha256") or val.get("hash"), val.get("bytes"))
               return out
 
 
@@ -375,15 +376,25 @@ jobs:
 
               for name, expected in sorted(declared.items()):
                   path = os.path.join(data_dir, name)
+                  expected_hash = expected["sha256"]
+                  expected_bytes = expected["bytes"]
+                  if not isinstance(expected_bytes, int) or isinstance(expected_bytes, bool) or expected_bytes < 0:
+                      problems.append("manifest.json has no valid byte count for '%s'" % name)
+                      continue
                   if not os.path.isfile(path):
                       problems.append("manifest.json declares '%s' but dist/data/%s does not exist" % (name, name))
                       continue
-                  actual = sha256_of(path)
-                  status = "ok" if actual == expected else "MISMATCH"
-                  print("  %-28s %s  %s" % (name, actual[:16] + "...", status))
-                  if actual != expected:
+                  actual_hash = sha256_of(path)
+                  actual_bytes = os.path.getsize(path)
+                  status = "ok" if actual_hash == expected_hash and actual_bytes == expected_bytes else "MISMATCH"
+                  print("  %-28s %s  %s  %d B" % (name, actual_hash[:16] + "...", status, actual_bytes))
+                  if actual_hash != expected_hash:
                       problems.append(
-                          "sha256 mismatch for %s: manifest says %s, built file is %s" % (name, expected, actual)
+                          "sha256 mismatch for %s: manifest says %s, built file is %s" % (name, expected_hash, actual_hash)
+                      )
+                  if actual_bytes != expected_bytes:
+                      problems.append(
+                          "byte count mismatch for %s: manifest says %s, built file is %s" % (name, expected_bytes, actual_bytes)
                       )
 
               if problems:
@@ -397,7 +408,7 @@ jobs:
                   die("dist/data/indicators.json has no generatedAt field.")
 
               with open(out_path, "w", encoding="utf-8") as fh:
-                  json.dump({"generatedAt": generated_at, "hashes": declared}, fh, indent=2, sort_keys=True)
+                  json.dump({"generatedAt": generated_at, "files": declared}, fh, indent=2, sort_keys=True)
               print("generatedAt=%s" % generated_at)
               print("verified %d manifest entries" % len(declared))
 
@@ -410,16 +421,40 @@ jobs:
                   print("::error title=Smoke test failed::production /data/manifest.json is not valid JSON: %s" % exc)
                   sys.exit(1)
               bad = 0
-              for name, sha in sorted(expected["hashes"].items()):
+              for name, expected_entry in sorted(expected["files"].items()):
                   got = remote.get(name)
                   if got is None:
                       print("::error title=Smoke test failed::production manifest is missing '%s'" % name)
                       bad += 1
-                  elif got != sha:
-                      print("::error title=Smoke test failed::production '%s' is %s, we built %s" % (name, got, sha))
-                      bad += 1
                   else:
-                      print("  %-28s %s  matches production" % (name, sha[:16] + "..."))
+                      for field in ("sha256", "bytes"):
+                          if got.get(field) != expected_entry.get(field):
+                              print("::error title=Smoke test failed::production '%s' %s is %r, we built %r" % (name, field, got.get(field), expected_entry.get(field)))
+                              bad += 1
+                      if got.get("sha256") == expected_entry.get("sha256") and got.get("bytes") == expected_entry.get("bytes"):
+                          print("  %-28s %s  %d B matches production manifest" % (name, expected_entry["sha256"][:16] + "...", expected_entry["bytes"]))
+              sys.exit(1 if bad else 0)
+
+
+          def verify_remote_files(remote_data_dir, expected_path):
+              expected = load(expected_path)
+              bad = 0
+              for name, entry in sorted(expected["files"].items()):
+                  path = os.path.join(remote_data_dir, name)
+                  if not os.path.isfile(path):
+                      print("::error title=Smoke test failed::production download is missing '%s'" % name)
+                      bad += 1
+                      continue
+                  actual_hash = sha256_of(path)
+                  actual_bytes = os.path.getsize(path)
+                  if actual_hash != entry["sha256"]:
+                      print("::error title=Smoke test failed::production %s sha256 is %s, expected %s" % (name, actual_hash, entry["sha256"]))
+                      bad += 1
+                  if actual_bytes != entry["bytes"]:
+                      print("::error title=Smoke test failed::production %s bytes is %s, expected %s" % (name, actual_bytes, entry["bytes"]))
+                      bad += 1
+                  if actual_hash == entry["sha256"] and actual_bytes == entry["bytes"]:
+                      print("  %-28s byte-identical (%s, %d B)" % (name, actual_hash[:16] + "...", actual_bytes))
               sys.exit(1 if bad else 0)
 
 
@@ -444,6 +479,8 @@ jobs:
                   compare_remote(sys.argv[2], sys.argv[3])
               elif mode == "assert-generated-at":
                   assert_generated_at(sys.argv[2], sys.argv[3])
+              elif mode == "verify-remote-files":
+                  verify_remote_files(sys.argv[2], sys.argv[3])
               else:
                   raise SystemExit("unknown mode %r" % mode)
           PYEOF
@@ -488,7 +525,7 @@ jobs:
 
           echo ""
           echo "Verifying every data file against dist/data/manifest.json:"
-          python "$RUNNER_TEMP/manifest_tool.py" verify-local dist/data "$RUNNER_TEMP/expected.json"
+          python verify_manifest.py verify dist/data --expected-out "$RUNNER_TEMP/expected.json"
 
           GENERATED_AT="$(python -c "import json,os;print(json.load(open(os.path.join(os.environ['RUNNER_TEMP'],'expected.json')))['generatedAt'])")"
           echo "generated_at=${GENERATED_AT}" >> "$GITHUB_OUTPUT"
@@ -795,21 +832,28 @@ jobs:
           for attempt in 1 2 3 4 5 6; do
             m_res="$(fetch "${BASE}/data/manifest.json" "$OUT/manifest.json")"
             i_res="$(fetch "${BASE}/data/indicators.json" "$OUT/indicators.json")"
+            r_res="$(fetch "${BASE}/data/resilience.json" "$OUT/resilience.json")"
+            d_res="$(fetch "${BASE}/data/districts.json" "$OUT/districts.json")"
             m_code="${m_res%% *}"; m_type="${m_res#* }"
             i_code="${i_res%% *}"; i_type="${i_res#* }"
+            r_code="${r_res%% *}"; r_type="${r_res#* }"
+            d_code="${d_res%% *}"; d_type="${d_res#* }"
 
             # A file that is NOT on the server answers 200 + text/html here (the
             # SPA rewrite catches it), so the content type is the real check.
             if [ "$m_code" = "200" ] && [ "$i_code" = "200" ] \
-               && [ "${m_type#*json}" != "$m_type" ] && [ "${i_type#*json}" != "$i_type" ]; then
+               && [ "$r_code" = "200" ] && [ "$d_code" = "200" ] \
+               && [ "${m_type#*json}" != "$m_type" ] && [ "${i_type#*json}" != "$i_type" ] \
+               && [ "${r_type#*json}" != "$r_type" ] && [ "${d_type#*json}" != "$d_type" ]; then
               if python "$TOOL" compare-remote "$OUT/manifest.json" "$EXPECTED" > "$OUT/cmp.log" 2>&1 \
+                 && python "$TOOL" verify-remote-files "$OUT" "$EXPECTED" >> "$OUT/cmp.log" 2>&1 \
                  && python "$TOOL" assert-generated-at "$OUT/indicators.json" "$EXPECTED" >> "$OUT/cmp.log" 2>&1; then
                 matched=1
                 cat "$OUT/cmp.log"
                 break
               fi
             else
-              echo "  attempt ${attempt}: manifest.json -> ${m_code} ${m_type}; indicators.json -> ${i_code} ${i_type}"
+              echo "  attempt ${attempt}: manifest -> ${m_code} ${m_type}; indicators -> ${i_code} ${i_type}; resilience -> ${r_code} ${r_type}; districts -> ${d_code} ${d_type}"
             fi
             if [ "$attempt" -lt 6 ]; then
               echo "  attempt ${attempt}: production does not match yet; retrying in 10s..."
@@ -823,8 +867,12 @@ jobs:
             # Last probe, with a cache-buster. If THAT matches, the new bytes
             # really are on the server and the problem is an edge/page cache —
             # a completely different fix from "the upload never landed".
-            if "${CURL[@]}" -o "$OUT/manifest.cb.json" "${BASE}/data/manifest.json?cachebust=${GITHUB_RUN_ID}" >/dev/null 2>&1 \
-               && python "$TOOL" compare-remote "$OUT/manifest.cb.json" "$EXPECTED" >/dev/null 2>&1; then
+            if "${CURL[@]}" -o "$OUT/manifest.json" "${BASE}/data/manifest.json?cachebust=${GITHUB_RUN_ID}" >/dev/null 2>&1 \
+               && "${CURL[@]}" -o "$OUT/indicators.json" "${BASE}/data/indicators.json?cachebust=${GITHUB_RUN_ID}" >/dev/null 2>&1 \
+               && "${CURL[@]}" -o "$OUT/resilience.json" "${BASE}/data/resilience.json?cachebust=${GITHUB_RUN_ID}" >/dev/null 2>&1 \
+               && "${CURL[@]}" -o "$OUT/districts.json" "${BASE}/data/districts.json?cachebust=${GITHUB_RUN_ID}" >/dev/null 2>&1 \
+               && python "$TOOL" compare-remote "$OUT/manifest.json" "$EXPECTED" >/dev/null 2>&1 \
+               && python "$TOOL" verify-remote-files "$OUT" "$EXPECTED" >/dev/null 2>&1; then
               echo "::error title=Stale cache, not a failed upload::The new files ARE on the server — they match when fetched with a cache-buster — but the plain URL still serves an old copy. Flush LiteSpeed/LSCache (or the CDN) for this domain."
             else
               echo "::error title=Smoke test failed::Production /data/manifest.json does not match the build that was just uploaded."
@@ -913,13 +961,13 @@ jobs:
             if [ -f "$RUNNER_TEMP/expected.json" ]; then
               echo "### Manifest shipped"
               echo
-              echo "| File | SHA-256 |"
-              echo "|---|---|"
+              echo "| File | SHA-256 | Bytes |"
+              echo "|---|---|---:|"
               python - <<'PY'
           import json, os
           data = json.load(open(os.path.join(os.environ["RUNNER_TEMP"], "expected.json")))
-          for name, sha in sorted(data["hashes"].items()):
-              print("| `%s` | `%s` |" % (name, sha))
+          for name, entry in sorted(data["files"].items()):
+              print("| `%s` | `%s` | %s |" % (name, entry["sha256"], entry["bytes"]))
           PY
               echo
             fi

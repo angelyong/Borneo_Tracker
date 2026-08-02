@@ -144,9 +144,12 @@ Do **not** wait for the 05:00 MYT schedule to find out whether it works.
 
    Two pre-upload failures you are most likely to hit:
 
-   - `sha256 mismatch for indicators.json` — the data files and `public/data/manifest.json`
-     have drifted apart. Someone changed data without re-emitting the manifest. Re-run the
-     manifest generator and commit the result.
+   - `sha256 mismatch` or `byte count mismatch` — the data files and
+     `public/data/manifest.json` have drifted apart. Someone changed data without re-emitting
+     the manifest, or a Windows writer changed LF into CRLF. Re-run the manifest generator and
+     commit the result. For a local check before uploading a ZIP, run
+     `python verify_manifest.py verify public/data`, then `npm run build`, then
+     `python verify_manifest.py verify dist/data` (or simply `npm run verify:data`).
    - `dist/.htaccess is missing or empty` — `public/.htaccess` was deleted or emptied. It is a
      tracked file and carries the SPA rewrite; restore it. The workflow refuses to upload
      without it precisely because losing it 404s every deep link on the live site.
@@ -187,8 +190,8 @@ It asserts four things:
 |---|---|---|
 | 1 | `GET /` returns **200**, `text/html`, and the body contains the app shell (`id="root"`). | The site is up and is actually our app. |
 | 2 | `GET /news` returns **200** `text/html` with the app shell. | `/news` is a client-side route with no file behind it. If `.htaccess` did not survive the upload, this 404s — and so does every other deep link. |
-| 3 | `GET /data/manifest.json` parses as JSON **and every SHA-256 in it equals the hash of the file we just built**. | This is the real check: production is byte-identical to this build, not merely reachable. |
-| 4 | `GET /data/indicators.json` has the **`generatedAt` we just built**. | Catches a partial upload where the manifest landed but the data did not. |
+| 3 | `GET /data/manifest.json` parses as JSON, and every declared **SHA-256 and byte count** equals this build. | The manifest claim itself is complete and current. |
+| 4 | `GET` each of `indicators.json`, `resilience.json` and `districts.json`; its downloaded SHA-256 and byte count must equal the manifest. | This proves the actual Production bytes match the build, not merely the manifest. |
 
 Every JSON check verifies the **content type**, not just the status code. This matters: the
 SPA rewrite in `.htaccess` answers *any* missing path with `index.html` and HTTP **200**, so a

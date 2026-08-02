@@ -20,8 +20,9 @@ import compute_resilience  # noqa: E402
 import validate_data  # noqa: E402
 import ingest_districts  # noqa: E402
 import check_required_secrets  # noqa: E402
+import project_time  # noqa: E402
 
-from datetime import date  # noqa: E402
+from datetime import date, datetime, timezone  # noqa: E402
 
 
 class VerifiedSourceLiveTests(unittest.TestCase):
@@ -81,6 +82,29 @@ class VerifiedSourceLiveTests(unittest.TestCase):
 
 
 class PipelineSemanticsTests(unittest.TestCase):
+    def test_project_date_uses_malaysia_calendar_at_utc_boundary(self):
+        instant = datetime(2026, 8, 1, 18, 24, tzinfo=timezone.utc)
+        self.assertEqual(project_time.project_today(instant), date(2026, 8, 2))
+        self.assertEqual(project_time.project_today_iso(instant), "2026-08-02")
+        with self.assertRaises(ValueError):
+            project_time.project_today(datetime(2026, 8, 1, 18, 24))
+
+    def test_artifact_freshness_uses_project_date_and_rejects_real_future(self):
+        instant = datetime(2026, 8, 1, 18, 24, tzinfo=timezone.utc)
+        malaysia_today = project_time.project_today(instant)
+
+        current = validate_data.Report()
+        validate_data.check_artifact_freshness(
+            current, "fixture", {"generatedAt": "2026-08-02"}, today=malaysia_today
+        )
+        self.assertEqual(current.failed, 0)
+
+        future = validate_data.Report()
+        validate_data.check_artifact_freshness(
+            future, "fixture", {"generatedAt": "2026-08-03"}, today=malaysia_today
+        )
+        self.assertEqual(future.failed, 1)
+
     def test_domestic_electrification_fallback_is_scoreable(self):
         score = compute_resilience.score_value(
             "Domestic electrification ratio", "%", 99.4

@@ -38,6 +38,7 @@ from datetime import date
 from pathlib import Path
 
 from data_model import DASHBOARD_TERRITORIES, KALIMANTAN_PROVINCES
+from project_time import project_today
 
 ROOT = Path(__file__).parent
 
@@ -173,7 +174,7 @@ def check_generated_at(report, scope, current, previous, previous_skip):
 def check_artifact_freshness(report, scope, artifact, today=None,
                              maximum_days=MAX_STALE_AGE_DAYS):
     """Catch an entire pipeline step retaining an old artifact unchanged."""
-    today = today or date.today()
+    today = project_today() if today is None else today
     generated = parse_generated_at(artifact.get("generatedAt"))
     if generated is None:
         report.check(
@@ -232,7 +233,7 @@ def check_stale_ratio(report, scope, label, rows, maximum=MAX_SCORED_STALE_RATIO
 
 def check_stale_freshness(report, scope, rows, today=None, maximum_days=MAX_STALE_AGE_DAYS):
     """Require every retained row to identify a recent, real last-success date."""
-    today = today or date.today()
+    today = project_today() if today is None else today
     stale_rows = [row for row in rows if is_stale(row)]
     problems = []
     ages = []

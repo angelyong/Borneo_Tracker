@@ -34,9 +34,12 @@ from pathlib import Path
 import urllib.request
 import urllib.error
 
+from project_time import project_today_iso
+from json_artifacts import write_json_lf
+
 ROOT = Path(__file__).parent
 OUTPUT = ROOT / "public" / "data" / "districts.json"
-TODAY = date.today().isoformat()
+TODAY = project_today_iso()
 UA = "Mozilla/5.0 (Borneo-Tracker-Districts)"
 
 DOSM_BASE = "https://storage.dosm.gov.my"
@@ -325,7 +328,7 @@ def main():
         "rows": rows,
     }
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    write_json_lf(OUTPUT, payload)
 
     district_count = sum(len(v) for v in parents.values())
     print(f"Wrote {len(rows)} district rows across {district_count} districts "
