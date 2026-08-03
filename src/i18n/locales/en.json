@@ -87,7 +87,13 @@
     "yourselfHint": "Nothing here needs software written by us.",
     "historyTitle": "Publication history",
     "historyHint": "Every data version ever published. This record is only ever appended to, never rewritten.",
-    "noHistory": "No anchors recorded yet."
+    "noHistory": "No anchors recorded yet.",
+    "statFiles": "Files checked",
+    "statVersions": "Versions published",
+    "statWitnesses": "Independent witnesses",
+    "statCost": "Cost per year",
+    "heroLabel": "Fingerprint of this data version",
+    "terminalHint": "Run these anywhere. Neither tool is ours."
   },
   "sidebar": {
     "dashboard": "Dashboard",

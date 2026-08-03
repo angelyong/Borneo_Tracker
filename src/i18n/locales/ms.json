@@ -86,7 +86,13 @@
     "yourselfHint": "Tiada apa-apa di sini memerlukan perisian yang kami tulis.",
     "historyTitle": "Sejarah penerbitan",
     "historyHint": "Setiap versi data yang pernah diterbitkan. Rekod ini hanya ditambah, tidak pernah ditulis semula.",
-    "noHistory": "Belum ada labuhan direkodkan."
+    "noHistory": "Belum ada labuhan direkodkan.",
+    "statFiles": "Fail disemak",
+    "statVersions": "Versi diterbitkan",
+    "statWitnesses": "Saksi bebas",
+    "statCost": "Kos setahun",
+    "heroLabel": "Cap jari versi data ini",
+    "terminalHint": "Jalankan di mana-mana. Kedua-dua alat ini bukan milik kami."
   },
   "sidebar": {
     "dashboard": "Papan Pemuka",
