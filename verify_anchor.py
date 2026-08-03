@@ -60,15 +60,22 @@ class Source:
 
     def __init__(self, base_url=None):
         self.base_url = base_url.rstrip("/") if base_url else None
+        # Why the last fetch failed. Kept here rather than printed, because only
+        # the caller knows whether a given file missing is fatal or expected —
+        # printing "FAIL" from in here once produced a run that said FAIL and
+        # PASSED at the same time.
+        self.last_error = None
 
     @property
     def label(self):
         return self.base_url or f"{DATA_DIR.as_posix()} (working copy)"
 
     def get(self, repo_rel_path):
+        self.last_error = None
         if not self.base_url:
             path = ROOT / repo_rel_path
             if not path.exists():
+                self.last_error = "not present in the working copy"
                 return None
             return path.read_bytes()
 
@@ -83,14 +90,14 @@ class Source:
                 body = resp.read()
                 ctype = resp.headers.get("Content-Type", "")
         except (urllib.error.URLError, OSError) as exc:
-            print(f"{BAD} fetch {url}: {exc}")
+            self.last_error = f"could not be fetched ({exc})"
             return None
 
         # A single-page app answers 200 with index.html for anything it does not
         # have. Silently hashing that would produce a confident, meaningless
         # mismatch, so name the real problem instead.
         if body.lstrip()[:9].lower() == b"<!doctype" or "text/html" in ctype:
-            print(f"{BAD} {url} returned HTML, not the file — it is not deployed")
+            self.last_error = "the site returned HTML, so this file is not deployed"
             return None
         return body
 
@@ -101,7 +108,7 @@ def check(source, results):
 
     manifest_bytes = source.get("public/data/manifest.json")
     if manifest_bytes is None:
-        results.append((BAD, "manifest.json could not be read"))
+        results.append((BAD, f"manifest.json {source.last_error}"))
         return True
 
     manifest_sha256 = hashlib.sha256(manifest_bytes).hexdigest()
@@ -118,7 +125,7 @@ def check(source, results):
     for rel_path, entry in sorted(manifest.get("files", {}).items()):
         body = source.get(rel_path)
         if body is None:
-            results.append((BAD, f"{rel_path}  could not be read"))
+            results.append((BAD, f"{rel_path}  {source.last_error}"))
             failed = True
             continue
         actual = hashlib.sha256(body).hexdigest()
@@ -136,7 +143,7 @@ def check(source, results):
     ledger_bytes = source.get("public/data/provenance.jsonl")
     ledger_root = None
     if ledger_bytes is None:
-        results.append((WARN, "provenance.jsonl not available — ledger root not checked"))
+        results.append((WARN, f"provenance.jsonl {source.last_error} — ledger root not checked"))
     else:
         lines = [ln for ln in ledger_bytes.replace(b"\r\n", b"\n").split(b"\n") if ln.strip()]
         ledger_root = merkle.merkle_root([merkle.leaf_hash(ln) for ln in lines]).hex()
@@ -145,7 +152,8 @@ def check(source, results):
     # 2-4. the anchor
     anchors_bytes = source.get("public/data/anchors.jsonl")
     if anchors_bytes is None:
-        results.append((WARN, "anchors.jsonl not available — data is not anchored yet"))
+        results.append((WARN, f"anchors.jsonl {source.last_error} — this data version "
+                              "carries no anchor here yet"))
         return failed
 
     events = []
@@ -174,7 +182,7 @@ def check(source, results):
 
     proof_bytes = source.get(event.get("proof", ""))
     if proof_bytes is None:
-        results.append((BAD, f"proof {event.get('proof')} could not be read"))
+        results.append((BAD, f"proof {event.get('proof')} {source.last_error}"))
         return True
 
     try:
