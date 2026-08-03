@@ -19,3 +19,6 @@
 {"bytes": 110412, "file": "public/data/indicators.json", "generatedAt": "2026-08-03", "runId": "30769041549", "sha256": "f6da073d065bf9ee5db6c7a86a144899645ce96b32c20aa3de70a757bde54259", "ts": "2026-08-02T22:05:53Z"}
 {"bytes": 12329, "file": "public/data/resilience.json", "generatedAt": "2026-08-03", "runId": "30769041549", "sha256": "8332ca8af1bbb85cd5dc0a54095dfaac15acac5cfbbcb897de5d09eaefa2e97f", "ts": "2026-08-02T22:05:53Z"}
 {"bytes": 505698, "file": "public/data/districts.json", "generatedAt": "2026-08-03", "runId": "30769041549", "sha256": "29c6a055c4f1e965525ad19f9d6e7ad428b4cc8f55e7c45632a96fa1e165bd2a", "ts": "2026-08-02T22:05:53Z"}
+{"bytes": 110673, "file": "public/data/indicators.json", "generatedAt": "2026-08-04", "runId": "30857644993", "sha256": "10301c7fcd681979e4923e90d9bc547c077add2bd7d39a7bbd00e5fa1ef54a23", "ts": "2026-08-03T22:45:25Z"}
+{"bytes": 12331, "file": "public/data/resilience.json", "generatedAt": "2026-08-04", "runId": "30857644993", "sha256": "7a4ca5b97bfeebff89c0c6a59f5aa1f4d8fbd21f723ed60c1b20a7ae98f64fca", "ts": "2026-08-03T22:45:25Z"}
+{"bytes": 505698, "file": "public/data/districts.json", "generatedAt": "2026-08-04", "runId": "30857644993", "sha256": "725100511e3bed501c6bd8f88846293a9e406daad603357e8a57a50e87bba153", "ts": "2026-08-03T22:45:25Z"}
