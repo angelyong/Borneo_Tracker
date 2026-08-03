@@ -1,0 +1,99 @@
+name: Anchor published data
+
+# Runs after the daily refresh has actually committed something, and timestamps
+# that data version on Bitcoin (OpenTimestamps) and in Sigstore's public
+# transparency log. Two independent witnesses to one digest.
+#
+# Why a separate workflow rather than more steps in refresh-data.yml: anchoring
+# is allowed to fail without touching the data. A calendar being unreachable must
+# never turn the data refresh red, and a broken anchor must never stop a good
+# dataset from shipping. Keeping them apart keeps that boundary honest.
+
+on:
+  workflow_run:
+    workflows: ["Refresh dashboard data"]
+    types: [completed]
+    branches: [master]
+  # So the whole thing can be exercised by hand from a feature branch —
+  # workflow_run only ever fires for the default branch.
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Stamp again even if this manifest is already anchored"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write # commit the proof and the anchor log
+  id-token: write # OIDC identity for Sigstore — this is what signs the attestation
+  attestations: write
+
+jobs:
+  anchor:
+    # Never anchor data that failed its own validation gate.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # workflow_run hands us the SHA the refresh STARTED from, which is the
+          # commit before it pushed the new data. Take the branch head instead or
+          # we would anchor yesterday's manifest.
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.ref_name || 'master' }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Report what is about to be anchored
+        run: python anchor_provenance.py --dry-run
+
+      # Witness 1 — Sigstore. Free for public repositories on the public-good
+      # instance. Anyone can check it with:
+      #   gh attestation verify manifest.json --repo ${{ github.repository }}
+      - name: Attest the manifest (Sigstore transparency log)
+        id: attest
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: public/data/manifest.json
+
+      # Witness 2 — Bitcoin, via OpenTimestamps. No wallet, no key, no funds:
+      # calendars batch many digests into one transaction. Idempotent, so a run
+      # where the data did not change is a no-op rather than a duplicate stamp.
+      - name: Stamp the manifest on Bitcoin (OpenTimestamps)
+        run: |
+          python anchor_provenance.py \
+            --sigstore-bundle "${{ steps.attest.outputs.bundle-path }}" \
+            ${{ (github.event_name == 'workflow_dispatch' && inputs.force) && '--force' || '' }}
+
+      - name: Verify what we just wrote
+        run: python verify_anchor.py
+
+      - name: Commit the proof
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/data/anchors.jsonl public/data/anchors
+          if git diff --cached --quiet; then
+            echo "Nothing new to anchor — this data version already has a proof."
+          else
+            git commit -m "chore: anchor data version on Bitcoin"
+            git push
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### Anchor"
+            echo
+            echo '```'
+            python verify_anchor.py || true
+            echo '```'
+            echo
+            echo "A fresh stamp is **pending** until a Bitcoin block includes it —"
+            echo "\`Upgrade pending anchors\` promotes it to a confirmed proof."
+          } >> "$GITHUB_STEP_SUMMARY"

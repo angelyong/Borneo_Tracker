@@ -76,11 +76,16 @@ Two honest, low-cost options — pick by goal:
   `manifest.json` (or the Merkle root) → get a `.ots` proof → verifiable against **Bitcoin**.
   **Free, no wallet / gas / private keys, decentralised.** Simplest and most defensible; the
   proof is a small file you commit.
-- **B. Merkle root → smart contract on an L2 / testnet** *(recommended if you want a VISIBLE
-  on-chain tx to demo)* — compute the Merkle root → submit to a tiny contract → store the
-  `txid` + chain. More "blockchain-looking" (a contract and a transaction to point at), but
-  needs a wallet/key/gas and a chain choice. **If you use real keys, generate them OUTSIDE the
-  repo and store them as GitHub Actions secrets — never `git add` a private key.**
+- **B. Merkle root → smart contract on an L2 mainnet** *(only if you want a VISIBLE on-chain tx
+  to demo)* — compute the Merkle root → submit to a tiny contract → store the `txid` + chain.
+  More "blockchain-looking" (a contract and a transaction to point at), but needs a wallet/key/
+  gas and a chain choice. **If you use real keys, generate them OUTSIDE the repo and store them
+  as GitHub Actions secrets — never `git add` a private key.** Understand what the key buys the
+  attacker: leak it and they can write hashes that make **tampered data verify**. That is the one
+  attack surface option A does not have.
+  > ⛔ **Not testnet.** Testnet state can be wiped and carries no economic guarantee, so a testnet
+  > anchor is a mock. Presenting one as an anchor is the same credibility trap as faking `B`.
+  > Free-but-real (option A) or mainnet. Nothing in between.
 
 **Record every anchor in a new append-only file** `public/data/anchors.jsonl`, e.g.:
 `{ts, method:"ots"|"chain", target:"manifest"|"merkle_root", root_or_hash, proof_ref, chain, txid?}`.
@@ -103,8 +108,17 @@ Same append-only discipline as `provenance.jsonl`.
 
 ## 5. ABCDE framing + the HARD LINE
 
-- ✅ **Do:** anchor provenance, provide verification, narrate as a *tamper-proof,
-  institution-independent audit trail* = a real, honest `B`.
+- ✅ **Do:** anchor provenance, provide verification, narrate as a **tamper-evident**,
+  institution-independent audit trail = a real, honest `B`.
+  > **Say "tamper-evident", never "tamper-proof" or "immutable."** NIST (NISTIR 8202) is explicit
+  > that blockchains are *"tamper evident and tamper resistant… cannot be considered completely
+  > immutable."* The weaker word is the true one, and using it is the kind of precision an
+  > author-supervisor will notice.
+- ✅ **Also say what it does NOT prove.** The UI must state plainly that anchoring says the bytes
+  have not changed, **not** that the numbers are correct — a wrong source is preserved just as
+  faithfully as a right one. This is not a disclaimer to bury; it is the most persuasive thing on
+  the page, and omitting it implies "on-chain therefore true", which is exactly the reasoning that
+  made tokenised carbon credits worthless.
 - 🚫 **Do NOT (this build):** tokens, RWA, carbon-credit issuance, self-sovereign / DID data,
   community-yield. Those are the **endgame** — narrate as horizon, never claim as built. Faking
   them is the credibility trap. `B` is still ~0%; this step is what honestly moves it off zero.
@@ -113,15 +127,50 @@ Same append-only discipline as `provenance.jsonl`.
 
 ## 6. Build checklist (in order)
 
-1. [ ] Decide method — **OpenTimestamps** (no keys) vs **Merkle-root → L2/testnet** (visible tx).
-2. [ ] `anchor_provenance.py` — read `provenance.jsonl` / `manifest.json` → per-file hashes or a
-       Merkle root → anchor (OTS stamp / chain tx) → **append** the proof to `public/data/anchors.jsonl`.
-3. [ ] `.github/workflows/anchor.yml` — run **after** "Refresh dashboard data" (`workflow_run`,
-       `branches: [master]`), same pattern as `resilience-watch.yml` / `deploy.yml`. Daily or weekly.
-4. [ ] `verify_anchor.py` + the `/data-sources` panel — given a served data file, recompute its
-       hash and verify it against the recorded anchor/proof.
-5. [ ] Honest labels; if you must touch `emit_manifest.py`/the ledger, **add fields only**.
-6. [ ] Tests + `npm run lint` + `npm run build` green → merge (one branch merges at a time).
+**Status: built on `feature/blockchain-anchoring`.** Method chosen = **A, OpenTimestamps**, plus
+GitHub `actions/attest` (Sigstore) as a second, independent witness. Both are free and neither
+needs a key or a funded wallet.
+
+1. [x] Decide method — **OpenTimestamps** (no keys), with Sigstore alongside it. Polygon stays
+       available as an additive third witness; see §3.
+2. [x] `merkle.py` — RFC 6962 root over the ledger, recomputable by anyone from the served file.
+3. [x] `ots.py` — the `.ots` wire format, calendar submit and upgrade, standard library only.
+       (The reference package needs `python-bitcoinlib`, which fails on Windows.)
+4. [x] `anchor_provenance.py` — stamps **`manifest.json`**, which already commits to every data
+       file, so one proof covers all of them and the official `ots verify` works unmodified.
+       Idempotent: unchanged data is a no-op.
+5. [x] `upgrade_anchors.py` — **separate on purpose**; see the pending-proof note below.
+6. [x] `verify_anchor.py` — `--remote` verifies what production is actually serving.
+7. [x] `.github/workflows/anchor.yml` (after "Refresh dashboard data") and
+       `anchor-upgrade.yml` (every 6 h).
+8. [x] `useIntegrity.js`, `IntegrityChip.jsx`, `DataVerification.jsx` on `/data-sources`,
+       en + ms strings, chip wired into Overview.
+9. [x] Golden tests — `test_anchoring.py` and `src/data/useIntegrity.test.js`.
+10. [ ] Port the real data-sources content from `feature/figma-redesign` (`DataSources.jsx`) and
+        merge it with the verification panel. **Deliberately deferred** — "where the data comes
+        from" and "has the data been altered" are two different questions, and porting a page
+        across branches is a separate merge risk.
+
+### Five things that will bite you (learned building it)
+
+1. **A fresh OTS stamp is PENDING, for hours.** It is a calendar's promise, not a Bitcoin proof —
+   measured here, still pending after 24 minutes. **You cannot stamp and verify in one CI run.**
+   Hence the separate upgrade workflow, and hence the amber `Timestamping…` chip state. Do not
+   render that as an error.
+2. **The browser must hash RAW BYTES.** `arrayBuffer()` + `crypto.subtle.digest`, never
+   `JSON.parse` → `JSON.stringify` — key order, whitespace, number formatting and the trailing
+   newline all change and the hash will never match. Anything that rewrites bytes in transit (CDN
+   JSON minification, line-ending conversion, a BOM) breaks it too; commit `3978363` pinned
+   `manifest.json` to LF for exactly this class of problem.
+3. **Anchor only when the data changed.** `refresh-data.yml` already gates its commit on that;
+   `anchor_provenance.py` is idempotent for the same reason. "Daily" anchoring would fill the log
+   with identical hashes and destroy its usefulness as a record of distinct versions.
+4. **`crypto.subtle` needs a secure context.** On plain http it is absent, and the honest answer
+   is the grey `Not verified` state — never a green one.
+5. **The chain does not constrain us, the repo does.** Anchoring is only meaningful if
+   `provenance.jsonl` cannot be rewritten. **`master` still allows force-push and no commit is
+   signed.** Branch protection + signed commits are free and are a genuine prerequisite, not a
+   nicety — see `BLOCKCHAIN_B_RESEARCH.md` §7.
 
 ---
 

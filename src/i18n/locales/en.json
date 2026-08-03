@@ -24,6 +24,71 @@
     "tooltip": "This dashboard is rebuilt from a daily pipeline; the date shown is when the data was generated, not when the page was loaded.",
     "tooltipUnknown": "This dashboard is rebuilt from a daily pipeline, but this dataset did not record when it was generated."
   },
+  "integrity": {
+    "verified": {
+      "label": "Integrity verified",
+      "detail": "These files still hash to the fingerprint anchored on Bitcoin. Nothing has been altered since."
+    },
+    "pending": {
+      "label": "Timestamping",
+      "detail": "Signed and submitted; the Bitcoin timestamp takes a few hours to confirm. This is normal, not an error."
+    },
+    "mismatch": {
+      "label": "Integrity mismatch",
+      "detail": "These files do not match the anchored fingerprint. The deployment may be incomplete or the data altered — do not cite this version."
+    },
+    "unverified": {
+      "label": "Not verified",
+      "detail": "The verification record could not be reached, so nothing is being claimed either way."
+    },
+    "block": "block {{block}}"
+  },
+  "verify": {
+    "eyebrow": "Data integrity",
+    "title": "Verify this data",
+    "lede": "Every dataset we publish is fingerprinted and timestamped on a public blockchain. You do not have to take our word for any of it — recompute the fingerprints yourself with the commands below.",
+    "currentTitle": "Currently published version",
+    "currentHint": "Your browser recomputed these fingerprints locally just now.",
+    "checking": "Checking…",
+    "built": "Built",
+    "versionsPublished": "{{count}} versions published to date",
+    "filesTitle": "Published files",
+    "filesHint": "Each fingerprint is the SHA-256 of the file's own bytes. Recompute it and you should get the same string.",
+    "colFile": "File",
+    "colHash": "SHA-256",
+    "colSize": "Size",
+    "colStatus": "Status",
+    "fileMatch": "Matches",
+    "fileMismatch": "Does not match",
+    "fileUnreachable": "Unreachable",
+    "noManifest": "No integrity manifest is being served, so there is nothing to verify against yet.",
+    "witnessTitle": "Independent witnesses",
+    "witnessHint": "Each is independent of the others and of us. If one cannot be reached, the rest still stand.",
+    "witnessBitcoin": "Bitcoin",
+    "witnessSigstore": "Sigstore",
+    "witnessPolygon": "Polygon",
+    "confirmed": "Confirmed",
+    "awaitingBlock": "Awaiting block",
+    "notAnchored": "Not anchored",
+    "logged": "Logged",
+    "notEnabled": "Not enabled",
+    "block": "Block",
+    "proof": "Proof",
+    "entry": "Entry",
+    "signer": "Signed by",
+    "status": "Status",
+    "cost": "Cost",
+    "viewExplorer": "View on a block explorer",
+    "provesTitle": "What this proves",
+    "provesBody": "These files have not been changed since they were anchored — including by us. You do not need to trust that statement; recompute the fingerprint yourself and compare.",
+    "notProvesTitle": "What this does not prove",
+    "notProvesBody": "It does not mean the numbers are correct. If a source was wrong, we have preserved that error faithfully. Data quality is carried by the confidence and source labels on each indicator, not by this page.",
+    "yourselfTitle": "Verify it yourself",
+    "yourselfHint": "Nothing here needs software written by us.",
+    "historyTitle": "Publication history",
+    "historyHint": "Every data version ever published. This record is only ever appended to, never rewritten.",
+    "noHistory": "No anchors recorded yet."
+  },
   "sidebar": {
     "dashboard": "Dashboard",
     "regionalDetails": "Regional Details",

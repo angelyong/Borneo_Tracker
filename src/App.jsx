@@ -10,6 +10,7 @@ import NewsDetailPage from './pages/news/NewsDetailPage';
 import NewsReview from './pages/admin/news/NewsReview';
 import UserManagement from './pages/admin/UserManagement';
 import AboutPage from './pages/about/AboutPage';
+import DataVerification from './pages/info/DataVerification';
 import CommunityPage from './pages/community/CommunityPage';
 import GenerateReportPage from './pages/reports/GenerateReportPage';
 import { DataPolicyPage, PrivacyPolicyPage, TermsOfUsePage } from './pages/policies/PolicyPage';
@@ -68,7 +69,7 @@ function App() {
           <Route path="/reports" element={<GenerateReportPage />} />
           <Route path="/submission" element={<Placeholder title={t('app.submitReport')} />} />
 
-          <Route path="/data-sources" element={<Placeholder title={t('sidebar.dataSources')} />} />
+          <Route path="/data-sources" element={<DataVerification />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
           <Route path="/terms-of-use" element={<TermsOfUsePage />} />

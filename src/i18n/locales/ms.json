@@ -23,6 +23,71 @@
     "tooltip": "Papan pemuka ini dibina semula daripada saluran data harian; tarikh yang dipaparkan ialah masa data dijana, bukan masa halaman dimuatkan.",
     "tooltipUnknown": "Papan pemuka ini dibina semula daripada saluran data harian, tetapi set data ini tidak merekodkan masa ia dijana."
   },
+  "integrity": {
+    "verified": {
+      "label": "Integriti disahkan",
+      "detail": "Fail ini masih menghasilkan cap jari yang sama seperti yang dilabuhkan pada Bitcoin. Tiada apa-apa yang diubah sejak itu."
+    },
+    "pending": {
+      "label": "Menunggu cap masa",
+      "detail": "Sudah ditandatangani dan dihantar; cap masa Bitcoin mengambil masa beberapa jam untuk disahkan. Ini normal, bukan ralat."
+    },
+    "mismatch": {
+      "label": "Integriti tidak sepadan",
+      "detail": "Fail ini tidak sepadan dengan cap jari yang dilabuhkan. Penerbitan mungkin tidak lengkap atau data telah diubah — jangan petik versi ini."
+    },
+    "unverified": {
+      "label": "Belum disahkan",
+      "detail": "Rekod pengesahan tidak dapat dicapai, jadi tiada apa-apa yang didakwa."
+    },
+    "block": "blok {{block}}"
+  },
+  "verify": {
+    "eyebrow": "Integriti data",
+    "title": "Sahkan data ini",
+    "lede": "Setiap set data yang kami terbitkan diberi cap jari dan cap masa pada blockchain awam. Anda tidak perlu mempercayai kata-kata kami — kira semula cap jari itu sendiri dengan arahan di bawah.",
+    "currentTitle": "Versi yang diterbitkan sekarang",
+    "currentHint": "Pelayar anda baru sahaja mengira semula cap jari ini secara setempat.",
+    "checking": "Sedang menyemak…",
+    "built": "Dijana",
+    "versionsPublished": "{{count}} versi telah diterbitkan setakat ini",
+    "filesTitle": "Fail yang diterbitkan",
+    "filesHint": "Setiap cap jari ialah SHA-256 bagi bait fail itu sendiri. Kira semula dan anda sepatutnya mendapat rentetan yang sama.",
+    "colFile": "Fail",
+    "colHash": "SHA-256",
+    "colSize": "Saiz",
+    "colStatus": "Status",
+    "fileMatch": "Sepadan",
+    "fileMismatch": "Tidak sepadan",
+    "fileUnreachable": "Tidak dapat dicapai",
+    "noManifest": "Tiada manifes integriti disajikan, jadi belum ada apa-apa untuk disahkan.",
+    "witnessTitle": "Saksi bebas",
+    "witnessHint": "Setiap satu bebas antara satu sama lain dan bebas daripada kami. Jika satu tidak dapat dicapai, yang lain tetap sah.",
+    "witnessBitcoin": "Bitcoin",
+    "witnessSigstore": "Sigstore",
+    "witnessPolygon": "Polygon",
+    "confirmed": "Disahkan",
+    "awaitingBlock": "Menunggu blok",
+    "notAnchored": "Belum dilabuhkan",
+    "logged": "Direkodkan",
+    "notEnabled": "Belum diaktifkan",
+    "block": "Blok",
+    "proof": "Bukti",
+    "entry": "Entri",
+    "signer": "Ditandatangani oleh",
+    "status": "Status",
+    "cost": "Kos",
+    "viewExplorer": "Lihat pada penjelajah blok",
+    "provesTitle": "Apa yang ini buktikan",
+    "provesBody": "Fail ini tidak berubah sejak ia dilabuhkan — termasuk oleh kami. Anda tidak perlu mempercayai kenyataan itu; kira semula cap jarinya dan bandingkan.",
+    "notProvesTitle": "Apa yang ini tidak buktikan",
+    "notProvesBody": "Ini tidak bermakna angkanya betul. Jika sumber asalnya salah, kami hanya menyimpan kesilapan itu dengan setia. Kualiti data dibawa oleh label keyakinan dan sumber pada setiap penunjuk, bukan oleh halaman ini.",
+    "yourselfTitle": "Sahkan sendiri",
+    "yourselfHint": "Tiada apa-apa di sini memerlukan perisian yang kami tulis.",
+    "historyTitle": "Sejarah penerbitan",
+    "historyHint": "Setiap versi data yang pernah diterbitkan. Rekod ini hanya ditambah, tidak pernah ditulis semula.",
+    "noHistory": "Belum ada labuhan direkodkan."
+  },
   "sidebar": {
     "dashboard": "Papan Pemuka",
     "regionalDetails": "Butiran Wilayah",

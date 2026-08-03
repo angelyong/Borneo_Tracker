@@ -43,10 +43,19 @@ IDEMPOTENCE
     when the data actually changed, so the log stays a record of distinct data
     versions rather than of cron ticks.
 
+THE SECOND WITNESS
+    In CI we also attest the manifest through GitHub's `actions/attest`, which
+    signs it with the workflow's own identity and records it in Sigstore's public
+    transparency log — the same infrastructure npm and PyPI use. Pass the bundle
+    with --sigstore-bundle and its log index is recorded alongside the Bitcoin
+    stamp. Two independent witnesses to the same digest: if either is unreachable,
+    the other still stands.
+
 USAGE
     python anchor_provenance.py              stamp the current manifest if new
     python anchor_provenance.py --force      stamp again even if already anchored
     python anchor_provenance.py --dry-run    show what would happen, touch nothing
+    python anchor_provenance.py --sigstore-bundle <path>   also record the attestation
 """
 
 import json
@@ -100,6 +109,43 @@ def already_anchored(events, manifest_sha256):
                for e in events)
 
 
+def read_sigstore_bundle(path):
+    """Pull the Rekor log index out of an `actions/attest` bundle.
+
+    Best-effort by design: the bundle is GitHub's format, not ours, and a schema
+    change there must not fail the anchoring run. If anything is unrecognisable
+    we record that an attestation exists without pretending to know its index.
+    """
+    if not path:
+        return None
+    bundle_path = Path(path)
+    if not bundle_path.exists():
+        print(f"  note: sigstore bundle not found at {path} — not recorded")
+        return None
+    try:
+        bundle = json.loads(bundle_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as exc:
+        print(f"  note: sigstore bundle unreadable ({exc}) — recorded without an index")
+        return {"present": True}
+
+    entry = {"present": True}
+    try:
+        tlog = bundle["verificationMaterial"]["tlogEntries"][0]
+        entry["logIndex"] = str(tlog.get("logIndex"))
+        entry["integratedTime"] = str(tlog.get("integratedTime"))
+    except (KeyError, IndexError, TypeError):
+        pass
+    return entry
+
+
+def flag_value(argv, name):
+    """--name <value>, or None."""
+    if name not in argv:
+        return None
+    idx = argv.index(name)
+    return argv[idx + 1] if len(argv) > idx + 1 else None
+
+
 def main(argv=None):
     argv = sys.argv[1:] if argv is None else argv
     force = "--force" in argv
@@ -143,7 +189,7 @@ def main(argv=None):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(detached.to_bytes())
 
-    append_anchor({
+    entry = {
         "ts": utc_now(),
         "runId": run_id(),
         "type": "stamp",
@@ -157,7 +203,11 @@ def main(argv=None):
         "proof": path.relative_to(ROOT).as_posix(),
         "status": status,
         "calendars": sorted(detail) if status == "pending" else [],
-    })
+    }
+    sigstore = read_sigstore_bundle(flag_value(argv, "--sigstore-bundle"))
+    if sigstore:
+        entry["sigstore"] = sigstore
+    append_anchor(entry)
 
     print(f"Stamped via {len(reached)} calendar(s); {len(failed)} unreachable.")
     for calendar, error in failed:

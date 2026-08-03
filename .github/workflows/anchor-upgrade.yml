@@ -1,0 +1,61 @@
+name: Upgrade pending anchors
+
+# An OpenTimestamps stamp is a calendar's PROMISE at the moment it is made, not a
+# Bitcoin proof. Confirmation takes hours — measured here, still pending after 24
+# minutes — so stamping and confirming cannot happen in the same run. This job
+# comes back later and asks the calendars whether their promise reached a block.
+#
+# "Nothing to upgrade" is the normal outcome and is a success, not a warning.
+
+on:
+  schedule:
+    # Every six hours. A Bitcoin block is ~10 minutes and calendars aggregate over
+    # roughly an hour, so four attempts a day confirms same-day without polling
+    # the public calendars harder than we need to.
+    - cron: "20 */6 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: master
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Ask the calendars whether the promise reached a block
+        run: python upgrade_anchors.py
+
+      - name: Verify
+        run: python verify_anchor.py
+
+      - name: Commit any confirmed proofs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/data/anchors.jsonl public/data/anchors
+          if git diff --cached --quiet; then
+            echo "Still pending — no Bitcoin block yet. This is expected for a few hours."
+          else
+            git commit -m "chore: confirm anchor in a Bitcoin block"
+            git push
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### Anchor status"
+            echo
+            echo '```'
+            python verify_anchor.py || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
