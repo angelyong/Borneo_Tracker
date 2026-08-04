@@ -12,6 +12,7 @@
     "test:watch": "vitest",
     "ai-chat:golden:validate": "node scripts/evaluate-ai-chat-golden.js --validate-only",
     "ai-chat:golden": "node scripts/evaluate-ai-chat-golden.js",
+    "ai-chat:deploy:check": "node scripts/ai-chat-deploy-check.js",
     "knowledge:build": "node scripts/build-knowledge.js",
     "knowledge:validate": "node scripts/build-knowledge.js --validate-only",
     "levers:build": "node scripts/build-levers.js",
