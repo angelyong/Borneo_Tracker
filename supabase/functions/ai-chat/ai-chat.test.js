@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AIChatHttpError, MAX_MESSAGE_LENGTH, validateChatRequest } from './contracts.ts';
 import { generateGeminiAnswer } from './geminiClient.ts';
 import { createAiChatHandler, handleAiChatRequest, mapFallbackReason } from './index.ts';
+import { FailingTelemetryAdapter, MemoryTelemetryAdapter, AIChatTelemetryService } from './telemetry.ts';
 
 const validPayload = {
   message: 'Hello',
@@ -72,6 +73,19 @@ function allowAllQuotaService(overrides = {}) {
     ...overrides,
   };
   return service;
+}
+
+function safePromptAnswer(prompt) {
+  if (!prompt) return 'Integrated response.';
+  if (prompt.groundingPayload.answer) return prompt.groundingPayload.answer;
+  return [
+    prompt.groundingPayload.conclusion,
+    prompt.groundingPayload.diagnosis,
+    prompt.groundingPayload.gap,
+    prompt.groundingPayload.impact,
+    prompt.groundingPayload.lever,
+    ...prompt.groundingPayload.warnings,
+  ].filter(Boolean).join(' ');
 }
 
 function verifiedLeverRecord(overrides = {}) {
@@ -419,7 +433,7 @@ describe('ai-chat endpoint', () => {
     expect(body.mode).toBe('template-fallback');
     expect(body.answer).toContain('Borneo Tracker assistant');
     expect(JSON.stringify(body)).not.toMatch(/userId|role|identity|access_token|jwt/i);
-    expect(identityLog).toEqual({
+    expect(identityLog).toMatchObject({
       identityType: 'anonymous',
       authenticated: false,
       admin: false,
@@ -464,7 +478,7 @@ describe('ai-chat endpoint', () => {
     expect(JSON.stringify(body)).not.toContain('verified-user');
     expect(JSON.stringify(logger.info.mock.calls)).not.toContain('valid-admin-token');
     expect(JSON.stringify(logger.info.mock.calls)).not.toContain('verified-user');
-    expect(identityLog).toEqual({
+    expect(identityLog).toMatchObject({
       identityType: 'admin',
       authenticated: true,
       admin: true,
@@ -560,6 +574,341 @@ describe('ai-chat endpoint', () => {
       sources: [],
     });
 
+  });
+});
+
+describe('ai-chat Stage 8E telemetry persistence', () => {
+  function telemetryHarness(options = {}) {
+    const adapter = options.adapter || new MemoryTelemetryAdapter();
+    const telemetryService = new AIChatTelemetryService({ adapter });
+    const logger = options.logger || { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+    return { adapter, telemetryService, logger };
+  }
+
+  it('records exactly one Gemini success event without public telemetry internals', async () => {
+    const { adapter, telemetryService, logger } = telemetryHarness();
+    const geminiClient = vi.fn((_, prompt) => Promise.resolve(safePromptAnswer(prompt)));
+    const handler = createAiChatHandler({
+      geminiClient,
+      quotaService: allowAllQuotaService(),
+      telemetryService,
+      logger,
+    });
+
+    const response = await handler(request({ ...validPayload, message: "What is Sabah's resilience score?", region: 'Sabah', currentPage: '/dashboard?jwt=secret#top' }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.mode).toBe('gemini-test');
+    expect(JSON.stringify(body)).not.toMatch(/requestId|request_id|telemetry|identity_type|model_called/i);
+    expect(adapter.rows).toHaveLength(1);
+    expect(adapter.rows[0]).toMatchObject({
+      identity_type: 'anonymous',
+      intent: 'DASHBOARD_DATA',
+      mode: 'gemini-test',
+      outcome: 'success',
+      fallback_used: false,
+      model_called: true,
+      quota_consumed: true,
+      response_status: 200,
+      region: 'Sabah',
+      current_page: '/dashboard',
+    });
+    expect(adapter.rows[0].source_count).toBeGreaterThan(0);
+    expect(adapter.rows[0].request_id).toMatch(/^[A-Za-z0-9:_-]{8,80}$/);
+  });
+
+  it('records exactly one refunded timeout fallback event', async () => {
+    const { adapter, telemetryService } = telemetryHarness();
+    const quotaService = allowAllQuotaService();
+    const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(504, 'GEMINI_TIMEOUT', 'timeout'));
+    const handler = createAiChatHandler({
+      geminiClient,
+      quotaService,
+      telemetryService,
+      logger: silentLogger,
+    });
+
+    const response = await handler(request({ ...validPayload, message: "What is Sabah's resilience score?", region: '' }));
+    await response.json();
+
+    expect(response.status).toBe(200);
+    expect(geminiClient).toHaveBeenCalledTimes(1);
+    expect(quotaService.refundReservation).toHaveBeenCalledTimes(1);
+    expect(adapter.rows).toHaveLength(1);
+    expect(adapter.rows[0]).toMatchObject({
+      outcome: 'fallback',
+      fallback_used: true,
+      fallback_reason: 'GEMINI_TIMEOUT',
+      model_called: true,
+      quota_consumed: false,
+      response_status: 200,
+    });
+  });
+
+  it.each([
+    ['GEMINI_RATE_LIMITED', 'GEMINI_RATE_LIMIT', 'rate_limited'],
+    ['GEMINI_HTTP_500', 'GEMINI_UNAVAILABLE', 'fallback'],
+  ])('records refunded provider %s fallback with final quota state', async (code, reason, outcome) => {
+    const { adapter, telemetryService } = telemetryHarness();
+    const quotaService = allowAllQuotaService();
+    const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(code === 'GEMINI_RATE_LIMITED' ? 429 : 502, code, 'safe'));
+    const handler = createAiChatHandler({
+      geminiClient,
+      quotaService,
+      telemetryService,
+      logger: silentLogger,
+    });
+
+    await handler(request({ ...validPayload, message: "What is Sabah's resilience score?", region: '' }));
+
+    expect(adapter.rows).toHaveLength(1);
+    expect(adapter.rows[0]).toMatchObject({
+      outcome,
+      fallback_reason: reason,
+      model_called: true,
+      quota_consumed: false,
+    });
+    expect(quotaService.refundReservation).toHaveBeenCalledTimes(1);
+  });
+
+  it('records validation rejection as refunded fallback', async () => {
+    const { adapter, telemetryService } = telemetryHarness();
+    const quotaService = allowAllQuotaService();
+    const geminiClient = vi.fn().mockResolvedValue('Authorities should build solar microgrids instead.');
+    const handler = createAiChatHandler({
+      geminiClient,
+      quotaService,
+      telemetryService,
+      logger: silentLogger,
+    });
+
+    await handler(request({ ...validPayload, message: "What is Sabah's food score?", region: '' }));
+
+    expect(adapter.rows).toHaveLength(1);
+    expect(adapter.rows[0]).toMatchObject({
+      outcome: 'fallback',
+      fallback_reason: 'GEMINI_RESPONSE_REJECTED',
+      model_called: true,
+      quota_consumed: false,
+    });
+    expect(quotaService.refundReservation).toHaveBeenCalledTimes(1);
+  });
+
+  it('records zero-model deterministic blocked and clarification events once each', async () => {
+    const { adapter, telemetryService } = telemetryHarness();
+    const geminiClient = vi.fn();
+    const handler = createAiChatHandler({
+      geminiClient,
+      telemetryService,
+      logger: silentLogger,
+    });
+
+    await handler(request({ ...validPayload, message: 'Compare forest cover between Sabah and Brunei.', region: '' }));
+    await handler(request({ ...validPayload, message: 'Show dashboard data for Kota district.', region: '' }));
+
+    expect(geminiClient).not.toHaveBeenCalled();
+    expect(adapter.rows).toHaveLength(2);
+    expect(adapter.rows[0]).toMatchObject({
+      outcome: 'fallback',
+      fallback_reason: 'DETERMINISTIC_BLOCKED',
+      model_called: false,
+      quota_consumed: false,
+    });
+    expect(adapter.rows[1]).toMatchObject({
+      outcome: 'fallback',
+      fallback_reason: 'DETERMINISTIC_CLARIFICATION',
+      model_called: false,
+      quota_consumed: false,
+    });
+  });
+
+  it('records knowledge no-match and ambiguous zero-model events exactly once', async () => {
+    const { adapter, telemetryService } = telemetryHarness();
+    const geminiClient = vi.fn();
+    const knowledgeRetriever = vi.fn()
+      .mockReturnValueOnce({ status: 'NO_MATCH', matches: [], warnings: [] })
+      .mockReturnValueOnce({
+        status: 'AMBIGUOUS',
+        matches: [{
+          record: {
+            id: 'a',
+            title: 'A',
+            content: 'A',
+            category: 'a',
+            language: 'en',
+            regions: [],
+            sdgTags: [],
+            relatedSdgs: [],
+            keywords: [],
+            sourceFile: 'fixture.json',
+            sourceType: 'json',
+            status: 'verified',
+            placeholder: false,
+            runtimeIncluded: true,
+          },
+          score: 8,
+          matchedBy: [],
+        }],
+        warnings: ['KNOWLEDGE_AMBIGUOUS'],
+      });
+    const handler = createAiChatHandler({
+      geminiClient,
+      knowledgeRetriever,
+      telemetryService,
+      logger: silentLogger,
+    });
+
+    await handler(request({ ...validPayload, message: 'What is Borneo Tracker?', region: '' }));
+    await handler(request({ ...validPayload, message: 'What is Borneo Tracker?', region: '' }));
+
+    expect(geminiClient).not.toHaveBeenCalled();
+    expect(adapter.rows).toHaveLength(2);
+    expect(adapter.rows.map((row) => row.fallback_reason)).toEqual(['KNOWLEDGE_NO_MATCH', 'KNOWLEDGE_AMBIGUOUS']);
+    expect(adapter.rows.every((row) => row.model_called === false && row.quota_consumed === false)).toBe(true);
+  });
+
+  it('records news and out-of-scope zero-model paths without pending content or raw context', async () => {
+    const { adapter, telemetryService } = telemetryHarness();
+    const newsRepository = {
+      findPublished: vi.fn().mockResolvedValue([]),
+      countPending: vi.fn().mockResolvedValue(2),
+    };
+    const geminiClient = vi.fn();
+    const handler = createAiChatHandler({
+      geminiClient,
+      newsRepository,
+      telemetryService,
+      logger: silentLogger,
+    });
+
+    const newsResponse = await handler(request({ ...validPayload, message: 'Show latest Borneo news.', region: 'DROP TABLE', currentPage: '/news?email=a@example.com' }));
+    const outResponse = await handler(request({ ...validPayload, message: 'Write code in Python.', region: '', currentPage: 'https://evil.example/path?jwt=secret' }));
+    await newsResponse.json();
+    await outResponse.json();
+
+    expect(geminiClient).not.toHaveBeenCalled();
+    expect(adapter.rows).toHaveLength(2);
+    expect(adapter.rows[0]).toMatchObject({
+      intent: 'BORNEO_NEWS',
+      outcome: 'fallback',
+      model_called: false,
+      quota_consumed: false,
+      current_page: '/news',
+    });
+    expect(adapter.rows[0].region).toBeUndefined();
+    expect(JSON.stringify(adapter.rows)).not.toMatch(/DROP TABLE|a@example.com|jwt|pending/i);
+    expect(adapter.rows[1]).toMatchObject({
+      intent: 'OUT_OF_SCOPE',
+      outcome: 'refused',
+      model_called: false,
+      quota_consumed: false,
+    });
+    expect(adapter.rows[1].current_page).toBeUndefined();
+  });
+
+  it('records quota exhaustion before Gemini without consuming quota', async () => {
+    const { adapter, telemetryService } = telemetryHarness();
+    const quotaService = allowAllQuotaService({
+      reserveForModelCall: vi.fn(async () => ({
+        status: 'exhausted',
+        quota: { remaining: 0, limit: 1 },
+      })),
+    });
+    const geminiClient = vi.fn();
+    const handler = createAiChatHandler({
+      geminiClient,
+      quotaService,
+      telemetryService,
+      logger: silentLogger,
+    });
+
+    const response = await handler(request({ ...validPayload, message: "What is Sabah's resilience score?", region: '' }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.fallback.reason).toBe('QUOTA_EXHAUSTED');
+    expect(geminiClient).not.toHaveBeenCalled();
+    expect(adapter.rows).toHaveLength(1);
+    expect(adapter.rows[0]).toMatchObject({
+      outcome: 'rate_limited',
+      fallback_reason: 'QUOTA_EXHAUSTED',
+      model_called: false,
+      quota_consumed: false,
+    });
+  });
+
+  it('records bounded invalid request and auth rejection events', async () => {
+    const { adapter, telemetryService } = telemetryHarness();
+    const geminiClient = vi.fn();
+    const handler = createAiChatHandler({
+      geminiClient,
+      telemetryService,
+      logger: silentLogger,
+    });
+
+    const invalid = await handler(rawRequest('{'));
+    const auth = await handler(request(validPayload, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Token sensitive-token',
+      },
+    }));
+
+    expect(invalid.status).toBe(400);
+    expect(auth.status).toBe(401);
+    expect(geminiClient).not.toHaveBeenCalled();
+    expect(adapter.rows).toHaveLength(2);
+    expect(adapter.rows[0]).toMatchObject({
+      identity_type: 'anonymous',
+      outcome: 'error',
+      error_code: 'INVALID_JSON',
+      model_called: false,
+      quota_consumed: false,
+    });
+    expect(adapter.rows[1]).toMatchObject({
+      identity_type: 'unknown',
+      outcome: 'refused',
+      error_code: 'AI_CHAT_AUTH_MALFORMED',
+    });
+    expect(JSON.stringify(adapter.rows)).not.toContain('sensitive-token');
+  });
+
+  it('isolates telemetry adapter failure from success response, Gemini calls, and quota', async () => {
+    const adapter = new FailingTelemetryAdapter();
+    const telemetryService = new AIChatTelemetryService({ adapter });
+    const logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+    const quotaService = allowAllQuotaService();
+    const geminiClient = vi.fn((_, prompt) => Promise.resolve(safePromptAnswer(prompt)));
+    const handler = createAiChatHandler({
+      geminiClient,
+      quotaService,
+      telemetryService,
+      logger,
+    });
+
+    const response = await handler(request({ ...validPayload, message: "What is Sabah's resilience score?", region: '' }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.mode).toBe('gemini-test');
+    expect(geminiClient).toHaveBeenCalledTimes(1);
+    expect(quotaService.reserveForModelCall).toHaveBeenCalledTimes(1);
+    expect(quotaService.refundReservation).not.toHaveBeenCalled();
+    expect(logger.warn.mock.calls.find(([event]) => event === 'telemetry_write_failed')?.[1]).toMatchObject({
+      code: 'TELEMETRY_WRITE_FAILED',
+      reason: 'ADAPTER_ERROR',
+    });
+  });
+
+  it('does not record business telemetry for OPTIONS preflight', async () => {
+    const { adapter, telemetryService } = telemetryHarness();
+    const handler = createAiChatHandler({ telemetryService, logger: silentLogger });
+
+    const response = await handler(new Request('http://localhost/ai-chat', { method: 'OPTIONS' }));
+
+    expect(response.status).toBe(204);
+    expect(adapter.rows).toHaveLength(0);
   });
 });
 

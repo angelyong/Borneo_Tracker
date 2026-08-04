@@ -7,12 +7,13 @@ import {
   type AIChatPrompt,
   type AIChatSuccessResponse,
   type AIChatSiteKnowledgePrompt,
+  type ErrorPayload,
   type AIChatNewsResult,
   type AIChatQuotaMetadata,
   type AIChatStructuredAnswer,
+  type AIChatTelemetryOutcome,
   type FallbackReason,
   type LeverRetrievalResult,
-  errorResponse,
   jsonResponse,
   parseJsonBody,
   validateChatRequest,
@@ -51,6 +52,13 @@ import {
   canBuildTemplateFallback,
   fallbackPublicMetadata,
 } from './templateFallback.ts';
+import {
+  createAIChatTelemetryService,
+  generateAIChatRequestId,
+  telemetryElapsedMs,
+  type AIChatTelemetryEvent,
+  type AIChatTelemetryService,
+} from './telemetry.ts';
 
 declare const Deno:
   | { serve?: (handler: (request: Request) => Response | Promise<Response>) => void }
@@ -64,6 +72,23 @@ type NewsRetrieverClient = (input: Parameters<typeof retrieveAIChatNews>[0]) => 
 type KnowledgeRetrieverClient = (input: Parameters<typeof retrieveStaticKnowledge>[0], repository?: KnowledgeRepository) => AIChatKnowledgeRetrievalResult;
 type IdentityResolverClient = (request: Request) => Promise<AIChatIdentity>;
 type QuotaReservationResult = Awaited<ReturnType<AIChatQuotaServiceLike['reserveForModelCall']>>;
+type TelemetryState = {
+  requestId: string;
+  startedAtMs: number;
+  recorded: boolean;
+  identityType: AIChatTelemetryEvent['identityType'];
+  intent?: AIChatTelemetryEvent['intent'];
+  mode?: AIChatTelemetryEvent['mode'];
+  fallbackUsed: boolean;
+  fallbackReason?: FallbackReason;
+  errorCode?: string;
+  modelCalled: boolean;
+  quotaConsumed: boolean;
+  sourceCount?: number;
+  language?: string;
+  region?: string;
+  currentPage?: string;
+};
 
 type HandlerOptions = {
   env?: EnvLike;
@@ -79,6 +104,7 @@ type HandlerOptions = {
   knowledgeRetriever?: KnowledgeRetrieverClient;
   identityResolver?: IdentityResolverClient;
   quotaService?: AIChatQuotaServiceLike;
+  telemetryService?: AIChatTelemetryService;
   tokenVerifier?: TokenVerifier;
   profileRepository?: ProfileRepository;
   logger?: SafeLogger;
@@ -107,10 +133,12 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
       profileRepository: options.profileRepository,
     }));
   const quotaService = options.quotaService || createAIChatQuotaService({ env: options.env });
+  const telemetryService = options.telemetryService || createAIChatTelemetryService({ env: options.env });
 
   async function callGeminiWithQuota(
     chatRequest: AIChatRequest,
     identity: AIChatIdentity,
+    telemetry: TelemetryState,
     prompt?: AIChatPrompt | AIChatSiteKnowledgePrompt
   ): Promise<{ answer: string; reservation: AIChatQuotaReservation; quota: AIChatQuotaMetadata }> {
     const quotaGate = await quotaService.reserveForModelCall(identity);
@@ -122,10 +150,13 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
       throw new AIChatHttpError(503, 'AI_CHAT_QUOTA_UNAVAILABLE', 'The AI assistant quota check is unavailable right now.');
     }
     try {
+      telemetry.modelCalled = true;
+      telemetry.quotaConsumed = true;
       const answer = await geminiClient(chatRequest, prompt);
       return { answer, reservation: quotaGate.reservation, quota: quotaGate.quota };
     } catch (error) {
       await refundQuotaReservation(quotaService, logger, quotaGate.reservation, 'MODEL_CALL_FAILED');
+      telemetry.quotaConsumed = false;
       throw error;
     }
   }
@@ -140,12 +171,65 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
       });
     }
 
+    const telemetry: TelemetryState = {
+      requestId: generateAIChatRequestId(),
+      startedAtMs: performanceStartMs(),
+      recorded: false,
+      identityType: 'unknown',
+      fallbackUsed: false,
+      modelCalled: false,
+      quotaConsumed: false,
+    };
+
+    async function recordTelemetryOnce(fields: Partial<AIChatTelemetryEvent> & { outcome: AIChatTelemetryOutcome; responseStatus: number }): Promise<void> {
+      if (telemetry.recorded) return;
+      telemetry.recorded = true;
+      const event: AIChatTelemetryEvent = {
+        requestId: telemetry.requestId,
+        identityType: telemetry.identityType,
+        intent: telemetry.intent,
+        mode: telemetry.mode,
+        outcome: fields.outcome,
+        fallbackUsed: fields.fallbackUsed ?? telemetry.fallbackUsed,
+        fallbackReason: fields.fallbackReason ?? telemetry.fallbackReason,
+        errorCode: fields.errorCode ?? telemetry.errorCode,
+        modelCalled: fields.modelCalled ?? telemetry.modelCalled,
+        quotaConsumed: fields.quotaConsumed ?? telemetry.quotaConsumed,
+        responseStatus: fields.responseStatus,
+        latencyMs: telemetryElapsedMs(telemetry.startedAtMs),
+        sourceCount: fields.sourceCount ?? telemetry.sourceCount,
+        language: fields.language ?? telemetry.language,
+        region: fields.region ?? telemetry.region,
+        currentPage: fields.currentPage ?? telemetry.currentPage,
+      };
+      const result = await telemetryService.record(event);
+      if (result.status === 'failed') {
+        logger.warn('telemetry_write_failed', {
+          code: 'TELEMETRY_WRITE_FAILED',
+          requestId: telemetry.requestId,
+          reason: result.reason,
+        });
+      }
+    }
+
+    async function respondWithTelemetry(
+      payload: Parameters<typeof jsonResponse>[0],
+      status: number,
+      fields: Partial<AIChatTelemetryEvent> & { outcome: AIChatTelemetryOutcome }
+    ): Promise<Response> {
+      await recordTelemetryOnce({
+        ...fields,
+        responseStatus: status,
+      });
+      return jsonResponse(payload, status, corsHeaders);
+    }
+
     if (request.method !== 'POST') {
-      logger.warn('request_rejected', { code: 'METHOD_NOT_ALLOWED', method: request.method });
-      return jsonResponse(
+      logger.warn('request_rejected', { code: 'METHOD_NOT_ALLOWED', method: request.method, requestId: telemetry.requestId });
+      return respondWithTelemetry(
         { error: 'Method not allowed.', code: 'METHOD_NOT_ALLOWED' },
         405,
-        corsHeaders
+        { outcome: 'error', errorCode: 'METHOD_NOT_ALLOWED' }
       );
     }
 
@@ -159,7 +243,9 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
 
     try {
       identity = await identityResolver(request);
+      telemetry.identityType = identity.type;
       logger.info('identity_resolved', {
+        requestId: telemetry.requestId,
         identityType: identity.type,
         authenticated: identity.verified,
         admin: identity.type === 'admin',
@@ -167,11 +253,15 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
       });
       const body = await parseJsonBody(request);
       const chatRequest = validateChatRequest(body);
+      telemetry.language = chatRequest.language;
+      telemetry.region = chatRequest.region;
+      telemetry.currentPage = chatRequest.currentPage;
       route = routeAiChatIntent(chatRequest.message, {
         currentPage: chatRequest.currentPage,
         region: chatRequest.region,
         language: chatRequest.language,
       });
+      telemetry.intent = route.intent;
       const entities = resolveAiChatEntities(chatRequest.message, {
         region: chatRequest.region,
         language: chatRequest.language,
@@ -249,12 +339,21 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
             retrievalStatus: retrieval.status,
             sourceCount: fallback.sources.length,
           });
-          return jsonResponse({
+          telemetry.mode = fallback.mode;
+          telemetry.fallbackUsed = true;
+          telemetry.fallbackReason = reason;
+          telemetry.sourceCount = fallback.sources.length;
+          return respondWithTelemetry({
             answer: fallback.answer,
             mode: fallback.mode,
             sources: fallback.sources,
             fallback: fallbackPublicMetadata(fallback.fallback),
-          }, 200, corsHeaders);
+          }, 200, {
+            outcome: 'fallback',
+            fallbackUsed: true,
+            fallbackReason: reason,
+            sourceCount: fallback.sources.length,
+          });
         }
         knowledgePrompt = buildSiteKnowledgeGroundedPrompt({
           userQuestion: chatRequest.message,
@@ -262,7 +361,7 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
           knowledgeAnswer,
           matches: retrieval.matches,
         });
-        const quotaResult = await callGeminiWithQuota(chatRequest, identity, knowledgePrompt);
+        const quotaResult = await callGeminiWithQuota(chatRequest, identity, telemetry, knowledgePrompt);
         const answer = quotaResult.answer;
         const validation = validateSiteKnowledgeGeminiResponse({
           answer,
@@ -282,6 +381,7 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
         });
         if (!validation.valid) {
           await refundQuotaReservation(quotaService, logger, quotaResult.reservation, 'RESPONSE_VALIDATION_REJECTED');
+          telemetry.quotaConsumed = false;
           const fallback = buildKnowledgeTemplateFallback({
             knowledgeAnswer,
             reason: 'KNOWLEDGE_RESPONSE_REJECTED',
@@ -296,12 +396,21 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
             retrievalStatus: retrieval.status,
             sourceCount: fallback.sources.length,
           });
-          return jsonResponse({
+          telemetry.mode = fallback.mode;
+          telemetry.fallbackUsed = true;
+          telemetry.fallbackReason = 'KNOWLEDGE_RESPONSE_REJECTED';
+          telemetry.sourceCount = fallback.sources.length;
+          return respondWithTelemetry({
             answer: fallback.answer,
             mode: fallback.mode,
             sources: fallback.sources,
             fallback: fallbackPublicMetadata(fallback.fallback),
-          }, 200, corsHeaders);
+          }, 200, {
+            outcome: 'fallback',
+            fallbackUsed: true,
+            fallbackReason: 'KNOWLEDGE_RESPONSE_REJECTED',
+            sourceCount: fallback.sources.length,
+          });
         }
         logger.info('request_completed', {
           mode: 'gemini-test',
@@ -322,12 +431,17 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
           authenticated: identity.verified,
           admin: identity.type === 'admin',
         });
-        return jsonResponse({
+        telemetry.mode = 'gemini-test';
+        telemetry.sourceCount = knowledgeAnswer.sources.length;
+        return respondWithTelemetry({
           answer: validation.normalizedAnswer,
           mode: 'gemini-test',
           sources: knowledgeAnswer.sources,
           quota: quotaResult.quota,
-        }, 200, corsHeaders);
+        }, 200, {
+          outcome: 'success',
+          sourceCount: knowledgeAnswer.sources.length,
+        });
       }
       const levers = factObject && factObject.availability !== 'BLOCKED' && comparability.decision !== 'NEEDS_CLARIFICATION'
         ? leverRetriever({
@@ -368,12 +482,21 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
           leverRetrieved: false,
           sourceCount: fallback.sources.length,
         });
-        return jsonResponse({
+        telemetry.mode = fallback.mode;
+        telemetry.fallbackUsed = true;
+        telemetry.fallbackReason = reason;
+        telemetry.sourceCount = fallback.sources.length;
+        return respondWithTelemetry({
           answer: fallback.answer,
           mode: fallback.mode,
           sources: fallback.sources,
           fallback: fallbackPublicMetadata(fallback.fallback),
-        }, 200, corsHeaders);
+        }, 200, {
+          outcome: 'fallback',
+          fallbackUsed: true,
+          fallbackReason: reason,
+          sourceCount: fallback.sources.length,
+        });
       }
       groundedPrompt = factObject && structuredAnswer
         ? promptBuilder({
@@ -407,7 +530,12 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
             authenticated: identity.verified,
             admin: identity.type === 'admin',
           });
-          return jsonResponse(deterministicNews, 200, corsHeaders);
+          telemetry.mode = deterministicNews.mode;
+          telemetry.sourceCount = deterministicNews.sources.length;
+          return respondWithTelemetry(deterministicNews, 200, {
+            outcome: 'fallback',
+            sourceCount: deterministicNews.sources.length,
+          });
         }
         logger.info('request_completed', {
           mode: 'template-fallback',
@@ -418,7 +546,11 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
           authenticated: identity.verified,
           admin: identity.type === 'admin',
         });
-        return jsonResponse({
+        telemetry.mode = 'template-fallback';
+        telemetry.fallbackUsed = true;
+        telemetry.fallbackReason = 'DETERMINISTIC_BLOCKED';
+        telemetry.sourceCount = 0;
+        return respondWithTelemetry({
           answer: 'The Borneo Tracker assistant can answer verified questions about Borneo Tracker, dashboard data, and published Borneo news.',
           mode: 'template-fallback',
           sources: [],
@@ -427,9 +559,14 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
             reason: 'DETERMINISTIC_BLOCKED',
             degraded: true,
           },
-        }, 200, corsHeaders);
+        }, 200, {
+          outcome: 'refused',
+          fallbackUsed: true,
+          fallbackReason: 'DETERMINISTIC_BLOCKED',
+          sourceCount: 0,
+        });
       }
-      const quotaResult = await callGeminiWithQuota(chatRequest, identity, groundedPrompt);
+      const quotaResult = await callGeminiWithQuota(chatRequest, identity, telemetry, groundedPrompt);
       const answer = quotaResult.answer;
       if (groundedPrompt && factObject && structuredAnswer) {
         const validation = validateGeminiResponse({
@@ -455,6 +592,7 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
         });
         if (!validation.valid) {
           await refundQuotaReservation(quotaService, logger, quotaResult.reservation, 'RESPONSE_VALIDATION_REJECTED');
+          telemetry.quotaConsumed = false;
           const fallback = buildTemplateFallback({
             structuredAnswer,
             reason: 'GEMINI_RESPONSE_REJECTED',
@@ -473,12 +611,21 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
             leverCount: levers?.records.length || 0,
             sourceCount: fallback.sources.length,
           });
-          return jsonResponse({
+          telemetry.mode = fallback.mode;
+          telemetry.fallbackUsed = true;
+          telemetry.fallbackReason = 'GEMINI_RESPONSE_REJECTED';
+          telemetry.sourceCount = fallback.sources.length;
+          return respondWithTelemetry({
             answer: fallback.answer,
             mode: fallback.mode,
             sources: fallback.sources,
             fallback: fallbackPublicMetadata(fallback.fallback),
-          }, 200, corsHeaders);
+          }, 200, {
+            outcome: 'fallback',
+            fallbackUsed: true,
+            fallbackReason: 'GEMINI_RESPONSE_REJECTED',
+            sourceCount: fallback.sources.length,
+          });
         }
         logger.info('request_completed', {
           mode: 'gemini-test',
@@ -557,12 +704,17 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
           authenticated: identity.verified,
           admin: identity.type === 'admin',
         });
-        return jsonResponse({
+        telemetry.mode = 'gemini-test';
+        telemetry.sourceCount = structuredAnswer.sources.length;
+        return respondWithTelemetry({
           answer: validation.normalizedAnswer,
           mode: 'gemini-test',
           sources: structuredAnswer.sources,
           quota: quotaResult.quota,
-        }, 200, corsHeaders);
+        }, 200, {
+          outcome: 'success',
+          sourceCount: structuredAnswer.sources.length,
+        });
       }
       logger.info('request_completed', {
         mode: 'gemini-test',
@@ -649,13 +801,19 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
         authenticated: identity.verified,
         admin: identity.type === 'admin',
       });
-      return jsonResponse({
+      telemetry.mode = 'gemini-test';
+      telemetry.sourceCount = structuredAnswer?.sources.length || 0;
+      return respondWithTelemetry({
         answer,
         mode: 'gemini-test',
         sources: structuredAnswer?.sources || [],
         quota: quotaResult.quota,
-      }, 200, corsHeaders);
+      }, 200, {
+        outcome: 'success',
+        sourceCount: structuredAnswer?.sources.length || 0,
+      });
     } catch (error) {
+      telemetry.errorCode = error instanceof AIChatHttpError ? error.code : 'AI_CHAT_ERROR';
       const fallbackReason = mapFallbackReason(error);
       if (fallbackReason && canBuildTemplateFallback(structuredAnswer, route)) {
         try {
@@ -677,22 +835,36 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
             clarificationRequired: structuredAnswer.clarificationRequired,
             sourceCount: fallback.sources.length,
           });
-          return jsonResponse({
+          telemetry.mode = fallback.mode;
+          telemetry.fallbackUsed = true;
+          telemetry.fallbackReason = fallbackReason;
+          telemetry.sourceCount = fallback.sources.length;
+          return respondWithTelemetry({
             answer: fallback.answer,
             mode: fallback.mode,
             sources: fallback.sources,
             fallback: fallbackPublicMetadata(fallback.fallback),
-          }, 200, corsHeaders);
+          }, 200, {
+            outcome: outcomeForFallbackReason(fallbackReason),
+            fallbackUsed: true,
+            fallbackReason,
+            sourceCount: fallback.sources.length,
+          });
         } catch (fallbackError) {
           logger.error('request_failed', errorLogFields(fallbackError));
-          return errorResponse(fallbackError, corsHeaders);
+          const payload = errorPayload(fallbackError);
+          return respondWithTelemetry(payload.body, payload.status, {
+            outcome: 'error',
+            errorCode: payload.body.code,
+          });
         }
       }
       if (fallbackReason && canBuildKnowledgeTemplateFallback(knowledgeAnswer)) {
         try {
+          const knowledgeFallbackReason = fallbackReason === 'GEMINI_RESPONSE_REJECTED' ? 'KNOWLEDGE_RESPONSE_REJECTED' : 'KNOWLEDGE_GEMINI_UNAVAILABLE';
           const fallback = buildKnowledgeTemplateFallback({
             knowledgeAnswer,
-            reason: fallbackReason === 'GEMINI_RESPONSE_REJECTED' ? 'KNOWLEDGE_RESPONSE_REJECTED' : 'KNOWLEDGE_GEMINI_UNAVAILABLE',
+            reason: knowledgeFallbackReason,
             language: knowledgeAnswer.language,
           });
           logger.info('request_fallback', {
@@ -702,19 +874,36 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
             retrievalStatus: knowledgeAnswer.status,
             sourceCount: fallback.sources.length,
           });
-          return jsonResponse({
+          telemetry.mode = fallback.mode;
+          telemetry.fallbackUsed = true;
+          telemetry.fallbackReason = fallback.fallback.reason;
+          telemetry.sourceCount = fallback.sources.length;
+          return respondWithTelemetry({
             answer: fallback.answer,
             mode: fallback.mode,
             sources: fallback.sources,
             fallback: fallbackPublicMetadata(fallback.fallback),
-          }, 200, corsHeaders);
+          }, 200, {
+            outcome: outcomeForFallbackReason(fallbackReason),
+            fallbackUsed: true,
+            fallbackReason: fallback.fallback.reason,
+            sourceCount: fallback.sources.length,
+          });
         } catch (fallbackError) {
           logger.error('request_failed', errorLogFields(fallbackError));
-          return errorResponse(fallbackError, corsHeaders);
+          const payload = errorPayload(fallbackError);
+          return respondWithTelemetry(payload.body, payload.status, {
+            outcome: 'error',
+            errorCode: payload.body.code,
+          });
         }
       }
       logger.error('request_failed', errorLogFields(error));
-      return errorResponse(error, corsHeaders);
+      const payload = errorPayload(error);
+      return respondWithTelemetry(payload.body, payload.status, {
+        outcome: outcomeForErrorCode(payload.body.code),
+        errorCode: payload.body.code,
+      });
     }
   };
 }
@@ -725,6 +914,36 @@ function scoreBucket(score?: number): string | undefined {
   if (score >= 12) return 'medium';
   if (score >= 8) return 'low';
   return 'below-threshold';
+}
+
+function performanceStartMs(): number {
+  const value = globalThis.performance?.now?.();
+  return typeof value === 'number' && Number.isFinite(value) ? value : Date.now();
+}
+
+function errorPayload(error: unknown): { body: ErrorPayload; status: number } {
+  if (error instanceof AIChatHttpError) {
+    return {
+      status: error.status,
+      body: { error: error.message, code: error.code },
+    };
+  }
+  return {
+    status: 500,
+    body: { error: 'The AI assistant could not respond right now.', code: 'AI_CHAT_ERROR' },
+  };
+}
+
+function outcomeForFallbackReason(reason: FallbackReason): AIChatTelemetryOutcome {
+  if (reason === 'GEMINI_RATE_LIMIT' || reason === 'QUOTA_EXHAUSTED') return 'rate_limited';
+  if (reason === 'DETERMINISTIC_BLOCKED') return 'refused';
+  return 'fallback';
+}
+
+function outcomeForErrorCode(code: string): AIChatTelemetryOutcome {
+  if (code === 'AI_CHAT_QUOTA_EXHAUSTED' || code === 'GEMINI_RATE_LIMITED') return 'rate_limited';
+  if (code.startsWith('AI_CHAT_AUTH_') || code === 'AI_CHAT_USER_SUSPENDED' || code === 'METHOD_NOT_ALLOWED') return 'refused';
+  return 'error';
 }
 
 async function refundQuotaReservation(

@@ -12,7 +12,7 @@ Existing baseline SQL remains in place:
 
 Future deployments must apply the baseline files in their documented order, then all migrations. Do not manually paste only `schema.sql` and skip migrations.
 
-Stage 8B is offline-only. Stage 8D now includes repository-level runtime quota enforcement code, but no live Supabase project was linked, pushed, queried, or modified.
+Stage 8B is offline-only. Stage 8D now includes repository-level runtime quota enforcement code, and Stage 8E now includes repository-level telemetry persistence code. No live Supabase project was linked, pushed, queried, migrated, or modified.
 
 ## `public.ai_chat_config`
 
@@ -234,8 +234,13 @@ See `docs/ai-chat-quota.md` for the runtime quota contract.
 
 Stage 8E:
 
-- insert one metadata-only `ai_chat_events` row per handled request
+- insert one metadata-only `ai_chat_events` row per handled request through a telemetry abstraction
 - keep raw prompts/questions/answers out of telemetry
+- record final `model_called` and `quota_consumed` state best-effort
+- preserve the existing `outcome` vocabulary: `success`, `fallback`, `refused`, `rate_limited`, `error`
+- keep telemetry failure isolated from chatbot responses and quota behavior
+
+See `docs/ai-chat-telemetry.md` for the runtime telemetry contract.
 
 Live news is unchanged. Stage 8B does not modify `news_items` and does not implement a Supabase news repository.
 
