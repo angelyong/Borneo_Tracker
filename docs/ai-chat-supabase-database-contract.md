@@ -12,7 +12,7 @@ Existing baseline SQL remains in place:
 
 Future deployments must apply the baseline files in their documented order, then all migrations. Do not manually paste only `schema.sql` and skip migrations.
 
-Stage 8B is offline-only. No live Supabase project was linked, pushed, or modified.
+Stage 8B is offline-only. Stage 8D now includes repository-level runtime quota enforcement code, but no live Supabase project was linked, pushed, queried, or modified.
 
 ## `public.ai_chat_config`
 
@@ -222,12 +222,15 @@ Stage 8C:
 - decide anonymous vs authenticated vs admin identity
 - keep `verify_jwt` decisions explicit
 
-Stage 8D:
+Stage 8D implemented in repository code:
 
-- read `AI_CHAT_ENABLED` and `AI_CHAT_DAILY_LIMITS` server-side
+- use committed default daily limits server-side, with environment override support
 - reserve before Gemini
-- refund when the provider call fails
+- refund when the provider call fails or the generated answer is rejected by validation
 - ensure refusals and deterministic template fallback consume zero quota
+- keep anonymous quota deferred until a trusted anonymous/IP guard identity exists
+
+See `docs/ai-chat-quota.md` for the runtime quota contract.
 
 Stage 8E:
 

@@ -5,8 +5,10 @@ import {
   type AIChatKnowledgeRetrievalResult,
   type AIChatIdentity,
   type AIChatPrompt,
+  type AIChatSuccessResponse,
   type AIChatSiteKnowledgePrompt,
   type AIChatNewsResult,
+  type AIChatQuotaMetadata,
   type AIChatStructuredAnswer,
   type FallbackReason,
   type LeverRetrievalResult,
@@ -35,6 +37,11 @@ import { retrieveAIChatNews } from './newsRetriever.ts';
 import { routeAiChatIntent } from './intentRouter.ts';
 import { consoleSafeLogger, errorLogFields, type SafeLogger } from './logger.ts';
 import { buildGroundedPrompt, buildSiteKnowledgeGroundedPrompt } from './promptBuilder.ts';
+import {
+  createAIChatQuotaService,
+  type AIChatQuotaReservation,
+  type AIChatQuotaServiceLike,
+} from './quota.ts';
 import { validateGeminiResponse, validateSiteKnowledgeGeminiResponse } from './responseValidator.ts';
 import { buildStructuredAnswer } from './structuredAnswerBuilder.ts';
 import {
@@ -56,6 +63,7 @@ type LeverRetrieverClient = (input: Parameters<typeof retrieveVerifiedLevers>[0]
 type NewsRetrieverClient = (input: Parameters<typeof retrieveAIChatNews>[0]) => Promise<AIChatNewsResult>;
 type KnowledgeRetrieverClient = (input: Parameters<typeof retrieveStaticKnowledge>[0], repository?: KnowledgeRepository) => AIChatKnowledgeRetrievalResult;
 type IdentityResolverClient = (request: Request) => Promise<AIChatIdentity>;
+type QuotaReservationResult = Awaited<ReturnType<AIChatQuotaServiceLike['reserveForModelCall']>>;
 
 type HandlerOptions = {
   env?: EnvLike;
@@ -70,6 +78,7 @@ type HandlerOptions = {
   knowledgeRepository?: KnowledgeRepository;
   knowledgeRetriever?: KnowledgeRetrieverClient;
   identityResolver?: IdentityResolverClient;
+  quotaService?: AIChatQuotaServiceLike;
   tokenVerifier?: TokenVerifier;
   profileRepository?: ProfileRepository;
   logger?: SafeLogger;
@@ -97,6 +106,29 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
       tokenVerifier: options.tokenVerifier,
       profileRepository: options.profileRepository,
     }));
+  const quotaService = options.quotaService || createAIChatQuotaService({ env: options.env });
+
+  async function callGeminiWithQuota(
+    chatRequest: AIChatRequest,
+    identity: AIChatIdentity,
+    prompt?: AIChatPrompt | AIChatSiteKnowledgePrompt
+  ): Promise<{ answer: string; reservation: AIChatQuotaReservation; quota: AIChatQuotaMetadata }> {
+    const quotaGate = await quotaService.reserveForModelCall(identity);
+    logQuotaGate(logger, quotaGate);
+    if (quotaGate.status === 'exhausted') {
+      throw new AIChatHttpError(429, 'AI_CHAT_QUOTA_EXHAUSTED', 'The AI assistant daily model-call limit has been reached.');
+    }
+    if (quotaGate.status !== 'reserved') {
+      throw new AIChatHttpError(503, 'AI_CHAT_QUOTA_UNAVAILABLE', 'The AI assistant quota check is unavailable right now.');
+    }
+    try {
+      const answer = await geminiClient(chatRequest, prompt);
+      return { answer, reservation: quotaGate.reservation, quota: quotaGate.quota };
+    } catch (error) {
+      await refundQuotaReservation(quotaService, logger, quotaGate.reservation, 'MODEL_CALL_FAILED');
+      throw error;
+    }
+  }
 
   return async function handleAiChatRequest(request: Request): Promise<Response> {
     const corsHeaders = buildCorsHeaders(request, parseCorsConfig(options.env));
@@ -230,7 +262,8 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
           knowledgeAnswer,
           matches: retrieval.matches,
         });
-        const answer = await geminiClient(chatRequest, knowledgePrompt);
+        const quotaResult = await callGeminiWithQuota(chatRequest, identity, knowledgePrompt);
+        const answer = quotaResult.answer;
         const validation = validateSiteKnowledgeGeminiResponse({
           answer,
           knowledgeAnswer,
@@ -248,6 +281,7 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
           fallbackUsed: !validation.valid,
         });
         if (!validation.valid) {
+          await refundQuotaReservation(quotaService, logger, quotaResult.reservation, 'RESPONSE_VALIDATION_REJECTED');
           const fallback = buildKnowledgeTemplateFallback({
             knowledgeAnswer,
             reason: 'KNOWLEDGE_RESPONSE_REJECTED',
@@ -292,6 +326,7 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
           answer: validation.normalizedAnswer,
           mode: 'gemini-test',
           sources: knowledgeAnswer.sources,
+          quota: quotaResult.quota,
         }, 200, corsHeaders);
       }
       const levers = factObject && factObject.availability !== 'BLOCKED' && comparability.decision !== 'NEEDS_CLARIFICATION'
@@ -352,9 +387,50 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
             levers,
           })
         : undefined;
-      const answer = groundedPrompt
-        ? await geminiClient(chatRequest, groundedPrompt)
-        : await geminiClient(chatRequest);
+      if (!groundedPrompt) {
+        if (route.intent === 'BORNEO_NEWS') {
+          const deterministicNews = buildDeterministicNewsResponse(newsResult);
+          logger.info('request_completed', {
+            mode: deterministicNews.mode,
+            intent: route.intent,
+            promptBuilt: false,
+            modelCallSkipped: true,
+            newsRetrieval: newsResult ? {
+              publishedCount: newsResult.published.length,
+              pendingCount: newsResult.pending.count,
+              territoryCount: newsResult.queryApplied.territories.length,
+              dateFilterUsed: Boolean(newsResult.queryApplied.fromDate || newsResult.queryApplied.toDate),
+              limit: newsResult.queryApplied.limit,
+              warningCodes: newsResult.warnings,
+            } : undefined,
+            identityType: identity.type,
+            authenticated: identity.verified,
+            admin: identity.type === 'admin',
+          });
+          return jsonResponse(deterministicNews, 200, corsHeaders);
+        }
+        logger.info('request_completed', {
+          mode: 'template-fallback',
+          intent: route.intent,
+          promptBuilt: false,
+          modelCallSkipped: true,
+          identityType: identity.type,
+          authenticated: identity.verified,
+          admin: identity.type === 'admin',
+        });
+        return jsonResponse({
+          answer: 'The Borneo Tracker assistant can answer verified questions about Borneo Tracker, dashboard data, and published Borneo news.',
+          mode: 'template-fallback',
+          sources: [],
+          fallback: {
+            used: true,
+            reason: 'DETERMINISTIC_BLOCKED',
+            degraded: true,
+          },
+        }, 200, corsHeaders);
+      }
+      const quotaResult = await callGeminiWithQuota(chatRequest, identity, groundedPrompt);
+      const answer = quotaResult.answer;
       if (groundedPrompt && factObject && structuredAnswer) {
         const validation = validateGeminiResponse({
           answer,
@@ -378,6 +454,7 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
           leverCount: levers?.records.length || 0,
         });
         if (!validation.valid) {
+          await refundQuotaReservation(quotaService, logger, quotaResult.reservation, 'RESPONSE_VALIDATION_REJECTED');
           const fallback = buildTemplateFallback({
             structuredAnswer,
             reason: 'GEMINI_RESPONSE_REJECTED',
@@ -484,6 +561,7 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
           answer: validation.normalizedAnswer,
           mode: 'gemini-test',
           sources: structuredAnswer.sources,
+          quota: quotaResult.quota,
         }, 200, corsHeaders);
       }
       logger.info('request_completed', {
@@ -575,6 +653,7 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
         answer,
         mode: 'gemini-test',
         sources: structuredAnswer?.sources || [],
+        quota: quotaResult.quota,
       }, 200, corsHeaders);
     } catch (error) {
       const fallbackReason = mapFallbackReason(error);
@@ -648,8 +727,66 @@ function scoreBucket(score?: number): string | undefined {
   return 'below-threshold';
 }
 
+async function refundQuotaReservation(
+  quotaService: AIChatQuotaServiceLike,
+  logger: SafeLogger,
+  reservation: AIChatQuotaReservation,
+  reason: 'MODEL_CALL_FAILED' | 'RESPONSE_VALIDATION_REJECTED'
+): Promise<void> {
+  const result = await quotaService.refundReservation(reservation);
+  logger.info('quota_refund', {
+    refunded: result.status === 'refunded',
+    refundStatus: result.status,
+    reason,
+    identityType: reservation.identityType,
+    quotaRemaining: result.quota?.remaining,
+    quotaLimit: result.quota?.limit,
+  });
+}
+
+function logQuotaGate(logger: SafeLogger, result: QuotaReservationResult): void {
+  logger.info('quota_reservation', {
+    quotaStatus: result.status,
+    identityType: result.status === 'reserved'
+      ? result.reservation.identityType
+      : undefined,
+    unavailableReason: result.status === 'unavailable' ? result.reason : undefined,
+    quotaRemaining: result.status === 'reserved' || result.status === 'exhausted' ? result.quota.remaining : undefined,
+    quotaLimit: result.status === 'reserved' || result.status === 'exhausted' ? result.quota.limit : result.limit,
+  });
+}
+
+function buildDeterministicNewsResponse(newsResult: AIChatNewsResult | undefined): AIChatSuccessResponse {
+  const published = newsResult?.published || [];
+  const pendingCount = newsResult?.pending.count || 0;
+  const lead = published.length
+    ? `Found ${published.length} published Borneo Tracker news item(s) matching this request.`
+    : 'No published Borneo Tracker news items matched this request.';
+  const pendingNote = pendingCount
+    ? `${pendingCount} news item(s) are still pending review and are not shown.`
+    : 'No pending review items are included.';
+  const titles = published
+    .slice(0, 3)
+    .map((item) => item.title.trim())
+    .filter(Boolean)
+    .join('; ');
+  return {
+    answer: titles ? `${lead} Published titles: ${titles}. ${pendingNote}` : `${lead} ${pendingNote}`,
+    mode: 'template-fallback',
+    sources: published.map((item) => ({
+      id: item.id,
+      publisher: item.publisher,
+      title: item.title,
+      url: item.url,
+      sourceFile: item.sourceFile || 'public/data/ai-chat-news.json',
+    })),
+  };
+}
+
 export function mapFallbackReason(error: unknown): FallbackReason | undefined {
   if (!(error instanceof AIChatHttpError)) return undefined;
+  if (error.code === 'AI_CHAT_QUOTA_UNAVAILABLE') return 'QUOTA_UNAVAILABLE';
+  if (error.code === 'AI_CHAT_QUOTA_EXHAUSTED') return 'QUOTA_EXHAUSTED';
   if (error.code === 'GEMINI_TIMEOUT') return 'GEMINI_TIMEOUT';
   if (error.code === 'GEMINI_RATE_LIMITED') return 'GEMINI_RATE_LIMIT';
   if (error.code === 'MISSING_GEMINI_API_KEY') return 'GEMINI_NOT_CONFIGURED';

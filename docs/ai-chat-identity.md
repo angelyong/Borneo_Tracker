@@ -134,13 +134,15 @@ Stage 8C does not:
 - implement live Supabase news
 - deploy or verify against a live Supabase project
 
+Stage 8D later added repository-level runtime quota enforcement for authenticated/admin model-call paths. Anonymous remains unverified and does not receive a durable quota key yet.
+
 ## Stage 8D Dependencies
 
-Quota enforcement can build on this by:
+Quota enforcement now builds on this by:
 
 - using `AIChatIdentity.type` to choose the server-trusted limit;
-- using a server-created opaque identity hash for authenticated users;
-- adding anonymous/IP guard identity only after Turnstile and daily HMAC design are implemented;
+- using a server-created stable identity key for authenticated/admin users;
+- deferring anonymous/IP guard identity until Turnstile and daily HMAC design are implemented;
 - reserving quota only before a model call;
-- refunding only failed provider calls;
+- refunding failed provider calls and rejected generated answers;
 - keeping deterministic refusals and template fallbacks at zero quota.

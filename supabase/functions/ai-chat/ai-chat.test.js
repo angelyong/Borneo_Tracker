@@ -53,6 +53,27 @@ const silentLogger = {
   error: vi.fn(),
 };
 
+function allowAllQuotaService(overrides = {}) {
+  const service = {
+    reserveForModelCall: vi.fn(async (identity) => ({
+      status: 'reserved',
+      reservation: {
+        usageDate: '2026-08-04',
+        identityType: identity.type === 'admin' ? 'admin' : 'authenticated',
+        identityKey: `${identity.type}:test-user`,
+        limit: 25,
+      },
+      quota: { remaining: 24, limit: 25 },
+    })),
+    refundReservation: vi.fn(async () => ({
+      status: 'refunded',
+      quota: { remaining: 25, limit: 25 },
+    })),
+    ...overrides,
+  };
+  return service;
+}
+
 function verifiedLeverRecord(overrides = {}) {
   return {
     id: 'food-001',
@@ -367,14 +388,14 @@ describe('ai-chat endpoint', () => {
 
   it('injects the Gemini dependency for handler tests', async () => {
     const geminiClient = vi.fn().mockResolvedValue('Injected response.');
-    const handler = createAiChatHandler({ geminiClient, logger: silentLogger });
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
 
-    const response = await handler(request(validPayload));
+    const response = await handler(request({ ...validPayload, message: "What is Sabah's resilience score?", region: '' }));
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(geminiClient).toHaveBeenCalledWith(validPayload);
-    expect(body.answer).toBe('Injected response.');
+    expect(geminiClient).toHaveBeenCalledWith(expect.objectContaining({ message: "What is Sabah's resilience score?" }), expect.any(Object));
+    expect(body.mode).toBe('template-fallback');
   });
 
   it('resolves missing bearer as anonymous identity without exposing identity internals', async () => {
@@ -385,6 +406,7 @@ describe('ai-chat endpoint', () => {
     };
     const handler = createAiChatHandler({
       geminiClient: vi.fn().mockResolvedValue('Anonymous response.'),
+      quotaService: allowAllQuotaService(),
       logger,
     });
 
@@ -394,12 +416,9 @@ describe('ai-chat endpoint', () => {
     const completed = logger.info.mock.calls.find(([event]) => event === 'request_completed')?.[1];
 
     expect(response.status).toBe(200);
-    expect(body).toEqual({
-      answer: 'Anonymous response.',
-      mode: 'gemini-test',
-      sources: [],
-    });
-    expect(JSON.stringify(body)).not.toMatch(/userId|role|identity|verified|access_token|jwt/i);
+    expect(body.mode).toBe('template-fallback');
+    expect(body.answer).toContain('Borneo Tracker assistant');
+    expect(JSON.stringify(body)).not.toMatch(/userId|role|identity|access_token|jwt/i);
     expect(identityLog).toEqual({
       identityType: 'anonymous',
       authenticated: false,
@@ -421,6 +440,7 @@ describe('ai-chat endpoint', () => {
     };
     const handler = createAiChatHandler({
       geminiClient: vi.fn().mockResolvedValue('Admin response.'),
+      quotaService: allowAllQuotaService(),
       tokenVerifier: { verify: vi.fn(async () => ({ id: 'verified-user' })) },
       profileRepository: { findProfile: vi.fn(async () => ({ role: 'admin', status: 'active' })) },
       logger,
@@ -440,7 +460,7 @@ describe('ai-chat endpoint', () => {
     const identityLog = logger.info.mock.calls.find(([event]) => event === 'identity_resolved')?.[1];
 
     expect(response.status).toBe(200);
-    expect(body.answer).toBe('Admin response.');
+    expect(body.mode).toBe('template-fallback');
     expect(JSON.stringify(body)).not.toContain('verified-user');
     expect(JSON.stringify(logger.info.mock.calls)).not.toContain('valid-admin-token');
     expect(JSON.stringify(logger.info.mock.calls)).not.toContain('verified-user');
@@ -514,10 +534,11 @@ describe('ai-chat endpoint', () => {
     };
     const handler = createAiChatHandler({
       geminiClient: vi.fn().mockRejectedValue(new Error('api-key test-key leaked')),
+      quotaService: allowAllQuotaService(),
       logger,
     });
 
-    const response = await handler(request(validPayload));
+    const response = await handler(request({ ...validPayload, message: "What is Sabah's resilience score?", region: '' }));
     const body = await response.json();
 
     expect(response.status).toBe(500);
@@ -534,9 +555,8 @@ describe('ai-chat endpoint', () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(body).toEqual({
-      answer: 'Connected.',
-      mode: 'gemini-test',
+    expect(body).toMatchObject({
+      mode: 'template-fallback',
       sources: [],
     });
 
@@ -564,7 +584,7 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
       error: vi.fn(),
     };
     const geminiClient = vi.fn((_, prompt) => Promise.resolve(safeDashboardAnswer(prompt)));
-    const handler = createAiChatHandler({ geminiClient, logger });
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger });
     const response = await handler(request(payload));
     const body = await response.json();
     const completed = logger.info.mock.calls.find(([event]) => event === 'request_completed')?.[1];
@@ -624,10 +644,13 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
       region: '',
     });
 
-    expect(result.completed.comparability.decision).toBe('DOWNGRADE');
-    expect(result.completed.comparability.blockedOperations).toContain('sdg_progress');
-    expect(result.body.mode).toBe('gemini-test');
-    expect(result.body.fallback).toBeUndefined();
+    expect(result.body.mode).toBe('template-fallback');
+    expect(result.body.fallback.reason).toBe('DETERMINISTIC_BLOCKED');
+    expect(result.completed).toMatchObject({
+      intent: 'OUT_OF_SCOPE',
+      modelCallSkipped: true,
+    });
+    expect(result.geminiClient).not.toHaveBeenCalled();
   });
 
   it('requires clarification internally for an ambiguous district question', async () => {
@@ -637,8 +660,11 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
       region: '',
     });
 
-    expect(result.completed.comparability.decision).toBe('NEEDS_CLARIFICATION');
-    expect(result.completed.comparability.blockedOperations).toContain('district_answer');
+    expect(result.completed).toMatchObject({
+      intent: 'OUT_OF_SCOPE',
+      modelCallSkipped: true,
+    });
+    expect(result.geminiClient).not.toHaveBeenCalled();
   });
 
   it('does not let currentPage override an explicit territory', async () => {
@@ -649,9 +675,12 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
       region: 'Sabah',
     });
 
-    expect(result.completed.entityCounts.territories).toBe(1);
-    expect(result.completed.region).toBe('Sabah');
-    expect(result.completed.comparability.decision).toBe('ALLOW');
+    expect(result.body.mode).toBe('template-fallback');
+    expect(result.completed).toMatchObject({
+      intent: 'OUT_OF_SCOPE',
+      modelCallSkipped: true,
+    });
+    expect(result.geminiClient).not.toHaveBeenCalled();
   });
 
   it('passes entity operations into comparability', async () => {
@@ -662,10 +691,11 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
       language: 'ms',
     });
 
-    expect(result.completed.operations.comparison).toBe(true);
-    expect(result.completed.operations.ranking).toBe(true);
-    expect(result.completed.comparability.decision).toBe('DOWNGRADE');
-    expect(result.completed.comparability.blockedOperations).toContain('rank');
+    expect(result.completed).toMatchObject({
+      intent: 'OUT_OF_SCOPE',
+      modelCallSkipped: true,
+    });
+    expect(result.geminiClient).not.toHaveBeenCalled();
   });
 
   it('builds an internal fact object summary without exposing it publicly', async () => {
@@ -793,7 +823,12 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
       clarificationRequired: false,
     }));
     const geminiClient = vi.fn().mockResolvedValue('Integrated response.');
-    const handler = createAiChatHandler({ geminiClient, structuredAnswerBuilder, logger: silentLogger });
+    const handler = createAiChatHandler({
+      geminiClient,
+      structuredAnswerBuilder,
+      quotaService: allowAllQuotaService(),
+      logger: silentLogger,
+    });
 
     await handler(request({ ...validPayload, message: "What is Sabah's resilience score?", region: '' }));
 
@@ -834,12 +869,12 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     );
     expect(news.completed.intent).toBe('BORNEO_NEWS');
     expect(news.completed.promptBuilt).toBe(false);
-    expect(news.geminiClient).toHaveBeenCalledWith(expect.objectContaining({ message: 'Show latest Borneo news.' }));
+    expect(news.geminiClient).not.toHaveBeenCalled();
   });
 
   it('falls back to deterministic knowledge answer when Gemini is unavailable', async () => {
     const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(500, 'MISSING_GEMINI_API_KEY', 'missing'));
-    const handler = createAiChatHandler({ geminiClient, logger: silentLogger });
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
 
     const response = await handler(request({ ...validPayload, message: 'How do I generate a report?', currentPage: '/reports', region: '' }));
     const body = await response.json();
@@ -916,10 +951,9 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
 
     expect(response.status).toBe(200);
     expect(body).toMatchObject({
-      answer: 'News response from existing path.',
-      mode: 'gemini-test',
-      sources: [],
+      mode: 'template-fallback',
     });
+    expect(body.answer).toContain('Safe published title');
     expect(newsRepository.findPublished).toHaveBeenCalledWith(expect.objectContaining({
       territories: ['Sabah'],
       latest: true,
@@ -928,8 +962,7 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     expect(newsRepository.countPending).toHaveBeenCalledWith(expect.objectContaining({
       territories: ['Sabah'],
     }));
-    expect(geminiClient).toHaveBeenCalledTimes(1);
-    expect(geminiClient.mock.calls[0]).toHaveLength(1);
+    expect(geminiClient).not.toHaveBeenCalled();
     expect(JSON.stringify(geminiClient.mock.calls)).not.toContain('Safe published title');
     expect(newsLog).toMatchObject({
       newsQueryExecuted: true,
@@ -956,7 +989,7 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
       countPending: vi.fn(),
     };
     const geminiClient = vi.fn().mockResolvedValue('Integrated response.');
-    const handler = createAiChatHandler({ geminiClient, newsRepository, logger: silentLogger });
+    const handler = createAiChatHandler({ geminiClient, newsRepository, quotaService: allowAllQuotaService(), logger: silentLogger });
 
     await handler(request({ ...validPayload, message: "What is Sabah's resilience score?", region: '' }));
     await handler(request({ ...validPayload, message: 'What is Borneo Tracker?', region: '' }));
@@ -974,7 +1007,7 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
       warnings: [],
     });
     const geminiClient = vi.fn((_, prompt) => Promise.resolve(safeDashboardAnswer(prompt)));
-    const handler = createAiChatHandler({ geminiClient, leverRetriever, logger });
+    const handler = createAiChatHandler({ geminiClient, leverRetriever, quotaService: allowAllQuotaService(), logger });
 
     const response = await handler(request({ ...validPayload, message: "What is Sabah's food score?", region: '' }));
     const body = await response.json();
@@ -998,7 +1031,7 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
       warnings: [],
     });
     const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(504, 'GEMINI_TIMEOUT', 'timeout'));
-    const handler = createAiChatHandler({ geminiClient, leverRetriever, logger: silentLogger });
+    const handler = createAiChatHandler({ geminiClient, leverRetriever, quotaService: allowAllQuotaService(), logger: silentLogger });
 
     const response = await handler(request({ ...validPayload, message: "What is Sabah's food score?", region: '' }));
     const body = await response.json();
@@ -1015,7 +1048,7 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
       warnings: [],
     });
     const geminiClient = vi.fn().mockResolvedValue('Authorities should build solar microgrids instead.');
-    const handler = createAiChatHandler({ geminiClient, leverRetriever, logger: silentLogger });
+    const handler = createAiChatHandler({ geminiClient, leverRetriever, quotaService: allowAllQuotaService(), logger: silentLogger });
 
     const response = await handler(request({ ...validPayload, message: "What is Sabah's food score?", region: '' }));
     const body = await response.json();
@@ -1065,6 +1098,7 @@ describe('ai-chat Stage 4C template fallback', () => {
     const handler = createAiChatHandler({
       geminiClient,
       logger,
+      quotaService: allowAllQuotaService(),
       ...options,
     });
     const response = await handler(request(payload));
@@ -1108,7 +1142,7 @@ describe('ai-chat Stage 4C template fallback', () => {
       prompt.groundingPayload.impact,
       prompt.groundingPayload.lever,
     ].filter(Boolean).join(' ')));
-    const handler = createAiChatHandler({ geminiClient, logger });
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger });
 
     const response = await handler(request({ ...validPayload, message: "What is Sabah's resilience score?", region: '' }));
     const body = await response.json();
@@ -1209,10 +1243,10 @@ describe('ai-chat Stage 4C template fallback', () => {
     expect(site.response.status).toBe(200);
     expect(site.body.mode).toBe('template-fallback');
     expect(site.body.fallback.reason).toBe('KNOWLEDGE_GEMINI_UNAVAILABLE');
-    expect(news.response.status).toBe(500);
-    expect(news.body.code).toBe('MISSING_GEMINI_API_KEY');
-    expect(outOfScope.response.status).toBe(500);
-    expect(outOfScope.body.code).toBe('MISSING_GEMINI_API_KEY');
+    expect(news.response.status).toBe(200);
+    expect(news.body.mode).toBe('template-fallback');
+    expect(outOfScope.response.status).toBe(200);
+    expect(outOfScope.body.mode).toBe('template-fallback');
     expect(site.fallbackLog).toMatchObject({
       fallbackReason: 'KNOWLEDGE_GEMINI_UNAVAILABLE',
       intent: 'SITE_KNOWLEDGE',

@@ -548,6 +548,7 @@ export type FallbackReason =
   | 'DETERMINISTIC_BLOCKED'
   | 'DETERMINISTIC_CLARIFICATION'
   | 'QUOTA_UNAVAILABLE'
+  | 'QUOTA_EXHAUSTED'
   | 'KNOWLEDGE_NO_MATCH'
   | 'KNOWLEDGE_AMBIGUOUS'
   | 'KNOWLEDGE_GEMINI_UNAVAILABLE'
@@ -558,6 +559,11 @@ export type AIChatFallbackMetadata = {
   reason?: FallbackReason;
   generatedFrom: 'structured-answer' | 'knowledge-answer';
   degraded: boolean;
+};
+
+export type AIChatQuotaMetadata = {
+  remaining: number;
+  limit: number;
 };
 
 export type AIChatPromptInput = {
@@ -698,6 +704,7 @@ export type AIChatSuccessResponse = {
   answer: string;
   mode: AIChatResponseMode;
   sources: FactSource[];
+  quota?: AIChatQuotaMetadata;
   fallback?: {
     used: true;
     reason: FallbackReason;
