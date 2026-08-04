@@ -492,6 +492,50 @@ export type AIChatResponseMode =
   | 'gemini-test'
   | 'template-fallback';
 
+export type AIChatIdentityType =
+  | 'anonymous'
+  | 'authenticated'
+  | 'admin'
+  | 'ip_guard';
+
+export type AIChatRequestIdentityType =
+  | 'anonymous'
+  | 'authenticated'
+  | 'admin';
+
+export type AIChatIdentity = {
+  type: AIChatRequestIdentityType;
+  userId?: string;
+  role?: 'user' | 'admin';
+  status?: 'active' | 'suspended';
+  verified: boolean;
+};
+
+export type AIChatQuotaRpcResult = {
+  usage_date: string;
+  identity_type: AIChatIdentityType;
+  identity_key_hash: string;
+  daily_limit: number;
+  model_calls_reserved: number;
+  model_calls_used: number;
+  remaining: number;
+};
+
+export type AIChatQuotaReserveResult = AIChatQuotaRpcResult & {
+  allowed: boolean;
+};
+
+export type AIChatQuotaRefundResult = AIChatQuotaRpcResult & {
+  refunded: boolean;
+};
+
+export type AIChatTelemetryOutcome =
+  | 'success'
+  | 'fallback'
+  | 'refused'
+  | 'rate_limited'
+  | 'error';
+
 export type FallbackReason =
   | 'GEMINI_TIMEOUT'
   | 'GEMINI_RATE_LIMIT'

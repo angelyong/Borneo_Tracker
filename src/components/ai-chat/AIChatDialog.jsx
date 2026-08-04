@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
+import { AuthContext } from '../../auth/authContext';
 import { createConversationId, sendAIChatMessage } from '../../services/AIChatService';
 import botIcon from '../../assets/AIbot_static.png';
 import AIChatInput from './AIChatInput';
@@ -18,6 +19,7 @@ const newMessage = (role, content, extra = {}) => ({
 const AIChatDialog = ({ open, onClose }) => {
   const { t, i18n } = useTranslation();
   const location = useLocation();
+  const auth = useContext(AuthContext);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -78,7 +80,10 @@ const AIChatDialog = ({ open, onClose }) => {
     setLoading(true);
 
     try {
-      const response = await sendAIChatMessage(request);
+      const response = await sendAIChatMessage({
+        ...request,
+        accessTokenProvider: () => auth?.session?.access_token || '',
+      });
       setMessages((current) => [
         ...current,
         newMessage('assistant', response.answer, {

@@ -17,7 +17,17 @@ The frontend sends only:
 
 `message` is trimmed and empty messages are rejected client-side. The backend still validates every request. `currentPage` comes from the app route, `region` is blank until a page exposes selected territory context to the chatbot, and `language` is restricted to `en` or `ms`.
 
-The frontend does not send secrets, full app state, user identity, IP address, or legacy chat history.
+The frontend does not send secrets, full app state, user identity, IP address, or legacy chat history in the request body.
+
+## Authorization
+
+Stage 8C may additionally send the current Supabase access token as an HTTP header:
+
+```http
+Authorization: Bearer <Supabase access token>
+```
+
+This header is optional. If no authenticated session exists, no bearer token is sent and the request remains anonymous/unverified. The frontend never sends a service-role key, never sends the Supabase anon key as the bearer token, and never places the access token, user ID, role, or profile data in the JSON body.
 
 ## Success
 
@@ -64,7 +74,7 @@ Frontend errors are normalized to:
 }
 ```
 
-The UI maps invalid requests, missing endpoint/configuration, service unavailable, unsupported method, message-too-long, rate limit, server error, timeout, network failure, and malformed backend responses to safe English/Malay messages.
+The UI maps invalid requests, missing endpoint/configuration, auth verification failures, service unavailable, unsupported method, message-too-long, rate limit, server error, timeout, network failure, and malformed backend responses to safe English/Malay messages.
 
 Raw response bodies, stack traces, model names, environment variable names, Supabase internals, and validation/debug metadata are not displayed.
 

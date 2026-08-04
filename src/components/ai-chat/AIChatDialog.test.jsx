@@ -2,6 +2,7 @@ import React, { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { AuthContext } from '../../auth/authContext';
 import i18n from '../../i18n';
 import AIbotButton from '../AIbotButton';
 import AIChatDialog from './AIChatDialog';
@@ -140,6 +141,23 @@ describe('AI chat dialog', () => {
       input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
     });
     expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('forwards the current Supabase session token as Authorization when present', async () => {
+    fetch.mockResolvedValueOnce(successResponse(geminiFixture));
+    render(
+      <MemoryRouter>
+        <AuthContext.Provider value={{ session: { access_token: 'dialog-session-token' } }}>
+          <AIChatDialog open onClose={() => {}} />
+        </AuthContext.Provider>
+      </MemoryRouter>
+    );
+
+    await submitMessage('Explain forest cover');
+
+    const [, options] = fetch.mock.calls[0];
+    expect(options.headers.Authorization).toBe('Bearer dialog-session-token');
+    expect(options.body).not.toContain('dialog-session-token');
   });
 
   it('renders Gemini responses and safe source links', async () => {

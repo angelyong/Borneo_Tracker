@@ -46,6 +46,59 @@ describe('AIChatService Stage 7 contract', () => {
       region: 'Sabah',
       language: 'ms',
     });
+    expect(options.headers).toEqual({ 'Content-Type': 'application/json' });
+  });
+
+  it('sends a bearer token from the injected provider without changing the request body', async () => {
+    await sendAIChatMessage({
+      message: 'Hi',
+      currentPage: '/',
+      language: 'en',
+      accessTokenProvider: () => 'supabase-access-token',
+      userId: 'spoofed-user',
+      role: 'admin',
+    });
+
+    const [, options] = fetch.mock.calls[0];
+    expect(options.headers).toEqual({
+      'Content-Type': 'application/json',
+      Authorization: 'Bearer supabase-access-token',
+    });
+    expect(JSON.parse(options.body)).toEqual({
+      message: 'Hi',
+      currentPage: '/',
+      region: '',
+      language: 'en',
+    });
+    expect(options.body).not.toContain('supabase-access-token');
+    expect(options.body).not.toContain('spoofed-user');
+    expect(options.body).not.toContain('admin');
+  });
+
+  it('sends no bearer token when the injected provider has no session token', async () => {
+    await sendAIChatMessage({
+      message: 'Hi',
+      accessTokenProvider: () => '',
+    });
+
+    const [, options] = fetch.mock.calls[0];
+    expect(options.headers).toEqual({ 'Content-Type': 'application/json' });
+  });
+
+  it('does not expose tokens in safe auth errors', async () => {
+    fetch.mockResolvedValueOnce(errorResponse(401, {
+      code: 'AI_CHAT_AUTH_INVALID',
+      error: 'token supabase-access-token leaked by backend',
+    }));
+
+    await expect(sendAIChatMessage({
+      message: 'Hi',
+      accessTokenProvider: () => 'supabase-access-token',
+    })).rejects.toMatchObject({
+      code: 'AI_CHAT_AUTH_INVALID',
+      retryable: false,
+      message: 'The AI assistant could not verify your sign-in session.',
+    });
   });
 
   it('rejects empty messages before fetch', async () => {

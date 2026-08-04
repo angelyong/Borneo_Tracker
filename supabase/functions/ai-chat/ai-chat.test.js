@@ -318,6 +318,9 @@ describe('ai-chat endpoint', () => {
     expect(response.status).toBe(204);
     expect(response.headers.get('Access-Control-Allow-Origin')).toBe('https://example.com');
     expect(response.headers.get('Access-Control-Allow-Methods')).toContain('POST');
+    expect(response.headers.get('Access-Control-Allow-Headers')).toContain('authorization');
+    expect(response.headers.get('Access-Control-Allow-Headers')).toContain('apikey');
+    expect(response.headers.get('Access-Control-Allow-Headers')).toContain('content-type');
   });
 
   it('adds CORS headers to errors', async () => {
@@ -372,6 +375,135 @@ describe('ai-chat endpoint', () => {
     expect(response.status).toBe(200);
     expect(geminiClient).toHaveBeenCalledWith(validPayload);
     expect(body.answer).toBe('Injected response.');
+  });
+
+  it('resolves missing bearer as anonymous identity without exposing identity internals', async () => {
+    const logger = {
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    };
+    const handler = createAiChatHandler({
+      geminiClient: vi.fn().mockResolvedValue('Anonymous response.'),
+      logger,
+    });
+
+    const response = await handler(request(validPayload));
+    const body = await response.json();
+    const identityLog = logger.info.mock.calls.find(([event]) => event === 'identity_resolved')?.[1];
+    const completed = logger.info.mock.calls.find(([event]) => event === 'request_completed')?.[1];
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({
+      answer: 'Anonymous response.',
+      mode: 'gemini-test',
+      sources: [],
+    });
+    expect(JSON.stringify(body)).not.toMatch(/userId|role|identity|verified|access_token|jwt/i);
+    expect(identityLog).toEqual({
+      identityType: 'anonymous',
+      authenticated: false,
+      admin: false,
+      verificationCode: 'ANONYMOUS_UNVERIFIED',
+    });
+    expect(completed).toMatchObject({
+      identityType: 'anonymous',
+      authenticated: false,
+      admin: false,
+    });
+  });
+
+  it('resolves authenticated and admin identity internally from injected trusted sources', async () => {
+    const logger = {
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+    };
+    const handler = createAiChatHandler({
+      geminiClient: vi.fn().mockResolvedValue('Admin response.'),
+      tokenVerifier: { verify: vi.fn(async () => ({ id: 'verified-user' })) },
+      profileRepository: { findProfile: vi.fn(async () => ({ role: 'admin', status: 'active' })) },
+      logger,
+    });
+
+    const response = await handler(request({
+      ...validPayload,
+      userId: 'spoofed-user',
+      role: 'user',
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Bearer valid-admin-token',
+      },
+    }));
+    const body = await response.json();
+    const identityLog = logger.info.mock.calls.find(([event]) => event === 'identity_resolved')?.[1];
+
+    expect(response.status).toBe(200);
+    expect(body.answer).toBe('Admin response.');
+    expect(JSON.stringify(body)).not.toContain('verified-user');
+    expect(JSON.stringify(logger.info.mock.calls)).not.toContain('valid-admin-token');
+    expect(JSON.stringify(logger.info.mock.calls)).not.toContain('verified-user');
+    expect(identityLog).toEqual({
+      identityType: 'admin',
+      authenticated: true,
+      admin: true,
+      verificationCode: 'VERIFIED',
+    });
+  });
+
+  it('rejects malformed bearer without calling Gemini or quota/telemetry paths', async () => {
+    const geminiClient = vi.fn().mockResolvedValue('Should not run.');
+    const handler = createAiChatHandler({ geminiClient, logger: silentLogger });
+
+    const response = await handler(request(validPayload, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: 'Token invalid',
+      },
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(401);
+    expect(body).toEqual({
+      error: 'The AI assistant could not verify this sign-in session.',
+      code: 'AI_CHAT_AUTH_MALFORMED',
+    });
+    expect(geminiClient).not.toHaveBeenCalled();
+    expect(JSON.stringify(body)).not.toMatch(/token|jwt|profile|service_role/i);
+  });
+
+  it('rejects invalid, expired, unavailable, and suspended identities safely', async () => {
+    const cases = [
+      [new AIChatHttpError(401, 'AI_CHAT_AUTH_INVALID', 'The AI assistant could not verify this sign-in session.'), 401, 'AI_CHAT_AUTH_INVALID'],
+      [new AIChatHttpError(401, 'AI_CHAT_AUTH_EXPIRED', 'The AI assistant could not verify this sign-in session.'), 401, 'AI_CHAT_AUTH_EXPIRED'],
+      [new AIChatHttpError(503, 'AI_CHAT_IDENTITY_UNAVAILABLE', 'The AI assistant sign-in check is unavailable right now.'), 503, 'AI_CHAT_IDENTITY_UNAVAILABLE'],
+      [new AIChatHttpError(403, 'AI_CHAT_USER_SUSPENDED', 'This account cannot use the AI assistant right now.'), 403, 'AI_CHAT_USER_SUSPENDED'],
+    ];
+
+    for (const [error, status, code] of cases) {
+      const geminiClient = vi.fn();
+      const handler = createAiChatHandler({
+        geminiClient,
+        identityResolver: vi.fn(async () => {
+          throw error;
+        }),
+        logger: silentLogger,
+      });
+
+      const response = await handler(request(validPayload, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer sensitive-token',
+        },
+      }));
+      const body = await response.json();
+
+      expect(response.status).toBe(status);
+      expect(body.code).toBe(code);
+      expect(JSON.stringify(body)).not.toContain('sensitive-token');
+      expect(geminiClient).not.toHaveBeenCalled();
+    }
   });
 
   it('logs safe error metadata without secrets', async () => {

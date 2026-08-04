@@ -3,6 +3,7 @@ import {
   AIChatHttpError,
   type AIChatKnowledgeAnswer,
   type AIChatKnowledgeRetrievalResult,
+  type AIChatIdentity,
   type AIChatPrompt,
   type AIChatSiteKnowledgePrompt,
   type AIChatNewsResult,
@@ -22,6 +23,7 @@ import { resolveAiChatEntities } from './entityResolver.ts';
 import { buildAIChatFactObject } from './factObjectBuilder.ts';
 import { FactDataRepository } from './factDataRepository.ts';
 import { generateGeminiAnswer } from './geminiClient.ts';
+import { resolveAIChatIdentity, type ProfileRepository, type TokenVerifier } from './identity.ts';
 import { buildKnowledgeAnswer } from './knowledgeAnswerBuilder.ts';
 import { KnowledgeRepository } from './knowledgeRepository.ts';
 import { retrieveStaticKnowledge } from './knowledgeRetriever.ts';
@@ -53,6 +55,7 @@ type PromptBuilderClient = (input: Parameters<typeof buildGroundedPrompt>[0]) =>
 type LeverRetrieverClient = (input: Parameters<typeof retrieveVerifiedLevers>[0]) => LeverRetrievalResult;
 type NewsRetrieverClient = (input: Parameters<typeof retrieveAIChatNews>[0]) => Promise<AIChatNewsResult>;
 type KnowledgeRetrieverClient = (input: Parameters<typeof retrieveStaticKnowledge>[0], repository?: KnowledgeRepository) => AIChatKnowledgeRetrievalResult;
+type IdentityResolverClient = (request: Request) => Promise<AIChatIdentity>;
 
 type HandlerOptions = {
   env?: EnvLike;
@@ -66,6 +69,9 @@ type HandlerOptions = {
   newsRetriever?: NewsRetrieverClient;
   knowledgeRepository?: KnowledgeRepository;
   knowledgeRetriever?: KnowledgeRetrieverClient;
+  identityResolver?: IdentityResolverClient;
+  tokenVerifier?: TokenVerifier;
+  profileRepository?: ProfileRepository;
   logger?: SafeLogger;
 };
 
@@ -84,6 +90,13 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
   const newsRetriever = options.newsRetriever || retrieveAIChatNews;
   const knowledgeRepository = options.knowledgeRepository || new KnowledgeRepository();
   const knowledgeRetriever = options.knowledgeRetriever || retrieveStaticKnowledge;
+  const identityResolver =
+    options.identityResolver ||
+    ((request: Request) => resolveAIChatIdentity(request, {
+      env: options.env,
+      tokenVerifier: options.tokenVerifier,
+      profileRepository: options.profileRepository,
+    }));
 
   return async function handleAiChatRequest(request: Request): Promise<Response> {
     const corsHeaders = buildCorsHeaders(request, parseCorsConfig(options.env));
@@ -110,8 +123,16 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
     let knowledgeAnswer: AIChatKnowledgeAnswer | undefined;
     let knowledgePrompt: AIChatSiteKnowledgePrompt | undefined;
     let newsResult: AIChatNewsResult | undefined;
+    let identity: AIChatIdentity | undefined;
 
     try {
+      identity = await identityResolver(request);
+      logger.info('identity_resolved', {
+        identityType: identity.type,
+        authenticated: identity.verified,
+        admin: identity.type === 'admin',
+        verificationCode: identity.verified ? 'VERIFIED' : 'ANONYMOUS_UNVERIFIED',
+      });
       const body = await parseJsonBody(request);
       const chatRequest = validateChatRequest(body);
       route = routeAiChatIntent(chatRequest.message, {
@@ -263,6 +284,9 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
           page: chatRequest.currentPage,
           region: chatRequest.region,
           language: chatRequest.language,
+          identityType: identity.type,
+          authenticated: identity.verified,
+          admin: identity.type === 'admin',
         });
         return jsonResponse({
           answer: validation.normalizedAnswer,
@@ -452,6 +476,9 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
           page: chatRequest.currentPage,
           region: chatRequest.region,
           language: chatRequest.language,
+          identityType: identity.type,
+          authenticated: identity.verified,
+          admin: identity.type === 'admin',
         });
         return jsonResponse({
           answer: validation.normalizedAnswer,
@@ -540,6 +567,9 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
         page: chatRequest.currentPage,
         region: chatRequest.region,
         language: chatRequest.language,
+        identityType: identity.type,
+        authenticated: identity.verified,
+        admin: identity.type === 'admin',
       });
       return jsonResponse({
         answer,

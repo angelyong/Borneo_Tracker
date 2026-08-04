@@ -55,6 +55,15 @@ function createRequestBody({ message, currentPage, region, language }) {
   };
 }
 
+async function createRequestHeaders(accessTokenProvider) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (typeof accessTokenProvider !== 'function') return headers;
+
+  const token = safeString(await accessTokenProvider());
+  if (token) headers.Authorization = `Bearer ${token}`;
+  return headers;
+}
+
 function isPlainObject(value) {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
 }
@@ -189,6 +198,12 @@ function errorForStatus(status, body = {}) {
       { status, code: 'AI_CHAT_METHOD_NOT_ALLOWED', retryable: false }
     );
   }
+  if (status === 401 || status === 403) {
+    return new AIChatServiceError(
+      'The AI assistant could not verify your sign-in session.',
+      { status, code: safeString(body.code) || 'AI_CHAT_AUTH_FAILED', retryable: false }
+    );
+  }
   if (status === 413 || backendCode === 'MESSAGE_TOO_LONG') {
     return new AIChatServiceError(
       'The message is too long.',
@@ -232,6 +247,7 @@ export async function sendAIChatMessage({
   currentPage,
   region,
   language = 'en',
+  accessTokenProvider,
 } = {}) {
   const payload = createRequestBody({ message, currentPage, region, language });
   if (!payload.message) {
@@ -260,7 +276,7 @@ export async function sendAIChatMessage({
   try {
     const response = await fetch(endpoint, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: await createRequestHeaders(accessTokenProvider),
       body: JSON.stringify(payload),
       signal: controller.signal,
     });
