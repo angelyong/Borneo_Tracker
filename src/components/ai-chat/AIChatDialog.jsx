@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
-import i18n from '../../i18n';
 import { createConversationId, sendAIChatMessage } from '../../services/AIChatService';
 import botIcon from '../../assets/AIbot_static.png';
 import AIChatInput from './AIChatInput';
@@ -16,17 +16,22 @@ const newMessage = (role, content, extra = {}) => ({
 });
 
 const AIChatDialog = ({ open, onClose }) => {
+  const { t, i18n } = useTranslation();
   const location = useLocation();
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(null);
+  const [lastRequest, setLastRequest] = useState(null);
   const conversationIdRef = useRef(createConversationId());
-  const panelRef = useRef(null);
   const closeRef = useRef(null);
   const endRef = useRef(null);
+  const inputRef = useRef(null);
 
-  const assistantBusy = useMemo(() => loading ? newMessage('assistant', 'Thinking...') : null, [loading]);
+  const assistantBusy = useMemo(
+    () => (loading ? newMessage('assistant', t('aiChat.loading')) : null),
+    [loading, t]
+  );
 
   useEffect(() => {
     if (!open) return undefined;
@@ -43,41 +48,53 @@ const AIChatDialog = ({ open, onClose }) => {
   }, [onClose, open]);
 
   useEffect(() => {
+    if (open && !loading) inputRef.current?.focus?.();
+  }, [loading, open]);
+
+  useEffect(() => {
     endRef.current?.scrollIntoView?.({ behavior: 'smooth', block: 'end' });
   }, [messages, loading]);
 
   if (!open) return null;
 
-  const submitMessage = async (event, overrideMessage) => {
+  const submitMessage = async (event, overrideMessage, retryRequest) => {
     event?.preventDefault();
-    const content = (overrideMessage || input).trim();
+    const content = (retryRequest?.message || overrideMessage || input).trim();
     if (!content || loading) return;
 
-    const userMessage = newMessage('user', content);
-    const history = [...messages, userMessage];
-    setMessages(history);
-    setInput('');
-    setError('');
+    const request = {
+      message: content,
+      currentPage: location.pathname,
+      region: '',
+      language: i18n.language || 'en',
+    };
+
+    if (!retryRequest) {
+      setMessages((current) => [...current, newMessage('user', content)]);
+      setInput('');
+    }
+    setLastRequest(request);
+    setError(null);
     setLoading(true);
 
     try {
-      const response = await sendAIChatMessage({
-        message: content,
-        conversationId: conversationIdRef.current,
-        currentPage: location.pathname,
-        language: i18n.language || 'en',
-        history,
-      });
-      conversationIdRef.current = response.conversationId || conversationIdRef.current;
+      const response = await sendAIChatMessage(request);
       setMessages((current) => [
         ...current,
         newMessage('assistant', response.answer, {
           sources: response.sources || [],
           mode: response.mode,
+          fallback: response.fallback,
+          quota: response.quota,
         }),
       ]);
     } catch (chatError) {
-      setError(chatError?.message || 'The AI assistant could not respond right now. Please try again.');
+      setError({
+        code: chatError?.code || 'AI_CHAT_ERROR',
+        message: chatError?.message || t('aiChat.errors.AI_CHAT_ERROR'),
+        status: chatError?.status,
+        retryable: Boolean(chatError?.retryable),
+      });
     } finally {
       setLoading(false);
     }
@@ -85,28 +102,38 @@ const AIChatDialog = ({ open, onClose }) => {
 
   const clearConversation = () => {
     setMessages([]);
-    setError('');
+    setError(null);
     setInput('');
+    setLastRequest(null);
     conversationIdRef.current = createConversationId();
   };
+
+  const retryLastRequest = (event) => {
+    if (!lastRequest || loading) return;
+    submitMessage(event, null, lastRequest);
+  };
+
+  const errorText = error
+    ? t(`aiChat.errors.${error.code}`, { defaultValue: error.message })
+    : '';
 
   return (
     <div className="ai-chat-backdrop" role="presentation" onMouseDown={(event) => {
       if (event.target === event.currentTarget) onClose();
     }}>
       <section
-        ref={panelRef}
         className="ai-chat-dialog"
         role="dialog"
         aria-labelledby="ai-chat-title"
+        aria-modal="false"
       >
         <header className="ai-chat-header">
           <div className="ai-chat-brand">
             <img src={botIcon} alt="" aria-hidden="true" className="ai-chat-brand-icon" />
             <h2 id="ai-chat-title">BorneoBot</h2>
           </div>
-          <button ref={closeRef} type="button" className="ai-chat-icon-button" onClick={onClose} aria-label="Close chatbot">
-            ×
+          <button ref={closeRef} type="button" className="ai-chat-icon-button" onClick={onClose} aria-label={t('aiChat.close')}>
+            x
           </button>
         </header>
 
@@ -117,17 +144,18 @@ const AIChatDialog = ({ open, onClose }) => {
                 message={{
                   id: 'assistant-welcome',
                   role: 'assistant',
-                  content: "Hi there! I'm BorneoBot, your Borneo AI assistant.\n\nAsk me anything about Borneo regions, ESG indicators, SDG progress and data sources.",
+                  content: t('aiChat.welcome'),
                   sources: [],
                 }}
               />
-              <p className="ai-chat-suggestion-label">Try one of these:</p>
+              <p className="ai-chat-suggestion-label">{t('aiChat.tryOne')}</p>
               <SuggestedQuestions onSelect={(question) => submitMessage(null, question)} disabled={loading} />
             </div>
           )}
           {messages.map((message) => <AIChatMessage key={message.id} message={message} />)}
           {assistantBusy && (
-            <div className="ai-chat-loading" role="status" aria-label="Assistant is loading">
+            <div className="ai-chat-loading" role="status" aria-label={t('aiChat.loading')}>
+              <span className="sr-only">{t('aiChat.loading')}</span>
               <span />
               <span />
               <span />
@@ -136,13 +164,28 @@ const AIChatDialog = ({ open, onClose }) => {
           <div ref={endRef} />
         </div>
 
-        {error && <div className="ai-chat-error" role="alert">{error}</div>}
+        {error && (
+          <div className="ai-chat-error" role="alert">
+            <span>{errorText}</span>
+            {error.retryable && (
+              <button type="button" onClick={retryLastRequest} disabled={loading}>
+                {t('common.retry')}
+              </button>
+            )}
+          </div>
+        )}
 
         <footer className="ai-chat-footer">
           <button type="button" className="ai-chat-clear" onClick={clearConversation} disabled={loading || messages.length === 0}>
-            Clear conversation
+            {t('aiChat.clearConversation')}
           </button>
-          <AIChatInput value={input} onChange={setInput} onSubmit={submitMessage} loading={loading} />
+          <AIChatInput
+            ref={inputRef}
+            value={input}
+            onChange={setInput}
+            onSubmit={submitMessage}
+            loading={loading}
+          />
         </footer>
       </section>
     </div>

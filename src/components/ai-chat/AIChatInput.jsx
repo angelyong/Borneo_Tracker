@@ -1,19 +1,15 @@
-import { useEffect, useRef } from 'react';
+import { forwardRef } from 'react';
+import { useTranslation } from 'react-i18next';
 
-const AIChatInput = ({ value, onChange, onSubmit, loading }) => {
-  const inputRef = useRef(null);
-
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
-
+const AIChatInput = forwardRef(({ value, onChange, onSubmit, loading }, ref) => {
+  const { t } = useTranslation();
   const canSend = value.trim().length > 0 && !loading;
 
   return (
     <form className="ai-chat-input-row" onSubmit={onSubmit}>
-      <label className="sr-only" htmlFor="ai-chat-input">Message Borneo Tracker AI</label>
+      <label className="sr-only" htmlFor="ai-chat-input">{t('aiChat.inputLabel')}</label>
       <textarea
-        ref={inputRef}
+        ref={ref}
         id="ai-chat-input"
         value={value}
         onChange={(event) => onChange(event.target.value)}
@@ -23,16 +19,18 @@ const AIChatInput = ({ value, onChange, onSubmit, loading }) => {
             if (canSend) onSubmit(event);
           }
         }}
-        placeholder="Enter your message..."
-        aria-label="Message Borneo Tracker AI"
+        placeholder={t('aiChat.placeholder')}
+        aria-label={t('aiChat.inputLabel')}
         rows={2}
         disabled={loading}
       />
-      <button type="submit" className="ai-chat-send" disabled={!canSend} aria-label="Send message">
+      <button type="submit" className="ai-chat-send" disabled={!canSend} aria-label={t('aiChat.send')}>
         <span aria-hidden="true" />
       </button>
     </form>
   );
-};
+});
+
+AIChatInput.displayName = 'AIChatInput';
 
 export default AIChatInput;

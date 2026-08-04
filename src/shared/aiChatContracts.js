@@ -1,21 +1,13 @@
-export const CHAT_ENDPOINT = '/api/ai/chat';
+export const CHAT_ENDPOINT = import.meta.env.VITE_AI_CHAT_ENDPOINT?.trim() || '';
 
 export const AI_CHAT_MODES = {
-  STATIC: 'static',
-  DYNAMIC: 'dynamic',
-  MIXED: 'mixed',
-  UNKNOWN: 'unknown',
+  GEMINI_TEST: 'gemini-test',
+  TEMPLATE_FALLBACK: 'template-fallback',
 };
 
-export const INTENTS = {
-  STATIC_KNOWLEDGE: 'STATIC_KNOWLEDGE',
-  DYNAMIC_DATA: 'DYNAMIC_DATA',
-  MIXED: 'MIXED',
-  UNKNOWN: 'UNKNOWN',
-};
+export const SUPPORTED_CHAT_LANGUAGES = ['en', 'ms'];
 
 export const MAX_CHAT_MESSAGE_LENGTH = 1200;
-export const MAX_HISTORY_MESSAGES = 8;
 
 export const SUGGESTED_QUESTIONS = [
   'What is Borneo Tracker?',
