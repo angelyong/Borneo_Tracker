@@ -1,7 +1,7 @@
-import indicatorsData from '../../../public/data/indicators.json';
-import resilienceData from '../../../public/data/resilience.json';
-import districtsData from '../../../public/data/districts.json';
-import manifestData from '../../../public/data/manifest.json';
+import indicatorsData from '../../../public/data/indicators.json' with { type: 'json' };
+import resilienceData from '../../../public/data/resilience.json' with { type: 'json' };
+import districtsData from '../../../public/data/districts.json' with { type: 'json' };
+import manifestData from '../../../public/data/manifest.json' with { type: 'json' };
 import type { FactSource, FactValueStatus } from './contracts.ts';
 
 export type IndicatorRow = {
@@ -304,4 +304,3 @@ function sourceFromText(source: string, sourceFile: string, sourcePath: string, 
 function compactKey(value: string): string {
   return String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 }
-

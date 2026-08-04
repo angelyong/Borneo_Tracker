@@ -1,5 +1,5 @@
-import indicatorsData from '../../../public/data/indicators.json';
-import districtsData from '../../../public/data/districts.json';
+import indicatorsData from '../../../public/data/indicators.json' with { type: 'json' };
+import districtsData from '../../../public/data/districts.json' with { type: 'json' };
 import type { AIChatEntityResult, AIChatRequest } from './contracts.ts';
 
 type Alias = {

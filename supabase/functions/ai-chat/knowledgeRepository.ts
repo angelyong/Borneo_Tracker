@@ -1,4 +1,4 @@
-import knowledgeArtifact from './knowledge-index.json';
+import knowledgeArtifact from './knowledge-index.json' with { type: 'json' };
 import type { AIChatKnowledgeRecord } from './contracts.ts';
 
 type KnowledgeArtifact = {

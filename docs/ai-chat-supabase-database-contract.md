@@ -12,7 +12,16 @@ Existing baseline SQL remains in place:
 
 Future deployments must apply the baseline files in their documented order, then all migrations. Do not manually paste only `schema.sql` and skip migrations.
 
-Stage 8B is offline-only. Stage 8D now includes repository-level runtime quota enforcement code, and Stage 8E now includes repository-level telemetry persistence code. No live Supabase project was linked, pushed, queried, migrated, or modified.
+Stage 8B was originally prepared offline. Stage 8D now includes repository-level runtime quota enforcement code, and Stage 8E now includes repository-level telemetry persistence code.
+
+Stage 8H-2A applied `20260804000100_ai_chat_infrastructure_contracts.sql` to the live `borneo-news` Supabase project and found two production blockers during verification:
+
+- PostgreSQL rejected identity validation regex intervals such as `{16,256}` with `invalid repetition count(s)`.
+- The quota RPCs still had effective EXECUTE access for browser roles because PostgreSQL grants function EXECUTE to `PUBLIC` by default unless the effective privilege is explicitly revoked.
+
+Stage 8H-2A-F adds the forward-only fix migration `20260804000200_ai_chat_quota_production_fixes.sql`. The original Stage 8B migration is an immutable historical record and must not be edited, renamed, replaced, repaired, or manually removed from migration history.
+
+Live validation after `20260804000200` then reached the reservation insert and found a PL/pgSQL name ambiguity in `ON CONFLICT (usage_date, identity_type, identity_key_hash)`, because the table-returning RPC also exposes output parameters with those names. The follow-up forward migration `20260804000300_ai_chat_quota_rpc_conflict_target_fix.sql` replaces the reserve RPC conflict target with `ON CONFLICT ON CONSTRAINT ai_chat_daily_usage_pkey`.
 
 ## `public.ai_chat_config`
 
@@ -74,6 +83,13 @@ Identity types:
 - `ip_guard`
 
 The table stores only opaque identifiers. It does not store raw IP addresses, raw user questions, answer text, message text, prompts, provider payloads, or API keys.
+
+Identity key validation is intentionally split into deterministic length and character-set checks:
+
+- `char_length(identity_key_hash) between 16 and 256`
+- `identity_key_hash ~ '^[A-Za-z0-9:_-]+$'`
+
+This preserves the original opaque-key boundary while avoiding PostgreSQL regex repetition intervals that exceed the engine's supported bound.
 
 ## Quota RPC Contract
 
@@ -177,7 +193,9 @@ Public browser clients cannot directly mutate chatbot config, quota, or telemetr
 
 - no anon/authenticated insert/update/delete policies are created
 - direct mutation privileges are revoked from `anon` and `authenticated`
-- quota RPC execute is revoked from `public` and granted only to `service_role`
+- quota RPC execute is revoked from effective `PUBLIC`, `anon`, and `authenticated`, then granted only to `service_role`
+
+PostgreSQL function EXECUTE has a separate default privilege model from table grants and RLS. New or replaced functions can be callable through `PUBLIC` unless that effective privilege is revoked. The quota RPCs are `SECURITY DEFINER`, so browser roles must never receive direct or inherited EXECUTE access.
 
 Admin read access is allowed through current conventions:
 
@@ -189,6 +207,8 @@ Security-definer functions:
 - fully qualify `public.ai_chat_daily_usage`
 - validate all inputs
 - do not accept service keys, secrets, raw IPs, or frontend-provided roles
+
+The Stage 8H-2A-F forward migrations replace quota RPC bodies only to remove unsafe regex-length validation and the live PL/pgSQL conflict-target ambiguity. The function signatures, `SECURITY DEFINER`, `set search_path to 'public'`, bounded daily limit behavior, atomic reservation, and non-negative refund semantics remain unchanged.
 
 ## Identity Boundary
 

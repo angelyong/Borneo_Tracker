@@ -394,7 +394,7 @@ describe('ai-chat endpoint', () => {
     const response = await handler(request({ ...validPayload, message: 'x'.repeat(MAX_MESSAGE_LENGTH + 1) }));
     const body = await response.json();
 
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(413);
     expect(body.code).toBe('MESSAGE_TOO_LONG');
     expect(body.mode).toBeUndefined();
     expect(geminiClient).not.toHaveBeenCalled();

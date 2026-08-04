@@ -18,8 +18,8 @@ import {
   parseJsonBody,
   validateChatRequest,
 } from './contracts.ts';
-import indicatorsData from '../../../public/data/indicators.json';
-import districtsData from '../../../public/data/districts.json';
+import indicatorsData from '../../../public/data/indicators.json' with { type: 'json' };
+import districtsData from '../../../public/data/districts.json' with { type: 'json' };
 import { evaluateComparability } from './comparabilityGate.ts';
 import { buildCorsHeaders, type EnvLike, parseCorsConfig } from './config.ts';
 import { resolveAiChatEntities } from './entityResolver.ts';

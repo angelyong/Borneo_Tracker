@@ -763,7 +763,7 @@ export function validateChatRequest(body: unknown): AIChatRequest {
   }
   if (message.length > MAX_MESSAGE_LENGTH) {
     throw new AIChatHttpError(
-      400,
+      413,
       'MESSAGE_TOO_LONG',
       `Message must be ${MAX_MESSAGE_LENGTH} characters or fewer.`
     );

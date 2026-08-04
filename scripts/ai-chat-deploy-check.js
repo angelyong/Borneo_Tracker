@@ -27,6 +27,19 @@ function contains(rel, pattern) {
   return typeof pattern === 'string' ? text.includes(pattern) : pattern.test(text);
 }
 
+function walkFiles(dir, predicate, output = []) {
+  if (!fs.existsSync(dir)) return output;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      walkFiles(full, predicate, output);
+    } else if (predicate(full)) {
+      output.push(full);
+    }
+  }
+  return output;
+}
+
 const requiredFiles = [
   'supabase/config.toml',
   'supabase/auth_schema.sql',
@@ -102,6 +115,19 @@ check('Gemini key precedence accepts chatbot key before fallback key', /envValue
 
 const newsFactory = exists('supabase/functions/ai-chat/newsRepositoryFactory.ts') ? read('supabase/functions/ai-chat/newsRepositoryFactory.ts') : '';
 check('live news repository mode selects Supabase adapter', /raw === 'supabase' \|\| raw === 'live'/.test(newsFactory));
+
+const runtimeTsFiles = walkFiles(file('supabase/functions/ai-chat'), (full) => full.endsWith('.ts') && !full.endsWith('.test.js'));
+const jsonImportsWithoutAttributes = runtimeTsFiles
+  .map((full) => ({
+    rel: path.relative(root, full).replaceAll(path.sep, '/'),
+    matches: fs.readFileSync(full, 'utf8').match(/import\s+[^;\n]+?\.json['"][^;\n]*;?/g) || [],
+  }))
+  .filter((item) => item.matches.some((statement) => !/with\s+\{\s*type:\s*['"]json['"]\s*\}/.test(statement)));
+check(
+  'runtime JSON imports use import attributes for Supabase bundling',
+  jsonImportsWithoutAttributes.length === 0,
+  jsonImportsWithoutAttributes.map((item) => item.rel).join(', ')
+);
 
 const failed = checks.filter((item) => !item.ok);
 for (const item of checks) {

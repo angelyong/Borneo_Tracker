@@ -1,5 +1,5 @@
 import type { LeverLibraryArtifact, LeverRecord } from './contracts.ts';
-import leverLibrary from './lever-library.json';
+import leverLibrary from './lever-library.json' with { type: 'json' };
 
 export class LeverRepository {
   private records: LeverRecord[];

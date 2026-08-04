@@ -2,7 +2,7 @@
 
 Stage 8D adds runtime model-call quota enforcement for the AI chatbot Edge Function. It serves ABCDE `A` by protecting the AI runtime, `D` by using the Stage 8B quota ledger contract, and `E` by keeping identity, limits, and logs privacy-bounded.
 
-Stage 8D is repository-verified only. No live Supabase project was linked, pushed, migrated, or queried.
+Stage 8D was repository-verified before live deployment. Stage 8H-2A later applied the Stage 8B database contracts to the live `borneo-news` Supabase project and found production blockers in the quota database layer. Stage 8H-2A-F fixes those blockers with forward migrations `20260804000200_ai_chat_quota_production_fixes.sql` and `20260804000300_ai_chat_quota_rpc_conflict_target_fix.sql`; the original applied Stage 8B migration remains immutable history.
 
 ## Scope
 
@@ -92,6 +92,15 @@ admin:<verified-user-id>
 
 The key is passed only from server code to the service-role quota RPC. It is not returned to the browser and is not logged. A later production hardening stage may replace this with a hashed/HMAC form before RPC execution without changing the public response contract.
 
+The live database validates opaque identity keys with explicit length checks plus a separate character-set check:
+
+```sql
+char_length(identity_key_hash) between 16 and 256
+identity_key_hash ~ '^[A-Za-z0-9:_-]+$'
+```
+
+This replaced the original PostgreSQL regex interval pattern `^[A-Za-z0-9:_-]{16,256}$`, which failed at runtime in Stage 8H-2A with `invalid repetition count(s)`. The validation intent is unchanged: too-short, too-long, null, and malformed identity keys are rejected, while valid opaque keys are accepted.
+
 ## Limits
 
 The committed fallback defaults are:
@@ -107,6 +116,23 @@ The committed fallback defaults are:
 The service can read `AI_CHAT_DAILY_LIMITS_JSON` from server environment for offline/runtime overrides. Stage 8B also seeded `AI_CHAT_DAILY_LIMITS` in `public.ai_chat_config`; reading that table as the authoritative live config remains pending until a live Supabase integration stage.
 
 The browser never supplies authoritative limits.
+
+## RPC Privileges
+
+Quota reservation and refund are trusted-server operations only. The browser calls the Edge Function; the Edge Function uses the Supabase service-role credential to call:
+
+- `reserve_ai_chat_quota(date, text, text, integer)`
+- `refund_ai_chat_quota(date, text, text)`
+
+Because PostgreSQL grants function EXECUTE to `PUBLIC` by default, the live production fix explicitly revokes effective EXECUTE from `PUBLIC`, `anon`, and `authenticated`, then grants EXECUTE back only to `service_role`. This is separate from table privileges and RLS: table RLS protects rows, while function EXECUTE controls whether browser roles can invoke the `SECURITY DEFINER` quota functions at all.
+
+Live validation also confirmed the reserve RPC should target the primary-key constraint by name:
+
+```sql
+on conflict on constraint ai_chat_daily_usage_pkey do update
+```
+
+This avoids PL/pgSQL ambiguity between returned column names and the quota table's primary-key columns while preserving the same atomic upsert semantics.
 
 ## Public Response
 
@@ -165,5 +191,6 @@ Repository tests cover:
 - missing Supabase service credentials
 - Supabase REST RPC shape
 - handler behavior for quota reservation, model calls, refunds, and zero-quota news/out-of-scope paths
+- production-fix SQL preserving function signatures, `SECURITY DEFINER`, `search_path`, service-role-only EXECUTE, explicit identity length bounds, malformed identity rejection, and non-negative refund behavior
 
-Execution-level SQL validation against Postgres/Supabase remains pending.
+Execution-level SQL validation against Postgres/Supabase is performed during Stage 8H live rollout steps before the Edge Function is deployed.
