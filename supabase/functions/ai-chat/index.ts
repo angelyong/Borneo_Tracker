@@ -32,8 +32,8 @@ import { KnowledgeRepository } from './knowledgeRepository.ts';
 import { retrieveStaticKnowledge } from './knowledgeRetriever.ts';
 import { LeverRepository } from './leverRepository.ts';
 import { retrieveVerifiedLevers } from './leverRetriever.ts';
-import { LocalNewsRepository } from './localNewsRepository.ts';
 import type { AIChatNewsRepository } from './newsRepository.ts';
+import { createAIChatNewsRepository } from './newsRepositoryFactory.ts';
 import { retrieveAIChatNews } from './newsRetriever.ts';
 import { routeAiChatIntent } from './intentRouter.ts';
 import { consoleSafeLogger, errorLogFields, type SafeLogger } from './logger.ts';
@@ -121,7 +121,7 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
   const leverRetriever =
     options.leverRetriever ||
     ((query: Parameters<typeof retrieveVerifiedLevers>[0]) => retrieveVerifiedLevers(query, leverRepository));
-  const newsRepository = options.newsRepository || new LocalNewsRepository();
+  const newsRepository = options.newsRepository || createAIChatNewsRepository({ env: options.env });
   const newsRetriever = options.newsRetriever || retrieveAIChatNews;
   const knowledgeRepository = options.knowledgeRepository || new KnowledgeRepository();
   const knowledgeRetriever = options.knowledgeRetriever || retrieveStaticKnowledge;
