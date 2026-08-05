@@ -3,42 +3,87 @@ import { Outlet, useLocation } from 'react-router-dom';
 import Footer from './footer';
 import Sidebar from './sidebar';
 import MiniTopBar from './MiniTopBar';
+import AIChatDialog from './ai-chat/AIChatDialog';
+import './layout.css';
 
-const TOPBAR_HEIGHT = 38;
-const FOOTER_HEIGHT = 10;
+const TOPBAR_HEIGHT = 52;
+const FOOTER_HEIGHT = 20;
 
 const Layout = ({ children }) => {
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
 
   const isDashboardPage = location.pathname === '/';
   const sidebarWidth = isSidebarOpen ? 240 : 0;
 
-  const handleMenuClick = () => {
-    setIsSidebarOpen((value) => !value);
-
+  const triggerLayoutResize = () => {
     setTimeout(() => {
       window.dispatchEvent(new Event('resize'));
-    }, 300);
+    }, 280);
+  };
+
+  const handleChatbotToggle = () => {
+    if (isChatbotOpen) {
+      setIsChatbotOpen(false);
+      triggerLayoutResize();
+      return;
+    }
+
+    setIsSidebarOpen(false);
+    setIsChatbotOpen(true);
+    triggerLayoutResize();
+  };
+
+  const handleMenuClick = () => {
+    if (isChatbotOpen) {
+      setIsChatbotOpen(false);
+      triggerLayoutResize();
+      return;
+    }
+
+    setIsSidebarOpen((value) => !value);
+    triggerLayoutResize();
+  };
+
+  const handleChatbotClose = () => {
+    setIsChatbotOpen(false);
+    triggerLayoutResize();
   };
 
   return (
     <div style={styles.layout}>
-      <MiniTopBar onMenuClick={handleMenuClick} />
+      <MiniTopBar
+        isSidebarOpen={isSidebarOpen}
+        isChatbotOpen={isChatbotOpen}
+        onMenuClick={handleMenuClick}
+        onChatbotToggle={handleChatbotToggle}
+      />
 
       <div style={styles.shell}>
         <aside style={{ ...styles.sidebar, width: sidebarWidth }}>
           <Sidebar collapsed={!isSidebarOpen} />
         </aside>
 
-        <main
-          style={{
-            ...styles.main,
-            overflow: isDashboardPage ? 'hidden' : 'auto',
-          }}
+        <div
+          className={`dashboard-workspace ${isChatbotOpen ? 'chatbot-open' : ''}`}
         >
-          {children || <Outlet context={{ isSidebarOpen }} />}
-        </main>
+          {isChatbotOpen && (
+            <aside className="chatbot-dock" aria-label="BorneoBot chat panel">
+              <AIChatDialog open={isChatbotOpen} onClose={handleChatbotClose} />
+            </aside>
+          )}
+
+          <main
+            style={{
+              ...styles.main,
+              overflow: isDashboardPage ? 'hidden' : 'auto',
+            }}
+            className="dashboard-content"
+          >
+            {children || <Outlet context={{ isSidebarOpen, isChatbotOpen }} />}
+          </main>
+        </div>
       </div>
 
       <Footer />

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import hoverSrc from '../assets/AIbot_GIF.gif';
 import staticSrc from '../assets/AIbot_static.png';
 
-const AIbotButton = () => {
+const AIbotButton = ({ isOpen = false, onToggle }) => {
   const [isHovered, setIsHovered] = useState(false);
 
   const imageSrc = isHovered ? hoverSrc : staticSrc;
@@ -20,6 +20,9 @@ const AIbotButton = () => {
       type="button"
       style={buttonStyle}
       aria-label="AI Assistant"
+      aria-haspopup="dialog"
+      aria-expanded={isOpen}
+      onClick={onToggle}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >

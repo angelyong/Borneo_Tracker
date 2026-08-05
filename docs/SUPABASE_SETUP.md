@@ -2,11 +2,13 @@
 
 _Last updated: 2026-07-28_
 
-> **The database is defined by two files, and they have a run order.**
+> **The original database baseline is defined by two files, and they have a run order.**
 > 1. [`supabase/auth_schema.sql`](../supabase/auth_schema.sql) — the `profiles` table, the `handle_new_user` signup trigger, the `current_user_role()` role helper, RLS and the column privileges that stop a user promoting themselves. **Run this first**, because step 2 depends on `current_user_role()`.
 > 2. [`supabase/schema.sql`](../supabase/schema.sql) — the `news_items` table and its RLS, including the admin-only approval policies.
 >
 > Both are idempotent, so re-running them against a live project is safe. The auth objects were originally created by hand in the console during the 2026-07-16 migration ([`docs/SUPABASE_AUTH_MIGRATION_PLAN.md`](./SUPABASE_AUTH_MIGRATION_PLAN.md)) and were exported into `auth_schema.sql` on 2026-07-28 — until then the role gate existed nowhere but the dashboard. Change a policy in the console and you must mirror it into these files, or a rebuild will quietly restore the old rules.
+
+> **New forward changes live under [`supabase/migrations/`](../supabase/migrations/).** Stage 8B starts versioned migration history for AI chatbot config, quota, and telemetry contracts. Future deployments should apply `auth_schema.sql`, then `schema.sql`, then every migration in timestamp order. Do not paste only `schema.sql` and ignore migrations.
 
 The public `/news` page and the daily pipeline use a free hosted **Supabase**
 project as the shared, live store. No Docker, nothing to self-host. ~5 minutes.

@@ -1,0 +1,528 @@
+{
+  "buildTimestamp": "1970-01-01T00:00:00.000Z",
+  "sourcesScanned": [
+    {
+      "id": "site-copy-en",
+      "type": "json",
+      "path": "src/i18n/locales/en.json"
+    },
+    {
+      "id": "site-copy-ms",
+      "type": "json",
+      "path": "src/i18n/locales/ms.json"
+    },
+    {
+      "id": "report-content",
+      "type": "page",
+      "path": "src/pages/reports/reportContent.js"
+    },
+    {
+      "id": "policy-page",
+      "type": "page",
+      "path": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "resilience-methodology",
+      "type": "markdown",
+      "path": "borneo_tracker_resilience_index_methodology.md"
+    },
+    {
+      "id": "manual-site-overview",
+      "type": "json",
+      "path": "knowledge/site-overview.json"
+    },
+    {
+      "id": "manual-regions",
+      "type": "json",
+      "path": "knowledge/regions.json"
+    },
+    {
+      "id": "manual-esg-indicators",
+      "type": "json",
+      "path": "knowledge/esg-indicators.json"
+    },
+    {
+      "id": "manual-sdg-progress",
+      "type": "json",
+      "path": "knowledge/sdg-progress.json"
+    },
+    {
+      "id": "manual-data-sources",
+      "type": "json",
+      "path": "knowledge/data-sources.json"
+    },
+    {
+      "id": "manual-generate-report",
+      "type": "json",
+      "path": "knowledge/generate-report.json"
+    },
+    {
+      "id": "manual-faq",
+      "type": "json",
+      "path": "knowledge/faq.json"
+    }
+  ],
+  "sourcesProcessed": [
+    {
+      "id": "site-copy-en",
+      "recordsExtracted": 10
+    },
+    {
+      "id": "site-copy-ms",
+      "recordsExtracted": 10
+    },
+    {
+      "id": "report-content",
+      "recordsExtracted": 55
+    },
+    {
+      "id": "policy-page",
+      "recordsExtracted": 48
+    },
+    {
+      "id": "resilience-methodology",
+      "recordsExtracted": 8
+    },
+    {
+      "id": "manual-site-overview",
+      "recordsExtracted": 1
+    },
+    {
+      "id": "manual-regions",
+      "recordsExtracted": 1
+    },
+    {
+      "id": "manual-esg-indicators",
+      "recordsExtracted": 2
+    },
+    {
+      "id": "manual-sdg-progress",
+      "recordsExtracted": 1
+    },
+    {
+      "id": "manual-data-sources",
+      "recordsExtracted": 2
+    },
+    {
+      "id": "manual-generate-report",
+      "recordsExtracted": 1
+    },
+    {
+      "id": "manual-faq",
+      "recordsExtracted": 2
+    }
+  ],
+  "missingSources": [],
+  "unsafeSources": [],
+  "recordsCreated": 83,
+  "recordsValidated": 141,
+  "runtimeRecords": 83,
+  "recordsSkipped": 0,
+  "duplicateRecords": [],
+  "invalidRecords": [],
+  "placeholderRecords": [
+    {
+      "id": "privacy-privacy-introduction",
+      "title": "Privacy Policy: Introduction",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "privacy-privacy-information-we-collect",
+      "title": "Privacy Policy: Information We Collect",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "privacy-privacy-account-information",
+      "title": "Privacy Policy: Account Information",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "privacy-privacy-usage-device-information",
+      "title": "Privacy Policy: Usage and Device Information",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "privacy-privacy-community-report-information",
+      "title": "Privacy Policy: Community Report Information",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "privacy-privacy-how-we-use-information",
+      "title": "Privacy Policy: How We Use Information",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "privacy-privacy-ai-chatbot-interactions",
+      "title": "Privacy Policy: AI Chatbot Interactions",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "privacy-privacy-cookies-technologies",
+      "title": "Privacy Policy: Cookies and Similar Technologies",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "privacy-privacy-data-sharing",
+      "title": "Privacy Policy: Data Sharing",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "privacy-privacy-data-retention",
+      "title": "Privacy Policy: Data Retention",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "privacy-privacy-data-security",
+      "title": "Privacy Policy: Data Security",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "privacy-privacy-user-choices-rights",
+      "title": "Privacy Policy: User Choices and Rights",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "privacy-privacy-childrens-privacy",
+      "title": "Privacy Policy: Children's Privacy",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "privacy-privacy-changes-policy",
+      "title": "Privacy Policy: Changes to This Policy",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "privacy-privacy-contact-us",
+      "title": "Privacy Policy: Contact Us",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "terms-terms-acceptance",
+      "title": "Terms of Use: Acceptance of Terms",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "terms-terms-about",
+      "title": "Terms of Use: About Borneo Tracker",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "terms-terms-eligibility-accounts",
+      "title": "Terms of Use: Eligibility and User Accounts",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "terms-terms-acceptable-use",
+      "title": "Terms of Use: Acceptable Use",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "terms-terms-prohibited-activities",
+      "title": "Terms of Use: Prohibited Activities",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "terms-terms-community-reports",
+      "title": "Terms of Use: Community Reports and User Content",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "terms-terms-sustainability-data",
+      "title": "Terms of Use: Sustainability Data and Third-Party Sources",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "terms-terms-ai-content",
+      "title": "Terms of Use: AI-Generated or AI-Assisted Content",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "terms-terms-intellectual-property",
+      "title": "Terms of Use: Intellectual Property",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "terms-terms-external-links",
+      "title": "Terms of Use: External Links",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "terms-terms-availability-changes",
+      "title": "Terms of Use: Availability and Changes",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "terms-terms-disclaimer",
+      "title": "Terms of Use: Disclaimer",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "terms-terms-liability",
+      "title": "Terms of Use: Limitation of Liability",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "terms-terms-suspension-termination",
+      "title": "Terms of Use: Suspension or Termination",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "terms-terms-changes",
+      "title": "Terms of Use: Changes to the Terms",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "terms-terms-contact",
+      "title": "Terms of Use: Contact Us",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "data-policy-data-purpose",
+      "title": "Data Policy: Purpose of This Data Policy",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "data-policy-data-categories",
+      "title": "Data Policy: Data Categories",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "data-policy-data-geographic-coverage",
+      "title": "Data Policy: Geographic Coverage",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "data-policy-data-sources",
+      "title": "Data Policy: Data Sources",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "data-policy-data-collection-integration",
+      "title": "Data Policy: Data Collection and Integration",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "data-policy-data-validation",
+      "title": "Data Policy: Data Validation",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "data-policy-data-transformation-standardisation",
+      "title": "Data Policy: Data Transformation and Standardisation",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "data-policy-data-methodology",
+      "title": "Data Policy: ESG and SDG Indicator Methodology",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "data-policy-data-update-frequency",
+      "title": "Data Policy: Data Update Frequency",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "data-policy-data-missing-incomplete",
+      "title": "Data Policy: Missing or Incomplete Data",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "data-policy-data-quality-limitations",
+      "title": "Data Policy: Data Quality Limitations",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "data-policy-data-ai-knowledge-sources",
+      "title": "Data Policy: AI Knowledge Sources",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "data-policy-data-source-attribution",
+      "title": "Data Policy: Source Attribution",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "data-policy-data-corrections-feedback",
+      "title": "Data Policy: Corrections and Feedback",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "data-policy-data-downloads-reuse",
+      "title": "Data Policy: Data Downloads and Reuse",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "data-policy-data-policy-updates",
+      "title": "Data Policy: Policy Updates",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "data-policy-data-contact",
+      "title": "Data Policy: Contact Us",
+      "status": "incomplete",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx"
+    },
+    {
+      "id": "site-overview",
+      "title": "Borneo Tracker Overview",
+      "status": "placeholder",
+      "sourceFile": "knowledge/site-overview.json"
+    },
+    {
+      "id": "regions-overview",
+      "title": "Borneo Regions",
+      "status": "placeholder",
+      "sourceFile": "knowledge/regions.json"
+    },
+    {
+      "id": "forest-cover",
+      "title": "Forest Cover",
+      "status": "placeholder",
+      "sourceFile": "knowledge/esg-indicators.json"
+    },
+    {
+      "id": "esg-overview",
+      "title": "ESG Indicators",
+      "status": "placeholder",
+      "sourceFile": "knowledge/esg-indicators.json"
+    },
+    {
+      "id": "sdg-overview",
+      "title": "SDG Progress",
+      "status": "placeholder",
+      "sourceFile": "knowledge/sdg-progress.json"
+    },
+    {
+      "id": "data-sources-overview",
+      "title": "Data Sources",
+      "status": "placeholder",
+      "sourceFile": "knowledge/data-sources.json"
+    },
+    {
+      "id": "environmental-data-sources",
+      "title": "Environmental Data Sources",
+      "status": "placeholder",
+      "sourceFile": "knowledge/data-sources.json"
+    },
+    {
+      "id": "generate-report",
+      "title": "Generate Report",
+      "status": "placeholder",
+      "sourceFile": "knowledge/generate-report.json"
+    },
+    {
+      "id": "faq-esg-vs-sdg",
+      "title": "Difference Between ESG and SDG",
+      "status": "placeholder",
+      "sourceFile": "knowledge/faq.json"
+    },
+    {
+      "id": "faq-website-usage",
+      "title": "Website Usage",
+      "status": "placeholder",
+      "sourceFile": "knowledge/faq.json"
+    }
+  ],
+  "countsBySource": {
+    "site-copy-en": 10,
+    "site-copy-ms": 10,
+    "report-content": 55,
+    "resilience-methodology": 8
+  },
+  "countsByCategory": {
+    "site-overview": 4,
+    "dashboard": 4,
+    "esg-indicators": 2,
+    "sdg-progress": 2,
+    "regional": 2,
+    "generate-report": 2,
+    "community": 2,
+    "news": 2,
+    "reports": 55,
+    "methodology": 8
+  },
+  "countsByLanguage": {
+    "en": 73,
+    "ms": 10
+  },
+  "countsByStatus": {
+    "verified": 83
+  },
+  "outputFiles": [
+    "knowledge/generated/site-overview.json",
+    "knowledge/generated/dashboard.json",
+    "knowledge/generated/esg-indicators.json",
+    "knowledge/generated/sdgs.json",
+    "knowledge/generated/regional.json",
+    "knowledge/generated/generate-report.json",
+    "knowledge/generated/community.json",
+    "knowledge/generated/news.json",
+    "knowledge/generated/reports.json",
+    "knowledge/generated/methodology.json",
+    "knowledge/generated/knowledge-index.json",
+    "supabase/functions/ai-chat/knowledge-index.json",
+    "knowledge/generated/build-report.json"
+  ],
+  "warnings": [
+    {
+      "id": "about-resilience-score-en",
+      "warnings": [
+        "Numerical claim detected; verify source support before using as static knowledge"
+      ]
+    },
+    {
+      "id": "report-indicator-hospital-beds-per-1k",
+      "warnings": [
+        "Numerical claim detected; verify source support before using as static knowledge"
+      ]
+    }
+  ],
+  "errors": []
+}
