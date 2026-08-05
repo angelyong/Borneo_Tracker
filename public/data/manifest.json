@@ -1,21 +1,21 @@
 {
-  "generatedAt": "2026-08-04T22:25:39Z",
-  "runId": "30955632361",
+  "generatedAt": "2026-08-05T22:23:34Z",
+  "runId": "31051931416",
   "files": {
     "public/data/indicators.json": {
-      "sha256": "3557d59e4330a14354540eb0f846aba404b626de4c7400a4f9de406593bfd66b",
-      "bytes": 110568,
-      "generatedAt": "2026-08-05"
+      "sha256": "2f501d008ab90cc133cdb540e6538a22e44037584b688dc0e8f5bd9dd2cd8698",
+      "bytes": 110648,
+      "generatedAt": "2026-08-06"
     },
     "public/data/resilience.json": {
-      "sha256": "9f3cbd2dc8f65962499f2197614f7040ebb4c749a7bee02a0b6f9e68ec56db4a",
-      "bytes": 12435,
-      "generatedAt": "2026-08-05"
+      "sha256": "6a452437aa82ded3fc9c928e02f66a6579d6191176f6a724ea73577add318d8f",
+      "bytes": 12331,
+      "generatedAt": "2026-08-06"
     },
     "public/data/districts.json": {
-      "sha256": "83a9a4dee2a1b8e42c0dbad0e86db9cec405e4f19821170aba6dcdc602f92758",
+      "sha256": "b97220fc0bcf64fff5006d987a539a51816ce1f3d982e0ee492dd0445bcdf7d1",
       "bytes": 505698,
-      "generatedAt": "2026-08-05"
+      "generatedAt": "2026-08-06"
     }
   }
 }
