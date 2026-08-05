@@ -9,10 +9,6 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "vitest run",
-<<<<<<< HEAD
-    "verify:data": "python verify_manifest.py verify public/data && python verify_manifest.py verify dist/data",
-    "test:watch": "vitest"
-=======
     "test:watch": "vitest",
     "ai-chat:golden:validate": "node scripts/evaluate-ai-chat-golden.js --validate-only",
     "ai-chat:golden": "node scripts/evaluate-ai-chat-golden.js",
@@ -21,7 +17,6 @@
     "knowledge:validate": "node scripts/build-knowledge.js --validate-only",
     "levers:build": "node scripts/build-levers.js",
     "levers:validate": "node scripts/build-levers.js --validate-only"
->>>>>>> origin/aichatbot
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.6",
