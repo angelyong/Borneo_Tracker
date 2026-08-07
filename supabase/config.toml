@@ -1,0 +1,4 @@
+project_id = "borneo-tracker"
+
+[functions.ai-chat]
+verify_jwt = false

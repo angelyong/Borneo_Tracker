@@ -60,6 +60,7 @@ const Sidebar = ({ collapsed = false }) => {
     { name: t('sidebar.regionalDetails'),  path: '/regions',   icon: <Icons.Table size={20} /> },
     { name: t('sidebar.esgIndicators'),    path: '/esg',       icon: <Icons.Gauge size={20} /> },
     { name: t('sidebar.sdgProgress'),      path: '/sdg',       icon: <Icons.Chart size={20} /> },
+    { name: t('sidebar.impactSimulator'),  path: '/simulator', icon: <Icons.Crosshair size={20} /> },
     { name: t('sidebar.newsInsights'),     path: '/news',      icon: <Icons.Newspaper size={20} />, badgeKey: 'news' },
     { name: t('sidebar.community'),        path: '/community', icon: <Icons.Comment size={20} />, badgeKey: 'community' },
     { name: t('sidebar.generateReport'),   path: '/reports',   icon: <Icons.FileArrow size={20} /> },

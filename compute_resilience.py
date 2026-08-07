@@ -27,13 +27,20 @@ import math
 import sqlite3
 from pathlib import Path
 
-from data_model import DASHBOARD_TERRITORIES, TODAY
+from data_model import DASHBOARD_TERRITORIES, TODAY, hexagon_pillar
 from json_artifacts import write_json_lf
 
 ROOT = Path(__file__).parent
 DB = ROOT / "borneo_tracker.db"
 FALLBACK_DB = ROOT / "borneo_tracker.snapshot.db"
 OUTPUT = ROOT / "public" / "data" / "resilience.json"
+MODEL_OUTPUT = ROOT / "public" / "data" / "resilience_model.json"
+
+# Bumped whenever the resilience_model.json SHAPE changes (new/renamed/removed
+# field) — never for a value-only refresh. src/utils/resilienceModel.js and its
+# golden test key off this to fail loudly instead of silently misreading an old
+# field name after a schema change.
+MODEL_SCHEMA_VERSION = 1
 
 PILLARS = ["Food", "Energy", "Education", "Shelter", "Healthcare", "Entertainment"]
 
@@ -179,6 +186,137 @@ def compute(rows):
     return result
 
 
+def _indicator_to_pillar(scores):
+    """Derive indicator -> pillar strictly from the scored `detail` rows
+    `compute()` already produced for this run — NOT a second hand-maintained
+    table. `compute()` itself only ever groups by the row's own hexagon_pillar
+    column, so this is the exact same grouping, just inverted into a lookup a
+    JS engine can use for `overrides` keyed by indicator name.
+
+    Returns (mapping, conflicts). A conflict (the same indicator name observed
+    under two different pillars across territories) would mean compute()'s own
+    grouping is itself inconsistent — surfaced rather than silently resolved,
+    so it fails a test instead of shipping a wrong contract.
+    """
+    mapping = {}
+    conflicts = {}
+    for territory_data in scores.values():
+        for pillar, entries in territory_data["detail"].items():
+            for entry in entries:
+                indicator = entry["indicator"]
+                prior = mapping.get(indicator)
+                if prior is not None and prior != pillar:
+                    conflicts.setdefault(indicator, {prior}).add(pillar)
+                    continue
+                mapping[indicator] = pillar
+
+    # BOUNDS entries never scored in this run (no matching row this pipeline
+    # run, or a unit mismatch) can't be inferred from `detail` — data_model's
+    # own hexagon_pillar() is the same function that tags rows on ingestion,
+    # so it is the correct fallback, not a second guess. A few BOUNDS entries
+    # (the "cross-pillar wellbeing rates") deliberately have no fixed concept
+    # mapping there either; those stay unmapped rather than guessed.
+    unmapped = []
+    for indicator in BOUNDS:
+        if indicator in mapping:
+            continue
+        pillar = hexagon_pillar(indicator)
+        if pillar:
+            mapping[indicator] = pillar
+        else:
+            unmapped.append(indicator)
+
+    return mapping, conflicts, unmapped
+
+
+def build_model(scores):
+    """Build the versioned, deterministic export a JS engine mirrors to
+    reproduce `compute()` client-side (Impact Simulator, IS-2A). Every number
+    in `baseline` is copied from `scores` (compute()'s own return value) —
+    nothing here is recomputed, so this can never disagree with resilience.json
+    for the SAME `scores` input. See IMPACT_SIMULATOR_SPEC.md §2.
+    """
+    indicator_to_pillar, pillar_conflicts, unmapped_indicators = _indicator_to_pillar(scores)
+    if pillar_conflicts:
+        print(f"WARNING: indicator(s) mapped to more than one pillar across territories: {pillar_conflicts}")
+    if unmapped_indicators:
+        print(f"NOTE: BOUNDS indicator(s) with no scored row and no hexagon_pillar() concept this run "
+              f"(omitted from indicatorToPillar): {unmapped_indicators}")
+
+    baseline = {}
+    for territory, data in scores.items():
+        inputs = {}
+        for pillar, entries in data["detail"].items():
+            for entry in entries:
+                inputs[entry["indicator"]] = {
+                    "value": entry["value"],
+                    "unit": entry["unit"],
+                    "score": entry["score"],
+                    "year": entry["year"],
+                    "source": entry["source"],
+                    "confidence": entry["confidence"],
+                    "pillar": pillar,
+                }
+        baseline[territory] = {
+            "inputs": inputs,
+            "pillarScores": data["pillarScores"],
+            "index": data["index"],
+            "indexStrict": data["indexStrict"],
+            "rag": data["rag"],
+            "ragStrict": data["ragStrict"],
+            "weakestPillar": data["weakestPillar"],
+            "scoredPillars": data["scoredPillars"],
+            "unscoredPillars": data["unscoredPillars"],
+        }
+
+    return {
+        "schemaVersion": MODEL_SCHEMA_VERSION,
+        "generatedAt": TODAY,
+        "pillars": PILLARS,
+        "bounds": BOUNDS,
+        "indicatorToPillar": indicator_to_pillar,
+        "scoring": {
+            "normalization": "linear",
+            "inputRange": "each indicator's own {worst, best} in BOUNDS; either direction "
+                           "(best < worst means lower raw values score higher)",
+            "outputRange": [0, 100],
+            "roundingPrecision": 1,
+            "requireExactUnitMatch": True,
+            "notes": "a row is only scored if its unit string matches BOUNDS[indicator].unit "
+                     "exactly (e.g. a '%' target is never applied to an absolute-count row of "
+                     "the same indicator name); missing bounds entry, null value, or unit "
+                     "mismatch => indicator excluded from its pillar, never imputed",
+            "pillarAggregation": "arithmetic mean of that pillar's scored indicator scores, "
+                                  "rounded to roundingPrecision",
+            "unscoredPillarBehavior": "a pillar with zero scored indicators is excluded from "
+                                      "pillarScores and the index, and listed in "
+                                      "unscoredPillars — never imputed",
+        },
+        "index": {
+            "arithmeticMean": {
+                "method": "mean of the scored pillarScores (already rounded to "
+                          "roundingPrecision), rounded again to roundingPrecision",
+                "roundingPrecision": 1,
+            },
+            "strictGeometricMean": {
+                "method": "geometric mean of the scored pillarScores (already rounded to "
+                          "roundingPrecision), rounded again to roundingPrecision",
+                "zeroPillarBehavior": "if ANY scored pillar score is <= 0, indexStrict is "
+                                      "exactly 0.0 — 'no food = no resilience, however good "
+                                      "the rest' — rather than a partial geometric mean",
+                "roundingPrecision": 1,
+            },
+            "ragThresholds": {"green": RAG_GREEN, "amber": RAG_AMBER},
+            "ragBasis": "rag/ragStrict are computed FROM THE ROUNDED index/indexStrict value "
+                        "(green if >= green threshold, amber if >= amber threshold, else red) "
+                        "— not from the raw pre-rounding mean",
+            "emptyBehavior": "index, indexStrict, rag, ragStrict and weakestPillar are all "
+                             "null when a territory has zero scored pillars",
+        },
+        "baseline": baseline,
+    }
+
+
 def main():
     rows = load_canonical_rows()
     scores = compute(rows)
@@ -197,6 +335,15 @@ def main():
               f"({data['ragStrict']})  weakest={data['weakestPillar']} "
               f"(scored {len(data['pillarScores'])}/{len(PILLARS)} pillars)")
     print(f"Wrote -> {OUTPUT.relative_to(ROOT)}")
+
+    # Impact Simulator: the same run's `scores` reshaped into a versioned,
+    # deterministic contract a JS engine can mirror. Written in the same
+    # pipeline step as resilience.json (both come from this one `scores`), and
+    # tracked by emit_manifest.py's TRACKED_FILES the same way (IS-1B).
+    model_payload = build_model(scores)
+    MODEL_OUTPUT.parent.mkdir(parents=True, exist_ok=True)
+    write_json_lf(MODEL_OUTPUT, model_payload)
+    print(f"Wrote -> {MODEL_OUTPUT.relative_to(ROOT)}")
     return 0
 
 

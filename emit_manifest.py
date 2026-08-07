@@ -53,6 +53,7 @@ PROVENANCE = DATA_DIR / "provenance.jsonl"
 TRACKED_FILES = [
     "public/data/indicators.json",
     "public/data/resilience.json",
+    "public/data/resilience_model.json",
     "public/data/districts.json",
 ]
 

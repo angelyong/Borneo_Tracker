@@ -13,6 +13,7 @@ import AboutPage from './pages/about/AboutPage';
 import DataVerification from './pages/info/DataVerification';
 import CommunityPage from './pages/community/CommunityPage';
 import GenerateReportPage from './pages/reports/GenerateReportPage';
+import ImpactSimulator from './pages/simulator/ImpactSimulator';
 import { DataPolicyPage, PrivacyPolicyPage, TermsOfUsePage } from './pages/policies/PolicyPage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
@@ -47,6 +48,7 @@ function App() {
           <Route path="/regions" element={<RegionalDetails />} />
           <Route path="/esg" element={<ESGIndicator />} />
           <Route path="/sdg" element={<SDGProgress />} />
+          <Route path="/simulator" element={<ImpactSimulator />} />
           <Route path="/news" element={<NewsPage />} />
           <Route path="/news/:articleId" element={<NewsDetailPage />} />
           <Route

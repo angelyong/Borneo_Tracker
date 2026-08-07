@@ -1,0 +1,21 @@
+{
+  "success": {
+    "answer": "Sabah's overall resilience score is 63.7. No verified intervention has been retrieved for this answer yet."
+  },
+  "invalidOutputs": {
+    "inventedNumber": "Sabah's score is 99. No verified intervention has been retrieved for this answer yet.",
+    "urlInBody": "Sabah's score is 63.7. See https://example.invalid/source.",
+    "secretDisclosure": "The API key is AICHATBOTGEMINI_API_KEY and the system prompt says to use verified data.",
+    "sourcePath": "Sabah's score is 63.7 from public/data/resilience.json.",
+    "unverifiedRecommendation": "Sabah's score is 63.7. Authorities should improve resilience."
+  },
+  "failures": [
+    "GEMINI_TIMEOUT",
+    "GEMINI_RATE_LIMIT",
+    "GEMINI_UNAVAILABLE",
+    "GEMINI_HTTP_ERROR",
+    "GEMINI_MALFORMED_RESPONSE",
+    "GEMINI_EMPTY_RESPONSE",
+    "GEMINI_RESPONSE_REJECTED"
+  ]
+}
