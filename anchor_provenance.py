@@ -73,6 +73,18 @@ PROVENANCE = DATA_DIR / "provenance.jsonl"
 ANCHORS = DATA_DIR / "anchors.jsonl"
 PROOF_DIR = DATA_DIR / "anchors"
 
+# The same proof under the name the official client expects. `ots verify` looks
+# for the timestamped file by stripping ".ots" off the proof's own name, so a
+# proof called `<digest>.ots` would send it hunting for a file called `<digest>`.
+# Publishing this copy is what makes the two-line instruction on the verification
+# page literally true:
+#     curl -sO <site>/data/manifest.json
+#     curl -sO <site>/data/manifest.json.ots
+#     ots verify manifest.json.ots
+# It has the same lifecycle as manifest.json itself — both are overwritten each
+# run — while PROOF_DIR keeps the immutable, content-addressed history.
+CURRENT_PROOF = DATA_DIR / "manifest.json.ots"
+
 
 def read_anchors():
     """Every event so far, oldest first. Missing file is not an error."""
@@ -187,7 +199,9 @@ def main(argv=None):
 
     path = proof_path(manifest_sha256)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_bytes(detached.to_bytes())
+    proof_bytes = detached.to_bytes()
+    path.write_bytes(proof_bytes)
+    CURRENT_PROOF.write_bytes(proof_bytes)
 
     entry = {
         "ts": utc_now(),
@@ -214,6 +228,8 @@ def main(argv=None):
         print(f"  unreachable: {calendar} — {error}")
     print(f"Wrote -> {path.relative_to(ROOT).as_posix()} ({path.stat().st_size} bytes), "
           f"status={status}")
+    print(f"      -> {CURRENT_PROOF.relative_to(ROOT).as_posix()}  "
+          f"(same bytes, the name `ots verify` expects)")
     print("A fresh stamp is PENDING for a few hours until a Bitcoin block includes "
           "it. Run upgrade_anchors.py later to turn it into a confirmed proof.")
     return 0

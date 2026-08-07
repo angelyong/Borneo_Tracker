@@ -33,7 +33,7 @@ import sys
 from pathlib import Path
 
 import ots
-from anchor_provenance import ANCHORS, append_anchor, read_anchors
+from anchor_provenance import ANCHORS, CURRENT_PROOF, MANIFEST, append_anchor, read_anchors
 from emit_manifest import run_id, utc_now
 
 ROOT = Path(__file__).parent
@@ -107,7 +107,16 @@ def main(argv=None):
             print(f"  {label}  answered but still {status} — no event appended")
             continue
 
-        path.write_bytes(detached.to_bytes())
+        proof_bytes = detached.to_bytes()
+        path.write_bytes(proof_bytes)
+        # Keep the `ots verify manifest.json.ots` copy in step with the
+        # content-addressed one, but ONLY while it still describes the manifest
+        # currently on disk — a newer refresh may have moved on since this anchor
+        # was made, and overwriting it then would publish a proof for data we no
+        # longer serve.
+        if MANIFEST.exists() and ots.sha256_file(MANIFEST).hex() == manifest_sha256:
+            CURRENT_PROOF.write_bytes(proof_bytes)
+
         append_anchor({
             "ts": utc_now(),
             "runId": run_id(),

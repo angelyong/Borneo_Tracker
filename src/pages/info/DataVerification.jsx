@@ -361,6 +361,10 @@ export default function DataVerification() {
                 <span key={dot} aria-hidden="true" style={{ width: 9, height: 9, borderRadius: '50%', background: dot, opacity: 0.75 }} />
               ))}
             </div>
+            {/* Every line here must be a command that actually runs against what
+                we actually publish. The Sigstore line only appears once an
+                attestation exists — printing an instruction that fails would
+                undo the entire point of the page. */}
             <pre
               style={{
                 margin: 0,
@@ -372,14 +376,26 @@ export default function DataVerification() {
                 color: '#f3f6f1',
               }}
             >
+              <span style={{ color: ON_INK_MUTED }}>{'# 1 · recompute the fingerprint yourself\n'}</span>
               <span style={{ color: ON_INK_MUTED }}>$ </span>
-              {`curl -s ${origin}/data/manifest.json | sha256sum\n`}
+              {`curl -sO ${origin}/data/manifest.json\n`}
+              <span style={{ color: ON_INK_MUTED }}>$ </span>
+              {'sha256sum manifest.json\n'}
               <span style={{ color: '#5fd39b' }}>{manifestSha256 || '…'}</span>
               {'\n\n'}
+              <span style={{ color: ON_INK_MUTED }}>{'# 2 · check it against Bitcoin\n'}</span>
               <span style={{ color: ON_INK_MUTED }}>$ </span>
-              {'ots verify manifest.json.ots\n'}
+              {`curl -sO ${origin}/data/manifest.json.ots\n`}
               <span style={{ color: ON_INK_MUTED }}>$ </span>
-              {'gh attestation verify manifest.json --repo angelyong/Borneo_Tracker'}
+              {'ots verify manifest.json.ots'}
+              {anchor?.sigstore ? (
+                <>
+                  {'\n\n'}
+                  <span style={{ color: ON_INK_MUTED }}>{'# 3 · check the transparency log\n'}</span>
+                  <span style={{ color: ON_INK_MUTED }}>$ </span>
+                  {'gh attestation verify manifest.json --repo angelyong/Borneo_Tracker'}
+                </>
+              ) : null}
             </pre>
           </div>
         </Section>
