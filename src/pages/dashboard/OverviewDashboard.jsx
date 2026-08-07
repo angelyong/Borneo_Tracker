@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useOutletContext } from 'react-router-dom';
 import { GeoJSON, MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -34,6 +35,7 @@ import DataFreshness from '../../components/DataFreshness';
 import PillarCoverage from '../../components/PillarCoverage';
 import ProvenanceChip from '../../components/ProvenanceChip';
 import WeakestLinkBars from '../../components/WeakestLinkBars';
+import RagGauge from '../../components/RagGauge';
 import MoneyVsResilience from '../../components/MoneyVsResilience';
 import HexRadar from '../../components/HexRadar';
 
@@ -64,7 +66,7 @@ const TERRITORY_OPTIONS = ['Overall Borneo', 'Sabah', 'Sarawak', 'Brunei', 'Kali
 const ESG_CATEGORIES = ['Environment', 'Social', 'Governance'];
 const RAG_COLORS = { green: '#16a34a', amber: '#f59e0b', red: '#dc2626' };
 
-const ResizeMap = () => {
+const ResizeMap = ({ triggerKey }) => {
   const map = useMap();
 
   useEffect(() => {
@@ -89,6 +91,13 @@ const ResizeMap = () => {
       window.removeEventListener('resize', resizeMap);
     };
   }, [map]);
+
+  useEffect(() => {
+    const id = setTimeout(() => {
+      map.invalidateSize();
+    }, 280);
+    return () => clearTimeout(id);
+  }, [map, triggerKey]);
 
   return null;
 };
@@ -186,56 +195,14 @@ const MapFocus = ({ geo, parent, selectedKey, isDistrict, zoomToDistrict, panelW
   return null;
 };
 
-function RagGauge({ score, thresholds }) {
-  const cx = 110;
-  const cy = 110;
-  const r = 80;
-  const strokeW = 38;
-  const circumference = Math.PI * r;
-
-  const zones = [
-    { from: 0, to: thresholds.amber, color: RAG_COLORS.red },
-    { from: thresholds.amber, to: thresholds.green, color: RAG_COLORS.amber },
-    { from: thresholds.green, to: 100, color: RAG_COLORS.green },
-  ];
-
-  const theta = Math.PI * (1 - Math.min(100, Math.max(0, score)) / 100);
-  const needleR = r + strokeW / 2;
-  const nx = cx + needleR * Math.cos(theta);
-  const ny = cy - needleR * Math.sin(theta);
-
-  return (
-    <svg viewBox="0 0 220 120" style={styles.gaugeSvg}>
-      {zones.map((zone) => {
-        const dashLen = ((zone.to - zone.from) / 100) * circumference;
-        const startOffset = (zone.from / 100) * circumference;
-
-        return (
-          <path
-            key={zone.color}
-            d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
-            fill="none"
-            stroke={zone.color}
-            strokeWidth={strokeW}
-            strokeLinecap="butt"
-            strokeDasharray={`${dashLen} ${circumference}`}
-            strokeDashoffset={-startOffset}
-            opacity={0.85}
-          />
-        );
-      })}
-
-      <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="var(--color-ink)" strokeWidth="3" strokeLinecap="round" />
-      <circle cx={cx} cy={cy} r="6" fill="var(--color-ink)" />
-    </svg>
-  );
-}
-
+// RagGauge moved to src/components/RagGauge.jsx (imported above) to de-duplicate —
+// the Impact Simulator reuses the same shared component (IS-3C).
 // HexRadar moved to src/components/HexRadar.jsx (imported above) to de-duplicate —
 // Regional_Detail renders the same shared component.
 
 const OverviewDashboard = () => {
   const { t } = useTranslation();
+  const { isChatbotOpen = false } = useOutletContext() || {};
   const [searchText, setSearchText] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchActiveIdx, setSearchActiveIdx] = useState(0);
@@ -837,7 +804,7 @@ const OverviewDashboard = () => {
           zoomControl={false}
           maxBoundsViscosity={1.0}
         >
-          <ResizeMap />
+          <ResizeMap triggerKey={isChatbotOpen} />
           <FitBorneoOnLoad onInitialView={handleInitialView} />
           <MapFocus
             geo={districtGeo}

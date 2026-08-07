@@ -1,0 +1,73 @@
+{
+  "records": [
+    {
+      "id": "published-sabah-001",
+      "status": "published",
+      "territory": "Sabah",
+      "language": "en",
+      "title": "Sabah forest restoration update",
+      "summary": "Synthetic published Sabah conservation summary for golden evaluation.",
+      "publishedAt": "2026-07-20T00:00:00.000Z",
+      "publisher": "Golden Fixture Publisher",
+      "url": "https://example.invalid/published-sabah-001"
+    },
+    {
+      "id": "published-sarawak-001",
+      "status": "published",
+      "territory": "Sarawak",
+      "language": "en",
+      "title": "Sarawak peat monitoring update",
+      "summary": "Synthetic published Sarawak conservation summary for golden evaluation.",
+      "publishedAt": "2026-07-14T00:00:00.000Z",
+      "publisher": "Golden Fixture Publisher"
+    },
+    {
+      "id": "published-ms-001",
+      "status": "published",
+      "territory": "Kalimantan",
+      "language": "ms",
+      "title": "Kemas kini pemuliharaan Kalimantan",
+      "summary": "Ringkasan sintetik yang telah diterbitkan untuk penilaian golden.",
+      "publishedAt": "2026-07-22T00:00:00.000Z",
+      "publisher": "Penerbit Fixture Golden"
+    },
+    {
+      "id": "published-borneo-001",
+      "status": "published",
+      "territory": "Borneo-wide",
+      "language": "en",
+      "title": "Borneo-wide biodiversity bulletin",
+      "summary": "Synthetic Borneo-wide published item.",
+      "publishedAt": "2026-07-25T00:00:00.000Z",
+      "publisher": "Golden Fixture Publisher"
+    },
+    {
+      "id": "pending-sentinel-001",
+      "status": "pending",
+      "territory": "Sabah",
+      "language": "en",
+      "title": "PENDING_SENTINEL_TITLE_MUST_NEVER_APPEAR",
+      "summary": "PENDING_SENTINEL_SUMMARY_MUST_NEVER_APPEAR",
+      "body": "PENDING_SENTINEL_BODY_MUST_NEVER_APPEAR",
+      "publishedAt": "2026-07-21T00:00:00.000Z"
+    },
+    {
+      "id": "pending-sentinel-002",
+      "status": "pending",
+      "territory": "Sarawak",
+      "language": "ms",
+      "title": "PENDING_SENTINEL_TAJUK_JANGAN_PAPAR",
+      "summary": "PENDING_SENTINEL_RINGKASAN_JANGAN_PAPAR",
+      "body": "PENDING_SENTINEL_KANDUNGAN_JANGAN_PAPAR",
+      "publishedAt": "2026-07-19T00:00:00.000Z"
+    }
+  ],
+  "pendingSentinels": [
+    "PENDING_SENTINEL_TITLE_MUST_NEVER_APPEAR",
+    "PENDING_SENTINEL_SUMMARY_MUST_NEVER_APPEAR",
+    "PENDING_SENTINEL_BODY_MUST_NEVER_APPEAR",
+    "PENDING_SENTINEL_TAJUK_JANGAN_PAPAR",
+    "PENDING_SENTINEL_RINGKASAN_JANGAN_PAPAR",
+    "PENDING_SENTINEL_KANDUNGAN_JANGAN_PAPAR"
+  ]
+}

@@ -1,0 +1,30 @@
+[
+  {
+    "id": "data-sources-overview",
+    "title": "Data Sources",
+    "category": "data-sources",
+    "content": "Borneo Tracker displays source names and update details with indicators where available. Data-source descriptions must be replaced with verified source documentation before they are treated as complete.",
+    "regions": [],
+    "relatedSdgs": [],
+    "unit": null,
+    "sourceName": "Borneo Tracker placeholder knowledge",
+    "sourceUrl": "",
+    "pageUrl": "/data-sources",
+    "updatedAt": null,
+    "status": "placeholder"
+  },
+  {
+    "id": "environmental-data-sources",
+    "title": "Environmental Data Sources",
+    "category": "data-sources",
+    "content": "Environmental indicators may reference sources shown in the dashboard rows, such as satellite, air quality or fire alert providers. This record does not assert completeness or live availability.",
+    "regions": [],
+    "relatedSdgs": ["SDG13", "SDG15"],
+    "unit": null,
+    "sourceName": "Borneo Tracker placeholder knowledge",
+    "sourceUrl": "",
+    "pageUrl": "/data-sources",
+    "updatedAt": null,
+    "status": "placeholder"
+  }
+]

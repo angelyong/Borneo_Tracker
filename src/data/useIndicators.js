@@ -112,6 +112,50 @@ export function useResilience() {
   return state;
 }
 
+// Impact Simulator model contract — bounds, indicator->pillar mapping,
+// scoring metadata and the per-territory baseline that
+// src/utils/resilienceModel.js mirrors client-side. Fetched at runtime
+// (same pattern as useResilience() above) rather than statically imported,
+// so a missing/broken resilience_model.json surfaces as a normal loading/
+// error state on the page instead of a build-time failure — see
+// docs/IMPACT_SIMULATOR_SPEC.md §2 and Stage IS-3D's edge-case handling.
+export function useResilienceModel() {
+  const [state, setState] = useState({
+    data: null,
+    loading: true,
+    error: null,
+    generatedAt: null,
+  });
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function load() {
+      try {
+        const response = await fetch('/data/resilience_model.json');
+        if (!response.ok) {
+          throw new Error(`Failed to load resilience model (${response.status})`);
+        }
+        const payload = await response.json();
+        if (!ignore) {
+          setState({ data: payload, loading: false, error: null, generatedAt: payload?.generatedAt ?? null });
+        }
+      } catch (error) {
+        if (!ignore) {
+          setState({ data: null, loading: false, error: error.message, generatedAt: null });
+        }
+      }
+    }
+
+    load();
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  return state;
+}
+
 // District-level (ADM2) drill-down data — parallel to indicators.json. Rows use
 // the district name as `territory`, so all the territory helpers below (
 // getCanonicalRows, getRowsForPillar, getHexagonCoverage, summarizeRows…) work

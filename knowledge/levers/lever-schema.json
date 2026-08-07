@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://borneo-tracker.local/schemas/lever-record.schema.json",
+  "title": "Borneo Tracker Lever Record",
+  "type": "object",
+  "required": [
+    "id",
+    "concept",
+    "pillars",
+    "territories",
+    "title",
+    "summary",
+    "whoActs",
+    "horizon",
+    "mechanism",
+    "appliesWhen",
+    "doesNotApplyWhen",
+    "evidence",
+    "evidenceStatus",
+    "language",
+    "keywords"
+  ],
+  "properties": {
+    "id": { "type": "string", "minLength": 1 },
+    "concept": { "type": "string", "minLength": 1 },
+    "pillars": { "type": "array", "items": { "type": "string" } },
+    "territories": { "type": "array", "items": { "type": "string" } },
+    "title": { "type": "string", "minLength": 1 },
+    "summary": { "type": "string", "minLength": 1 },
+    "whoActs": { "type": "array", "items": { "type": "string" } },
+    "horizon": { "type": "string" },
+    "mechanism": { "type": "string", "minLength": 1 },
+    "appliesWhen": { "type": "array", "items": { "type": "string" } },
+    "doesNotApplyWhen": { "type": "array", "items": { "type": "string" } },
+    "expectedDirection": { "type": "string" },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["sourceFile", "whatItActuallySays"],
+        "properties": {
+          "publisher": { "type": "string" },
+          "year": { "type": "integer" },
+          "title": { "type": "string" },
+          "url": { "type": "string" },
+          "sourceFile": { "type": "string", "minLength": 1 },
+          "sourcePath": { "type": "string" },
+          "whatItActuallySays": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "evidenceStatus": { "type": "string" },
+    "language": { "type": "string" },
+    "keywords": { "type": "array", "items": { "type": "string" } },
+    "translationGroupId": { "type": "string" }
+  },
+  "additionalProperties": false
+}

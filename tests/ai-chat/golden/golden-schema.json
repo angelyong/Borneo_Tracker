@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://borneo-tracker.local/schemas/ai-chat-golden.schema.json",
+  "title": "Borneo Tracker AI Chat Golden Question",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "language",
+    "question",
+    "implementationStatus",
+    "expected",
+    "tags"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^golden-(en|ms)-[0-9]{3}$"
+    },
+    "language": {
+      "enum": ["en", "ms", "mixed", "unsupported"]
+    },
+    "question": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1200
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "currentPage": { "type": "string" },
+        "region": { "type": "string" },
+        "language": { "type": "string" }
+      }
+    },
+    "implementationStatus": {
+      "enum": [
+        "IMPLEMENTED",
+        "PARTIALLY_IMPLEMENTED",
+        "NOT_IMPLEMENTED",
+        "BLOCKED_BY_SUPABASE",
+        "NO_VERIFIED_DATA"
+      ]
+    },
+    "expected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["intent", "operations", "blocked", "clarificationRequired"],
+      "properties": {
+        "intent": {
+          "enum": [
+            "SITE_KNOWLEDGE",
+            "DASHBOARD_DATA",
+            "BORNEO_NEWS",
+            "OUT_OF_SCOPE"
+          ]
+        },
+        "territories": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "concepts": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "indicators": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "pillars": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "districts": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "operations": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "comparison",
+            "ranking",
+            "trend",
+            "weakest",
+            "strongest",
+            "targetGap",
+            "sdgProgress",
+            "districtLevel",
+            "latest"
+          ],
+          "properties": {
+            "comparison": { "type": "boolean" },
+            "ranking": { "type": "boolean" },
+            "trend": { "type": "boolean" },
+            "weakest": { "type": "boolean" },
+            "strongest": { "type": "boolean" },
+            "targetGap": { "type": "boolean" },
+            "sdgProgress": { "type": "boolean" },
+            "districtLevel": { "type": "boolean" },
+            "latest": { "type": "boolean" }
+          }
+        },
+        "comparabilityDecision": {
+          "enum": [
+            "ALLOW",
+            "ALLOW_WITH_WARNING",
+            "DOWNGRADE",
+            "REJECT",
+            "NEEDS_CLARIFICATION",
+            "NOT_APPLICABLE"
+          ]
+        },
+        "factAvailability": {
+          "enum": [
+            "AVAILABLE",
+            "PARTIAL",
+            "UNAVAILABLE",
+            "BLOCKED",
+            "NOT_APPLICABLE"
+          ]
+        },
+        "blocked": { "type": "boolean" },
+        "clarificationRequired": { "type": "boolean" },
+        "news": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "fixture": { "type": "string" },
+            "publishedCount": { "type": "integer", "minimum": 0 },
+            "pendingCount": { "type": "integer", "minimum": 0 },
+            "forbidPendingSentinel": { "type": "boolean" }
+          }
+        },
+        "validator": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "fixture": { "type": "string" },
+            "valid": { "type": "boolean" },
+            "failureCode": { "type": "string" },
+            "safetyCritical": { "type": "boolean" }
+          }
+        },
+        "fallbackReason": { "type": "string" }
+        ,
+        "knowledge": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "status": {
+              "enum": ["FOUND", "NO_MATCH", "AMBIGUOUS", "LANGUAGE_FALLBACK"]
+            },
+            "expectedRecordIds": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
+            "sourceCountMin": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "tags": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" }
+    },
+    "rationale": { "type": "string" },
+    "sourceNote": { "type": "string" }
+  }
+}

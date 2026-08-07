@@ -17,6 +17,9 @@ dist-ssr
 .env.*
 !.env.example
 
+# Supabase CLI local link/cache state — never commit
+supabase/.temp/
+
 # News Tracker pipeline artifacts + AI-usage cache (local state, never commit)
 news_fetched.json
 news_live*.json

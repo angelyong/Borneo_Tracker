@@ -1,0 +1,30 @@
+[
+  {
+    "id": "forest-cover",
+    "title": "Forest Cover",
+    "category": "environmental",
+    "content": "Forest Cover is an environmental indicator intended to describe the extent or share of land covered by forest. This placeholder does not include any live value, year or statistic.",
+    "regions": [],
+    "relatedSdgs": ["SDG13", "SDG15"],
+    "unit": null,
+    "sourceName": "Borneo Tracker placeholder knowledge",
+    "sourceUrl": "",
+    "pageUrl": "/esg",
+    "updatedAt": null,
+    "status": "placeholder"
+  },
+  {
+    "id": "esg-overview",
+    "title": "ESG Indicators",
+    "category": "esg",
+    "content": "Placeholder definition: ESG groups indicators into Environmental, Social and Governance topics so users can review regional sustainability signals. Replace with approved methodology text.",
+    "regions": [],
+    "relatedSdgs": [],
+    "unit": null,
+    "sourceName": "Borneo Tracker placeholder knowledge",
+    "sourceUrl": "",
+    "pageUrl": "/esg",
+    "updatedAt": null,
+    "status": "placeholder"
+  }
+]
