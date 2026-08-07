@@ -6,6 +6,8 @@ import {
   type AIChatIdentity,
   type AIChatPrompt,
   type AIChatSuccessResponse,
+  type AIChatSimulationAnswer,
+  type AIChatSimulationPrompt,
   type AIChatSiteKnowledgePrompt,
   type ErrorPayload,
   type AIChatNewsResult,
@@ -37,18 +39,22 @@ import { createAIChatNewsRepository } from './newsRepositoryFactory.ts';
 import { retrieveAIChatNews } from './newsRetriever.ts';
 import { routeAiChatIntent } from './intentRouter.ts';
 import { consoleSafeLogger, errorLogFields, type SafeLogger } from './logger.ts';
-import { buildGroundedPrompt, buildSiteKnowledgeGroundedPrompt } from './promptBuilder.ts';
+import { buildGroundedPrompt, buildSimulationGroundedPrompt, buildSiteKnowledgeGroundedPrompt } from './promptBuilder.ts';
 import {
   createAIChatQuotaService,
   type AIChatQuotaReservation,
   type AIChatQuotaServiceLike,
 } from './quota.ts';
-import { validateGeminiResponse, validateSiteKnowledgeGeminiResponse } from './responseValidator.ts';
+import { validateGeminiResponse, validateSimulationGeminiResponse, validateSiteKnowledgeGeminiResponse } from './responseValidator.ts';
+import { parseResilienceSimulationRequest } from './resilienceSimulationRequest.ts';
+import { buildSimulationAnswer } from './simulationAnswerBuilder.ts';
 import { buildStructuredAnswer } from './structuredAnswerBuilder.ts';
 import {
   buildKnowledgeTemplateFallback,
+  buildSimulationTemplateFallback,
   buildTemplateFallback,
   canBuildKnowledgeTemplateFallback,
+  canBuildSimulationTemplateFallback,
   canBuildTemplateFallback,
   fallbackPublicMetadata,
 } from './templateFallback.ts';
@@ -238,6 +244,8 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
     let groundedPrompt: AIChatPrompt | undefined;
     let knowledgeAnswer: AIChatKnowledgeAnswer | undefined;
     let knowledgePrompt: AIChatSiteKnowledgePrompt | undefined;
+    let simulationAnswer: AIChatSimulationAnswer | undefined;
+    let simulationPrompt: AIChatSimulationPrompt | undefined;
     let newsResult: AIChatNewsResult | undefined;
     let identity: AIChatIdentity | undefined;
 
@@ -441,6 +449,137 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
         }, 200, {
           outcome: 'success',
           sourceCount: knowledgeAnswer.sources.length,
+        });
+      }
+      if (route.intent === 'RESILIENCE_SIMULATION') {
+        const simulationRequest = parseResilienceSimulationRequest(chatRequest.message, entities);
+        simulationAnswer = buildSimulationAnswer(
+          simulationRequest,
+          entities.language || route.language || chatRequest.language
+        );
+        logger.info('simulation_query_executed', {
+          simulationQueryExecuted: true,
+          requestStatus: simulationRequest.status,
+          territory: simulationAnswer.territory,
+          indicator: simulationAnswer.indicator,
+          targetValue: simulationAnswer.targetValue,
+          warningCodes: simulationAnswer.warnings,
+        });
+
+        if (simulationRequest.status === 'NEEDS_CLARIFICATION') {
+          // Deterministic-only, same as a comparability NEEDS_CLARIFICATION
+          // decision elsewhere in this handler: never let Gemini guess a
+          // territory/indicator/value the parser itself couldn't resolve.
+          const fallback = buildSimulationTemplateFallback({
+            simulationAnswer,
+            reason: 'SIMULATION_NEEDS_CLARIFICATION',
+            language: simulationAnswer.language,
+          });
+          logger.info('request_fallback', {
+            fallbackUsed: true,
+            fallbackReason: 'SIMULATION_NEEDS_CLARIFICATION',
+            intent: route.intent,
+            reasons: simulationRequest.reasons,
+            sourceCount: fallback.sources.length,
+          });
+          telemetry.mode = fallback.mode;
+          telemetry.fallbackUsed = true;
+          telemetry.fallbackReason = 'SIMULATION_NEEDS_CLARIFICATION';
+          telemetry.sourceCount = fallback.sources.length;
+          return respondWithTelemetry({
+            answer: fallback.answer,
+            mode: fallback.mode,
+            sources: fallback.sources,
+            fallback: fallbackPublicMetadata(fallback.fallback),
+          }, 200, {
+            outcome: 'fallback',
+            fallbackUsed: true,
+            fallbackReason: 'SIMULATION_NEEDS_CLARIFICATION',
+            sourceCount: fallback.sources.length,
+          });
+        }
+
+        simulationPrompt = buildSimulationGroundedPrompt({
+          userQuestion: chatRequest.message,
+          language: simulationAnswer.language,
+          simulationAnswer,
+        });
+        const quotaResult = await callGeminiWithQuota(chatRequest, identity, telemetry, simulationPrompt);
+        const answer = quotaResult.answer;
+        const validation = validateSimulationGeminiResponse({
+          answer,
+          simulationAnswer,
+          prompt: simulationPrompt,
+        });
+        logger.info('response_validation', {
+          responseValidated: true,
+          valid: validation.valid,
+          issueCodes: validation.issues.map((issue) => issue.code),
+          issueCount: validation.issues.length,
+          numericTokenCount: validation.detectedNumericTokens.length,
+          yearTokenCount: validation.detectedYearTokens.length,
+          urlCount: validation.detectedUrls.length,
+          intent: route.intent,
+          fallbackUsed: !validation.valid,
+        });
+        if (!validation.valid) {
+          await refundQuotaReservation(quotaService, logger, quotaResult.reservation, 'RESPONSE_VALIDATION_REJECTED');
+          telemetry.quotaConsumed = false;
+          const fallback = buildSimulationTemplateFallback({
+            simulationAnswer,
+            reason: 'SIMULATION_RESPONSE_REJECTED',
+            language: simulationAnswer.language,
+          });
+          logger.info('request_fallback', {
+            fallbackUsed: true,
+            fallbackReason: 'SIMULATION_RESPONSE_REJECTED',
+            intent: route.intent,
+            validationIssueCodes: validation.issues.map((issue) => issue.code),
+            validationIssueCount: validation.issues.length,
+            sourceCount: fallback.sources.length,
+          });
+          telemetry.mode = fallback.mode;
+          telemetry.fallbackUsed = true;
+          telemetry.fallbackReason = 'SIMULATION_RESPONSE_REJECTED';
+          telemetry.sourceCount = fallback.sources.length;
+          return respondWithTelemetry({
+            answer: fallback.answer,
+            mode: fallback.mode,
+            sources: fallback.sources,
+            fallback: fallbackPublicMetadata(fallback.fallback),
+          }, 200, {
+            outcome: 'fallback',
+            fallbackUsed: true,
+            fallbackReason: 'SIMULATION_RESPONSE_REJECTED',
+            sourceCount: fallback.sources.length,
+          });
+        }
+        logger.info('request_completed', {
+          mode: 'gemini-test',
+          intent: route.intent,
+          promptBuilt: true,
+          simulationTerritory: simulationAnswer.territory,
+          simulationIndicator: simulationAnswer.indicator,
+          simulationTargetValue: simulationAnswer.targetValue,
+          groundedNumericTokenCount: simulationPrompt.groundingPayload.approvedNumericTokens.length,
+          intentConfidence: route.confidence,
+          page: chatRequest.currentPage,
+          region: chatRequest.region,
+          language: chatRequest.language,
+          identityType: identity.type,
+          authenticated: identity.verified,
+          admin: identity.type === 'admin',
+        });
+        telemetry.mode = 'gemini-test';
+        telemetry.sourceCount = 0;
+        return respondWithTelemetry({
+          answer: validation.normalizedAnswer,
+          mode: 'gemini-test',
+          sources: [],
+          quota: quotaResult.quota,
+        }, 200, {
+          outcome: 'success',
+          sourceCount: 0,
         });
       }
       const levers = factObject && factObject.availability !== 'BLOCKED' && comparability.decision !== 'NEEDS_CLARIFICATION'
@@ -872,6 +1011,45 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
             fallbackReason: fallback.fallback.reason,
             intent: route?.intent,
             retrievalStatus: knowledgeAnswer.status,
+            sourceCount: fallback.sources.length,
+          });
+          telemetry.mode = fallback.mode;
+          telemetry.fallbackUsed = true;
+          telemetry.fallbackReason = fallback.fallback.reason;
+          telemetry.sourceCount = fallback.sources.length;
+          return respondWithTelemetry({
+            answer: fallback.answer,
+            mode: fallback.mode,
+            sources: fallback.sources,
+            fallback: fallbackPublicMetadata(fallback.fallback),
+          }, 200, {
+            outcome: outcomeForFallbackReason(fallbackReason),
+            fallbackUsed: true,
+            fallbackReason: fallback.fallback.reason,
+            sourceCount: fallback.sources.length,
+          });
+        } catch (fallbackError) {
+          logger.error('request_failed', errorLogFields(fallbackError));
+          const payload = errorPayload(fallbackError);
+          return respondWithTelemetry(payload.body, payload.status, {
+            outcome: 'error',
+            errorCode: payload.body.code,
+          });
+        }
+      }
+      if (fallbackReason && canBuildSimulationTemplateFallback(simulationAnswer)) {
+        try {
+          const simulationFallbackReason = fallbackReason === 'GEMINI_RESPONSE_REJECTED' ? 'SIMULATION_RESPONSE_REJECTED' : 'SIMULATION_GEMINI_UNAVAILABLE';
+          const fallback = buildSimulationTemplateFallback({
+            simulationAnswer,
+            reason: simulationFallbackReason,
+            language: simulationAnswer.language,
+          });
+          logger.info('request_fallback', {
+            fallbackUsed: true,
+            fallbackReason: fallback.fallback.reason,
+            intent: route?.intent,
+            requestStatus: simulationAnswer.status,
             sourceCount: fallback.sources.length,
           });
           telemetry.mode = fallback.mode;

@@ -3,6 +3,7 @@ import {
   DEFAULT_MAX_GEMINI_ANSWER_LENGTH,
   extractResponseNumericTokens,
   validateGeminiResponse,
+  validateSimulationGeminiResponse,
   validateSiteKnowledgeGeminiResponse,
 } from './responseValidator.ts';
 
@@ -385,5 +386,75 @@ describe('site knowledge Gemini response validator', () => {
     ['The sourcePath is src/i18n/locales/en.json.', 'URL_IN_BODY'],
   ])('rejects unsafe site-knowledge answer: %s', (answer, code) => {
     expect(codes(validateSiteKnowledgeGeminiResponse(siteInput({ answer })))).toContain(code);
+  });
+});
+
+describe('validateSimulationGeminiResponse', () => {
+  function simulationInput(overrides = {}) {
+    const simulationAnswer = {
+      answer: 'Scenario: Brunei — Paddy production per capita set to 40. Resilience Index: 78 → 83.4 (+5.4). Illustrative — deterministic scenario, not a forecast.',
+      language: 'en',
+      status: 'RESOLVED',
+      territory: 'Brunei',
+      indicator: 'Paddy production per capita',
+      targetValue: 40,
+      approvedNumericTokens: ['78', '83.4', '5.4', '40', '+5.4'],
+      approvedYearTokens: [],
+      warnings: [],
+      ...overrides.simulationAnswer,
+    };
+    return {
+      answer: simulationAnswer.answer,
+      simulationAnswer,
+      prompt: {
+        systemInstruction: 'irrelevant for this test',
+        userContent: '{}',
+        groundingPayload: {
+          answerStatus: simulationAnswer.status,
+          language: 'en',
+          answer: simulationAnswer.answer,
+          territory: simulationAnswer.territory,
+          indicator: simulationAnswer.indicator,
+          targetValue: simulationAnswer.targetValue,
+          warnings: [],
+          approvedNumericTokens: simulationAnswer.approvedNumericTokens,
+          approvedYearTokens: simulationAnswer.approvedYearTokens,
+        },
+      },
+      ...overrides,
+    };
+  }
+
+  it('accepts a valid grounded simulation answer that preserves the illustrative framing', () => {
+    expect(validateSimulationGeminiResponse(simulationInput()).valid).toBe(true);
+  });
+
+  it.each([
+    ['Read https://example.com for details.', 'URL_IN_BODY'],
+    ["Brunei's index would be 99 after this change.", 'UNAPPROVED_NUMBER'],
+    ['This happened in 2025.', 'UNAPPROVED_YEAR'],
+    ['The government should invest in paddy fields.', 'UNVERIFIED_RECOMMENDATION'],
+    ['This scenario will definitely improve the index. Illustrative — deterministic scenario, not a forecast.', 'UNVERIFIED_FORECAST_CLAIM'],
+    ['We predict Brunei will reach 83.4. Illustrative — deterministic scenario, not a forecast.', 'UNVERIFIED_FORECAST_CLAIM'],
+  ])('rejects unsafe simulation answer: %s', (answer, code) => {
+    expect(codes(validateSimulationGeminiResponse(simulationInput({ answer })))).toContain(code);
+  });
+
+  it('rejects a resolved-scenario answer that drops the illustrative disclaimer', () => {
+    const answer = 'Scenario: Brunei — Paddy production per capita set to 40. Resilience Index: 78 → 83.4 (+5.4).';
+    expect(codes(validateSimulationGeminiResponse(simulationInput({ answer })))).toContain('MISSING_ILLUSTRATIVE_DISCLAIMER');
+  });
+
+  it('does not require the illustrative disclaimer for a clarification (non-RESOLVED) answer', () => {
+    const answer = 'I can simulate a what-if change, but I need a territory, an indicator, and a target value.';
+    const result = validateSimulationGeminiResponse(simulationInput({
+      answer,
+      simulationAnswer: { status: 'NEEDS_CLARIFICATION', approvedNumericTokens: [], approvedYearTokens: [] },
+    }));
+    expect(codes(result)).not.toContain('MISSING_ILLUSTRATIVE_DISCLAIMER');
+  });
+
+  it('does not flag the required disclaimer text itself as a forecast claim (it legitimately contains the word "forecast")', () => {
+    expect(validateSimulationGeminiResponse(simulationInput()).valid).toBe(true);
   });
 });

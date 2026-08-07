@@ -33,6 +33,31 @@ describe('ai-chat intent router: DASHBOARD_DATA', () => {
   });
 });
 
+describe('ai-chat intent router: RESILIENCE_SIMULATION', () => {
+  it.each([
+    ["What if Brunei's food self-sufficiency went from 8 to 40?"],
+    ["What happens to Sabah's resilience if electricity access improved to 100?"],
+    ['Simulate Kalimantan electricity at 90.'],
+    ['Run a what-if scenario for Sarawak.'],
+    ['Bagaimana jika akses elektrik meningkat kepada 100?', { language: 'ms' }],
+    ['Simulasi senario untuk Sabah.', { language: 'ms' }],
+  ])('routes %s', (message, options = {}) => {
+    const result = route(message, options);
+    expect(result.intent).toBe('RESILIENCE_SIMULATION');
+    expect(result.confidence).toBeGreaterThan(0.5);
+  });
+
+  it('wins over DASHBOARD_DATA when both "what if" and dashboard-data phrasing appear', () => {
+    const result = route("What if Sabah's resilience score improved to 80?");
+    expect(result.intent).toBe('RESILIENCE_SIMULATION');
+  });
+
+  it('still routes a plain (non-hypothetical) resilience question to DASHBOARD_DATA', () => {
+    const result = route("What is Sabah's resilience score?");
+    expect(result.intent).toBe('DASHBOARD_DATA');
+  });
+});
+
 describe('ai-chat intent router: BORNEO_NEWS', () => {
   it.each([
     ['What is the latest conservation news in Sabah?'],

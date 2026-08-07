@@ -15,6 +15,7 @@ type IntentScore = {
 type RouteOptions = Pick<AIChatRequest, 'currentPage' | 'region' | 'language'>;
 
 const INTENT_PRIORITY: AIChatIntent[] = [
+  'RESILIENCE_SIMULATION',
   'DASHBOARD_DATA',
   'BORNEO_NEWS',
   'SITE_KNOWLEDGE',
@@ -72,6 +73,24 @@ const SIGNALS: Record<Exclude<AIChatIntent, 'OUT_OF_SCOPE'>, IntentSignal[]> = {
     { phrase: 'tunjang', weight: 3, language: 'ms' },
     { phrase: 'wilayah', weight: 2, language: 'ms' },
     { phrase: 'papan pemuka', weight: 3, language: 'ms' },
+  ],
+  RESILIENCE_SIMULATION: [
+    { phrase: 'what would happen if', weight: 7, language: 'en' },
+    { phrase: 'what happens if', weight: 6, language: 'en' },
+    { phrase: 'what if', weight: 6, language: 'en' },
+    { phrase: 'simulate', weight: 6, language: 'en' },
+    { phrase: 'simulation', weight: 5, language: 'en' },
+    { phrase: 'improved to', weight: 4, language: 'en' },
+    { phrase: 'increased to', weight: 4, language: 'en' },
+    { phrase: 'went from', weight: 4, language: 'en' },
+    { phrase: 'changed to', weight: 3, language: 'en' },
+    { phrase: 'scenario', weight: 4, language: 'en' },
+    { phrase: 'apa yang berlaku jika', weight: 7, language: 'ms' },
+    { phrase: 'bagaimana jika', weight: 6, language: 'ms' },
+    { phrase: 'simulasi', weight: 6, language: 'ms' },
+    { phrase: 'senario', weight: 4, language: 'ms' },
+    { phrase: 'bertambah baik kepada', weight: 4, language: 'ms' },
+    { phrase: 'meningkat kepada', weight: 4, language: 'ms' },
   ],
   BORNEO_NEWS: [
     { phrase: 'latest conservation news', weight: 7, language: 'en' },

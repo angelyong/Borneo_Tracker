@@ -1,6 +1,7 @@
 import type {
   AIChatResponseValidationInput,
   AIChatResponseValidationResult,
+  AIChatSimulationResponseValidationInput,
   AIChatSiteKnowledgeResponseValidationInput,
   ComparabilityResult,
   ResponseValidationFailureCode,
@@ -163,6 +164,103 @@ export function validateSiteKnowledgeGeminiResponse(
     detectedUrls,
     ...(issues.length === 0 && typeof answer === 'string' ? { normalizedAnswer: answer } : {}),
   };
+}
+
+const SIMULATION_ILLUSTRATIVE_TEXT = [
+  'Illustrative — deterministic scenario, not a forecast.',
+  'Ilustrasi — senario deterministik, bukan ramalan.',
+];
+const SIMULATION_ILLUSTRATIVE_KEYWORDS = ['illustrative', 'not a forecast', 'ilustrasi', 'bukan ramalan'];
+const FORECAST_LANGUAGE_PATTERN = /\b(?:predict(?:s|ed|ion|ions)?|forecast(?:s|ed|ing)?|guarantee(?:s|d)?|will\s+(?:definitely|certainly))\b/i;
+
+export function validateSimulationGeminiResponse(
+  input: AIChatSimulationResponseValidationInput
+): AIChatResponseValidationResult {
+  const issues: ResponseValidationIssue[] = [];
+  const answer = normalizeAnswer(input.answer, issues, input.maxAnswerLength ?? DEFAULT_MAX_GEMINI_ANSWER_LENGTH);
+  const detectedUrls = typeof answer === 'string' ? extractUrls(answer) : [];
+  const numericTokens = typeof answer === 'string' ? extractNumericTokens(answer) : [];
+  const detectedYearTokens = dedupe(numericTokens.filter(isYearToken));
+  const detectedNumericTokens = dedupe(numericTokens.filter((token) => !isYearToken(token)));
+
+  if (typeof answer === 'string') {
+    if (detectedUrls.length || URL_PATTERN.test(answer) || SOURCE_PATH_PATTERN.test(answer)) {
+      addIssue(issues, 'URL_IN_BODY', 'Answer contains URL, link, bare domain, or source-path-like content.', detectedUrls[0]);
+    }
+    validateSimulationNumbers(input, detectedNumericTokens, issues);
+    validateSimulationYears(input, detectedYearTokens, issues);
+    validateSimulationRecommendation(answer, issues);
+    validateSimulationForecastLanguage(answer, issues);
+    validateSimulationIllustrativeFraming(input, answer, issues);
+    validateSecurity(answer, issues);
+  }
+
+  return {
+    valid: issues.length === 0,
+    issues,
+    detectedNumericTokens,
+    detectedYearTokens,
+    detectedUrls,
+    ...(issues.length === 0 && typeof answer === 'string' ? { normalizedAnswer: answer } : {}),
+  };
+}
+
+function validateSimulationNumbers(
+  input: AIChatSimulationResponseValidationInput,
+  detectedNumericTokens: string[],
+  issues: ResponseValidationIssue[]
+): void {
+  const approved = new Set([
+    ...input.simulationAnswer.approvedNumericTokens,
+    ...input.prompt.groundingPayload.approvedNumericTokens,
+  ].flatMap((token) => [token, normalizeNumericToken(token)]));
+  for (const token of detectedNumericTokens) {
+    if (!approved.has(token) && !approved.has(normalizeNumericToken(token))) {
+      addIssue(issues, 'UNAPPROVED_NUMBER', 'Answer contains a numeric token that was not approved.', token);
+    }
+  }
+}
+
+function validateSimulationYears(
+  input: AIChatSimulationResponseValidationInput,
+  detectedYearTokens: string[],
+  issues: ResponseValidationIssue[]
+): void {
+  const approved = new Set([
+    ...input.simulationAnswer.approvedYearTokens,
+    ...input.prompt.groundingPayload.approvedYearTokens,
+  ]);
+  for (const token of detectedYearTokens) {
+    if (!approved.has(token)) addIssue(issues, 'UNAPPROVED_YEAR', 'Answer contains a year that was not approved.', token);
+  }
+}
+
+function validateSimulationRecommendation(answer: string, issues: ResponseValidationIssue[]): void {
+  if (RECOMMENDATION_PATTERNS.some((pattern) => pattern.test(answer))) {
+    addIssue(issues, 'UNVERIFIED_RECOMMENDATION', 'Simulation answer contains recommendation language; simulations narrate scenarios, they do not prescribe actions.');
+  }
+}
+
+function validateSimulationForecastLanguage(answer: string, issues: ResponseValidationIssue[]): void {
+  // Strip the required disclaimer text first — it legitimately contains the
+  // word "forecast" ("...not a forecast."), which must not itself trip this check.
+  const withoutDisclaimer = SIMULATION_ILLUSTRATIVE_TEXT.reduce((text, phrase) => text.split(phrase).join(''), answer);
+  if (GUARANTEED_OUTCOME_PATTERN.test(withoutDisclaimer) || FORECAST_LANGUAGE_PATTERN.test(withoutDisclaimer)) {
+    addIssue(issues, 'UNVERIFIED_FORECAST_CLAIM', 'Simulation answer presents the scenario as a forecast, prediction, or guaranteed outcome rather than an illustrative what-if.');
+  }
+}
+
+function validateSimulationIllustrativeFraming(
+  input: AIChatSimulationResponseValidationInput,
+  answer: string,
+  issues: ResponseValidationIssue[]
+): void {
+  if (input.simulationAnswer.status !== 'RESOLVED') return;
+  const lowered = answer.toLowerCase();
+  const hasFraming = SIMULATION_ILLUSTRATIVE_KEYWORDS.some((keyword) => lowered.includes(keyword));
+  if (!hasFraming) {
+    addIssue(issues, 'MISSING_ILLUSTRATIVE_DISCLAIMER', 'Simulation answer dropped the required "illustrative, not a forecast" framing.');
+  }
 }
 
 export function extractResponseNumericTokens(text: string): string[] {

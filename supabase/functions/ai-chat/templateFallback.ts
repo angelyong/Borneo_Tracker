@@ -3,6 +3,7 @@ import type {
   AIChatIntentResult,
   AIChatKnowledgeAnswer,
   AIChatResponseMode,
+  AIChatSimulationAnswer,
   AIChatStructuredAnswer,
   FallbackReason,
   FactSource,
@@ -36,6 +37,12 @@ export type KnowledgeTemplateFallbackInput = {
   language: string;
 };
 
+export type SimulationTemplateFallbackInput = {
+  simulationAnswer: AIChatSimulationAnswer;
+  reason: FallbackReason;
+  language: string;
+};
+
 const NOTICES = {
   en: 'Live AI phrasing is temporarily unavailable. The verified Borneo Tracker data is shown below.',
   ms: 'Penyusunan jawapan AI secara langsung tidak tersedia buat sementara waktu. Data Borneo Tracker yang telah disahkan ditunjukkan di bawah.',
@@ -57,6 +64,12 @@ export function canBuildKnowledgeTemplateFallback(
   knowledgeAnswer: AIChatKnowledgeAnswer | undefined
 ): knowledgeAnswer is AIChatKnowledgeAnswer {
   return Boolean(knowledgeAnswer?.answer?.trim());
+}
+
+export function canBuildSimulationTemplateFallback(
+  simulationAnswer: AIChatSimulationAnswer | undefined
+): simulationAnswer is AIChatSimulationAnswer {
+  return Boolean(simulationAnswer?.answer?.trim());
 }
 
 export function buildTemplateFallback(input: TemplateFallbackInput): TemplateFallbackResult {
@@ -94,6 +107,22 @@ export function buildKnowledgeTemplateFallback(input: KnowledgeTemplateFallbackI
       used: true,
       reason: input.reason,
       generatedFrom: 'knowledge-answer',
+      degraded: true,
+    },
+  };
+}
+
+export function buildSimulationTemplateFallback(input: SimulationTemplateFallbackInput): TemplateFallbackResult {
+  const answer = input.simulationAnswer.answer.trim();
+  assertNoUnsafeSimulationFallback(answer, input.simulationAnswer);
+  return {
+    answer,
+    mode: 'template-fallback',
+    sources: [],
+    fallback: {
+      used: true,
+      reason: input.reason,
+      generatedFrom: 'simulation-answer',
       degraded: true,
     },
   };
@@ -137,6 +166,22 @@ function assertNoUnsafeKnowledgeFallback(answer: string, knowledgeAnswer: AIChat
   for (const token of extractNumericTokens(answer)) {
     if (!approved.has(token) && !approved.has(token.replace(/,/g, ''))) {
       throw new Error(`Knowledge fallback contains unapproved numeric token ${token}.`);
+    }
+  }
+}
+
+function assertNoUnsafeSimulationFallback(answer: string, simulationAnswer: AIChatSimulationAnswer): void {
+  if (/\bhttps?:\/\/|\bwww\.|\b(?:public|src|supabase|knowledge|docs|data)\//i.test(answer)) {
+    throw new Error('Simulation fallback contains URLs or internal paths.');
+  }
+  const approved = new Set([
+    ...simulationAnswer.approvedNumericTokens,
+    ...simulationAnswer.approvedNumericTokens.map((token) => token.replace(/,/g, '')),
+    ...simulationAnswer.approvedYearTokens,
+  ]);
+  for (const token of extractNumericTokens(answer)) {
+    if (!approved.has(token) && !approved.has(token.replace(/,/g, ''))) {
+      throw new Error(`Simulation fallback contains unapproved numeric token ${token}.`);
     }
   }
 }

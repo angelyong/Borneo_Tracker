@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-08-04T22:25:39Z",
-  "runId": "30955632361",
+  "generatedAt": "2026-08-06T16:05:43Z",
+  "runId": "local",
   "files": {
     "public/data/indicators.json": {
       "sha256": "3557d59e4330a14354540eb0f846aba404b626de4c7400a4f9de406593bfd66b",
@@ -10,6 +10,11 @@
     "public/data/resilience.json": {
       "sha256": "9f3cbd2dc8f65962499f2197614f7040ebb4c749a7bee02a0b6f9e68ec56db4a",
       "bytes": 12435,
+      "generatedAt": "2026-08-05"
+    },
+    "public/data/resilience_model.json": {
+      "sha256": "939cbc1b2be8b9840a9a867602651987f38159642150618f52f5faebcdd8196b",
+      "bytes": 14788,
       "generatedAt": "2026-08-05"
     },
     "public/data/districts.json": {

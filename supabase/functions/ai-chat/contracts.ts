@@ -11,6 +11,7 @@ export type AIChatIntent =
   | 'SITE_KNOWLEDGE'
   | 'DASHBOARD_DATA'
   | 'BORNEO_NEWS'
+  | 'RESILIENCE_SIMULATION'
   | 'OUT_OF_SCOPE';
 
 export type AIChatIntentResult = {
@@ -243,6 +244,68 @@ export type AIChatKnowledgeAnswer = {
   approvedNumericTokens: string[];
   approvedYearTokens: string[];
   warnings: string[];
+};
+
+// Impact Simulator "what if" tool seam (IMPACT_SIMULATOR_SPEC.md §4, Stage
+// IS-6). Every number here traces back to a resilienceSimulation.ts
+// simulate_resilience() call — never independently computed or estimated.
+export type AIChatSimulationRequestStatus = 'RESOLVED' | 'NEEDS_CLARIFICATION';
+
+export type AIChatSimulationSide = {
+  index: number | null;
+  indexStrict: number | null;
+  pillarScores: Record<string, number>;
+  weakest: string | null;
+};
+
+export type AIChatSimulationAnswer = {
+  answer: string;
+  language: string;
+  status: AIChatSimulationRequestStatus;
+  territory?: string;
+  indicator?: string;
+  targetValue?: number;
+  before?: AIChatSimulationSide;
+  after?: AIChatSimulationSide;
+  deltas?: {
+    index: number | null;
+    indexStrict: number | null;
+    pillarScores: Record<string, number>;
+  };
+  approvedNumericTokens: string[];
+  approvedYearTokens: string[];
+  warnings: string[];
+};
+
+export type AIChatSimulationGroundingPayload = {
+  answerStatus: AIChatSimulationRequestStatus;
+  language: string;
+  answer: string;
+  territory?: string;
+  indicator?: string;
+  targetValue?: number;
+  warnings: string[];
+  approvedNumericTokens: string[];
+  approvedYearTokens: string[];
+};
+
+export type AIChatSimulationPrompt = {
+  systemInstruction: string;
+  userContent: string;
+  groundingPayload: AIChatSimulationGroundingPayload;
+};
+
+export type AIChatSimulationPromptInput = {
+  userQuestion: string;
+  language: string;
+  simulationAnswer: AIChatSimulationAnswer;
+};
+
+export type AIChatSimulationResponseValidationInput = {
+  answer: unknown;
+  simulationAnswer: AIChatSimulationAnswer;
+  prompt: AIChatSimulationPrompt;
+  maxAnswerLength?: number;
 };
 
 export type LeverActor =
@@ -552,12 +615,15 @@ export type FallbackReason =
   | 'KNOWLEDGE_NO_MATCH'
   | 'KNOWLEDGE_AMBIGUOUS'
   | 'KNOWLEDGE_GEMINI_UNAVAILABLE'
-  | 'KNOWLEDGE_RESPONSE_REJECTED';
+  | 'KNOWLEDGE_RESPONSE_REJECTED'
+  | 'SIMULATION_NEEDS_CLARIFICATION'
+  | 'SIMULATION_GEMINI_UNAVAILABLE'
+  | 'SIMULATION_RESPONSE_REJECTED';
 
 export type AIChatFallbackMetadata = {
   used: boolean;
   reason?: FallbackReason;
-  generatedFrom: 'structured-answer' | 'knowledge-answer';
+  generatedFrom: 'structured-answer' | 'knowledge-answer' | 'simulation-answer';
   degraded: boolean;
 };
 
@@ -666,7 +732,9 @@ export type ResponseValidationFailureCode =
   | 'UNSUPPORTED_RANKING'
   | 'UNSUPPORTED_TREND'
   | 'UNSUPPORTED_TARGET_OR_GAP'
-  | 'MALFORMED_OUTPUT';
+  | 'MALFORMED_OUTPUT'
+  | 'UNVERIFIED_FORECAST_CLAIM'
+  | 'MISSING_ILLUSTRATIVE_DISCLAIMER';
 
 export type ResponseValidationIssue = {
   code: ResponseValidationFailureCode;

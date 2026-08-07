@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   buildTemplateFallback,
   buildKnowledgeTemplateFallback,
+  buildSimulationTemplateFallback,
   canBuildTemplateFallback,
   canBuildKnowledgeTemplateFallback,
+  canBuildSimulationTemplateFallback,
   extractFallbackNumericTokens,
 } from './templateFallback.ts';
 
@@ -152,5 +154,71 @@ describe('knowledge template fallback builder', () => {
       reason: 'KNOWLEDGE_RESPONSE_REJECTED',
       language: 'en',
     })).toThrow(/URLs|paths|unapproved numeric/i);
+  });
+});
+
+describe('simulation template fallback builder', () => {
+  function simulationAnswer(overrides = {}) {
+    return {
+      answer: 'Scenario: Brunei — Paddy production per capita set to 40. Resilience Index: 78 → 83.4 (+5.4). Illustrative — deterministic scenario, not a forecast.',
+      language: 'en',
+      status: 'RESOLVED',
+      territory: 'Brunei',
+      indicator: 'Paddy production per capita',
+      targetValue: 40,
+      approvedNumericTokens: ['78', '83.4', '5.4', '40', '+5.4'],
+      approvedYearTokens: [],
+      warnings: [],
+      ...overrides,
+    };
+  }
+
+  it('uses the deterministic simulation answer text directly, unmodified by Gemini', () => {
+    const result = buildSimulationTemplateFallback({
+      simulationAnswer: simulationAnswer(),
+      reason: 'SIMULATION_GEMINI_UNAVAILABLE',
+      language: 'en',
+    });
+
+    expect(result.mode).toBe('template-fallback');
+    expect(result.answer).toBe(simulationAnswer().answer);
+    expect(result.answer).toContain('Illustrative — deterministic scenario, not a forecast.');
+    expect(result.fallback).toMatchObject({
+      used: true,
+      reason: 'SIMULATION_GEMINI_UNAVAILABLE',
+      generatedFrom: 'simulation-answer',
+      degraded: true,
+    });
+  });
+
+  it('works for a clarification (NEEDS_CLARIFICATION) simulation answer too', () => {
+    const result = buildSimulationTemplateFallback({
+      simulationAnswer: simulationAnswer({
+        status: 'NEEDS_CLARIFICATION',
+        answer: 'I can simulate a what-if change, but I need a territory, an indicator, and a target value.',
+        territory: undefined,
+        indicator: undefined,
+        targetValue: undefined,
+        approvedNumericTokens: [],
+      }),
+      reason: 'SIMULATION_NEEDS_CLARIFICATION',
+      language: 'en',
+    });
+    expect(result.answer).toContain('territory');
+    expect(result.fallback.reason).toBe('SIMULATION_NEEDS_CLARIFICATION');
+  });
+
+  it('detects buildable simulation fallback answers', () => {
+    expect(canBuildSimulationTemplateFallback(simulationAnswer())).toBe(true);
+    expect(canBuildSimulationTemplateFallback(simulationAnswer({ answer: ' ' }))).toBe(false);
+    expect(canBuildSimulationTemplateFallback(undefined)).toBe(false);
+  });
+
+  it('rejects unsafe simulation fallback prose', () => {
+    expect(() => buildSimulationTemplateFallback({
+      simulationAnswer: simulationAnswer({ answer: 'See https://example.com for the scenario.' }),
+      reason: 'SIMULATION_RESPONSE_REJECTED',
+      language: 'en',
+    })).toThrow(/URLs|paths/i);
   });
 });

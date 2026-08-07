@@ -1670,3 +1670,169 @@ describe('ai-chat Stage 4C template fallback', () => {
     expect(logs).not.toContain('http');
   });
 });
+
+describe('ai-chat RESILIENCE_SIMULATION (IS-6)', () => {
+  it('routes a "what if" question to RESILIENCE_SIMULATION and narrates simulate_resilience() numbers through Gemini', async () => {
+    const geminiClient = vi.fn().mockImplementation((chatRequest, prompt) => Promise.resolve(prompt.groundingPayload.answer));
+    const quotaService = allowAllQuotaService();
+    const logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+    const handler = createAiChatHandler({ geminiClient, quotaService, logger });
+
+    const response = await handler(request({
+      ...validPayload,
+      message: "What if Brunei's paddy production per capita went from 8 to 40?",
+      region: '',
+    }));
+    const body = await response.json();
+    const completed = logger.info.mock.calls.find(([event]) => event === 'request_completed')?.[1];
+
+    expect(response.status).toBe(200);
+    expect(body.mode).toBe('gemini-test');
+    expect(completed.intent).toBe('RESILIENCE_SIMULATION');
+    expect(completed.simulationTerritory).toBe('Brunei');
+    expect(completed.simulationIndicator).toBe('Paddy production per capita');
+    expect(completed.simulationTargetValue).toBe(40);
+    expect(body.answer).toContain('Illustrative — deterministic scenario, not a forecast.');
+    expect(geminiClient).toHaveBeenCalledTimes(1);
+  });
+
+  it('narrated numbers exactly match a direct simulate_resilience() call with the same territory/indicator/value', async () => {
+    const { simulate_resilience } = await import('./resilienceSimulation.ts');
+    const direct = simulate_resilience('Brunei', { 'Paddy production per capita': 40 });
+
+    const geminiClient = vi.fn().mockImplementation((chatRequest, prompt) => Promise.resolve(prompt.groundingPayload.answer));
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
+
+    const response = await handler(request({
+      ...validPayload,
+      message: "What if Brunei's paddy production per capita went from 8 to 40?",
+      region: '',
+    }));
+    const body = await response.json();
+
+    expect(body.answer).toContain(String(direct.before.index));
+    expect(body.answer).toContain(String(direct.after.index));
+  });
+
+  it('bypasses Gemini entirely and asks for clarification on an ambiguous/invalid request (no territory)', async () => {
+    const geminiClient = vi.fn();
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
+
+    const response = await handler(request({
+      ...validPayload,
+      message: 'What if electricity access improved to 90?',
+      region: '',
+    }));
+    const body = await response.json();
+
+    expect(geminiClient).not.toHaveBeenCalled();
+    expect(response.status).toBe(200);
+    expect(body.mode).toBe('template-fallback');
+    expect(body.fallback.reason).toBe('SIMULATION_NEEDS_CLARIFICATION');
+    expect(body.answer.toLowerCase()).toContain('territory');
+  });
+
+  it('bypasses Gemini and asks for clarification on a misspelled territory', async () => {
+    const geminiClient = vi.fn();
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
+
+    const response = await handler(request({
+      ...validPayload,
+      message: 'What if Sarawakk improved electricity access to 90?',
+      region: '',
+    }));
+    const body = await response.json();
+
+    expect(geminiClient).not.toHaveBeenCalled();
+    expect(body.fallback.reason).toBe('SIMULATION_NEEDS_CLARIFICATION');
+  });
+
+  it('bypasses Gemini and asks for clarification on a nonexistent indicator', async () => {
+    const geminiClient = vi.fn();
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
+
+    const response = await handler(request({
+      ...validPayload,
+      message: "What if Brunei's happiness score went up to 90?",
+      region: '',
+    }));
+    const body = await response.json();
+
+    expect(geminiClient).not.toHaveBeenCalled();
+    expect(body.fallback.reason).toBe('SIMULATION_NEEDS_CLARIFICATION');
+  });
+
+  it('falls back to the deterministic answer when Gemini invents an unapproved number', async () => {
+    const geminiClient = vi.fn().mockResolvedValue('Brunei would reach a perfect 100 index. Illustrative — deterministic scenario, not a forecast.');
+    const quotaService = allowAllQuotaService();
+    const handler = createAiChatHandler({ geminiClient, quotaService, logger: silentLogger });
+
+    const response = await handler(request({
+      ...validPayload,
+      message: "What if Brunei's paddy production per capita went from 8 to 40?",
+      region: '',
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.mode).toBe('template-fallback');
+    expect(body.fallback.reason).toBe('SIMULATION_RESPONSE_REJECTED');
+    expect(body.answer).not.toContain('perfect 100');
+    expect(quotaService.refundReservation).toHaveBeenCalled();
+  });
+
+  it('falls back to the deterministic answer when Gemini presents the scenario as a guaranteed prediction', async () => {
+    const geminiClient = vi.fn().mockResolvedValue('This will definitely improve the index. Illustrative — deterministic scenario, not a forecast.');
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
+
+    const response = await handler(request({
+      ...validPayload,
+      message: "What if Brunei's paddy production per capita went from 8 to 40?",
+      region: '',
+    }));
+    const body = await response.json();
+
+    expect(body.mode).toBe('template-fallback');
+    expect(body.fallback.reason).toBe('SIMULATION_RESPONSE_REJECTED');
+  });
+
+  it('routes a Bahasa Melayu "what if" question correctly', async () => {
+    // Malay routing/value-extraction phrasing, with the indicator referenced
+    // by its exact data name — entityResolver's indicator aliases are
+    // derived straight from indicators.json's English `indicator` field with
+    // no Malay translation layer (unlike its concept/pillar/territory
+    // aliases, which do have Malay entries), so a Malay indicator synonym
+    // alone correctly falls through to NEEDS_CLARIFICATION rather than a
+    // guess. This is a pre-existing entityResolver characteristic, not
+    // something this stage changes.
+    const geminiClient = vi.fn().mockImplementation((chatRequest, prompt) => Promise.resolve(prompt.groundingPayload.answer));
+    const logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger });
+
+    const response = await handler(request({
+      ...validPayload,
+      message: 'Bagaimana jika Electricity access di Sarawak meningkat kepada 100?',
+      region: '',
+      language: 'ms',
+    }));
+    const body = await response.json();
+    const completed = logger.info.mock.calls.find(([event]) => event === 'request_completed')?.[1];
+
+    expect(response.status).toBe(200);
+    expect(completed.intent).toBe('RESILIENCE_SIMULATION');
+    expect(completed.simulationTerritory).toBe('Sarawak');
+    expect(body.answer).toContain('Ilustrasi — senario deterministik, bukan ramalan.');
+  });
+
+  it('does not touch DASHBOARD_DATA/SITE_KNOWLEDGE/BORNEO_NEWS routing for unrelated questions', async () => {
+    const geminiClient = vi.fn().mockImplementation((chatRequest, prompt) => Promise.resolve(safePromptAnswer(prompt)));
+    const logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger });
+
+    const response = await handler(request({ ...validPayload, message: "What is Sabah's resilience score?", region: '' }));
+    const completed = logger.info.mock.calls.find(([event]) => event === 'request_completed')?.[1];
+
+    expect(response.status).toBe(200);
+    expect(completed.intent).toBe('DASHBOARD_DATA');
+  });
+});

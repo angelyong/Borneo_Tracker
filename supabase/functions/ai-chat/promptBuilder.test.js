@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildGroundedPrompt, buildSiteKnowledgeGroundedPrompt } from './promptBuilder.ts';
+import { buildGroundedPrompt, buildSimulationGroundedPrompt, buildSiteKnowledgeGroundedPrompt } from './promptBuilder.ts';
 
 function baseInput(overrides = {}) {
   const structuredAnswer = {
@@ -335,5 +335,57 @@ describe('site knowledge grounded prompt builder', () => {
     expect(prompt.systemInstruction).toContain('Tulis jawapan akhir dalam Bahasa Melayu.');
     expect(prompt.systemInstruction).toContain('Do not add facts, URLs, recommendations, dashboard data, news, or unselected records.');
     expect(prompt.systemInstruction).toContain('Do not introduce any number or year outside the approved token lists.');
+  });
+});
+
+describe('buildSimulationGroundedPrompt', () => {
+  function simulationInput(overrides = {}) {
+    const simulationAnswer = {
+      answer: 'Scenario: Brunei — Paddy production per capita set to 40. Resilience Index: 78 → 83.4 (+5.4). Illustrative — deterministic scenario, not a forecast.',
+      language: 'en',
+      status: 'RESOLVED',
+      territory: 'Brunei',
+      indicator: 'Paddy production per capita',
+      targetValue: 40,
+      before: { index: 78, indexStrict: 60.9, pillarScores: { Food: 7.9 }, weakest: 'Food' },
+      after: { index: 83.4, indexStrict: 79.8, pillarScores: { Food: 40 }, weakest: 'Food' },
+      deltas: { index: 5.4, indexStrict: 18.9, pillarScores: { Food: 32.1 } },
+      approvedNumericTokens: ['78', '83.4', '5.4', '40'],
+      approvedYearTokens: [],
+      warnings: [],
+    };
+    return {
+      userQuestion: "What if Brunei's paddy production per capita went to 40?",
+      language: 'en',
+      simulationAnswer,
+      ...overrides,
+    };
+  }
+
+  it('preserves the deterministic answer text and approved tokens in the grounding payload', () => {
+    const prompt = buildSimulationGroundedPrompt(simulationInput());
+    expect(prompt.groundingPayload.answer).toBe(simulationInput().simulationAnswer.answer);
+    expect(prompt.groundingPayload.territory).toBe('Brunei');
+    expect(prompt.groundingPayload.indicator).toBe('Paddy production per capita');
+    expect(prompt.groundingPayload.targetValue).toBe(40);
+    expect(prompt.groundingPayload.approvedNumericTokens).toEqual(['78', '83.4', '5.4', '40']);
+  });
+
+  it('forbids recalculation and requires preserving the illustrative framing', () => {
+    const prompt = buildSimulationGroundedPrompt(simulationInput());
+    expect(prompt.systemInstruction).toContain('Do not calculate, infer, round, or estimate any numerical value');
+    expect(prompt.systemInstruction).toContain('preserve every number, the territory, the indicator, and the illustrative disclaimer sentence exactly as supplied');
+    expect(prompt.systemInstruction).toContain('Do not present the scenario as a prediction, forecast, guarantee, or causal claim.');
+  });
+
+  it('does not leak internal paths/keys into userContent', () => {
+    const prompt = buildSimulationGroundedPrompt(simulationInput());
+    expect(prompt.userContent).not.toContain('src/utils');
+    expect(prompt.userContent).not.toContain('resilienceSimulation');
+  });
+
+  it('uses the Malay language directive when requested', () => {
+    const prompt = buildSimulationGroundedPrompt(simulationInput({ language: 'ms' }));
+    expect(prompt.systemInstruction).toContain('Tulis jawapan akhir dalam Bahasa Melayu.');
   });
 });
