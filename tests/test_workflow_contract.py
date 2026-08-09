@@ -9,10 +9,23 @@ class WorkflowContractTests(unittest.TestCase):
     def test_publication_workflows_share_serialisation_and_never_cancel(self):
         for name in ("refresh-data.yml","anchor.yml","anchor-upgrade.yml","anchor-catchup.yml"):
             text=self.read(name); self.assertIn("group: phase1-publication",text); self.assertIn("queue: max",text); self.assertIn("cancel-in-progress: false",text)
-    def test_deploy_is_proof_dispatch_not_push_tip(self):
+    def test_deploy_is_manual_exact_proof_sha_not_push_tip(self):
         text=self.read("deploy.yml")
-        self.assertIn("types: [deploy-proof]",text); self.assertNotIn("\n  push:\n",text)
-        self.assertIn("github.event.client_payload.sha",text)
+        self.assertIn("workflow_dispatch:",text)
+        self.assertNotIn("repository_dispatch:",text)
+        self.assertNotIn("\n  push:\n",text)
+        self.assertIn("proof_commit_sha:",text)
+        self.assertIn("confirm_production:",text)
+        self.assertIn("ref: ${{ inputs.proof_commit_sha }}",text)
+        self.assertIn('git merge-base --is-ancestor "${PROOF_COMMIT_SHA}" origin/master',text)
+        self.assertNotIn("github.event.client_payload",text)
+
+    def test_anchor_workflows_create_proofs_but_never_dispatch_deployment(self):
+        for name in ("anchor.yml", "anchor-upgrade.yml"):
+            text=self.read(name)
+            self.assertNotIn("deploy-proof", text)
+            self.assertNotIn("/dispatches", text)
+            self.assertIn("never deploys production", text)
     def test_deploy_checks_full_scope_and_version_pair(self):
         text=self.read("deploy.yml")
         # The exact Phase-1 dataset list is intentionally not duplicated in the
@@ -41,7 +54,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("subject-path: ${{ steps.release.outputs.manifest_file }}",anchor)
         self.assertIn('if [ "${{ needs.attest.outputs.mode }}" != "catchup" ]',anchor)
         self.assertIn("proof_binds_manifest(manifest, proof_path(digest).read_bytes())",anchor)
-        self.assertIn("needs.attest.outputs.mode != 'catchup'",anchor)
+        self.assertIn('if [ "${{ needs.attest.outputs.mode }}" != "catchup" ]',anchor)
     def test_normal_dispatch_and_manual_release_are_attached_master_only(self):
         anchor=self.read("anchor.yml")
         self.assertIn("ref: master",anchor)

@@ -77,23 +77,26 @@ name: Deploy to DirectAdmin
 # ═══════════════════════════════════════════════════════════════════════════════
 
 on:
-  # 1. After the daily data refresh succeeds. This trigger is REQUIRED, not a
-  #    nicety: refresh-data.yml pushes with GITHUB_TOKEN, and pushes made with
-  #    GITHUB_TOKEN do NOT fire `push` events — so without workflow_run the fresh
-  #    data would never trigger a deploy.
-  #    NOTE: like `schedule`, `workflow_run` only fires from the repo's DEFAULT
-  #    branch (master). Until this file is merged there, test with "Run workflow".
-  repository_dispatch:
-    types: [deploy-proof]
-  # Manual, for approved first-run/rollback operations only.
+  # Production is intentionally manual. Proof creation, refreshes, pushes and
+  # schedules may create evidence but may never upload it.
   workflow_dispatch:
     inputs:
-      dry_run:
-        description: "Build + verify only. Do NOT upload and do NOT smoke-test."
-        type: boolean
-        default: false
-      connection_test_only:
-        description: "Authenticate to DirectAdmin and list the remote directory only. Do NOT upload or smoke-test."
+      release_mode:
+        description: "dry_run validates/builds; connection_test_only reads the host; production uploads."
+        required: true
+        type: choice
+        options:
+          - dry_run
+          - connection_test_only
+          - production
+        default: dry_run
+      proof_commit_sha:
+        description: "Exact 40-character lowercase SHA of the proof-bearing commit on master."
+        required: true
+        type: string
+      confirm_production:
+        description: "Set true only after the exact proof commit has passed release preflight. Required for production upload."
+        required: true
         type: boolean
         default: false
 
@@ -116,12 +119,11 @@ jobs:
   deploy:
     name: Build, upload and verify
     runs-on: ubuntu-latest
-    # Only proceed for a SUCCESSFUL upstream run. A failed/cancelled data
-    # refresh must never reach production.
-    if: ${{ github.event_name != 'repository_dispatch' || github.event.client_payload.sha != '' }}
     timeout-minutes: 30
     environment:
-      name: production
+      # Production protection remains a second guard. Preflight modes never
+      # claim the production environment and cannot upload.
+      name: ${{ inputs.release_mode == 'production' && 'production' || 'release-preflight' }}
       url: ${{ vars.PRODUCTION_URL || 'https://borneotracker.rentsmartprop.com.my' }}
 
     env:
@@ -130,16 +132,8 @@ jobs:
 
     steps:
       # ─────────────────────────────────────────────────────────────────────
-      # 0. Secret gate.
-      #
-      # None of the SFTP secrets exist yet — the hosting admin has not issued a
-      # deploy account. If this job simply failed, the Actions tab would be
-      # permanently red and everyone would learn to ignore it, which is exactly
-      # the failure mode this whole effort is meant to kill. So: detect the
-      # missing secrets, say so LOUDLY, and finish green.
-      #
-      # `secrets` is not available in `if:` expressions, so the check has to be
-      # a step that publishes an output the later steps key off.
+      # 0. Validate the requested release mode and prerequisites. A missing
+      # production prerequisite is a red failure, never a green "skip".
       # ─────────────────────────────────────────────────────────────────────
       - name: Check deployment secrets
         id: gate
@@ -150,23 +144,28 @@ jobs:
           SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          DRY_RUN_INPUT: ${{ github.event.inputs.dry_run || 'false' }}
-          CONNECTION_TEST_INPUT: ${{ github.event.inputs.connection_test_only || 'false' }}
+          RELEASE_MODE: ${{ inputs.release_mode }}
+          PROOF_COMMIT_SHA: ${{ inputs.proof_commit_sha }}
+          CONFIRM_PRODUCTION: ${{ inputs.confirm_production }}
           DEPLOY_PROTOCOL: ${{ vars.DEPLOY_PROTOCOL || 'sftp' }}
           SMOKE_ALLOW_INSECURE_TLS: ${{ vars.SMOKE_ALLOW_INSECURE_TLS || 'false' }}
         run: |
           set -euo pipefail
 
-          case "${DRY_RUN_INPUT}" in true|false) ;; *)
-            echo "::error title=Bad workflow input::dry_run must be true or false."
+          case "${RELEASE_MODE}" in dry_run|connection_test_only|production) ;; *)
+            echo "::error title=Bad workflow input::release_mode must be dry_run, connection_test_only, or production."
             exit 1
           esac
-          case "${CONNECTION_TEST_INPUT}" in true|false) ;; *)
-            echo "::error title=Bad workflow input::connection_test_only must be true or false."
+          if ! [[ "${PROOF_COMMIT_SHA}" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error title=Bad workflow input::proof_commit_sha must be a full 40-character lowercase Git commit SHA."
+            exit 1
+          fi
+          case "${CONFIRM_PRODUCTION}" in true|false) ;; *)
+            echo "::error title=Bad workflow input::confirm_production must be true or false."
             exit 1
           esac
-          if [ "${DRY_RUN_INPUT}" = "true" ] && [ "${CONNECTION_TEST_INPUT}" = "true" ]; then
-            echo "::error title=Bad workflow input::Choose either dry_run or connection_test_only, not both."
+          if [ "${RELEASE_MODE}" = "production" ] && [ "${CONFIRM_PRODUCTION}" != "true" ]; then
+            echo "::error title=Production confirmation required::Set confirm_production=true only after the exact proof commit has passed preflight."
             exit 1
           fi
           case "${SMOKE_ALLOW_INSECURE_TLS}" in true|false) ;; *)
@@ -177,59 +176,40 @@ jobs:
             echo "::warning title=TLS verification override enabled::SMOKE_ALLOW_INSECURE_TLS=true was explicitly configured. This run's public smoke test will ignore HTTPS certificate errors; restore false immediately after the approved diagnostic."
           fi
 
-          echo "dry_run=${DRY_RUN_INPUT}" >> "$GITHUB_OUTPUT"
-          echo "connection_test_only=${CONNECTION_TEST_INPUT}" >> "$GITHUB_OUTPUT"
+          echo "mode=${RELEASE_MODE}" >> "$GITHUB_OUTPUT"
+          echo "proof_commit_sha=${PROOF_COMMIT_SHA}" >> "$GITHUB_OUTPUT"
           echo "protocol=${DEPLOY_PROTOCOL}" >> "$GITHUB_OUTPUT"
 
           missing=""
-          # Only NAMES are ever printed. Values stay in the masked env.
-          [ -n "${SFTP_HOST:-}" ]              || missing="${missing} SFTP_HOST"
-          [ -n "${SFTP_USER:-}" ]              || missing="${missing} SFTP_USER"
-          [ -n "${VITE_SUPABASE_URL:-}" ]      || missing="${missing} VITE_SUPABASE_URL"
-          [ -n "${VITE_SUPABASE_ANON_KEY:-}" ] || missing="${missing} VITE_SUPABASE_ANON_KEY"
-          if [ -z "${SFTP_KEY:-}" ] && [ -z "${SFTP_PASSWORD:-}" ]; then
-            missing="${missing} SFTP_KEY_or_SFTP_PASSWORD"
+          # dry_run uses production build inputs but makes no server contact.
+          if [ "${RELEASE_MODE}" != "connection_test_only" ]; then
+            [ -n "${VITE_SUPABASE_URL:-}" ]      || missing="${missing} VITE_SUPABASE_URL"
+            [ -n "${VITE_SUPABASE_ANON_KEY:-}" ] || missing="${missing} VITE_SUPABASE_ANON_KEY"
           fi
-
+          # connection_test_only proves transport; production needs transport
+          # plus build inputs. Only names are ever printed.
+          if [ "${RELEASE_MODE}" != "dry_run" ]; then
+            [ -n "${SFTP_HOST:-}" ] || missing="${missing} SFTP_HOST"
+            [ -n "${SFTP_USER:-}" ] || missing="${missing} SFTP_USER"
+            if [ -z "${SFTP_KEY:-}" ] && [ -z "${SFTP_PASSWORD:-}" ]; then
+              missing="${missing} SFTP_KEY_or_SFTP_PASSWORD"
+            fi
+          fi
           if [ -n "$missing" ]; then
-            echo "ready=false" >> "$GITHUB_OUTPUT"
-            echo "::warning title=Deployment skipped — credentials not configured::Missing repository secrets:${missing}. Production was NOT updated. See docs/DEPLOYMENT_SETUP.md."
-            {
-              echo "## Deployment SKIPPED — not yet configured"
-              echo
-              echo "This run finished green **on purpose**. Nothing was uploaded and production is unchanged."
-              echo
-              echo "The following repository secrets are missing:"
-              echo
-              for name in ${missing}; do echo "- \`${name}\`"; done
-              echo
-              echo "Until the hosting admin issues a deploy account for"
-              echo "\`/domains/borneotracker.rentsmartprop.com.my/public_html\`, the live site keeps"
-              echo "serving whatever was last uploaded by hand (2026-07-23), even though the daily"
-              echo "data refresh keeps succeeding."
-              echo
-              echo "Fix: **Settings -> Secrets and variables -> Actions**, then follow"
-              echo "\`docs/DEPLOYMENT_SETUP.md\`. The request to send the hosting admin is §2.3 of"
-              echo "\`docs/DIRECTADMIN_DASHBOARD_DATA_UPDATE_OPTIONS.md\`."
-            } >> "$GITHUB_STEP_SUMMARY"
-            echo ""
-            echo "############################################################"
-            echo "#  DEPLOY SKIPPED — credentials not configured             #"
-            echo "#  Missing:${missing}"
-            echo "#  Production was NOT updated. This is not a build failure. #"
-            echo "############################################################"
-            exit 0
+            echo "::error title=Deployment prerequisites missing::Missing required secrets for ${RELEASE_MODE}:${missing}. Nothing was uploaded."
+            exit 1
           fi
 
-          echo "ready=true" >> "$GITHUB_OUTPUT"
-          if [ -n "${SFTP_KEY:-}" ]; then
-            echo "auth=key" >> "$GITHUB_OUTPUT"
-            echo "Auth method: SSH private key (SFTP_KEY)."
-          else
-            echo "auth=password" >> "$GITHUB_OUTPUT"
-            echo "::warning title=Password authentication in use::SFTP_KEY is not set, falling back to SFTP_PASSWORD. A key is preferred — see docs/DEPLOYMENT_SETUP.md."
+          if [ "${RELEASE_MODE}" != "dry_run" ]; then
+            if [ -n "${SFTP_KEY:-}" ]; then
+              echo "auth=key" >> "$GITHUB_OUTPUT"
+              echo "Auth method: SSH private key (SFTP_KEY)."
+            else
+              echo "auth=password" >> "$GITHUB_OUTPUT"
+              echo "::warning title=Password authentication in use::SFTP_KEY is not set, falling back to SFTP_PASSWORD. A key is preferred — see docs/DEPLOYMENT_SETUP.md."
+            fi
+            echo "All required transport prerequisites are present. Protocol: ${DEPLOY_PROTOCOL}."
           fi
-          echo "All required deployment secrets are present. Protocol: ${DEPLOY_PROTOCOL}."
 
       # ─────────────────────────────────────────────────────────────────────
       # 1. Checkout.
@@ -237,13 +217,24 @@ jobs:
       # A proof release uses its explicit proof-artifact SHA, never a branch tip.
       # ─────────────────────────────────────────────────────────────────────
       - name: Checkout
-        if: steps.gate.outputs.ready == 'true'
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          ref: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.sha || github.ref }}
+          ref: ${{ inputs.proof_commit_sha }}
+          fetch-depth: 0
+
+      - name: Verify requested proof commit is an immutable master release
+        id: release
+        env:
+          PROOF_COMMIT_SHA: ${{ steps.gate.outputs.proof_commit_sha }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin master
+          git cat-file -e "${PROOF_COMMIT_SHA}^{commit}"
+          git merge-base --is-ancestor "${PROOF_COMMIT_SHA}" origin/master
+          test "$(git rev-parse HEAD)" = "${PROOF_COMMIT_SHA}"
+          echo "Proof commit is present and is an ancestor of origin/master."
 
       - name: Record the exact commit being deployed
-        if: steps.gate.outputs.ready == 'true'
         id: rev
         run: |
           set -euo pipefail
@@ -256,13 +247,13 @@ jobs:
       # 2. Data validation gate. Nothing gets past here if the data is bad.
       # ─────────────────────────────────────────────────────────────────────
       - name: Set up Python
-        if: steps.gate.outputs.ready == 'true'
+        if: steps.gate.outputs.mode != 'connection_test_only'
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.12"
 
       - name: Validate dashboard data (blocking gate)
-        if: steps.gate.outputs.ready == 'true'
+        if: steps.gate.outputs.mode != 'connection_test_only'
         run: |
           set -euo pipefail
           if [ ! -f validate_data.py ]; then
@@ -275,11 +266,18 @@ jobs:
           echo "Running validate_data.py ..."
           python validate_data.py
 
+      - name: Verify exact proof release contract
+        if: steps.gate.outputs.mode != 'connection_test_only'
+        run: |
+          set -euo pipefail
+          python verify_proof_contract.py public/data
+          python verify_anchor.py --allow-pending
+
       # ─────────────────────────────────────────────────────────────────────
       # 3. Build.
       # ─────────────────────────────────────────────────────────────────────
       - name: Set up Node
-        if: steps.gate.outputs.ready == 'true'
+        if: steps.gate.outputs.mode != 'connection_test_only'
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           # Pinned major. Vite 8 requires ^20.19 || >=22.12; 22 is the active
@@ -288,11 +286,11 @@ jobs:
           cache: npm
 
       - name: Install dependencies
-        if: steps.gate.outputs.ready == 'true'
+        if: steps.gate.outputs.mode != 'connection_test_only'
         run: npm ci
 
       - name: Build production bundle
-        if: steps.gate.outputs.ready == 'true'
+        if: steps.gate.outputs.mode != 'connection_test_only'
         env:
           # Env-gated in src/services/supabaseClient.js. Without these the build
           # silently falls back to the local mock news/auth store.
@@ -309,7 +307,7 @@ jobs:
       # normalise the manifest with the same code.
       # ─────────────────────────────────────────────────────────────────────
       - name: Assert the build is publishable
-        if: steps.gate.outputs.ready == 'true'
+        if: steps.gate.outputs.mode != 'connection_test_only'
         id: assert
         run: |
           set -euo pipefail
@@ -388,7 +386,7 @@ jobs:
       #   working instead of white-screening on a missing chunk.
       # ─────────────────────────────────────────────────────────────────────
       - name: Install lftp
-        if: steps.gate.outputs.ready == 'true' && steps.gate.outputs.dry_run != 'true'
+        if: steps.gate.outputs.mode != 'dry_run'
         run: |
           set -euo pipefail
           sudo apt-get update -qq
@@ -399,7 +397,7 @@ jobs:
           lftp --version | head -1
 
       - name: Prepare credentials
-        if: steps.gate.outputs.ready == 'true' && steps.gate.outputs.dry_run != 'true'
+        if: steps.gate.outputs.mode != 'dry_run'
         id: creds
         env:
           SFTP_HOST: ${{ secrets.SFTP_HOST }}
@@ -503,7 +501,7 @@ jobs:
       # It proves TLS, authentication, chroot/path and read permission without
       # ever writing to the server. Dry runs stay entirely offline by design.
       - name: Test DirectAdmin connection (read only)
-        if: steps.gate.outputs.ready == 'true' && steps.gate.outputs.dry_run != 'true' && steps.gate.outputs.connection_test_only == 'true'
+        if: steps.gate.outputs.mode == 'connection_test_only'
         id: connection
         env:
           SFTP_HOST: ${{ secrets.SFTP_HOST }}
@@ -569,7 +567,7 @@ jobs:
           echo "Connection test passed. No files were uploaded."
 
       - name: Upload dist/ to DirectAdmin (non-destructive)
-        if: steps.gate.outputs.ready == 'true' && steps.gate.outputs.dry_run != 'true' && steps.gate.outputs.connection_test_only != 'true'
+        if: steps.gate.outputs.mode == 'production'
         env:
           SFTP_HOST: ${{ secrets.SFTP_HOST }}
           SFTP_USER: ${{ secrets.SFTP_USER }}
@@ -683,7 +681,7 @@ jobs:
           echo "Upload complete."
 
       - name: Keep the previous .htaccess for rollback
-        if: always() && steps.gate.outputs.ready == 'true' && steps.gate.outputs.dry_run != 'true' && steps.gate.outputs.connection_test_only != 'true'
+        if: always() && steps.gate.outputs.mode == 'production'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: predeploy-htaccess
@@ -704,7 +702,7 @@ jobs:
       # also asserts the content type and actually parses the body.
       # ─────────────────────────────────────────────────────────────────────
       - name: Smoke-test production
-        if: steps.gate.outputs.ready == 'true' && steps.gate.outputs.dry_run != 'true' && steps.gate.outputs.connection_test_only != 'true'
+        if: steps.gate.outputs.mode == 'production'
         id: smoke
         env:
           ALLOW_INSECURE: ${{ vars.SMOKE_ALLOW_INSECURE_TLS || 'false' }}
@@ -895,7 +893,7 @@ jobs:
       #    happened and what is live.
       # ─────────────────────────────────────────────────────────────────────
       - name: Write deployment summary
-        if: always() && steps.gate.outputs.ready == 'true'
+        if: always()
         env:
           TRIGGER: ${{ github.event_name }}
           COMMIT: ${{ steps.rev.outputs.sha }}
@@ -904,8 +902,8 @@ jobs:
           GENERATED_AT: ${{ steps.assert.outputs.generated_at }}
           SMOKE: ${{ steps.smoke.outputs.result }}
           TLS: ${{ steps.smoke.outputs.tls }}
-          DRY_RUN: ${{ steps.gate.outputs.dry_run }}
-          CONNECTION_TEST_ONLY: ${{ steps.gate.outputs.connection_test_only }}
+          MODE: ${{ steps.gate.outputs.mode }}
+          PROOF_COMMIT_SHA: ${{ steps.gate.outputs.proof_commit_sha }}
           CONNECTION: ${{ steps.connection.outputs.result }}
           CONNECTION_OUTCOME: ${{ steps.connection.outcome }}
           PROTOCOL: ${{ steps.gate.outputs.protocol }}
@@ -913,11 +911,11 @@ jobs:
         run: |
           set -uo pipefail
           {
-            if [ "${DRY_RUN}" = "true" ]; then
+            if [ "${MODE}" = "dry_run" ]; then
               echo "## Dry run — nothing was uploaded"
-            elif [ "${CONNECTION_TEST_ONLY}" = "true" ] && [ "${CONNECTION}" = "pass" ]; then
+            elif [ "${MODE}" = "connection_test_only" ] && [ "${CONNECTION}" = "pass" ]; then
               echo "## Connection test passed — nothing was uploaded"
-            elif [ "${CONNECTION_TEST_ONLY}" = "true" ]; then
+            elif [ "${MODE}" = "connection_test_only" ]; then
               echo "## Connection test did not complete — nothing was uploaded"
             elif [ "${SMOKE}" = "pass" ]; then
               echo "## Deployed and verified"
@@ -931,9 +929,11 @@ jobs:
             echo "|---|---|"
             echo "| Target | ${PRODUCTION_URL} |"
             echo "| Trigger | \`${TRIGGER}\` |"
+            echo "| Mode | \`${MODE}\` |"
+            echo "| Requested proof commit | \`${PROOF_COMMIT_SHA}\` |"
             echo "| Commit | \`${COMMIT_SHORT}\` — ${COMMIT_SUBJECT} |"
             echo "| Data \`generatedAt\` | **${GENERATED_AT:-unknown}** |"
-            if [ "${CONNECTION_TEST_ONLY}" = "true" ]; then
+            if [ "${MODE}" = "connection_test_only" ]; then
               echo "| Transport | ${PROTOCOL} (${AUTH} auth), read-only connection test |"
               echo "| Connection test | ${CONNECTION:-${CONNECTION_OUTCOME:-not run}} |"
             else

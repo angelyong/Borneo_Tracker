@@ -384,7 +384,7 @@ export default function DataVerification() {
                   {'\n\n'}
                   <span style={{ color: ON_INK_MUTED }}>{'# 3 · check the transparency log\n'}</span>
                   <span style={{ color: ON_INK_MUTED }}>$ </span>
-                  {'gh attestation verify manifest.json --repo angelyong/Borneo_Tracker --signer-workflow .github/workflows/anchor.yml --source-ref refs/heads/master'}
+                  {'gh attestation verify manifest.json --repo angelyong/Borneo_Tracker --signer-workflow angelyong/Borneo_Tracker/.github/workflows/anchor.yml --source-ref refs/heads/master'}
                 </>
               ) : null}
             </pre>

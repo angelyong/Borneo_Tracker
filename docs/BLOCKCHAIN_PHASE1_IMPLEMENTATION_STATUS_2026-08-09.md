@@ -3,9 +3,9 @@
 **Date:** 2026-08-09 (Asia/Kuala_Lumpur)
 **Scope:** local implementation of `BLOCKCHAIN_PHASE1_COMPLETION_PLAN.md`, including the
 provenance-ledger reconciliation authorised on 2026-08-09.
-**Current status:** the planned local implementation is present and **Gate A is achieved**:
-the repository-wide test baseline, clean Node 22 install, dependency audit, lint, build, and
-local blockchain checks pass. The current Manifest v2 is still **not externally anchored or
+**Current status:** the planned local implementation is present and the original **Gate A was
+achieved**. A safe-release hardening change is now in the feature branch and must complete its
+own regression gate before merge. The current Manifest v2 is still **not externally anchored or
 deployed**.
 
 ## 1. Plain-language outcome
@@ -34,6 +34,8 @@ ESG-data customers who need reproducible publication evidence.
 | Current data version | `918a87a5dbd27e4069563f19301fc9e4cc6aa44d5251ecf50ed4b433525e0aa5` |
 | Manifest provenance commitment | 62 ledger entries; root `7ae7c0059309237ac8a8c0fc9892448023363d6a42b3ccca2763a05f30219356` |
 | Current external OTS/Sigstore witness | Not yet created for this v2 Manifest (`UNANCHORED` is expected) |
+| Master synchronisation | Completed on the feature branch; it is not merged to `master` |
+| Same-repository PR Sigstore integration | Passed; non-mutating and non-deploying |
 | Historical v1 Manifest/proof records | Three full-SHA version pairs migrated locally |
 | Production deployment | Not performed |
 
@@ -93,7 +95,7 @@ Bitcoin inclusion by itself.
 | `.github/workflows/refresh-data.yml`, `anchor.yml`, `anchor-upgrade.yml` | Uses shared `queue: max` publication serialisation, no in-progress cancellation, exact-SHA hand-off, and overflow/interruption catch-up. `anchor.yml` separates the read/OIDC/attestation job from the contents-writing proof job and SHA-256 checks the transferred Sigstore bundle. |
 | `.github/workflows/anchor-catchup.yml`, `catch_up_anchors.py` | Finds an exact historical data commit whose v2 Manifest lacks an anchor, hash-checks it, then dispatches the exact version rather than stamping a branch tip. |
 | `.github/workflows/anchor-integration.yml` | Adds a same-repository, non-mutating PR gate that attests and identity-verifies a Manifest but cannot push proof files or deploy. |
-| `.github/workflows/deploy.yml` | Deploy is proof-dispatch/manual only, not every `master` push; normal and cache-buster smoke paths verify all six data files plus the current and versioned proof contract. All action references are immutable commit SHAs. |
+| `.github/workflows/deploy.yml` | Deployment is manual only: every mode requires an exact proof-bearing master SHA, while production additionally requires `confirm_production=true`. Dry-run, read-only connection test, and production upload have separate failure semantics. All action references are immutable commit SHAs. |
 
 ### 3.5 Tests and specification
 
@@ -160,14 +162,12 @@ Gate A proves the repository can reproducibly build and test the local implement
 **not** turn `UNANCHORED` into a pass, does not run GitHub OIDC/Sigstore, and does not authorise
 production deployment.
 
-### A. Synchronise safely with the current `master`
+### A. Synchronise safely with the current `master` — completed
 
-**Condition:** Before merging, incorporate the latest `master` without restoring the old
-conflict markers or legacy Manifest/provenance mismatch. Re-run the data pipeline and generate
-a final Manifest v2 after the exact merge result is known.
-
-**Why:** `origin/master` currently carries the earlier corrupted ledger state. It must not
-overwrite this reconciliation during a merge/rebase.
+The feature branch has incorporated the latest `master` without restoring the old conflict
+markers or legacy Manifest/provenance mismatch. The resulting v2 Manifest was regenerated and
+validated. Re-fetch immediately before merge; if `master` moves, repeat the synchronisation and
+pre-merge gates rather than anchoring stale bytes.
 
 ### B. Run the connected pre-release proof gate
 
@@ -194,12 +194,14 @@ Use either the official OpenTimestamps browser verifier or `ots verify` backed b
 Bitcoin Core node (a pruned node is acceptable). A parsed Bitcoin height inside a proof is not
 itself independent confirmation.
 
-### D. Deploy only the returned proof commit, then smoke-test production
+### D. Preflight then deploy only the returned proof commit, then smoke-test production
 
 **Conditions:** Hosting/SFTP/FTPS credentials and target path are configured; the proof
 workflow produced its exact proof commit SHA.
 
-Deploy that SHA only. The post-deploy job must download and hash all six datasets, current
+First run the manual `dry_run` and read-only `connection_test_only` modes against that exact SHA.
+Only after both pass, run manual `production` with the same SHA and
+`confirm_production=true`. The post-deploy job must download and hash all six datasets, current
 Manifest/proof/event files, and the matching full-SHA versioned Manifest/proof pair. HTML SPA
 fallback at any expected data/proof URL must fail the check.
 
@@ -219,17 +221,19 @@ work, not current functionality.
 ## 8. Recommended next sequence
 
 ```text
-Gate A complete
+Original Gate A complete; safe-release regression gate pending
         ↓
-Synchronise latest master safely
+Synchronise latest master safely (completed; reconfirm before merge)
         ↓
-Regenerate final Manifest v2 from the merged data
+Merge only after manual exact-SHA release controls pass
         ↓
 Run connected exact-SHA OTS + Sigstore pre-release gate
         ↓
 Independently verify OTS/Bitcoin and Sigstore identity
         ↓
-Deploy the exact proof commit
+Run dry-run + connection preflight for the exact proof commit
+        ↓
+Manually deploy the exact proof commit with explicit confirmation
         ↓
 Run production byte/proof smoke validation
 ```

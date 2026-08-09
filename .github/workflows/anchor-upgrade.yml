@@ -56,12 +56,6 @@ jobs:
             echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Dispatch exact upgraded proof commit to deploy
-        if: steps.proof_commit.outputs.sha != ''
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh api repos/${{ github.repository }}/dispatches -f event_type=deploy-proof -f client_payload[sha]="${{ steps.proof_commit.outputs.sha }}"
-
       - name: Summary
         if: always()
         run: |
@@ -71,4 +65,10 @@ jobs:
             echo '```'
             python verify_anchor.py || true
             echo '```'
+            echo
+            if [ -n "${{ steps.proof_commit.outputs.sha }}" ]; then
+              echo "Proof commit: \`${{ steps.proof_commit.outputs.sha }}\`"
+              echo
+            fi
+            echo "This workflow upgrades proof evidence only. It never deploys production."
           } >> "$GITHUB_STEP_SUMMARY"

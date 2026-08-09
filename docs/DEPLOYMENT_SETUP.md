@@ -10,18 +10,15 @@ This is the implementation of **Option A** in
 
 ---
 
-## 0. Why the workflow is green but does nothing right now
+## 0. Release boundary: proof creation never deploys
 
-`deploy.yml` is already merged, but none of the SFTP secrets exist yet. Its first step checks
-for them, prints a loud "DEPLOY SKIPPED" banner with the list of missing secret names, writes
-an explanation into the run summary, and **exits 0**.
+`deploy.yml` runs only from **Actions → Deploy to DirectAdmin → Run workflow**. Refreshes,
+pushes, anchor creation, and OTS proof upgrades cannot start a production upload.
 
-That is deliberate. A permanently red Actions tab is a red light everyone learns to ignore —
-which is exactly the failure mode this whole exercise exists to kill. The run is green because
-"we correctly did nothing"; the summary says loudly that production was not updated.
-
-**The site keeps serving the hand-uploaded 2026-07-23 build until Step 1 and Step 2 below are
-done.**
+Every run requires an exact, lowercase 40-character `proof_commit_sha` that is an ancestor of
+current `master`. A missing prerequisite is a **red failure** with secret names only; a green
+run is never used to mean “credentials were absent”. The site remains unchanged until a manual
+production run completes its upload and smoke test.
 
 ---
 
@@ -149,10 +146,12 @@ carry **FTPS** values. Concrete settings for `borneotracker.rentsmartprop.com.my
 
 ## 3. First run — do it manually
 
-Do **not** wait for the 05:00 MYT schedule to find out whether it works.
+All release modes are manual. Start with the two non-production modes below;
+neither one changes the hosted site.
 
-1. **Actions → "Deploy to DirectAdmin" → Run workflow.**
-2. Tick **`dry_run`** and run it. This does everything *except* touch the server: it validates
+1. **Actions → "Deploy to DirectAdmin" → Run workflow.** Enter the exact proof-bearing
+   `proof_commit_sha` from the verified master anchor run.
+2. Select **`release_mode=dry_run`** and leave `confirm_production=false`. This does everything *except* touch the server: it validates
    the data, builds the site, and runs every pre-upload assertion. If this is red, the problem
    is in the repo, not in the hosting — fix it before going near production.
 
@@ -171,8 +170,8 @@ Do **not** wait for the 05:00 MYT schedule to find out whether it works.
    - `dist/.htaccess is missing or empty` — `public/.htaccess` was deleted or emptied. It is a
      tracked file and carries the SPA rewrite; restore it. The workflow refuses to upload
      without it precisely because losing it 404s every deep link on the live site.
-3. After a green Dry Run, run the workflow again with **only**
-   **`connection_test_only`** ticked. Do not tick it together with `dry_run`.
+3. After a green Dry Run, run the workflow again with
+   **`release_mode=connection_test_only`** and the same exact SHA.
 
    This authenticates through FTPS, verifies the FTPS certificate according to
    `FTPS_VERIFY_CERT`, changes into `SFTP_REMOTE_DIR`, and lists the directory. It does **not**
@@ -181,25 +180,20 @@ Do **not** wait for the 05:00 MYT schedule to find out whether it works.
    wrong username/password, a certificate problem, a chroot/path mistake, or an FTP connectivity
    problem before Production is touched.
 
-4. Only after both checks are green, run again with **both options unticked**. Watch these steps:
+4. Only after both checks are green, run again with **`release_mode=production`**,
+   the same exact SHA, and **`confirm_production=true`**. Watch these steps:
    - **Prepare credentials** — validates only safe hostname/port/path forms before connecting.
    - **Upload dist/ to DirectAdmin** — uses Explicit FTPS on port 21 and prints a credentials-free
      transfer plan.
    - **Smoke-test production** — see Step 4.
-5. Repeat for at least three consecutive scheduled runs before trusting it, per §8 of the
-   DirectAdmin options doc.
+5. A GitHub `production` environment approval, if configured, is an additional guard; it does
+   not replace the exact SHA and explicit confirmation in the workflow.
 
 ### What triggers a deploy afterwards
 
-| Trigger | When |
-|---|---|
-| `workflow_run` | Every time **"Refresh dashboard data"** finishes **successfully**. This is how the daily 05:00 MYT data reaches production. |
-| `push` to `master` | Any code change. |
-| `workflow_dispatch` | Manually, any time, on any branch — including an old one, which is how you roll back. |
-
-> The `workflow_run` trigger is not decoration. `refresh-data.yml` commits with `GITHUB_TOKEN`,
-> and pushes made with `GITHUB_TOKEN` do **not** fire `push` events. Without `workflow_run` the
-> fresh data would never trigger anything.
+Only `workflow_dispatch` can start this workflow. It is not valid to deploy an arbitrary branch
+or a moving branch tip: the requested proof commit must be a full SHA and an ancestor of current
+`origin/master`.
 
 Deploys **queue**; they never cancel each other. Killing an upload halfway would leave
 `public_html` in a mixed state.
@@ -273,13 +267,15 @@ rollback cheap: the previous build's files are still sitting there.
 **To roll back the site:** re-deploy the last known-good commit.
 
 1. Find the last green deploy run and note its commit SHA (it is in the run summary).
-2. **Actions → "Deploy to DirectAdmin" → Run workflow →** pick the branch or tag containing that
-   commit and run it.
+2. **Actions → "Deploy to DirectAdmin" → Run workflow →** enter that proof-bearing master
+   commit as `proof_commit_sha`, select `production`, and deliberately set
+   `confirm_production=true`.
 3. Confirm the smoke test passes and that the `generatedAt` in the summary is the one you
    expected.
 
-If the bad commit is on `master`, `git revert` it first and let the `push` trigger redeploy;
-that keeps the repo and production telling the same story.
+If the bad commit is on `master`, `git revert` it first, produce and independently verify a new
+proof for the reverted master state, then deploy that resulting exact proof commit. This keeps
+the repository, proof, and production telling the same story.
 
 **To roll back only `.htaccess`** (the file whose loss breaks every deep link): every deploy
 attaches the *pre-deploy* copy of the live `.htaccess` to the run as an artifact named
@@ -302,7 +298,6 @@ option.
   `/domains/borneotracker.rentsmartprop.com.my/public_html`. Until then these credentials can
   reach other projects on the shared account.
 - **Failure notifications.** A red deploy is only visible if someone looks. GitHub emails the
-  actor on failure; the daily `workflow_run`-triggered deploys have no human actor, so consider
-  watching the repo or adding a notification step.
+  manual actor on failure; consider watching the repository or adding a notification step.
 - **Optional hardening:** the job targets a GitHub *environment* named `production`. You can add
   required reviewers to it (Settings → Environments) if you want a human to approve every deploy.

@@ -56,9 +56,12 @@ ID/URL for discovery; that is not signature verification.
 
 ## Publication flow and gates
 
-`refresh (exact data SHA) → anchor (exact SHA) → proof commit SHA → deploy
-(exact proof SHA)`. The Actions workflows share `phase1-publication` concurrency
-and never cancel an in-flight publication. The catch-up scanner only identifies
+`refresh (exact data SHA) → anchor (exact SHA) → proof commit SHA → manual deploy
+(exact proof SHA)`. Proof creation never uploads production content. Deployment is a
+separate, manual release decision: first run a dry-run and read-only connection test,
+then enter the exact proof commit SHA and `confirm_production=true` for upload. The
+Actions workflows share `phase1-publication` concurrency and never cancel an in-flight
+publication. The catch-up scanner only identifies
 committed version snapshots with no OTS event and dispatches each with both its
 Git commit SHA and Manifest SHA; the anchor workflow stamps that exact version,
 never an arbitrary branch tip. GitHub Actions `queue: max` retains up to 100

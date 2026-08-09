@@ -256,12 +256,6 @@ jobs:
             echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Dispatch exact proof commit to deploy
-        if: steps.proof_commit.outputs.sha != '' && needs.attest.outputs.mode != 'catchup'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh api repos/${{ github.repository }}/dispatches -f event_type=deploy-proof -f client_payload[sha]="${{ steps.proof_commit.outputs.sha }}"
-
       - name: Summary
         if: always()
         run: |
@@ -271,6 +265,12 @@ jobs:
             echo '```'
             python verify_anchor.py || true
             echo '```'
+            echo
+            if [ -n "${{ steps.proof_commit.outputs.sha }}" ]; then
+              echo "Proof commit: \`${{ steps.proof_commit.outputs.sha }}\`"
+              echo
+            fi
+            echo "This workflow creates release evidence only. It never deploys production."
             echo
             echo "A fresh stamp is **pending** until a Bitcoin block includes it."
           } >> "$GITHUB_STEP_SUMMARY"
