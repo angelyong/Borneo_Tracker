@@ -23,6 +23,80 @@
     "tooltip": "Papan pemuka ini dibina semula daripada saluran data harian; tarikh yang dipaparkan ialah masa data dijana, bukan masa halaman dimuatkan.",
     "tooltipUnknown": "Papan pemuka ini dibina semula daripada saluran data harian, tetapi set data ini tidak merekodkan masa ia dijana."
   },
+  "integrity": {
+    "verified": {
+      "label": "Integriti disahkan",
+      "detail": "Fail yang diterbitkan dan diperiksa sepadan dengan Manifest yang dimuat turun. Pelayar ini tidak mengesahkan Bitcoin atau ketepatan sumber secara bebas."
+    },
+    "pending": {
+      "label": "Menunggu cap masa",
+      "detail": "Sudah ditandatangani dan dihantar; cap masa Bitcoin mengambil masa beberapa jam untuk disahkan. Ini normal, bukan ralat."
+    },
+    "mismatch": {
+      "label": "Integriti tidak sepadan",
+      "detail": "Fail ini tidak sepadan dengan cap jari yang dilabuhkan. Penerbitan mungkin tidak lengkap atau data telah diubah — jangan petik versi ini."
+    },
+    "unverified": {
+      "label": "Belum disahkan",
+      "detail": "Rekod pengesahan tidak dapat dicapai, jadi tiada apa-apa yang didakwa."
+    },
+    "invalid": {
+      "label": "Metadata pengesahan tidak sah",
+      "detail": "Manifest atau metadata saksi rosak; tiada tuntutan integriti dibuat."
+    },
+    "block": "blok {{block}}"
+  },
+  "verify": {
+    "eyebrow": "Integriti data",
+    "title": "Sahkan data ini",
+    "lede": "Setiap set data yang diterbitkan direkod dalam Manifest berversi. Halaman ini menyemak bait yang diterbitkan, bukan ketepatan nombor sumber atau pengesahan bebas saksi blockchain.",
+    "currentTitle": "Versi yang diterbitkan sekarang",
+    "currentHint": "Pelayar anda baru sahaja mengira semula cap jari ini secara setempat.",
+    "checking": "Sedang menyemak…",
+    "built": "Dijana",
+    "versionsPublished": "{{count}} versi telah diterbitkan setakat ini",
+    "filesTitle": "Fail yang diterbitkan",
+    "filesHint": "Setiap cap jari ialah SHA-256 bagi bait fail itu sendiri. Kira semula dan anda sepatutnya mendapat rentetan yang sama.",
+    "colFile": "Fail",
+    "colHash": "SHA-256",
+    "colSize": "Saiz",
+    "colStatus": "Status",
+    "fileMatch": "Sepadan",
+    "fileMismatch": "Tidak sepadan",
+    "fileUnreachable": "Tidak dapat dicapai",
+    "noManifest": "Tiada manifes integriti disajikan, jadi belum ada apa-apa untuk disahkan.",
+    "witnessTitle": "Rekod saksi",
+    "witnessHint": "Rekod hos sendiri ini membantu mencari bukti OpenTimestamps dan Sigstore; halaman ini tidak mengesahkan mana-mana rangkaian secara bebas.",
+    "witnessBitcoin": "Bitcoin",
+    "witnessSigstore": "Sigstore",
+    "confirmed": "Disahkan",
+    "awaitingBlock": "Menunggu blok",
+    "notAnchored": "Belum dilabuhkan",
+    "logged": "Direkodkan",
+    "notEnabled": "Belum diaktifkan",
+    "block": "Blok",
+    "proof": "Bukti",
+    "entry": "Entri",
+    "signer": "Ditandatangani oleh",
+    "status": "Status",
+    "cost": "Kos",
+    "provesTitle": "Apa yang ini buktikan",
+    "provesBody": "Fail yang dimuat turun sepadan dengan Manifest yang dimuat turun dalam semakan pelayar ini. Sahkan OpenTimestamps dan Sigstore secara bebas menggunakan alat di bawah.",
+    "notProvesTitle": "Apa yang ini tidak buktikan",
+    "notProvesBody": "Ini tidak bermakna angkanya betul. Jika sumber asalnya salah, kami hanya menyimpan kesilapan itu dengan setia. Kualiti data dibawa oleh label keyakinan dan sumber pada setiap penunjuk, bukan oleh halaman ini.",
+    "yourselfTitle": "Sahkan sendiri",
+    "yourselfHint": "Tiada apa-apa di sini memerlukan perisian yang kami tulis.",
+    "historyTitle": "Sejarah penerbitan",
+    "historyHint": "Rekod saksi berversi yang disimpan oleh log penerbitan ini. Semak bukti dengan alat bebas.",
+    "noHistory": "Belum ada labuhan direkodkan.",
+    "statFiles": "Fail disemak",
+    "statVersions": "Versi diterbitkan",
+    "statWitnesses": "Rekod saksi",
+    "statCost": "Yuran saksi langsung",
+    "noDirectWitnessFee": "Yuran saksi langsung $0; pengehosan, Actions dan operasi nod masih mempunyai kos.",
+    "heroLabel": "Cap jari versi data ini",
+    "terminalHint": "Jalankan di mana-mana. Kedua-dua alat ini bukan milik kami."
+  },
   "sidebar": {
     "dashboard": "Papan Pemuka",
     "regionalDetails": "Butiran Wilayah",

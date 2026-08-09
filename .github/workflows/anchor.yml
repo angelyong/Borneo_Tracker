@@ -1,0 +1,276 @@
+name: Anchor published data
+
+# The first Phase-1 bootstrap is run from master after the release PR is
+# merged. Future same-repository PRs exercise the non-mutating connected gate
+# in anchor-integration.yml before this contents-writing workflow is used.
+on:
+  repository_dispatch:
+    types: [anchor-manifest]
+  workflow_dispatch:
+    inputs:
+      data_sha:
+        description: "Exact pushed data commit SHA to anchor"
+        required: false
+        type: string
+
+# A workflow-level read default prevents future steps from accidentally gaining
+# a write token. Each job requests only the permissions it actually needs.
+permissions:
+  contents: read
+
+concurrency:
+  group: phase1-publication
+  queue: max
+  cancel-in-progress: false
+
+jobs:
+  attest:
+    name: Attest exact manifest
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    outputs:
+      data_commit_sha: ${{ steps.release.outputs.data_commit_sha }}
+      signer_source_sha: ${{ steps.release.outputs.signer_source_sha }}
+      manifest_sha: ${{ steps.release.outputs.manifest_sha }}
+      manifest_file: ${{ steps.release.outputs.manifest_file }}
+      mode: ${{ steps.release.outputs.mode }}
+      bundle_sha256: ${{ steps.bundle.outputs.sha256 }}
+      attestation_id: ${{ steps.attest.outputs.attestation-id }}
+      attestation_url: ${{ steps.attest.outputs.attestation-url }}
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - name: Resolve exact data bytes on master
+        id: release
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          WORKFLOW_REF: ${{ github.ref }}
+          RUN_SOURCE_SHA: ${{ github.sha }}
+          DISPATCH_DATA_SHA: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.sha || '' }}
+          DISPATCH_MANIFEST_SHA: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.manifest_sha || '' }}
+          INPUT_DATA_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.data_sha || '' }}
+        run: |
+          set -euo pipefail
+          test "$WORKFLOW_REF" = "refs/heads/master"
+          test "$(git branch --show-current)" = "master"
+          git fetch origin master
+          head_sha="$(git rev-parse HEAD)"
+          test "$head_sha" = "$(git rev-parse origin/master)"
+          test "$RUN_SOURCE_SHA" = "$head_sha"
+          subject="public/data/manifest.json"
+          if [ "$EVENT_NAME" = "repository_dispatch" ]; then
+            test -n "$DISPATCH_DATA_SHA"
+            if [ -n "$DISPATCH_MANIFEST_SHA" ]; then
+              git cat-file -e "${DISPATCH_DATA_SHA}^{commit}"
+              subject="$RUNNER_TEMP/historical-manifest.json"
+              git show "${DISPATCH_DATA_SHA}:public/data/manifest.json" > "$subject"
+              test "$(sha256sum "$subject" | awk '{print $1}')" = "$DISPATCH_MANIFEST_SHA"
+              data_sha="$DISPATCH_DATA_SHA"
+              mode="catchup"
+            else
+              test "$DISPATCH_DATA_SHA" = "$head_sha"
+              data_sha="$head_sha"
+              mode="normal"
+            fi
+          elif [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            data_sha="${INPUT_DATA_SHA:-$head_sha}"
+            test "$data_sha" = "$head_sha"
+            mode="manual"
+          else
+            echo "Unsupported event: $EVENT_NAME" >&2
+            exit 1
+          fi
+          python - "$subject" <<'PY'
+          import sys
+          from manifest_contract import strict_json_loads, validate_manifest
+          with open(sys.argv[1], encoding="utf-8") as handle:
+              validate_manifest(strict_json_loads(handle.read(), "release manifest"))
+          PY
+          manifest_sha="$(sha256sum "$subject" | awk '{print $1}')"
+          printf 'data_commit_sha=%s\n' "$data_sha" >> "$GITHUB_OUTPUT"
+          printf 'signer_source_sha=%s\n' "$head_sha" >> "$GITHUB_OUTPUT"
+          printf 'manifest_sha=%s\n' "$manifest_sha" >> "$GITHUB_OUTPUT"
+          printf 'manifest_file=%s\n' "$subject" >> "$GITHUB_OUTPUT"
+          printf 'mode=%s\n' "$mode" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+
+      - name: Report what is about to be anchored
+        run: python anchor_provenance.py --dry-run --manifest-file "${{ steps.release.outputs.manifest_file }}" --manifest-sha "${{ steps.release.outputs.manifest_sha }}"
+
+      - name: Attest the manifest (Sigstore transparency log)
+        id: attest
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: ${{ steps.release.outputs.manifest_file }}
+
+      - name: Verify Sigstore identity before publishing its record
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh attestation verify "${{ steps.release.outputs.manifest_file }}" \
+            --bundle "${{ steps.attest.outputs.bundle-path }}" \
+            --repo "${{ github.repository }}" \
+            --signer-workflow "${{ github.repository }}/.github/workflows/anchor.yml" \
+            --source-ref refs/heads/master \
+            --source-digest "${{ steps.release.outputs.signer_source_sha }}"
+
+      - name: Hash verified bundle
+        id: bundle
+        run: echo "sha256=$(sha256sum '${{ steps.attest.outputs.bundle-path }}' | awk '{print $1}')" >> "$GITHUB_OUTPUT"
+
+      - name: Transfer verified Sigstore bundle
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: phase1-sigstore-bundle
+          path: ${{ steps.attest.outputs.bundle-path }}
+          if-no-files-found: error
+          retention-days: 1
+
+  publish-proof:
+    name: Stamp and commit proof
+    needs: attest
+    if: needs.attest.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: master
+          fetch-depth: 0
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+
+      - name: Restore verified Sigstore bundle
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: phase1-sigstore-bundle
+          path: ${{ runner.temp }}/phase1-sigstore-bundle
+
+      - name: Reconstruct and validate the exact subject
+        id: release
+        env:
+          DATA_COMMIT_SHA: ${{ needs.attest.outputs.data_commit_sha }}
+          SIGNER_SOURCE_SHA: ${{ needs.attest.outputs.signer_source_sha }}
+          MANIFEST_SHA: ${{ needs.attest.outputs.manifest_sha }}
+          MODE: ${{ needs.attest.outputs.mode }}
+          BUNDLE_SHA256: ${{ needs.attest.outputs.bundle_sha256 }}
+        run: |
+          set -euo pipefail
+          test "$(git branch --show-current)" = "master"
+          git fetch origin master
+          head_sha="$(git rev-parse HEAD)"
+          test "$head_sha" = "$(git rev-parse origin/master)"
+          test "$head_sha" = "$SIGNER_SOURCE_SHA"
+          bundle="$(find "$RUNNER_TEMP/phase1-sigstore-bundle" -type f -print -quit)"
+          test -n "$bundle"
+          test "$(sha256sum "$bundle" | awk '{print $1}')" = "$BUNDLE_SHA256"
+          if [ "$MODE" = "catchup" ]; then
+            git cat-file -e "${DATA_COMMIT_SHA}^{commit}"
+            subject="$RUNNER_TEMP/historical-manifest.json"
+            git show "${DATA_COMMIT_SHA}:public/data/manifest.json" > "$subject"
+          else
+            test "$DATA_COMMIT_SHA" = "$head_sha"
+            subject="public/data/manifest.json"
+          fi
+          test "$(sha256sum "$subject" | awk '{print $1}')" = "$MANIFEST_SHA"
+          python - "$subject" <<'PY'
+          import sys
+          from manifest_contract import strict_json_loads, validate_manifest
+          with open(sys.argv[1], encoding="utf-8") as handle:
+              validate_manifest(strict_json_loads(handle.read(), "release manifest"))
+          PY
+          printf 'manifest_file=%s\n' "$subject" >> "$GITHUB_OUTPUT"
+          printf 'bundle_file=%s\n' "$bundle" >> "$GITHUB_OUTPUT"
+
+      - name: Verify transferred Sigstore identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh attestation verify "${{ steps.release.outputs.manifest_file }}" \
+            --bundle "${{ steps.release.outputs.bundle_file }}" \
+            --repo "${{ github.repository }}" \
+            --signer-workflow "${{ github.repository }}/.github/workflows/anchor.yml" \
+            --source-ref refs/heads/master \
+            --source-digest "${{ needs.attest.outputs.signer_source_sha }}"
+
+      - name: Stamp the manifest on Bitcoin (OpenTimestamps)
+        run: |
+          python anchor_provenance.py \
+            --manifest-file "${{ steps.release.outputs.manifest_file }}" \
+            --manifest-sha "${{ needs.attest.outputs.manifest_sha }}" \
+            --sigstore-bundle "${{ steps.release.outputs.bundle_file }}" \
+            --sigstore-attestation-id "${{ needs.attest.outputs.attestation_id }}" \
+            --sigstore-attestation-url "${{ needs.attest.outputs.attestation_url }}" \
+            --sigstore-verified \
+            --sigstore-repository "${{ github.repository }}" \
+            --sigstore-signer-workflow .github/workflows/anchor.yml \
+            --sigstore-source-ref refs/heads/master \
+            --sigstore-source-digest "${{ needs.attest.outputs.signer_source_sha }}" \
+            --data-commit-sha "${{ needs.attest.outputs.data_commit_sha }}" \
+            --signer-source-sha "${{ needs.attest.outputs.signer_source_sha }}" \
+            --signer-workflow .github/workflows/anchor.yml \
+            --signer-ref refs/heads/master
+
+      - name: Verify what we just wrote
+        run: |
+          if [ "${{ needs.attest.outputs.mode }}" != "catchup" ]; then
+            python verify_anchor.py --allow-pending
+          else
+            python - "${{ steps.release.outputs.manifest_file }}" "${{ needs.attest.outputs.manifest_sha }}" <<'PY'
+          import sys
+          from pathlib import Path
+          from anchor_provenance import manifest_path, proof_path
+          from verify_anchor import proof_binds_manifest
+          manifest = Path(sys.argv[1]).read_bytes()
+          digest = sys.argv[2]
+          assert manifest_path(digest).read_bytes() == manifest
+          assert proof_binds_manifest(manifest, proof_path(digest).read_bytes())
+          PY
+          fi
+
+      - name: Commit the proof
+        id: proof_commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/data/anchors.jsonl public/data/versions public/data/manifest.json.ots
+          if git diff --cached --quiet; then
+            echo "Nothing new to anchor — this data version already has a proof."
+          else
+            git commit -m "chore: anchor data version on Bitcoin"
+            git push
+            echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Summary
+        if: always()
+        run: |
+          {
+            echo "### Anchor"
+            echo
+            echo '```'
+            python verify_anchor.py || true
+            echo '```'
+            echo
+            if [ -n "${{ steps.proof_commit.outputs.sha }}" ]; then
+              echo "Proof commit: \`${{ steps.proof_commit.outputs.sha }}\`"
+              echo
+            fi
+            echo "This workflow creates release evidence only. It never deploys production."
+            echo
+            echo "A fresh stamp is **pending** until a Bitcoin block includes it."
+          } >> "$GITHUB_STEP_SUMMARY"

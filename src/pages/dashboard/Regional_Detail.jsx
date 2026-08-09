@@ -20,6 +20,7 @@ import { THEME_CHANGE_EVENT, cssVar } from '../../utils/theme';
 import DataFreshness from '../../components/DataFreshness';
 import ProvenanceChip from '../../components/ProvenanceChip';
 import HexRadar from '../../components/HexRadar';
+import IntegrityChip from '../../components/IntegrityChip';
 
 const RegionalDetails = () => {
   const { t, i18n } = useTranslation();
@@ -236,6 +237,7 @@ const RegionalDetails = () => {
             </div>
             <div style={styles.toolbarFreshness}>
               <DataFreshness generatedAt={generatedAt} loading={loading} />
+              <IntegrityChip scope="district" />
             </div>
           </div>
 

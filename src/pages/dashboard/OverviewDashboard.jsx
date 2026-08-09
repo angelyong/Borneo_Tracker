@@ -32,6 +32,7 @@ import {
 import L from 'leaflet';
 
 import DataFreshness from '../../components/DataFreshness';
+import IntegrityChip from '../../components/IntegrityChip';
 import PillarCoverage from '../../components/PillarCoverage';
 import ProvenanceChip from '../../components/ProvenanceChip';
 import WeakestLinkBars from '../../components/WeakestLinkBars';
@@ -967,11 +968,15 @@ const OverviewDashboard = () => {
 
         {/* District mode reads districts.json, which rebuilds on its own slower
             cadence — show that file's own date so the gap stays visible. */}
+        {/* Two different trust claims, deliberately side by side: DataFreshness
+            says how OLD this snapshot is, IntegrityChip says whether it has been
+            ALTERED since it was published. Neither substitutes for the other. */}
         <div style={styles.freshnessRow}>
           <DataFreshness
             generatedAt={isDistrict ? districtGeneratedAt : generatedAt}
             loading={isDistrict ? districtLoading : loading}
           />
+          <IntegrityChip />
         </div>
 
         <div style={styles.card}>

@@ -1,0 +1,21 @@
+{
+  "generatedAt": "2026-08-02T09:05:58Z",
+  "runId": "local",
+  "files": {
+    "public/data/indicators.json": {
+      "sha256": "d3c5a5c84f0d13271a3f21b0b00ec2b212f885700fe83a614760ce9ef0790415",
+      "bytes": 109656,
+      "generatedAt": "2026-08-02"
+    },
+    "public/data/resilience.json": {
+      "sha256": "2200a43865a270a4fb9c8048747b21ebc420cc460cd8a1d9d22a0967c1c60214",
+      "bytes": 13368,
+      "generatedAt": "2026-08-02"
+    },
+    "public/data/districts.json": {
+      "sha256": "e4ce8fd60fb9d08f7f25e3cdad64c40a86ca6736d435780af13dbf6446c26058",
+      "bytes": 561735,
+      "generatedAt": "2026-08-02"
+    }
+  }
+}

@@ -24,6 +24,80 @@
     "tooltip": "This dashboard is rebuilt from a daily pipeline; the date shown is when the data was generated, not when the page was loaded.",
     "tooltipUnknown": "This dashboard is rebuilt from a daily pipeline, but this dataset did not record when it was generated."
   },
+  "integrity": {
+    "verified": {
+      "label": "Integrity verified",
+      "detail": "The checked published files match the downloaded Manifest. This browser does not independently verify Bitcoin or source correctness."
+    },
+    "pending": {
+      "label": "Timestamping",
+      "detail": "Signed and submitted; the Bitcoin timestamp takes a few hours to confirm. This is normal, not an error."
+    },
+    "mismatch": {
+      "label": "Integrity mismatch",
+      "detail": "These files do not match the anchored fingerprint. The deployment may be incomplete or the data altered — do not cite this version."
+    },
+    "unverified": {
+      "label": "Not verified",
+      "detail": "The verification record could not be reached, so nothing is being claimed either way."
+    },
+    "invalid": {
+      "label": "Verification metadata invalid",
+      "detail": "The Manifest or witness metadata is malformed, so no integrity claim is made."
+    },
+    "block": "block {{block}}"
+  },
+  "verify": {
+    "eyebrow": "Data integrity",
+    "title": "Verify this data",
+    "lede": "Every published dataset is fingerprinted in a versioned Manifest. This page checks published bytes; it does not establish that source numbers are correct or independently verify a blockchain witness.",
+    "currentTitle": "Currently published version",
+    "currentHint": "Your browser recomputed these fingerprints locally just now.",
+    "checking": "Checking…",
+    "built": "Built",
+    "versionsPublished": "{{count}} versions published to date",
+    "filesTitle": "Published files",
+    "filesHint": "Each fingerprint is the SHA-256 of the file's own bytes. Recompute it and you should get the same string.",
+    "colFile": "File",
+    "colHash": "SHA-256",
+    "colSize": "Size",
+    "colStatus": "Status",
+    "fileMatch": "Matches",
+    "fileMismatch": "Does not match",
+    "fileUnreachable": "Unreachable",
+    "noManifest": "No integrity manifest is being served, so there is nothing to verify against yet.",
+    "witnessTitle": "Witness records",
+    "witnessHint": "These self-hosted records help discover OpenTimestamps and Sigstore evidence; this page does not independently validate either network.",
+    "witnessBitcoin": "Bitcoin",
+    "witnessSigstore": "Sigstore",
+    "confirmed": "Confirmed",
+    "awaitingBlock": "Awaiting block",
+    "notAnchored": "Not anchored",
+    "logged": "Logged",
+    "notEnabled": "Not enabled",
+    "block": "Block",
+    "proof": "Proof",
+    "entry": "Entry",
+    "signer": "Signed by",
+    "status": "Status",
+    "cost": "Cost",
+    "provesTitle": "What this proves",
+    "provesBody": "The downloaded files match the downloaded Manifest within this browser check. Independently verify OpenTimestamps and Sigstore using the tools below.",
+    "notProvesTitle": "What this does not prove",
+    "notProvesBody": "It does not mean the numbers are correct. If a source was wrong, we have preserved that error faithfully. Data quality is carried by the confidence and source labels on each indicator, not by this page.",
+    "yourselfTitle": "Verify it yourself",
+    "yourselfHint": "Nothing here needs software written by us.",
+    "historyTitle": "Publication history",
+    "historyHint": "Versioned witness records retained by this publication log. Check the linked proof with independent tools.",
+    "noHistory": "No anchors recorded yet.",
+    "statFiles": "Files checked",
+    "statVersions": "Versions published",
+    "statWitnesses": "Witness records",
+    "statCost": "Direct witness fee",
+    "noDirectWitnessFee": "$0 direct witness fee; hosting, Actions and node operations still have costs.",
+    "heroLabel": "Fingerprint of this data version",
+    "terminalHint": "Run these anywhere. Neither tool is ours."
+  },
   "sidebar": {
     "dashboard": "Dashboard",
     "regionalDetails": "Regional Details",

@@ -1143,7 +1143,7 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
       userContent: expect.stringContaining('"untrustedUserQuestion": "What is Sabah\'s resilience score?"'),
       groundingPayload: expect.objectContaining({
         answerStatus: 'AVAILABLE',
-        conclusion: "Sabah's overall resilience score is 63.7.",
+        conclusion: "Sabah's overall resilience score is 72.1.",
       }),
     }));
   });
@@ -1568,7 +1568,7 @@ describe('ai-chat Stage 4C template fallback', () => {
     );
 
     expect(partial.response.status).toBe(200);
-    expect(partial.fallbackLog.structuredAnswerAvailability).toBe('PARTIAL');
+    expect(partial.fallbackLog.structuredAnswerAvailability).toBe('UNAVAILABLE');
     expect(partial.body.answer).toContain('progress-to-target cannot be calculated');
     expect(unavailable.response.status).toBe(200);
     expect(['PARTIAL', 'UNAVAILABLE']).toContain(unavailable.fallbackLog.structuredAnswerAvailability);

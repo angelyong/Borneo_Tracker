@@ -58,20 +58,22 @@ class DeployWorkflowContractTests(unittest.TestCase):
         self.assertIn("Strict TLS is enabled", self.text)
 
     def test_dry_run_never_reaches_transport_steps(self):
-        for step in (
-            "Install lftp",
-            "Prepare credentials",
-            "Test DirectAdmin connection (read only)",
-            "Upload dist/ to DirectAdmin (non-destructive)",
+        for step in ("Install lftp", "Prepare credentials"):
+            block = self.text[self.text.index(f"- name: {step}"):]
+            first_lines = "\n".join(block.splitlines()[:4])
+            self.assertIn("steps.gate.outputs.mode != 'dry_run'", first_lines, step)
+        for step, condition in (
+            ("Test DirectAdmin connection (read only)", "mode == 'connection_test_only'"),
+            ("Upload dist/ to DirectAdmin (non-destructive)", "mode == 'production'"),
         ):
             block = self.text[self.text.index(f"- name: {step}"):]
             first_lines = "\n".join(block.splitlines()[:4])
-            self.assertIn("steps.gate.outputs.dry_run != 'true'", first_lines, step)
+            self.assertIn(condition, first_lines, step)
 
     def test_connection_test_is_manual_read_only_and_never_smokes(self):
-        self.assertIn("connection_test_only:", self.text)
-        self.assertIn("connection_test_only == 'true'", self.text)
-        self.assertIn("connection_test_only != 'true'", self.text)
+        self.assertIn("connection_test_only", self.text)
+        self.assertIn("mode == 'connection_test_only'", self.text)
+        self.assertIn("mode != 'connection_test_only'", self.text)
         connection = step_block(
             self.text,
             "- name: Test DirectAdmin connection (read only)",
@@ -84,8 +86,38 @@ class DeployWorkflowContractTests(unittest.TestCase):
         self.assertNotIn('echo "get ', connection)
         self.assertNotIn("Smoke-test production", connection)
 
-    def test_connection_test_and_dry_run_are_mutually_exclusive(self):
-        self.assertIn("Choose either dry_run or connection_test_only, not both.", self.text)
+    def test_release_modes_are_explicit_and_production_needs_confirmation(self):
+        self.assertIn("release_mode:", self.text)
+        self.assertIn("dry_run|connection_test_only|production", self.text)
+        self.assertIn('case "${RELEASE_MODE}" in dry_run|connection_test_only|production) ;; *)', self.text)
+        self.assertIn('exit 1\n          esac\n          if ! [[ "${PROOF_COMMIT_SHA}"', self.text)
+        self.assertIn("proof_commit_sha:", self.text)
+        self.assertIn("^[0-9a-f]{40}$", self.text)
+        self.assertIn("confirm_production:", self.text)
+        self.assertIn('"${CONFIRM_PRODUCTION}" != "true"', self.text)
+        self.assertIn("Production confirmation required", self.text)
+
+    def test_exact_proof_sha_is_checked_out_and_must_belong_to_master(self):
+        self.assertIn("ref: ${{ inputs.proof_commit_sha }}", self.text)
+        self.assertIn("fetch-depth: 0", self.text)
+        self.assertIn("Verify requested proof commit is an immutable master release", self.text)
+        self.assertIn('git merge-base --is-ancestor "${PROOF_COMMIT_SHA}" origin/master', self.text)
+        self.assertIn('test "$(git rev-parse HEAD)" = "${PROOF_COMMIT_SHA}"', self.text)
+
+    def test_missing_required_secrets_are_red_not_a_green_skip(self):
+        self.assertIn("Deployment prerequisites missing", self.text)
+        self.assertIn("exit 1", self.text)
+        self.assertNotIn("Deployment SKIPPED — not yet configured", self.text)
+        self.assertNotIn("This run finished green **on purpose**", self.text)
+
+    def test_modes_have_separate_build_and_transport_boundaries(self):
+        setup_python = step_block(self.text, "- name: Set up Python", "- name: Validate dashboard data (blocking gate)")
+        self.assertIn("mode != 'connection_test_only'", setup_python)
+        self.assertIn("if [ \"${RELEASE_MODE}\" != \"connection_test_only\" ]", self.text)
+        self.assertIn("if [ \"${RELEASE_MODE}\" != \"dry_run\" ]", self.text)
+        upload = step_block(self.text, "- name: Upload dist/ to DirectAdmin (non-destructive)", "- name: Keep the previous .htaccess for rollback")
+        self.assertIn("mode == 'production'", upload)
+        self.assertIn("Verify exact proof release contract", self.text)
 
     def test_real_mirror_is_non_destructive_with_supported_lftp_flags(self):
         upload = step_block(
