@@ -65,7 +65,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("contents: read",anchor)
         self.assertIn("contents: write",anchor)
         self.assertIn("gh attestation verify",anchor)
-        for option in ("--bundle", "--signer-workflow .github/workflows/anchor.yml", "--source-ref refs/heads/master", "--source-digest"):
+        for option in ("--bundle", '--signer-workflow "${{ github.repository }}/.github/workflows/anchor.yml"', "--source-ref refs/heads/master", "--source-digest"):
             self.assertIn(option,anchor)
         self.assertLess(anchor.index("Verify Sigstore identity"),anchor.index("Stamp the manifest"))
         script=(ROOT/"anchor_provenance.py").read_text(encoding="utf-8")
@@ -88,7 +88,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertIn("id-token: write",integration)
         self.assertIn("attestations: write",integration)
         self.assertIn("gh attestation verify",integration)
-        self.assertIn("--signer-workflow .github/workflows/anchor-integration.yml",integration)
+        self.assertIn('--signer-workflow "${{ github.repository }}/.github/workflows/anchor-integration.yml"',integration)
         self.assertNotIn("contents: write",integration)
         self.assertNotIn("git push",integration)
     def test_upgrade_events_retain_source_identity_and_name_the_upgrader(self):

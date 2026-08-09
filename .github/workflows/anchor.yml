@@ -120,7 +120,7 @@ jobs:
           gh attestation verify "${{ steps.release.outputs.manifest_file }}" \
             --bundle "${{ steps.attest.outputs.bundle-path }}" \
             --repo "${{ github.repository }}" \
-            --signer-workflow .github/workflows/anchor.yml \
+            --signer-workflow "${{ github.repository }}/.github/workflows/anchor.yml" \
             --source-ref refs/heads/master \
             --source-digest "${{ steps.release.outputs.signer_source_sha }}"
 
@@ -203,7 +203,7 @@ jobs:
           gh attestation verify "${{ steps.release.outputs.manifest_file }}" \
             --bundle "${{ steps.release.outputs.bundle_file }}" \
             --repo "${{ github.repository }}" \
-            --signer-workflow .github/workflows/anchor.yml \
+            --signer-workflow "${{ github.repository }}/.github/workflows/anchor.yml" \
             --source-ref refs/heads/master \
             --source-digest "${{ needs.attest.outputs.signer_source_sha }}"
 

@@ -47,7 +47,8 @@ For Sigstore, use a connected release check such as:
 
 ```sh
 gh attestation verify manifest.json --repo angelyong/Borneo_Tracker \
-  --signer-workflow .github/workflows/anchor.yml --source-ref refs/heads/master
+  --signer-workflow angelyong/Borneo_Tracker/.github/workflows/anchor.yml \
+  --source-ref refs/heads/master
 ```
 
 The witness event records the bundle digest and any action-provided attestation

@@ -54,6 +54,6 @@ jobs:
           gh attestation verify public/data/manifest.json \
             --bundle "${{ steps.attest.outputs.bundle-path }}" \
             --repo "${{ github.repository }}" \
-            --signer-workflow .github/workflows/anchor-integration.yml \
+            --signer-workflow "${{ github.repository }}/.github/workflows/anchor-integration.yml" \
             --source-ref "${{ github.ref }}" \
             --source-digest "${{ github.sha }}"
