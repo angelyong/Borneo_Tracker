@@ -1,28 +1,28 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-09T10:09:19Z",
-  "runId": "local",
-  "dataVersion": "918a87a5dbd27e4069563f19301fc9e4cc6aa44d5251ecf50ed4b433525e0aa5",
+  "generatedAt": "2026-08-09T21:49:33Z",
+  "runId": "31337189094",
+  "dataVersion": "45836174435ed34fd80a70beba58df20ad7626a934532d72cf110393b6d093a0",
   "files": {
     "public/data/indicators.json": {
-      "sha256": "db53a620f7c0907c5f92c34da37b230cf36cfd92e8c11c2797f464c14246f416",
-      "bytes": 110866,
-      "generatedAt": "2026-08-09"
+      "sha256": "2d24712ace81c320f21ef4183aa64bb943fb2b0317b89b3d9e56ea535a06df4f",
+      "bytes": 108194,
+      "generatedAt": "2026-08-10"
     },
     "public/data/resilience.json": {
-      "sha256": "cc1a91a2af8198844230879245886fbeb9da592e10000adc46f2994da5d6f5b6",
-      "bytes": 12383,
-      "generatedAt": "2026-08-09"
+      "sha256": "4e674f73c8b9b74a0efba443267050d33976ac959a618bab9532fdf5868ed65a",
+      "bytes": 12331,
+      "generatedAt": "2026-08-10"
     },
     "public/data/resilience_model.json": {
-      "sha256": "939cbc1b2be8b9840a9a867602651987f38159642150618f52f5faebcdd8196b",
-      "bytes": 14788,
-      "generatedAt": "2026-08-05"
+      "sha256": "12aa4a154940103ac6d2491ae589cb02d6c093a7ffa29f0b6662a4cdddd5eaa5",
+      "bytes": 14684,
+      "generatedAt": "2026-08-10"
     },
     "public/data/districts.json": {
-      "sha256": "ac40889d03e71ce8e2541907af8af5b7154ba469f17089949124eab6fc8de52a",
+      "sha256": "3a94b3a115c8b7606528acf9abb3b1a070250c18164138c09ebd5e5366ca5be6",
       "bytes": 505698,
-      "generatedAt": "2026-08-09"
+      "generatedAt": "2026-08-10"
     },
     "public/data/borneo_districts.geojson": {
       "sha256": "20f76e31c0479bbc445df78cabc00430af23b924f6cc5cb3c8d29cfb91703d54",
@@ -37,7 +37,7 @@
   },
   "provenance": {
     "algorithm": "rfc6962-sha256-jsonl-v1",
-    "root": "7ae7c0059309237ac8a8c0fc9892448023363d6a42b3ccca2763a05f30219356",
-    "entries": 62
+    "root": "f626af2b7a2d9bfb56439e27a6a2d61d69ec7c9cb368b038230dfd2792af9cd6",
+    "entries": 68
   }
 }
