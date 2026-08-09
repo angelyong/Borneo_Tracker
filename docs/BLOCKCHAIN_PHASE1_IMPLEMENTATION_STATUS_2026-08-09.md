@@ -31,8 +31,8 @@ ESG-data customers who need reproducible publication evidence.
 | Item | State |
 |---|---|
 | Manifest format | v2, locally verified |
-| Current data version | `4c6be78ea030bd75d8d4c3c3dba96646a43bb408986cbbff5949b57ebb442711` |
-| Manifest provenance commitment | 48 ledger entries; root `d436765c738b94c7b5f7bb43d19d36f0a0bc780b1257e8c44d04fab040a1e5fa` |
+| Current data version | `918a87a5dbd27e4069563f19301fc9e4cc6aa44d5251ecf50ed4b433525e0aa5` |
+| Manifest provenance commitment | 62 ledger entries; root `7ae7c0059309237ac8a8c0fc9892448023363d6a42b3ccca2763a05f30219356` |
 | Current external OTS/Sigstore witness | Not yet created for this v2 Manifest (`UNANCHORED` is expected) |
 | Historical v1 Manifest/proof records | Three full-SHA version pairs migrated locally |
 | Production deployment | Not performed |

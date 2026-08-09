@@ -139,6 +139,21 @@ def _complete_recovery_tail(tail, files, version, start):
             return False
     return seen_paths == set(files) and {item["entryIndex"] for item in tail} == expected_indices
 
+def _complete_legacy_tail(tail):
+    """Accept only whole v1 four-file refresh batches merged after a v2 prefix."""
+    expected={"public/data/indicators.json","public/data/resilience.json","public/data/resilience_model.json","public/data/districts.json"}
+    groups=[]
+    for item in tail:
+        key=(item.get("runId"),item.get("ts"))
+        if not groups or groups[-1][0]!=key: groups.append((key,[]))
+        groups[-1][1].append(item)
+    for (run,ts),batch in groups:
+        if not isinstance(run,str) or not run or not isinstance(ts,str) or not ts: return False
+        if any(item.get("schemaVersion") is not None for item in batch): return False
+        if {item.get("file") for item in batch} != expected or len(batch)!=len(expected): return False
+        if any(not isinstance(item.get("sha256"),str) or len(item["sha256"])!=64 or not isinstance(item.get("bytes"),int) or item["bytes"]<0 for item in batch): return False
+    return bool(groups)
+
 def publish():
     files, missing = build_files()
     if missing: raise ValueError(f"cannot build manifest, missing data file(s): {missing}")
@@ -160,14 +175,17 @@ def publish():
         tail = [strict_json_loads(raw.decode("utf-8"), "provenance tail") for raw in lines[start:]]
         if tail:
             if not _complete_recovery_tail(tail, files, version, start):
-                raise ValueError("incomplete or unrelated unreferenced provenance tail; append-only recovery is required")
-            root = merkle.merkle_root([merkle.leaf_hash(line) for line in lines]).hex()
-            timestamp = tail[0]["ts"]
-            recovered = {"schemaVersion": SCHEMA_VERSION, "generatedAt": timestamp, "runId": tail[0]["runId"], "dataVersion": version,
-                         "files": files, "provenance": {"algorithm": "rfc6962-sha256-jsonl-v1", "root": root, "entries": len(lines)}}
-            validate_manifest(recovered)
-            atomic_write(MANIFEST, manifest_bytes(recovered))
-            return recovered, True
+                if not _complete_legacy_tail(tail):
+                    raise ValueError("incomplete or unrelated unreferenced provenance tail; append-only recovery is required")
+                start=len(lines)
+            else:
+                root = merkle.merkle_root([merkle.leaf_hash(line) for line in lines]).hex()
+                timestamp = tail[0]["ts"]
+                recovered = {"schemaVersion": SCHEMA_VERSION, "generatedAt": timestamp, "runId": tail[0]["runId"], "dataVersion": version,
+                             "files": files, "provenance": {"algorithm": "rfc6962-sha256-jsonl-v1", "root": root, "entries": len(lines)}}
+                validate_manifest(recovered)
+                atomic_write(MANIFEST, manifest_bytes(recovered))
+                return recovered, True
         timestamp = utc_now()
         additions = _events_for_version(files, version, timestamp, len(lines))
         all_lines = lines + additions
