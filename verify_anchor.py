@@ -1,245 +1,91 @@
+"""Truthful Phase-1 verifier: bytes/proof binding, not Bitcoin-chain verification.
+
+Use the official OTS browser verifier or `ots verify` backed by Bitcoin Core for
+chain verification. Hosted CI only proves official-format compatibility here.
 """
-Borneo Tracker — verify published data against its anchors.
-
-WHAT THIS CHECKS, IN ORDER
-    1. Every file listed in manifest.json hashes to what the manifest says.
-    2. manifest.json itself hashes to what the anchor log recorded.
-    3. The .ots proof is well formed and is about that same digest.
-    4. What the proof currently attests: a Bitcoin block, or a pending promise.
-    5. The Merkle root over provenance.jsonl still matches what was recorded —
-       i.e. nobody rewrote publication history.
-
-WHAT IT DELIBERATELY DOES NOT CHECK
-    Whether the Bitcoin block in step 4 is real. Doing that honestly needs the
-    block headers, which we do not have and will not pretend to. So this prints
-    the block height and tells you how to confirm it independently, rather than
-    printing a green tick it has not earned.
-
-    And, to be said plainly because it is the whole point: NONE of this says the
-    numbers are correct. It says the bytes have not changed. Data quality lives in
-    the `confidence` and `source` fields, not here.
-
-USAGE
-    python verify_anchor.py                     verify the working copy
-    python verify_anchor.py --remote            verify what production is serving
-    python verify_anchor.py --remote <base-url> verify some other deployment
-
-EXIT CODES
-    0 everything checked out (a pending anchor is still a pass)
-    1 a mismatch, a missing file, or a malformed proof
-"""
-
-import hashlib
-import json
-import sys
-import urllib.error
-import urllib.request
+import hashlib, json, sys, urllib.error, urllib.request, subprocess
 from pathlib import Path
+import merkle, ots
+from anchor_provenance import ANCHORS, CURRENT_PROOF, MANIFEST, proof_path, read_anchors
+from manifest_contract import DATASET_PATHS, strict_json_loads, validate_manifest
+from witness_events import parse_events, reduce_events, safe_proof_path
 
-import merkle
-import ots
-from anchor_provenance import read_anchors
-from upgrade_anchors import latest_status_by_manifest
+ROOT=Path(__file__).parent; DATA_DIR=ROOT/"public"/"data"
+EXIT={"VERIFIED_CONFIRMED":0,"PENDING":2,"UNANCHORED":3,"MISMATCH":4,"INVALID":5}
 
-ROOT = Path(__file__).parent
-DATA_DIR = ROOT / "public" / "data"
-DEFAULT_BASE_URL = "https://borneotracker.rentsmartprop.com.my"
-
-OK = "  ok  "
-BAD = " FAIL "
-WARN = " warn "
-
+def proof_binds_manifest(manifest_bytes, proof_bytes):
+    """Format + subject binding only; intentionally not Bitcoin-chain verify."""
+    try:
+        detached=ots.DetachedTimestamp.from_bytes(proof_bytes)
+    except ots.OtsError:
+        return False
+    return detached.digest.hex()==hashlib.sha256(manifest_bytes).hexdigest()
 
 class Source:
-    """Where the bytes come from — the working copy, or a live deployment.
-
-    Both paths must read RAW BYTES. Parsing JSON and re-serialising it would
-    change key order and whitespace and break every hash, which is exactly the
-    trap the browser-side check has to avoid too.
-    """
-
-    def __init__(self, base_url=None):
-        self.base_url = base_url.rstrip("/") if base_url else None
-        # Why the last fetch failed. Kept here rather than printed, because only
-        # the caller knows whether a given file missing is fatal or expected —
-        # printing "FAIL" from in here once produced a run that said FAIL and
-        # PASSED at the same time.
-        self.last_error = None
-
-    @property
-    def label(self):
-        return self.base_url or f"{DATA_DIR.as_posix()} (working copy)"
-
-    def get(self, repo_rel_path):
-        self.last_error = None
-        if not self.base_url:
-            path = ROOT / repo_rel_path
-            if not path.exists():
-                self.last_error = "not present in the working copy"
-                return None
+    def __init__(self,base=None): self.base=base.rstrip("/") if base else None; self.error=None
+    def get(self,rel):
+        self.error=None
+        if not self.base:
+            path=ROOT/rel
+            if not path.is_file(): self.error="missing"; return None
             return path.read_bytes()
-
-        # "public/data/x.json" is served as "/data/x.json"
-        url = f"{self.base_url}/{repo_rel_path.replace('public/', '', 1)}"
-        req = urllib.request.Request(url, headers={
-            "User-Agent": ots.USER_AGENT,
-            "Cache-Control": "no-cache",
-        })
         try:
-            with urllib.request.urlopen(req, timeout=30) as resp:
-                body = resp.read()
-                ctype = resp.headers.get("Content-Type", "")
-        except (urllib.error.URLError, OSError) as exc:
-            self.last_error = f"could not be fetched ({exc})"
-            return None
+            with urllib.request.urlopen(urllib.request.Request(f"{self.base}/{rel.replace('public/','',1)}",headers={"Cache-Control":"no-cache"}),timeout=30) as r: raw=r.read(); typ=r.headers.get("Content-Type","")
+        except (OSError,urllib.error.URLError) as exc: self.error=str(exc); return None
+        if "text/html" in typ or raw.lstrip().lower().startswith(b"<!doctype") or b"<html" in raw[:512].lower(): self.error="SPA HTML fallback"; return None
+        return raw
 
-        # A single-page app answers 200 with index.html for anything it does not
-        # have. Silently hashing that would produce a confident, meaningless
-        # mismatch, so name the real problem instead.
-        if body.lstrip()[:9].lower() == b"<!doctype" or "text/html" in ctype:
-            self.last_error = "the site returned HTML, so this file is not deployed"
-            return None
-        return body
-
-
-def check(source, results):
-    """Run every check against one source. Appends (status, message) to results."""
-    failed = False
-
-    manifest_bytes = source.get("public/data/manifest.json")
-    if manifest_bytes is None:
-        results.append((BAD, f"manifest.json {source.last_error}"))
-        return True
-
-    manifest_sha256 = hashlib.sha256(manifest_bytes).hexdigest()
+def evaluate(source, *, verify_with_ots=False):
+    raw=source.get("public/data/manifest.json")
+    if raw is None: return "INVALID",f"manifest unavailable: {source.error}"
+    sha=hashlib.sha256(raw).hexdigest()
+    try: manifest=validate_manifest(strict_json_loads(raw.decode("utf-8"),"manifest.json"))
+    except ValueError as exc: return "INVALID",str(exc)
+    for rel in DATASET_PATHS:
+        body=source.get(rel); entry=manifest["files"][rel]
+        if body is None: return "MISMATCH",f"{rel}: {source.error}"
+        if hashlib.sha256(body).hexdigest()!=entry["sha256"] or len(body)!=entry["bytes"]: return "MISMATCH",f"{rel}: differs from Manifest"
+    ledger=source.get("public/data/provenance.jsonl")
+    if ledger is None: return "MISMATCH",f"provenance ledger: {source.error}"
     try:
-        manifest = json.loads(manifest_bytes)
-    except json.JSONDecodeError as exc:
-        results.append((BAD, f"manifest.json is not valid JSON: {exc}"))
-        return True
-
-    results.append((OK, f"manifest.json  sha256 {manifest_sha256}"))
-    results.append((OK, f"generatedAt    {manifest.get('generatedAt')}  run {manifest.get('runId')}"))
-
-    # 1. each data file matches the manifest
-    for rel_path, entry in sorted(manifest.get("files", {}).items()):
-        body = source.get(rel_path)
-        if body is None:
-            results.append((BAD, f"{rel_path}  {source.last_error}"))
-            failed = True
-            continue
-        actual = hashlib.sha256(body).hexdigest()
-        expected = entry.get("sha256")
-        if actual != expected:
-            results.append((BAD, f"{rel_path}  {actual[:16]}… != manifest {str(expected)[:16]}…"))
-            failed = True
-        elif len(body) != entry.get("bytes"):
-            results.append((BAD, f"{rel_path}  hash matches but size {len(body)} != {entry.get('bytes')}"))
-            failed = True
-        else:
-            results.append((OK, f"{rel_path}  {actual[:16]}…  {len(body):,} B"))
-
-    # 5. publication history has not been rewritten
-    ledger_bytes = source.get("public/data/provenance.jsonl")
-    ledger_root = None
-    if ledger_bytes is None:
-        results.append((WARN, f"provenance.jsonl {source.last_error} — ledger root not checked"))
-    else:
-        lines = [ln for ln in ledger_bytes.replace(b"\r\n", b"\n").split(b"\n") if ln.strip()]
-        ledger_root = merkle.merkle_root([merkle.leaf_hash(ln) for ln in lines]).hex()
-        results.append((OK, f"provenance.jsonl  {len(lines)} entries, root {ledger_root[:16]}…"))
-
-    # 2-4. the anchor
-    anchors_bytes = source.get("public/data/anchors.jsonl")
-    if anchors_bytes is None:
-        results.append((WARN, f"anchors.jsonl {source.last_error} — this data version "
-                              "carries no anchor here yet"))
-        return failed
-
-    events = []
-    for line in anchors_bytes.decode("utf-8", "replace").splitlines():
-        if line.strip():
-            try:
-                events.append(json.loads(line))
-            except json.JSONDecodeError:
-                results.append((BAD, "anchors.jsonl contains a corrupt line"))
-                failed = True
-
-    event = latest_status_by_manifest(events).get(manifest_sha256)
-    if event is None:
-        results.append((WARN, "this manifest is not anchored yet (a new version, or the "
-                              "anchor job has not run)"))
-        return failed
-
-    results.append((OK, f"anchored       {event.get('ts')}  status={event.get('status')}"))
-
-    if ledger_root and event.get("ledgerRoot") and ledger_root != event["ledgerRoot"]:
-        results.append((BAD, f"ledger root {ledger_root[:16]}… != anchored "
-                             f"{event['ledgerRoot'][:16]}… — history was rewritten"))
-        failed = True
-    elif ledger_root and event.get("ledgerRoot"):
-        results.append((OK, "ledger root matches the anchored value"))
-
-    proof_bytes = source.get(event.get("proof", ""))
-    if proof_bytes is None:
-        results.append((BAD, f"proof {event.get('proof')} {source.last_error}"))
-        return True
-
-    try:
-        detached = ots.DetachedTimestamp.from_bytes(proof_bytes)
-    except ots.OtsError as exc:
-        results.append((BAD, f"proof is malformed: {exc}"))
-        return True
-
-    if detached.digest.hex() != manifest_sha256:
-        results.append((BAD, f"proof attests {detached.digest.hex()[:16]}… but this "
-                             f"manifest is {manifest_sha256[:16]}…"))
-        return True
-
-    results.append((OK, f"proof          {event['proof']} attests this exact manifest"))
-
-    status, detail = detached.status()
-    if status == "confirmed":
-        for height in detail:
-            results.append((OK, f"bitcoin        block {height} — confirm independently at "
-                                f"https://mempool.space/block/{height}"))
-    elif status == "pending":
-        results.append((WARN, f"bitcoin        not in a block yet; {len(detail)} calendar(s) "
-                              f"hold the promise. Run upgrade_anchors.py later."))
-    else:
-        results.append((WARN, "proof carries no recognised attestation"))
-
-    return failed
-
+        lines=[line for line in ledger.replace(b"\r\n",b"\n").split(b"\n") if line.strip()]
+        root=merkle.merkle_root([merkle.leaf_hash(line) for line in lines[:manifest["provenance"]["entries"]]]).hex()
+        if len(lines)<manifest["provenance"]["entries"] or root!=manifest["provenance"]["root"]: return "MISMATCH","provenance prefix mismatch"
+    except ValueError as exc: return "INVALID",str(exc)
+    log=source.get("public/data/anchors.jsonl")
+    if log is None: return "UNANCHORED","no readable anchor event log"
+    try: state=reduce_events(read_anchors() if not source.base else parse_events(log.decode('utf-8')),sha)
+    except ValueError as exc: return "INVALID",f"invalid anchor metadata: {exc}"
+    ots_event=state["ots"]
+    if not ots_event: return "UNANCHORED","no OTS event for this Manifest"
+    if not safe_proof_path(ots_event.get("proof"), sha):
+        return "INVALID", "unsafe OTS proof path"
+    proof=source.get(ots_event["proof"])
+    if proof is None: return "MISMATCH",f"proof unavailable: {source.error}"
+    try: detached=ots.DetachedTimestamp.from_bytes(proof)
+    except ots.OtsError as exc: return "INVALID",f"malformed OTS proof: {exc}"
+    if not proof_binds_manifest(raw, proof): return "MISMATCH","OTS proof subject differs from Manifest"
+    # Metadata in anchors.jsonl is mutable/self-hosted. It can never promote a
+    # result by itself. The only local promotion path executes the official CLI,
+    # which in turn requires a configured Bitcoin Core node.
+    if verify_with_ots and not source.base:
+        try:
+            completed = subprocess.run(["ots", "verify", str(proof_path(sha))], cwd=ROOT, capture_output=True, text=True, timeout=180)
+        except (OSError, subprocess.SubprocessError) as exc:
+            return "INVALID", f"official OTS verifier unavailable: {exc}"
+        if completed.returncode == 0:
+            return "VERIFIED_CONFIRMED", "files/Manifest/proof verified by the official OTS CLI against configured Bitcoin Core"
+        return "PENDING", "official OTS verification did not confirm inclusion: " + (completed.stderr.strip() or completed.stdout.strip())
+    return "PENDING","files match Manifest and OTS proof binds it; external Bitcoin verification not recorded"
 
 def main(argv=None):
-    argv = sys.argv[1:] if argv is None else argv
-
+    argv=sys.argv[1:] if argv is None else argv; allow="--allow-pending" in argv
+    base=None
     if "--remote" in argv:
-        idx = argv.index("--remote")
-        base = argv[idx + 1] if len(argv) > idx + 1 and not argv[idx + 1].startswith("-") \
-            else DEFAULT_BASE_URL
-        source = Source(base)
-    else:
-        source = Source()
-
-    print(f"Verifying: {source.label}\n")
-    results = []
-    failed = check(source, results)
-    for status, message in results:
-        print(f"[{status}] {message}")
-
-    print()
-    if failed:
-        print("RESULT: FAILED — the published bytes do not match what was anchored.")
-        print("Do not cite this data until it is resolved.")
-        return 1
-
-    print("RESULT: PASSED — the published bytes are exactly what was anchored.")
-    print("Note: this proves the data has not been ALTERED. It does not prove the "
-          "numbers are CORRECT — see the confidence and source fields for that.")
-    return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())
+        i=argv.index("--remote"); base=argv[i+1] if len(argv)>i+1 and not argv[i+1].startswith("-") else "https://borneotracker.rentsmartprop.com.my"
+    result,detail=evaluate(Source(base), verify_with_ots="--verify-bitcoin-core" in argv); code=EXIT[result]
+    if result=="PENDING" and allow: code=0
+    print(f"RESULT: {result} — {detail}")
+    print("Boundary: this tool parses the proof but does not verify Bitcoin headers/inclusion; use official OTS verification for that.")
+    return code
+if __name__=="__main__": sys.exit(main())

@@ -1,66 +1,41 @@
-"""Offline byte-contract tests for published dashboard JSON artifacts."""
-
+"""Phase-1 contract tests: safe scope, deterministic version and committed prefix."""
+import hashlib
 import json
-import sys
 import tempfile
 import unittest
 from pathlib import Path
 
+import merkle
+import verify_manifest
+from manifest_contract import DATASET_PATHS, data_version, is_rfc3339_utc_seconds, strict_json_loads, validate_manifest
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
+class ManifestContractTests(unittest.TestCase):
+    def manifest(self):
+        files={path:{"sha256":hashlib.sha256(path.encode()).hexdigest(),"bytes":len(path),"generatedAt":None} for path in DATASET_PATHS}
+        return {"schemaVersion":2,"generatedAt":"2026-08-09T00:00:00Z","runId":"test","dataVersion":data_version(files),"files":files,"provenance":{"algorithm":"rfc6962-sha256-jsonl-v1","root":"0"*64,"entries":1}}
+    def test_scope_and_data_version_are_deterministic(self):
+        item=self.manifest(); validate_manifest(item)
+        self.assertEqual(item["dataVersion"],data_version(dict(reversed(list(item["files"].items())))))
+        item["files"][DATASET_PATHS[0]]["bytes"]+=1
+        with self.assertRaises(ValueError): validate_manifest(item)
+    def test_duplicate_keys_and_unknown_path_fail(self):
+        with self.assertRaises(ValueError): strict_json_loads('{"x":1,"x":2}')
+        item=self.manifest(); item["files"]["public/data/../secret.json"]=item["files"].pop(DATASET_PATHS[-1]); item["dataVersion"]=data_version(item["files"])
+        with self.assertRaises(ValueError): validate_manifest(item)
+    def test_historical_prefix_survives_later_append(self):
+        with tempfile.TemporaryDirectory() as td:
+            ledger=Path(td)/"provenance.jsonl"; ledger.write_bytes(b'{"n":1}\n{"n":2}\n')
+            old=merkle.merkle_root_of_file(ledger,2); ledger.write_bytes(ledger.read_bytes()+b'{"n":3}\n')
+            self.assertEqual(old,merkle.merkle_root_of_file(ledger,2))
+            self.assertNotEqual(old,merkle.merkle_root_of_file(ledger))
+    def test_rfc3339_is_a_real_timestamp_not_only_a_regex(self):
+        self.assertTrue(is_rfc3339_utc_seconds("2026-08-09T00:00:00Z"))
+        self.assertFalse(is_rfc3339_utc_seconds("2026-99-99T99:99:99Z"))
+    def test_workflows_can_read_the_single_canonical_dataset_list(self):
+        from io import StringIO
+        from contextlib import redirect_stdout
+        output=StringIO()
+        with redirect_stdout(output): self.assertEqual(verify_manifest.main(["paths"]),0)
+        self.assertEqual(tuple(output.getvalue().splitlines()),DATASET_PATHS)
 
-from json_artifacts import write_json_lf  # noqa: E402
-from verify_manifest import (  # noqa: E402
-    REQUIRED_FILES,
-    expected_snapshot,
-    verify_data_dir,
-    verify_remote_data_dir,
-)
-
-
-PUBLIC_DATA = ROOT / "public" / "data"
-DIST_DATA = ROOT / "dist" / "data"
-
-
-class PublishedJsonArtifactTests(unittest.TestCase):
-    def test_shared_writer_is_lf_only_and_round_trips_values(self):
-        payload = {"title": "Borneo\nTracker", "rows": [{"value": 1.25}]}
-        with tempfile.TemporaryDirectory() as temp_dir:
-            output = Path(temp_dir) / "artifact.json"
-            write_json_lf(output, payload)
-            raw = output.read_bytes()
-            self.assertNotIn(b"\r\n", raw)
-            self.assertEqual(json.loads(raw.decode("utf-8")), payload)
-
-    def test_current_public_manifest_claims_match_actual_bytes(self):
-        self.assertEqual(verify_data_dir(PUBLIC_DATA), [])
-
-    def test_published_data_is_lf_only_and_parseable(self):
-        for name in REQUIRED_FILES:
-            with self.subTest(name=name):
-                raw = (PUBLIC_DATA / name).read_bytes()
-                self.assertNotIn(b"\r\n", raw)
-                self.assertIsInstance(json.loads(raw.decode("utf-8")), dict)
-
-    def test_built_data_matches_manifest_when_a_build_exists(self):
-        if not DIST_DATA.is_dir():
-            self.skipTest("dist/data is absent; run npm run build before release verification")
-        self.assertEqual(verify_data_dir(DIST_DATA), [])
-
-    def test_remote_verifier_checks_manifest_claim_and_downloaded_bytes(self):
-        with tempfile.TemporaryDirectory() as temp_dir:
-            expected_path = Path(temp_dir) / "expected.json"
-            expected_path.write_text(
-                json.dumps(expected_snapshot(PUBLIC_DATA)), encoding="utf-8", newline="\n"
-            )
-            self.assertEqual(verify_remote_data_dir(PUBLIC_DATA, expected_path), [])
-
-            tampered = expected_snapshot(PUBLIC_DATA)
-            tampered["files"]["indicators.json"]["bytes"] += 1
-            expected_path.write_text(json.dumps(tampered), encoding="utf-8", newline="\n")
-            self.assertTrue(verify_remote_data_dir(PUBLIC_DATA, expected_path))
-
-
-if __name__ == "__main__":
-    unittest.main()
+if __name__=="__main__": unittest.main()

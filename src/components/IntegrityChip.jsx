@@ -1,6 +1,6 @@
 // Data-integrity chip — the visible end of ABCDE letter "B".
 //
-// Says whether the data on screen still hashes to what was anchored on Bitcoin.
+// Says whether the checked published files hash to the published Manifest.
 // Page-level, like DataFreshness (which says how OLD the data is); this one says
 // whether it has been ALTERED. Same visual language, same rule: colour is
 // reinforcement only, every state is also spelled out in words.
@@ -20,9 +20,9 @@ const STATUS_TONE = {
   [INTEGRITY_STATE.UNVERIFIED]: { fg: 'var(--color-muted)', bg: 'var(--color-grey-soft)' },
 };
 
-export default function IntegrityChip({ style }) {
+export default function IntegrityChip({ scope = 'overview', style }) {
   const { t } = useTranslation();
-  const { status, loading, manifestSha256, anchor } = useIntegrity();
+  const { status, loading, manifestSha256 } = useIntegrity(scope);
 
   // Nothing honest to claim while the check is still running — render nothing
   // rather than flashing a state and correcting it.
@@ -71,11 +71,6 @@ export default function IntegrityChip({ style }) {
       {short ? (
         <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace' }}>
           sha256 {short}…
-        </span>
-      ) : null}
-      {status === INTEGRITY_STATE.VERIFIED && anchor?.bitcoinBlocks?.length ? (
-        <span style={{ fontVariantNumeric: 'tabular-nums' }}>
-          · {t('integrity.block', { block: anchor.bitcoinBlocks[0] })}
         </span>
       ) : null}
     </Link>

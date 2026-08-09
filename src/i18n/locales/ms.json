@@ -26,7 +26,7 @@
   "integrity": {
     "verified": {
       "label": "Integriti disahkan",
-      "detail": "Fail ini masih menghasilkan cap jari yang sama seperti yang dilabuhkan pada Bitcoin. Tiada apa-apa yang diubah sejak itu."
+      "detail": "Fail yang diterbitkan dan diperiksa sepadan dengan Manifest yang dimuat turun. Pelayar ini tidak mengesahkan Bitcoin atau ketepatan sumber secara bebas."
     },
     "pending": {
       "label": "Menunggu cap masa",
@@ -40,12 +40,16 @@
       "label": "Belum disahkan",
       "detail": "Rekod pengesahan tidak dapat dicapai, jadi tiada apa-apa yang didakwa."
     },
+    "invalid": {
+      "label": "Metadata pengesahan tidak sah",
+      "detail": "Manifest atau metadata saksi rosak; tiada tuntutan integriti dibuat."
+    },
     "block": "blok {{block}}"
   },
   "verify": {
     "eyebrow": "Integriti data",
     "title": "Sahkan data ini",
-    "lede": "Setiap set data yang kami terbitkan diberi cap jari dan cap masa pada blockchain awam. Anda tidak perlu mempercayai kata-kata kami — kira semula cap jari itu sendiri dengan arahan di bawah.",
+    "lede": "Setiap set data yang diterbitkan direkod dalam Manifest berversi. Halaman ini menyemak bait yang diterbitkan, bukan ketepatan nombor sumber atau pengesahan bebas saksi blockchain.",
     "currentTitle": "Versi yang diterbitkan sekarang",
     "currentHint": "Pelayar anda baru sahaja mengira semula cap jari ini secara setempat.",
     "checking": "Sedang menyemak…",
@@ -61,11 +65,10 @@
     "fileMismatch": "Tidak sepadan",
     "fileUnreachable": "Tidak dapat dicapai",
     "noManifest": "Tiada manifes integriti disajikan, jadi belum ada apa-apa untuk disahkan.",
-    "witnessTitle": "Saksi bebas",
-    "witnessHint": "Setiap satu bebas antara satu sama lain dan bebas daripada kami. Jika satu tidak dapat dicapai, yang lain tetap sah.",
+    "witnessTitle": "Rekod saksi",
+    "witnessHint": "Rekod hos sendiri ini membantu mencari bukti OpenTimestamps dan Sigstore; halaman ini tidak mengesahkan mana-mana rangkaian secara bebas.",
     "witnessBitcoin": "Bitcoin",
     "witnessSigstore": "Sigstore",
-    "witnessPolygon": "Polygon",
     "confirmed": "Disahkan",
     "awaitingBlock": "Menunggu blok",
     "notAnchored": "Belum dilabuhkan",
@@ -77,20 +80,20 @@
     "signer": "Ditandatangani oleh",
     "status": "Status",
     "cost": "Kos",
-    "viewExplorer": "Lihat pada penjelajah blok",
     "provesTitle": "Apa yang ini buktikan",
-    "provesBody": "Fail ini tidak berubah sejak ia dilabuhkan — termasuk oleh kami. Anda tidak perlu mempercayai kenyataan itu; kira semula cap jarinya dan bandingkan.",
+    "provesBody": "Fail yang dimuat turun sepadan dengan Manifest yang dimuat turun dalam semakan pelayar ini. Sahkan OpenTimestamps dan Sigstore secara bebas menggunakan alat di bawah.",
     "notProvesTitle": "Apa yang ini tidak buktikan",
     "notProvesBody": "Ini tidak bermakna angkanya betul. Jika sumber asalnya salah, kami hanya menyimpan kesilapan itu dengan setia. Kualiti data dibawa oleh label keyakinan dan sumber pada setiap penunjuk, bukan oleh halaman ini.",
     "yourselfTitle": "Sahkan sendiri",
     "yourselfHint": "Tiada apa-apa di sini memerlukan perisian yang kami tulis.",
     "historyTitle": "Sejarah penerbitan",
-    "historyHint": "Setiap versi data yang pernah diterbitkan. Rekod ini hanya ditambah, tidak pernah ditulis semula.",
+    "historyHint": "Rekod saksi berversi yang disimpan oleh log penerbitan ini. Semak bukti dengan alat bebas.",
     "noHistory": "Belum ada labuhan direkodkan.",
     "statFiles": "Fail disemak",
     "statVersions": "Versi diterbitkan",
-    "statWitnesses": "Saksi bebas",
-    "statCost": "Kos setahun",
+    "statWitnesses": "Rekod saksi",
+    "statCost": "Yuran saksi langsung",
+    "noDirectWitnessFee": "Yuran saksi langsung $0; pengehosan, Actions dan operasi nod masih mempunyai kos.",
     "heroLabel": "Cap jari versi data ini",
     "terminalHint": "Jalankan di mana-mana. Kedua-dua alat ini bukan milik kami."
   },

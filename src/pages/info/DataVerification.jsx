@@ -140,16 +140,16 @@ function StatTile({ label, value, sub }) {
 
 export default function DataVerification() {
   const { t } = useTranslation();
-  const { status, loading, manifest, manifestSha256, anchor, files } = useIntegrity();
+  // This is the only page that deliberately hashes the full six-file scope.
+  const { status, loading, manifest, manifestSha256, anchor, files } = useIntegrity('full');
   const history = useAnchorHistory();
 
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
   const state = status || INTEGRITY_STATE.UNVERIFIED;
   const tone = toneOf(state);
-  const confirmed = anchor?.status === 'confirmed';
-  const blocks = anchor?.bitcoinBlocks || [];
+  const otsRecord = anchor?.witnesses?.ots;
   const matched = files.filter((f) => f.match === true).length;
-  const activeWitnesses = (confirmed ? 1 : 0) + (anchor?.sigstore ? 1 : 0);
+  const activeWitnesses = (anchor?.witnesses?.ots ? 1 : 0) + (anchor?.sigstore ? 1 : 0);
 
   return (
     <div style={{ padding: '26px 20px 56px' }}>
@@ -210,12 +210,6 @@ export default function DataVerification() {
                   <b style={{ fontFamily: MONO, fontWeight: 500, color: '#f3f6f1' }}>{manifest.generatedAt}</b>
                 </span>
               ) : null}
-              {blocks.length ? (
-                <span>
-                  {t('verify.block')}{' '}
-                  <b style={{ fontFamily: MONO, fontWeight: 500, color: '#f3f6f1' }}>{blocks[0]}</b>
-                </span>
-              ) : null}
               {anchor?.ledgerRoot ? (
                 <span>
                   {t('verify.historyTitle')}{' '}
@@ -233,8 +227,8 @@ export default function DataVerification() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14 }}>
           <StatTile label={t('verify.statFiles')} value={loading ? '—' : `${matched}/${files.length || 0}`} sub={t('verify.fileMatch')} />
           <StatTile label={t('verify.statVersions')} value={anchor?.ledgerEntries ?? '—'} sub={t('verify.historyTitle')} />
-          <StatTile label={t('verify.statWitnesses')} value={`${activeWitnesses}/3`} sub="Bitcoin · Sigstore · Polygon" />
-          <StatTile label={t('verify.statCost')} value="$0.00" sub={t('verify.witnessBitcoin') + ' · Sigstore'} />
+          <StatTile label={t('verify.statWitnesses')} value={`${activeWitnesses}/2`} sub="OpenTimestamps · Sigstore" />
+          <StatTile label={t('verify.statCost')} value="$0" sub={t('verify.noDirectWitnessFee')} />
         </div>
 
         {/* Files ---------------------------------------------------------- */}
@@ -317,32 +311,23 @@ export default function DataVerification() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 16 }}>
             <WitnessCard
               name={t('verify.witnessBitcoin')}
-              via="OpenTimestamps"
-              status={confirmed ? INTEGRITY_STATE.VERIFIED : anchor ? INTEGRITY_STATE.PENDING : INTEGRITY_STATE.UNVERIFIED}
-              label={confirmed ? t('verify.confirmed') : anchor ? t('verify.awaitingBlock') : t('verify.notAnchored')}
+              via="OpenTimestamps · independently verify with official OTS tooling"
+              status={anchor?.proofAvailable ? INTEGRITY_STATE.PENDING : INTEGRITY_STATE.UNVERIFIED}
+              label={anchor?.proofAvailable ? 'OTS proof available — independently verify Bitcoin inclusion' : t('verify.notAnchored')}
               rows={[
-                [t('verify.block'), blocks.length ? blocks.join(', ') : '—'],
-                [t('verify.proof'), anchor?.proof ? anchor.proof.split('/').pop() : '—'],
+                [t('verify.proof'), anchor?.proofAvailable && otsRecord?.proof ? otsRecord.proof.split('/').pop() : '—'],
               ]}
-              link={blocks.length ? { href: `https://mempool.space/block/${blocks[0]}`, text: t('verify.viewExplorer') } : null}
+              link={null}
             />
             <WitnessCard
               name={t('verify.witnessSigstore')}
-              via="Rekor transparency log"
-              status={anchor?.sigstore ? INTEGRITY_STATE.VERIFIED : INTEGRITY_STATE.UNVERIFIED}
-              label={anchor?.sigstore ? t('verify.logged') : t('verify.notAnchored')}
+              via="Rekor transparency log · verify signer identity with gh"
+              status={anchor?.sigstore ? INTEGRITY_STATE.PENDING : INTEGRITY_STATE.UNVERIFIED}
+              label={anchor?.sigstore ? 'Attestation available — identity not checked here' : t('verify.notAnchored')}
               rows={[
                 [t('verify.entry'), anchor?.sigstore?.logIndex || '—'],
                 [t('verify.signer'), anchor?.sigstore ? 'anchor.yml' : '—'],
               ]}
-            />
-            <WitnessCard
-              name={t('verify.witnessPolygon')}
-              via="Smart-contract anchor"
-              status={INTEGRITY_STATE.UNVERIFIED}
-              label={t('verify.notEnabled')}
-              rows={[[t('verify.status'), '—'], [t('verify.cost'), '~$0.33 / yr']]}
-              muted
             />
           </div>
         </Section>
@@ -383,17 +368,23 @@ export default function DataVerification() {
               {'sha256sum manifest.json\n'}
               <span style={{ color: '#5fd39b' }}>{manifestSha256 || '…'}</span>
               {'\n\n'}
-              <span style={{ color: ON_INK_MUTED }}>{'# 2 · check it against Bitcoin\n'}</span>
-              <span style={{ color: ON_INK_MUTED }}>$ </span>
-              {`curl -sO ${origin}/data/manifest.json.ots\n`}
-              <span style={{ color: ON_INK_MUTED }}>$ </span>
-              {'ots verify manifest.json.ots'}
+              <span style={{ color: ON_INK_MUTED }}>{'# 2 · check the published Bitcoin proof\n'}</span>
+              {anchor?.proofAvailable && otsRecord?.proof ? (
+                <>
+                  <span style={{ color: ON_INK_MUTED }}>$ </span>
+                  {`curl -sO ${origin}${servedUrl(otsRecord.proof)}\n`}
+                  <span style={{ color: ON_INK_MUTED }}>$ </span>
+                  {'ots verify manifest.json.ots'}
+                </>
+              ) : (
+                <span style={{ color: ON_INK_MUTED }}>{'# No OpenTimestamps proof has been published for this manifest.\n'}</span>
+              )}
               {anchor?.sigstore ? (
                 <>
                   {'\n\n'}
                   <span style={{ color: ON_INK_MUTED }}>{'# 3 · check the transparency log\n'}</span>
                   <span style={{ color: ON_INK_MUTED }}>$ </span>
-                  {'gh attestation verify manifest.json --repo angelyong/Borneo_Tracker'}
+                  {'gh attestation verify manifest.json --repo angelyong/Borneo_Tracker --signer-workflow .github/workflows/anchor.yml --source-ref refs/heads/master'}
                 </>
               ) : null}
             </pre>
@@ -437,8 +428,10 @@ export default function DataVerification() {
                     >
                       {String(event.manifestSha256 || '').slice(0, 48)}…
                     </span>
-                    <Pill status={event.status === 'confirmed' ? INTEGRITY_STATE.VERIFIED : INTEGRITY_STATE.PENDING}>
-                      {event.status === 'confirmed' ? t('verify.confirmed') : t('verify.awaitingBlock')}
+                    <Pill status={INTEGRITY_STATE.PENDING}>
+                      {event.witness?.type === 'sigstore'
+                        ? `${t('verify.witnessSigstore')} · ${t('verify.logged')}`
+                        : `${t('verify.witnessBitcoin')} · attestation record`}
                     </Pill>
                   </div>
                 ))}

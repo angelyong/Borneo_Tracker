@@ -22,6 +22,7 @@ import HexRadar from '../../components/HexRadar';
 import RagGauge from '../../components/RagGauge';
 import WeakestLinkBars from '../../components/WeakestLinkBars';
 import ProvenanceChip from '../../components/ProvenanceChip';
+import IntegrityChip from '../../components/IntegrityChip';
 
 const RAG_COLORS = { green: '#16a34a', amber: '#f59e0b', red: '#dc2626' };
 
@@ -140,6 +141,7 @@ const ImpactSimulator = () => {
               <p style={styles.pageSubtitle}>{t('simulator.subtitle')}</p>
             </div>
             <div style={styles.headerRight}>
+              <IntegrityChip scope="model" />
               <select
                 value={selectedTerritory}
                 onChange={(event) => handleTerritoryChange(event.target.value)}

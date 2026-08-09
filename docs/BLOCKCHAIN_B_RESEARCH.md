@@ -5,7 +5,7 @@
 > says *why that and not something else*, reviews the design the client sent us, and records the
 > corrections this investigation turned up in our own docs.
 >
-> **Date:** 2026-08-02. **Branch:** `feature/blockchain-anchoring`.
+> **Date:** 2026-08-09. **Branch:** `feature/blockchain-anchoring`.
 > Written in English to match the sibling spec; source material is quoted verbatim.
 >
 > **Confidence marking.** Everything below was checked against a primary source or measured
@@ -376,11 +376,11 @@ what keeps the system alive if a given witness disappears.
 ③                       append provenance.jsonl                       ✅ exists
 ④                       write manifest.json                           ✅ exists
 ⑤ refresh-data.yml      commit ONLY if the data changed               ✅ exists
-⑥ anchor_provenance.py  Merkle root over this run's provenance lines  🆕
-⑦                       Sigstore attest + OTS stamp manifest.json     🆕
-⑧                       append anchors.jsonl                          🆕
-⑨ deploy.yml            publish + assert live bytes == built bytes    ✅ exists (never run)
-⑩ anchor-upgrade job    hours later: ots upgrade → real Bitcoin proof 🆕
+⑥ anchor_provenance.py  Manifest-v2 provenance commitment + proof pair ✅ local code; not run connected
+⑦                       Sigstore attest + OTS stamp manifest.json      ✅ local workflow; not run connected
+⑧                       append anchors.jsonl                           ✅ local code; current v2 has no event
+⑨ deploy.yml            publish + assert live bytes == built bytes     ✅ local workflow; never run in production
+⑩ anchor-upgrade job    hours later: OTS upgrade                         ✅ local workflow; no live proof to upgrade
 ```
 
 Browser, on page load: download the JSON it needs anyway → hash the raw bytes → read the anchor
@@ -390,7 +390,7 @@ record → compare → render one of four states.
 
 | State | Label | When |
 |---|---|---|
-| 🟢 | `Integrity verified` | recomputed hash matches the anchored hash |
+| 🟢 | `Published record match` | recomputed file hash matches the downloaded Manifest and record |
 | 🟡 | `Timestamping…` | Sigstore signed; Bitcoin proof still pending (normal, not an error) |
 | 🔴 | `Integrity mismatch` | live bytes ≠ anchored hash — stale deploy, cache, or tampering |
 | ⚪ | `Not verified` | anchor record unreachable (offline / local dev) |
@@ -416,17 +416,18 @@ Stating the limitation plainly is the most persuasive thing on the page, not a d
 
 ---
 
-## 7. Prerequisites — anchoring a file the public cannot fetch is theatre
+## 7. Release prerequisites — proof and deployment are separate gates
 
-| # | Prerequisite | Status (2026-08-02) |
+| # | Prerequisite | Status (2026-08-09) |
 |---|---|---|
 | 1 | TLS certificate covering the subdomain | ✅ **Done.** Let's Encrypt **wildcard** `*.rentsmartprop.com.my`, issued 2026-07-31, **expires 2026-10-29**. Strict validation passes. |
 | 2 | Phase 0 merged so the manifest exists on `master` | ✅ **Done** (`80128f7`). `emit_manifest.py`, `validate_data.py`, `deploy.yml` are all on `master`. |
-| 3 | SFTP secrets so `deploy.yml` can actually run | ❌ **Blocking.** Production is still a hand-uploaded ZIP: `/data/manifest.json` and `/data/provenance.jsonl` both return **SPA HTML (1,348 B)**, and `indicators.json` is still `generatedAt: 2026-07-23`. **Nobody outside the team can verify anything today.** |
-| 4 | Branch protection on `master` + signed commits | ❌ **Not done.** Zero commits are signed and `master` is force-pushable. The spec correctly says *"a rewritten log invalidates every anchor over it"* — so this is a precondition, not a nicety. |
+| 3 | GitHub connected proof gate | ❌ **Not yet run.** The exact final `master` commit still needs the OTS calendar stamp and identity-constrained Sigstore verification. This is Gate B and can run before production deployment. |
+| 4 | SFTP/FTPS secrets and verified production target | ❌ **Blocking Gate C only.** Production currently serves a legacy v1 `manifest.json` and `provenance.jsonl`, while `anchors.jsonl`, `manifest.json.ots`, and the current version pair return SPA HTML. No public proof surface exists yet. |
+| 5 | `master` governance | ❌ **Not evidenced.** Require no force-push/deletion, review and required release checks, plus restricted workflow/integrity-code changes before production. Signed commits remain optional until bot-compatible automation is decided. |
 
-**Do not start anchoring before #3 and #4.** #4 in particular is what constrains the *operator*
-side of the threat model; the chain does not.
+**Do not deploy before #4 and #5.** Proof generation is deliberately an earlier connected gate;
+neither a proof nor branch protection makes the source statistics inherently true.
 
 Once the deploy runs, flip `SMOKE_ALLOW_INSECURE_TLS` to `false` — the smoke test then catches a
 certificate regression automatically, which is the durable fix for the October expiry.
@@ -490,12 +491,13 @@ pitch on it.**
 
 ## 10. Honest expectations
 
-**Expected to work:**
+**Expected to work after connected gates:**
 - A supervisor recomputing the hash on his own machine is more persuasive than any slide.
 - It will catch at least one real deployment problem. There is one right now: production data has
   been frozen at 2026-07-23 for ten days and nothing reported it.
-- `B` moves from 0% to roughly **25–30%** — no higher. Tokenisation, self-sovereign data and
-  row-level attestation all remain unbuilt.
+- The trust/attestation sub-capability can be described as locally implemented, but the ABCDE
+  score remains **B = 0%** until Gate B has live OTS/Sigstore evidence and Gate C has deployed
+  proof assets. Tokenisation, self-sovereign data and row-level attestation remain unbuilt.
 
 **Expected friction:**
 - ~99% of visitors will never click the badge. That is fine: its value is that it *can* go red, and

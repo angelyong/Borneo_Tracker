@@ -1,239 +1,121 @@
-"""
-Borneo Tracker — anchor the published data on Bitcoin (ABCDE letter "B", step 1).
-
-WHAT THIS DOES
-    Takes the manifest the pipeline just wrote, timestamps it via OpenTimestamps,
-    and records the result in an append-only log. After this runs, the claim
-    "this data has not been altered since <date>" stops being something we assert
-    and becomes something a stranger can check without asking us anything.
-
-WHY manifest.json IS THE THING WE ANCHOR
-    `manifest.json` already contains the sha256 of every published data file, so
-    one stamp covers all of them transitively — anchoring each file separately
-    would cost three proofs to say the same thing. It is also a real file served
-    at a real URL, which means the official client works on it unmodified:
-
-        curl -O https://<site>/data/manifest.json
-        ots verify manifest.json.ots
-
-    A proof a third party can check with a tool we did not write is worth more
-    than a bespoke one they have to trust us about.
-
-THE LEDGER ROOT
-    We also record a Merkle root over the whole of `provenance.jsonl` (see
-    merkle.py). That is a single value committing to every data version ever
-    published, and anyone can recompute it from the file we serve. Note honestly:
-    in this version the root is RECORDED, not separately stamped — the Bitcoin
-    attestation covers manifest.json. Anchoring the root too is a later step, and
-    the UI must not imply otherwise.
-
-WHAT IT WRITES
-    public/data/anchors/<first16 of manifest sha256>.ots
-        The proof. Named after what it proves, so it is immutable, never
-        overwritten, and safe to upgrade later without racing the next run.
-    public/data/anchors.jsonl
-        Append-only, one line per event. Same discipline as provenance.jsonl:
-        NEVER truncate, reorder or rewrite; only append; only ADD fields.
-        Status changes (pending -> confirmed) are appended as a new "upgrade"
-        line, never by editing the "stamp" line. Readers take the LAST line for
-        a given manifestSha256 as current.
-
-IDEMPOTENCE
-    Re-running on unchanged data does nothing. The daily refresh only commits
-    when the data actually changed, so the log stays a record of distinct data
-    versions rather than of cron ticks.
-
-THE SECOND WITNESS
-    In CI we also attest the manifest through GitHub's `actions/attest`, which
-    signs it with the workflow's own identity and records it in Sigstore's public
-    transparency log — the same infrastructure npm and PyPI use. Pass the bundle
-    with --sigstore-bundle and its log index is recorded alongside the Bitcoin
-    stamp. Two independent witnesses to the same digest: if either is unreachable,
-    the other still stands.
-
-USAGE
-    python anchor_provenance.py              stamp the current manifest if new
-    python anchor_provenance.py --force      stamp again even if already anchored
-    python anchor_provenance.py --dry-run    show what would happen, touch nothing
-    python anchor_provenance.py --sigstore-bundle <path>   also record the attestation
-"""
-
-import json
-import sys
+"""Stamp an immutable Manifest-v2 snapshot; never overwrite a stronger proof."""
+import hashlib, json, os, sys, tempfile
 from pathlib import Path
-
-import merkle
 import ots
 from emit_manifest import run_id, utc_now
+from manifest_contract import strict_json_loads, validate_manifest
+from witness_events import parse_events, reduce_events
 
-ROOT = Path(__file__).parent
-DATA_DIR = ROOT / "public" / "data"
-MANIFEST = DATA_DIR / "manifest.json"
-PROVENANCE = DATA_DIR / "provenance.jsonl"
-ANCHORS = DATA_DIR / "anchors.jsonl"
-PROOF_DIR = DATA_DIR / "anchors"
+ROOT=Path(__file__).parent; DATA_DIR=ROOT/"public"/"data"; MANIFEST=DATA_DIR/"manifest.json"; PROVENANCE=DATA_DIR/"provenance.jsonl"
+ANCHORS=DATA_DIR/"anchors.jsonl"; VERSIONS=DATA_DIR/"versions"; CURRENT_PROOF=DATA_DIR/"manifest.json.ots"
 
-# The same proof under the name the official client expects. `ots verify` looks
-# for the timestamped file by stripping ".ots" off the proof's own name, so a
-# proof called `<digest>.ots` would send it hunting for a file called `<digest>`.
-# Publishing this copy is what makes the two-line instruction on the verification
-# page literally true:
-#     curl -sO <site>/data/manifest.json
-#     curl -sO <site>/data/manifest.json.ots
-#     ots verify manifest.json.ots
-# It has the same lifecycle as manifest.json itself — both are overwritten each
-# run — while PROOF_DIR keeps the immutable, content-addressed history.
-CURRENT_PROOF = DATA_DIR / "manifest.json.ots"
-
-
+def sha256_bytes(raw): return hashlib.sha256(raw).hexdigest()
 def read_anchors():
-    """Every event so far, oldest first. Missing file is not an error."""
-    if not ANCHORS.exists():
-        return []
-    events = []
-    for line in ANCHORS.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if not line:
-            continue
-        try:
-            events.append(json.loads(line))
-        except json.JSONDecodeError:
-            # A corrupt line is a fact about the log, not a reason to stop
-            # anchoring. verify_anchor.py reports it.
-            continue
-    return events
-
-
+    if not ANCHORS.exists(): return []
+    return parse_events(ANCHORS.read_text(encoding="utf-8"))
 def append_anchor(entry):
-    """Append one event. Opened in 'a' mode ONLY — never 'w'."""
-    ANCHORS.parent.mkdir(parents=True, exist_ok=True)
-    with open(ANCHORS, "a", encoding="utf-8", newline="\n") as handle:
-        handle.write(json.dumps(entry, sort_keys=True) + "\n")
-
-
-def proof_path(manifest_sha256):
-    """Proofs are named after the digest they attest, so the name is the claim."""
-    return PROOF_DIR / f"{manifest_sha256[:16]}.ots"
-
-
-def already_anchored(events, manifest_sha256):
-    return any(e.get("type") == "stamp" and e.get("manifestSha256") == manifest_sha256
-               for e in events)
-
-
-def read_sigstore_bundle(path):
-    """Pull the Rekor log index out of an `actions/attest` bundle.
-
-    Best-effort by design: the bundle is GitHub's format, not ours, and a schema
-    change there must not fail the anchoring run. If anything is unrecognisable
-    we record that an attestation exists without pretending to know its index.
-    """
-    if not path:
-        return None
-    bundle_path = Path(path)
-    if not bundle_path.exists():
-        print(f"  note: sigstore bundle not found at {path} — not recorded")
-        return None
+    ANCHORS.parent.mkdir(parents=True,exist_ok=True)
+    with ANCHORS.open("a",encoding="utf-8",newline="\n") as f: f.write(json.dumps(entry,sort_keys=True,separators=(",",":"))+"\n"); f.flush(); os.fsync(f.fileno())
+def version_dir(sha):
+    if not isinstance(sha,str) or len(sha)!=64 or any(c not in "0123456789abcdef" for c in sha): raise ValueError("invalid Manifest SHA-256")
+    return VERSIONS/sha
+def proof_path(sha): return version_dir(sha)/"manifest.json.ots"
+def manifest_path(sha): return version_dir(sha)/"manifest.json"
+def atomic_bytes(path, body):
+    path.parent.mkdir(parents=True,exist_ok=True)
+    with tempfile.NamedTemporaryFile("wb",dir=path.parent,delete=False) as tmp: tmp.write(body); tmp.flush(); os.fsync(tmp.fileno()); name=tmp.name
+    os.replace(name,path)
+def _manifest(requested_sha=None, manifest_file=None):
+    # Catch-up supplies a byte-exact Manifest extracted with `git show` while
+    # the worktree remains on master.  Never checkout/push a historical SHA.
+    if manifest_file:
+        path = Path(manifest_file)
+    else:
+        versioned = manifest_path(requested_sha) if requested_sha else None
+        path = versioned if versioned and versioned.exists() else MANIFEST
+    raw=path.read_bytes(); value=validate_manifest(strict_json_loads(raw.decode("utf-8"),str(path))); actual=sha256_bytes(raw)
+    if requested_sha and actual != requested_sha: raise ValueError("requested version snapshot digest mismatch")
+    return raw,value,actual
+def read_sigstore_bundle(path, *, attestation_id=None, attestation_url=None):
+    if not path: return None
+    raw=Path(path).read_bytes(); item={"bundleSha256":sha256_bytes(raw)}
+    if attestation_id: item["attestationId"] = attestation_id
+    if attestation_url: item["attestationUrl"] = attestation_url
     try:
-        bundle = json.loads(bundle_path.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError) as exc:
-        print(f"  note: sigstore bundle unreadable ({exc}) — recorded without an index")
-        return {"present": True}
+        bundle=strict_json_loads(raw.decode("utf-8"),str(path)); tlog=bundle["verificationMaterial"]["tlogEntries"][0]
+        item.update({"logIndex":str(tlog.get("logIndex")),"integratedTime":str(tlog.get("integratedTime"))})
+    except (OSError, ValueError, KeyError, IndexError, TypeError): pass
+    return item
+def _flag(argv,name):
+    return argv[argv.index(name)+1] if name in argv and argv.index(name)+1<len(argv) else None
 
-    entry = {"present": True}
-    try:
-        tlog = bundle["verificationMaterial"]["tlogEntries"][0]
-        entry["logIndex"] = str(tlog.get("logIndex"))
-        entry["integratedTime"] = str(tlog.get("integratedTime"))
-    except (KeyError, IndexError, TypeError):
-        pass
-    return entry
-
-
-def flag_value(argv, name):
-    """--name <value>, or None."""
-    if name not in argv:
+def sigstore_verification(argv, bundle):
+    """Require evidence that the workflow ran the identity-constrained CLI gate."""
+    if not bundle:
+        if "--sigstore-verified" in argv:
+            raise ValueError("--sigstore-verified requires --sigstore-bundle")
         return None
-    idx = argv.index(name)
-    return argv[idx + 1] if len(argv) > idx + 1 else None
+    if "--sigstore-verified" not in argv:
+        raise ValueError("refusing to record an unverified Sigstore bundle")
+    fields = {
+        "repository": _flag(argv, "--sigstore-repository"),
+        "signerWorkflow": _flag(argv, "--sigstore-signer-workflow"),
+        "sourceRef": _flag(argv, "--sigstore-source-ref"),
+        "sourceDigest": _flag(argv, "--sigstore-source-digest"),
+    }
+    if not all(isinstance(value, str) and value for value in fields.values()):
+        raise ValueError("Sigstore verification policy is incomplete")
+    return {"method": "gh-attestation-verify", **fields}
 
+def event_context(argv):
+    data_commit = _flag(argv, "--data-commit-sha") or _flag(argv, "--source-commit-sha") or os.environ.get("GITHUB_SHA", "local")
+    signer_source = _flag(argv, "--signer-source-sha") or os.environ.get("GITHUB_SHA", "local")
+    return {
+        # sourceCommitSha remains for existing readers, but new events always
+        # distinguish the historical data commit from the signing run context.
+        "sourceCommitSha": data_commit,
+        "dataCommitSha": data_commit,
+        "signerSourceSha": signer_source,
+        "signerWorkflow": _flag(argv, "--signer-workflow") or "local",
+        "signerRef": _flag(argv, "--signer-ref") or "local",
+    }
 
 def main(argv=None):
-    argv = sys.argv[1:] if argv is None else argv
-    force = "--force" in argv
-    dry_run = "--dry-run" in argv
-
-    if not MANIFEST.exists():
-        print(f"ERROR: no manifest at {MANIFEST.as_posix()} — run the pipeline first")
-        return 1
-    if not PROVENANCE.exists():
-        print(f"ERROR: no provenance ledger at {PROVENANCE.as_posix()}")
-        return 1
-
-    manifest_digest = ots.sha256_file(MANIFEST)
-    manifest_sha256 = manifest_digest.hex()
-    manifest_generated_at = json.loads(MANIFEST.read_text(encoding="utf-8")).get("generatedAt")
-    ledger_root, ledger_entries = merkle.merkle_root_of_file(PROVENANCE)
-
-    print(f"manifest.json  sha256 {manifest_sha256}")
-    print(f"               generatedAt {manifest_generated_at}")
-    print(f"ledger root    {ledger_root}  ({ledger_entries} entries)")
-
-    events = read_anchors()
-    if already_anchored(events, manifest_sha256) and not force:
-        print("Already anchored — nothing to do. (--force to stamp again.)")
-        return 0
-
-    if dry_run:
-        print(f"DRY RUN: would stamp and write {proof_path(manifest_sha256).as_posix()}")
-        return 0
-
+    argv=sys.argv[1:] if argv is None else argv
+    if "--force" in argv:
+        print("ERROR: --force was removed: restamping could downgrade a confirmed proof."); return 5
+    if not MANIFEST.exists() or not PROVENANCE.exists(): print("ERROR: Manifest v2 and provenance ledger are required"); return 5
+    requested_sha=_flag(argv,"--manifest-sha"); manifest_file=_flag(argv,"--manifest-file")
     try:
-        timestamp, reached, failed = ots.submit(manifest_digest)
-    except ots.OtsError as exc:
-        print(f"ERROR: {exc}")
-        return 1
-
-    detached = ots.DetachedTimestamp(manifest_digest, timestamp)
-    status, detail = detached.status()
-
-    path = proof_path(manifest_sha256)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    proof_bytes = detached.to_bytes()
-    path.write_bytes(proof_bytes)
-    CURRENT_PROOF.write_bytes(proof_bytes)
-
-    entry = {
-        "ts": utc_now(),
-        "runId": run_id(),
-        "type": "stamp",
-        "method": "opentimestamps",
-        "chain": "bitcoin",
-        "target": "public/data/manifest.json",
-        "manifestSha256": manifest_sha256,
-        "manifestGeneratedAt": manifest_generated_at,
-        "ledgerRoot": ledger_root,
-        "ledgerEntries": ledger_entries,
-        "proof": path.relative_to(ROOT).as_posix(),
-        "status": status,
-        "calendars": sorted(detail) if status == "pending" else [],
-    }
-    sigstore = read_sigstore_bundle(flag_value(argv, "--sigstore-bundle"))
-    if sigstore:
-        entry["sigstore"] = sigstore
-    append_anchor(entry)
-
-    print(f"Stamped via {len(reached)} calendar(s); {len(failed)} unreachable.")
-    for calendar, error in failed:
-        print(f"  unreachable: {calendar} — {error}")
-    print(f"Wrote -> {path.relative_to(ROOT).as_posix()} ({path.stat().st_size} bytes), "
-          f"status={status}")
-    print(f"      -> {CURRENT_PROOF.relative_to(ROOT).as_posix()}  "
-          f"(same bytes, the name `ots verify` expects)")
-    print("A fresh stamp is PENDING for a few hours until a Bitcoin block includes "
-          "it. Run upgrade_anchors.py later to turn it into a confirmed proof.")
-    return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())
+        raw,manifest,sha=_manifest(requested_sha, manifest_file)
+        events=read_anchors(); state=reduce_events(events,sha)
+        sigstore=read_sigstore_bundle(_flag(argv,"--sigstore-bundle"), attestation_id=_flag(argv,"--sigstore-attestation-id"), attestation_url=_flag(argv,"--sigstore-attestation-url"))
+        sigstore_policy=sigstore_verification(argv, sigstore)
+    except ValueError as exc: print(f"ERROR: {exc}"); return 5
+    snapshot=manifest_path(sha); proof=proof_path(sha)
+    if snapshot.exists() and snapshot.read_bytes()!=raw: print("ERROR: immutable Manifest snapshot differs from current bytes"); return 4
+    # A proof without a corresponding OTS event is an interrupted publication,
+    # not permission to stamp again.  Replacing it could throw away a stronger
+    # proof that reached Bitcoin before the event append failed.  Recovery must
+    # validate that proof and append a deliberately auditable recovery event.
+    if proof.exists() and not state["ots"]:
+        print("ERROR: found an orphaned version proof; refuse to overwrite it. Recover and record its OTS event first.")
+        return 4
+    # Dry-run is an inspection mode.  In particular it must not create a
+    # version snapshot or append a Sigstore event before deciding not to stamp.
+    if "--dry-run" in argv:
+        action="would preserve existing OTS proof" if state["ots"] else f"would stamp {snapshot}"
+        print(f"DRY RUN: {action}"); return 0
+    if not snapshot.exists(): atomic_bytes(snapshot,raw)
+    if sigstore and not state["sigstore"]:
+        append_anchor({"schemaVersion":2,"ts":utc_now(),"runId":run_id(),"manifestSha256":sha,**event_context(argv),"sigstoreSubjectSha256":sha,"eventType":"sigstore.attested","witness":{"type":"sigstore","status":"attested"},"sigstore":sigstore,"sigstoreVerification":sigstore_policy})
+    if state["ots"]:
+        print("Manifest already stamped; preserved its strongest OTS proof."); return 0
+    try: timestamp,reached,failed=ots.submit(bytes.fromhex(sha))
+    except ots.OtsError as exc: print(f"ERROR: {exc}"); return 5
+    detached=ots.DetachedTimestamp(bytes.fromhex(sha),timestamp); blob=detached.to_bytes(); atomic_bytes(proof,blob)
+    if MANIFEST.exists() and sha256_bytes(MANIFEST.read_bytes()) == sha: atomic_bytes(CURRENT_PROOF,blob)
+    status, detail=detached.status()
+    append_anchor({"schemaVersion":2,"ts":utc_now(),"runId":run_id(),"manifestSha256":sha,"manifestGeneratedAt":manifest["generatedAt"],"dataVersion":manifest["dataVersion"],**event_context(argv),"eventType":"ots.stamped","witness":{"type":"ots","status":"pending"},"proof":proof.relative_to(ROOT).as_posix(),"proofSha256Before":None,"proofSha256After":sha256_bytes(blob),"calendars":sorted(detail) if status=="pending" else [],"otsAttestationClaim":status})
+    print(f"Stamped {sha}; {len(reached)} calendar(s) reached, {len(failed)} unavailable."); return 0
+if __name__=="__main__": sys.exit(main())

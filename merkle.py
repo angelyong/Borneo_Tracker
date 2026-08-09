@@ -86,9 +86,13 @@ def ledger_lines(path):
     return [line for line in raw.replace(b"\r\n", b"\n").split(b"\n") if line.strip()]
 
 
-def merkle_root_of_file(path):
+def merkle_root_of_file(path, entries=None):
     """Returns (root_hex, leaf_count) for a .jsonl ledger."""
     lines = ledger_lines(path)
+    if entries is not None:
+        if not isinstance(entries, int) or entries <= 0 or entries > len(lines):
+            raise ValueError("entries must identify a non-empty committed ledger prefix")
+        lines = lines[:entries]
     return merkle_root([leaf_hash(line) for line in lines]).hex(), len(lines)
 
 
