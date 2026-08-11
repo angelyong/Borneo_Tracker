@@ -1,10 +1,17 @@
 # Blockchain Phase 1 — Safe Release Sequence Plan
 
 **Date:** 2026-08-10 (Asia/Kuala_Lumpur)
-**Status:** implementation plan; no workflow change, merge, anchor, or deployment is authorised by this document
+**Status:** historical safety plan, implemented for the initial Phase-1 release and superseded for
+ongoing operations by `docs/DEPLOYMENT_SETUP.md` and `docs/BLOCKCHAIN_ANCHORING_SPEC.md`.
+It remains evidence for why the first release was manual; it is not the current operator runbook.
 **Source baseline:** `feature/blockchain-anchoring` at `9e06c36`, `origin/master` at `e9561fe`
 
 ## 1. Decision
+
+> **Historical decision (2026-08-10):** the manual-only boundary below governed the first
+> bootstrap release. After that release passed dry-run, connection, exact-proof deployment and
+> production verification, the ongoing design moved to an opt-in, proof-gated automatic path.
+> Automatic deployment remains default-off and accepts only a current-master proof-only commit.
 
 Do **not** stamp the current Manifest from the feature branch and do **not** merge the branch yet.
 

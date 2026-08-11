@@ -86,7 +86,7 @@ class DeployWorkflowContractTests(unittest.TestCase):
         self.assertNotIn('echo "get ', connection)
         self.assertNotIn("Smoke-test production", connection)
 
-    def test_release_modes_are_explicit_and_production_needs_confirmation(self):
+    def test_release_modes_are_explicit_and_auto_dispatch_is_explicitly_enabled(self):
         self.assertIn("release_mode:", self.text)
         self.assertIn("dry_run|connection_test_only|production", self.text)
         self.assertIn('case "${RELEASE_MODE}" in dry_run|connection_test_only|production) ;; *)', self.text)
@@ -96,13 +96,29 @@ class DeployWorkflowContractTests(unittest.TestCase):
         self.assertIn("confirm_production:", self.text)
         self.assertIn('"${CONFIRM_PRODUCTION}" != "true"', self.text)
         self.assertIn("Production confirmation required", self.text)
+        self.assertIn("repository_dispatch:", self.text)
+        self.assertIn("types: [deploy-proof]", self.text)
+        self.assertIn("DISPATCH_PROOF_COMMIT_SHA", self.text)
+        self.assertIn("DISPATCH_SENDER", self.text)
+        self.assertIn("AUTO_PRODUCTION_DEPLOY", self.text)
+        self.assertIn("Automatic production deployment disabled", self.text)
+        self.assertIn('case "${DISPATCH_SOURCE}" in anchor|upgrade)', self.text)
 
     def test_exact_proof_sha_is_checked_out_and_must_belong_to_master(self):
-        self.assertIn("ref: ${{ inputs.proof_commit_sha }}", self.text)
+        self.assertIn("ref: ${{ steps.gate.outputs.proof_commit_sha }}", self.text)
         self.assertIn("fetch-depth: 0", self.text)
         self.assertIn("Verify requested proof commit is an immutable master release", self.text)
         self.assertIn('git merge-base --is-ancestor "${PROOF_COMMIT_SHA}" origin/master', self.text)
         self.assertIn('test "$(git rev-parse HEAD)" = "${PROOF_COMMIT_SHA}"', self.text)
+        self.assertIn('if [ "${EVENT_NAME}" = "repository_dispatch" ]; then', self.text)
+        self.assertIn('test "${PROOF_COMMIT_SHA}" = "$(git rev-parse origin/master)"', self.text)
+        self.assertIn('python verify_release_commit.py "${PROOF_COMMIT_SHA}" "${DISPATCH_SOURCE}" "${DISPATCH_SENDER}"', self.text)
+        self.assertIn("Reconfirm automatic proof immediately before upload", self.text)
+
+    def test_deploy_serializes_with_proof_publication(self):
+        self.assertIn("group: phase1-publication", self.text)
+        self.assertIn("queue: max", self.text)
+        self.assertIn("cancel-in-progress: false", self.text)
 
     def test_missing_required_secrets_are_red_not_a_green_skip(self):
         self.assertIn("Deployment prerequisites missing", self.text)

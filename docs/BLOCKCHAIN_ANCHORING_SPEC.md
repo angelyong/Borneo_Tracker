@@ -56,12 +56,17 @@ ID/URL for discovery; that is not signature verification.
 
 ## Publication flow and gates
 
-`refresh (exact data SHA) → anchor (exact SHA) → proof commit SHA → manual deploy
-(exact proof SHA)`. Proof creation never uploads production content. Deployment is a
-separate, manual release decision: first run a dry-run and read-only connection test,
-then enter the exact proof commit SHA and `confirm_production=true` for upload. The
+`refresh (exact data SHA) → anchor (exact SHA) → proof commit SHA → deploy
+(exact proof SHA)`. Proof creation never uploads production content itself. When the
+repository variable `AUTO_PRODUCTION_DEPLOY=true`, anchor and proof-upgrade workflows dispatch
+the exact current-master proof commit to the separate deployment workflow; otherwise deployment
+remains manual. Manual dry-run and read-only connection test remain required before enabling the
+automatic switch, while manual production runs still require `confirm_production=true`. The
 Actions workflows share `phase1-publication` concurrency and never cancel an in-flight
-publication. The catch-up scanner only identifies
+publication or deployment. Automatic dispatches are accepted only when the event sender is the
+GitHub Actions bot and the current-master commit has the exact bot identity, subject and proof-only
+path set produced by `anchor.yml` or `anchor-upgrade.yml`. The deploy workflow rechecks current
+master immediately before upload. The catch-up scanner only identifies
 committed version snapshots with no OTS event and dispatches each with both its
 Git commit SHA and Manifest SHA; the anchor workflow stamps that exact version,
 never an arbitrary branch tip. GitHub Actions `queue: max` retains up to 100
@@ -83,5 +88,7 @@ The former merge-marker conflict in `public/data/provenance.jsonl` was reconcile
 under the authorised record in
 `docs/PROVENANCE_LEDGER_RECONCILIATION_2026-08-09.md`. The current ledger has no
 merge delimiters and Manifest v2 validation passes locally. That reconciliation
-does **not** create an external witness: the current v2 Manifest remains
-`UNANCHORED` until the connected release gate succeeds.
+does **not** create an external witness. That was the pre-release state; the connected master
+gate has since created the current proof, and the official OpenTimestamps browser verifier bound
+Manifest `bda87804…b2b8e` to Bitcoin block `961779` on 2026-08-10. The repository verifier still
+reports only what it can prove without independently validating Bitcoin headers.

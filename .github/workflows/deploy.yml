@@ -77,8 +77,11 @@ name: Deploy to DirectAdmin
 # ═══════════════════════════════════════════════════════════════════════════════
 
 on:
-  # Production is intentionally manual. Proof creation, refreshes, pushes and
-  # schedules may create evidence but may never upload it.
+  # A proof publisher can request an automatic production release only with an
+  # exact proof commit.  Manual runs remain available for dry-runs, connection
+  # tests, approved production releases, and rollback.
+  repository_dispatch:
+    types: [deploy-proof]
   workflow_dispatch:
     inputs:
       release_mode:
@@ -107,7 +110,9 @@ on:
 # instead: one deploy at a time, each allowed to finish. A superseded deploy
 # costs a few wasted minutes; a shredded public_html costs a manual ZIP upload.
 concurrency:
-  group: deploy-directadmin-production
+  # Share the publication lock with refresh/anchor/upgrade.  An automatic
+  # release therefore cannot race a proof writer after its exact-SHA check.
+  group: phase1-publication
   queue: max
   cancel-in-progress: false
 
@@ -121,9 +126,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     environment:
-      # Production protection remains a second guard. Preflight modes never
-      # claim the production environment and cannot upload.
-      name: ${{ inputs.release_mode == 'production' && 'production' || 'release-preflight' }}
+      # Production protection remains a second guard. A trusted automatic proof
+      # dispatch is a production release; manual preflight modes are not.
+      name: ${{ github.event_name == 'repository_dispatch' && 'production' || inputs.release_mode == 'production' && 'production' || 'release-preflight' }}
       url: ${{ vars.PRODUCTION_URL || 'https://borneotracker.rentsmartprop.com.my' }}
 
     env:
@@ -144,13 +149,35 @@ jobs:
           SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          EVENT_NAME: ${{ github.event_name }}
           RELEASE_MODE: ${{ inputs.release_mode }}
           PROOF_COMMIT_SHA: ${{ inputs.proof_commit_sha }}
           CONFIRM_PRODUCTION: ${{ inputs.confirm_production }}
+          DISPATCH_PROOF_COMMIT_SHA: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.proof_commit_sha || '' }}
+          DISPATCH_SOURCE: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.source || '' }}
+          DISPATCH_SENDER: ${{ github.event_name == 'repository_dispatch' && github.event.sender.login || '' }}
+          AUTO_PRODUCTION_DEPLOY: ${{ vars.AUTO_PRODUCTION_DEPLOY || 'false' }}
           DEPLOY_PROTOCOL: ${{ vars.DEPLOY_PROTOCOL || 'sftp' }}
           SMOKE_ALLOW_INSECURE_TLS: ${{ vars.SMOKE_ALLOW_INSECURE_TLS || 'false' }}
         run: |
           set -euo pipefail
+
+          if [ "${EVENT_NAME}" = "repository_dispatch" ]; then
+            if [ "${AUTO_PRODUCTION_DEPLOY}" != "true" ]; then
+              echo "::error title=Automatic production deployment disabled::Set the repository variable AUTO_PRODUCTION_DEPLOY=true only after the hosting cache policy has been verified. Nothing was uploaded."
+              exit 1
+            fi
+            case "${DISPATCH_SOURCE}" in anchor|upgrade) ;; *)
+              echo "::error title=Bad deployment dispatch::source must be anchor or upgrade."
+              exit 1
+            esac
+            RELEASE_MODE="production"
+            PROOF_COMMIT_SHA="${DISPATCH_PROOF_COMMIT_SHA}"
+            CONFIRM_PRODUCTION="true"
+          elif [ "${EVENT_NAME}" != "workflow_dispatch" ]; then
+            echo "::error title=Unsupported deployment event::${EVENT_NAME}"
+            exit 1
+          fi
 
           case "${RELEASE_MODE}" in dry_run|connection_test_only|production) ;; *)
             echo "::error title=Bad workflow input::release_mode must be dry_run, connection_test_only, or production."
@@ -219,19 +246,27 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          ref: ${{ inputs.proof_commit_sha }}
+          ref: ${{ steps.gate.outputs.proof_commit_sha }}
           fetch-depth: 0
 
       - name: Verify requested proof commit is an immutable master release
         id: release
         env:
           PROOF_COMMIT_SHA: ${{ steps.gate.outputs.proof_commit_sha }}
+          EVENT_NAME: ${{ github.event_name }}
+          DISPATCH_SOURCE: ${{ github.event_name == 'repository_dispatch' && github.event.client_payload.source || '' }}
+          DISPATCH_SENDER: ${{ github.event_name == 'repository_dispatch' && github.event.sender.login || '' }}
         run: |
           set -euo pipefail
           git fetch --no-tags origin master
           git cat-file -e "${PROOF_COMMIT_SHA}^{commit}"
           git merge-base --is-ancestor "${PROOF_COMMIT_SHA}" origin/master
           test "$(git rev-parse HEAD)" = "${PROOF_COMMIT_SHA}"
+          if [ "${EVENT_NAME}" = "repository_dispatch" ]; then
+            test "${PROOF_COMMIT_SHA}" = "$(git rev-parse origin/master)"
+            python verify_release_commit.py "${PROOF_COMMIT_SHA}" "${DISPATCH_SOURCE}" "${DISPATCH_SENDER}"
+            echo "Automatic release is the current master proof commit."
+          fi
           echo "Proof commit is present and is an ancestor of origin/master."
 
       - name: Record the exact commit being deployed
@@ -565,6 +600,16 @@ jobs:
           lftp -f "$SCRIPT"
           echo "result=pass" >> "$GITHUB_OUTPUT"
           echo "Connection test passed. No files were uploaded."
+
+      - name: Reconfirm automatic proof immediately before upload
+        if: steps.gate.outputs.mode == 'production' && github.event_name == 'repository_dispatch'
+        env:
+          PROOF_COMMIT_SHA: ${{ steps.gate.outputs.proof_commit_sha }}
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin master
+          test "${PROOF_COMMIT_SHA}" = "$(git rev-parse origin/master)"
+          echo "Automatic proof commit is still current master immediately before upload."
 
       - name: Upload dist/ to DirectAdmin (non-destructive)
         if: steps.gate.outputs.mode == 'production'

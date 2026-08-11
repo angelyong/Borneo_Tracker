@@ -256,8 +256,41 @@ jobs:
             echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Dispatch exact proof commit to automatic deployment
+        id: deploy_dispatch
+        if: >-
+          steps.proof_commit.outputs.sha != '' &&
+          needs.attest.outputs.mode != 'catchup' &&
+          vars.AUTO_PRODUCTION_DEPLOY == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROOF_COMMIT_SHA: ${{ steps.proof_commit.outputs.sha }}
+        run: |
+          set -euo pipefail
+          git fetch origin master
+          test "${PROOF_COMMIT_SHA}" = "$(git rev-parse origin/master)"
+          dispatched=false
+          for attempt in 1 2 3 4; do
+            if gh api repos/${{ github.repository }}/dispatches \
+              -f event_type=deploy-proof \
+              -f client_payload[proof_commit_sha]="${PROOF_COMMIT_SHA}" \
+              -f client_payload[source]=anchor; then
+              dispatched=true
+              break
+            fi
+            echo "Dispatch attempt ${attempt} failed."
+            if [ "${attempt}" -lt 4 ]; then sleep "$((attempt * 5))"; fi
+          done
+          if [ "${dispatched}" != "true" ]; then
+            echo "::error title=Automatic deployment dispatch failed::The proof is committed, but no deployment was requested. Recover with a manual production run for ${PROOF_COMMIT_SHA}."
+            exit 1
+          fi
+          echo "dispatched=true" >> "$GITHUB_OUTPUT"
+
       - name: Summary
         if: always()
+        env:
+          AUTO_PRODUCTION_DEPLOY: ${{ vars.AUTO_PRODUCTION_DEPLOY || 'false' }}
         run: |
           {
             echo "### Anchor"
@@ -269,8 +302,18 @@ jobs:
             if [ -n "${{ steps.proof_commit.outputs.sha }}" ]; then
               echo "Proof commit: \`${{ steps.proof_commit.outputs.sha }}\`"
               echo
+              if [ "${{ needs.attest.outputs.mode }}" = "catchup" ]; then
+                echo "Historical catch-up proofs are never deployed automatically."
+              elif [ "${{ steps.deploy_dispatch.outputs.dispatched }}" = "true" ]; then
+                echo "Automatic production deployment was dispatched for this exact proof commit."
+              elif [ "${AUTO_PRODUCTION_DEPLOY}" = "true" ]; then
+                echo "Automatic deployment did not dispatch. The proof commit is safe; recover by manually running Deploy to DirectAdmin in production mode for the exact Proof commit above."
+              else
+                echo "Automatic production deployment is disabled (AUTO_PRODUCTION_DEPLOY is not true)."
+              fi
+              echo
             fi
-            echo "This workflow creates release evidence only. It never deploys production."
+            echo "This workflow creates release evidence; when explicitly enabled, it dispatches the exact proof commit to the separate deployment workflow."
             echo
             echo "A fresh stamp is **pending** until a Bitcoin block includes it."
           } >> "$GITHUB_STEP_SUMMARY"

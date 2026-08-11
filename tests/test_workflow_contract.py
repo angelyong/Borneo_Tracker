@@ -7,25 +7,36 @@ ROOT=Path(__file__).parents[1]
 class WorkflowContractTests(unittest.TestCase):
     def read(self,name): return (ROOT/".github/workflows"/name).read_text(encoding="utf-8")
     def test_publication_workflows_share_serialisation_and_never_cancel(self):
-        for name in ("refresh-data.yml","anchor.yml","anchor-upgrade.yml","anchor-catchup.yml"):
+        for name in ("refresh-data.yml","anchor.yml","anchor-upgrade.yml","anchor-catchup.yml","deploy.yml"):
             text=self.read(name); self.assertIn("group: phase1-publication",text); self.assertIn("queue: max",text); self.assertIn("cancel-in-progress: false",text)
-    def test_deploy_is_manual_exact_proof_sha_not_push_tip(self):
+    def test_deploy_accepts_only_manual_or_exact_proof_dispatch(self):
         text=self.read("deploy.yml")
         self.assertIn("workflow_dispatch:",text)
-        self.assertNotIn("repository_dispatch:",text)
+        self.assertIn("repository_dispatch:",text)
+        self.assertIn("types: [deploy-proof]",text)
         self.assertNotIn("\n  push:\n",text)
         self.assertIn("proof_commit_sha:",text)
         self.assertIn("confirm_production:",text)
-        self.assertIn("ref: ${{ inputs.proof_commit_sha }}",text)
+        self.assertIn("DISPATCH_PROOF_COMMIT_SHA",text)
+        self.assertIn("AUTO_PRODUCTION_DEPLOY",text)
+        self.assertIn("ref: ${{ steps.gate.outputs.proof_commit_sha }}",text)
         self.assertIn('git merge-base --is-ancestor "${PROOF_COMMIT_SHA}" origin/master',text)
-        self.assertNotIn("github.event.client_payload",text)
+        self.assertIn('test "${PROOF_COMMIT_SHA}" = "$(git rev-parse origin/master)"',text)
 
-    def test_anchor_workflows_create_proofs_but_never_dispatch_deployment(self):
+    def test_anchor_workflows_dispatch_only_new_exact_proofs_when_enabled(self):
         for name in ("anchor.yml", "anchor-upgrade.yml"):
             text=self.read(name)
-            self.assertNotIn("deploy-proof", text)
-            self.assertNotIn("/dispatches", text)
-            self.assertIn("never deploys production", text)
+            self.assertIn("deploy-proof", text)
+            self.assertIn("/dispatches", text)
+            self.assertIn("AUTO_PRODUCTION_DEPLOY", text)
+            self.assertIn("id: deploy_dispatch", text)
+            self.assertIn('echo "dispatched=true" >> "$GITHUB_OUTPUT"', text)
+            self.assertIn("GH_TOKEN: ${{ github.token }}", text)
+            self.assertIn('test "${PROOF_COMMIT_SHA}" = "$(git rev-parse origin/master)"',text)
+            self.assertIn("for attempt in 1 2 3 4", text)
+            self.assertIn("Recover with a manual production run", text)
+        anchor=self.read("anchor.yml")
+        self.assertIn("needs.attest.outputs.mode != 'catchup'", anchor)
     def test_deploy_checks_full_scope_and_version_pair(self):
         text=self.read("deploy.yml")
         # The exact Phase-1 dataset list is intentionally not duplicated in the
