@@ -10,15 +10,18 @@ This is the implementation of **Option A** in
 
 ---
 
-## 0. Release boundary: proof creation never deploys
+## 0. Release boundary: proof-gated automatic deployment is opt-in
 
-`deploy.yml` runs only from **Actions → Deploy to DirectAdmin → Run workflow**. Refreshes,
-pushes, anchor creation, and OTS proof upgrades cannot start a production upload.
+Manual runs remain available through **Actions → Deploy to DirectAdmin → Run workflow**. When
+the repository variable `AUTO_PRODUCTION_DEPLOY` is exactly `true`, a new current-master proof
+commit from `anchor.yml` or `anchor-upgrade.yml` dispatches an automatic production release.
+Refresh itself, a bare push, and historical catch-up never deploy directly.
 
-Every run requires an exact, lowercase 40-character `proof_commit_sha` that is an ancestor of
-current `master`. A missing prerequisite is a **red failure** with secret names only; a green
-run is never used to mean “credentials were absent”. The site remains unchanged until a manual
-production run completes its upload and smoke test.
+Every run resolves an exact, lowercase 40-character `proof_commit_sha`. An automatic dispatch
+must be the current `master` HEAD; a manual run may use an older master ancestor for a deliberate
+rollback. A missing prerequisite is a **red failure** with secret names only; a green run is never
+used to mean “credentials were absent”. Automatic deployment must remain disabled until the
+hosting cache policy has been verified for `/data/*` and proof files.
 
 ---
 
@@ -141,13 +144,40 @@ carry **FTPS** values. Concrete settings for `borneotracker.rentsmartprop.com.my
 | `PRODUCTION_URL` | `https://borneotracker.rentsmartprop.com.my` | The URL the smoke test checks. |
 | `DEPLOY_PROTOCOL` | `sftp` | Set to `ftps` if the host only offers FTPS. (FTPS requires `SFTP_PASSWORD`; it cannot use a key.) |
 | `FTPS_VERIFY_CERT` | `yes` | FTPS only. Keep `yes` for every routine deployment. `no` is an emergency, temporary diagnostic override only; fix the hostname/certificate and restore `yes` before any normal deployment. |
+| `AUTO_PRODUCTION_DEPLOY` | `false` | **Safety switch.** Set to `true` only after cache bypass/revalidation for `/data/*`, Manifest, anchor log, and `.ots` proof files is verified. When true, a newly committed current-master proof automatically deploys and smoke-tests production. |
 
 ---
 
-## 3. First run — do it manually
+### Cache-readiness acceptance gate
 
-All release modes are manual. Start with the two non-production modes below;
-neither one changes the hosted site.
+Do not infer durable cache safety from one successful browser refresh. Before changing
+`AUTO_PRODUCTION_DEPLOY` to `true`, retain evidence for all of the following:
+
+1. Hosting support confirms that `/data/*` (including `manifest.json`, `anchors.jsonl`, `.ots`,
+   versioned proof pairs and the six declared datasets) bypasses shared stale caching or is always
+   revalidated. If a purge API is the chosen control, it must be limited to this domain and tested.
+2. A manual production run for the latest proof SHA finishes with the ordinary, non-cache-busted
+   smoke requests matching the uploaded build. A cache-busted match by itself is a failure.
+3. A second ordinary request after the agreed cache window still returns the same Manifest SHA,
+   proof bytes and data hashes. Record the workflow URL, proof SHA, time and hosting confirmation.
+
+The DirectAdmin user interface currently exposes no LiteSpeed purge control. Cache policy or
+purging therefore belongs to the hosting administrator unless a limited API is provided.
+
+### One-time bootstrap before enabling automatic deployment
+
+Enabling the variable does not emit an event for proof commits that already exist. Before the
+first switch-on, manually deploy the latest proof-bearing master ancestor using the normal
+`dry_run` → `connection_test_only` → `production` sequence. Confirm that production
+`anchors.jsonl` and `manifest.json.ots` match that exact commit. Only future proof commits are
+automatic.
+
+---
+
+## 3. First run — do the preflight manually
+
+The two preflight modes are manual and never change the hosted site. Keep
+`AUTO_PRODUCTION_DEPLOY=false` while proving the hosting path and cache policy.
 
 1. **Actions → "Deploy to DirectAdmin" → Run workflow.** Enter the exact proof-bearing
    `proof_commit_sha` from the verified master anchor run.
@@ -191,12 +221,19 @@ neither one changes the hosted site.
 
 ### What triggers a deploy afterwards
 
-Only `workflow_dispatch` can start this workflow. It is not valid to deploy an arbitrary branch
-or a moving branch tip: the requested proof commit must be a full SHA and an ancestor of current
-`origin/master`.
+Manual `workflow_dispatch` supports preflight, approved production releases, and rollback. With
+`AUTO_PRODUCTION_DEPLOY=true`, `anchor.yml` and `anchor-upgrade.yml` may also send a
+`deploy-proof` repository dispatch after they push a new proof commit. The automatic request must
+contain a full SHA that still equals current `origin/master`; it cannot deploy an arbitrary branch,
+a moving branch tip, or a historical catch-up proof.
 
 Deploys **queue**; they never cancel each other. Killing an upload halfway would leave
 `public_html` in a mixed state.
+
+Anchor and upgrade retry the dispatch four times. If the proof push succeeds but every dispatch
+attempt fails, the proof remains valid and the workflow turns red. Recover by manually running
+`Deploy to DirectAdmin` in `production` mode with that exact proof commit SHA; do not restamp or
+rewrite the proof merely to create another event.
 
 ---
 
@@ -231,7 +268,7 @@ Read the annotation. It is written to tell you which of these it is:
 | `... returned HTTP 000 / 5xx` | The site is down or unreachable. | Check DirectAdmin. |
 | `manifest.json -> 200 text/html` | The file is **not on the server** — the SPA rewrite answered instead. The upload did not land where you think. | `SFTP_REMOTE_DIR` is almost certainly wrong (chroot). |
 | `production 'indicators.json' is <hash>, we built <hash>` | Old data still being served. | Usually a cache — see the next row. |
-| `Stale cache, not a failed upload` | The new bytes **are** on the server (they match when fetched with a cache-buster) but the plain URL serves an old copy. | Flush LiteSpeed/LSCache for the domain in DirectAdmin. |
+| `Stale cache, not a failed upload` | The new bytes **are** on the server (they match when fetched with a cache-buster) but the plain URL serves an old copy. | Ask the hosting administrator to purge/configure cache bypass for the domain, or use an approved domain-limited purge API. This DirectAdmin account has no LiteSpeed purge control. |
 | `deep link /news returned HTTP 404` | `.htaccess` is missing or was overwritten on the server. | Restore it (see rollback) and check the "Server .htaccess replaced" warning in the previous run. |
 | `Strict TLS is enabled ... certificate ... is not valid` | The certificate expired, was issued for the wrong host, or otherwise regressed. | Do **not** normalize the error by leaving TLS disabled. Ask the hosting admin to fix the certificate. A temporary `SMOKE_ALLOW_INSECURE_TLS=true` diagnostic override needs explicit approval and must be removed immediately. |
 
