@@ -1,0 +1,8 @@
+# Published data and integrity evidence must be revalidated on every request.
+# This directory-level policy deliberately excludes Vite's content-hashed
+# assets, which remain cacheable under /assets/.
+<IfModule mod_headers.c>
+  Header always set Cache-Control "no-store, no-cache, must-revalidate, max-age=0"
+  Header always set Pragma "no-cache"
+  Header always set Expires "0"
+</IfModule>

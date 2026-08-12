@@ -45,7 +45,8 @@ class WorkflowContractTests(unittest.TestCase):
         for artifact in ("anchors.jsonl","manifest.json.ots","versions/${manifest_sha}"):
             self.assertIn(artifact,text)
         self.assertIn("verify_manifest.py verify-remote",text)
-        self.assertGreaterEqual(text.count("verify_proof_contract.py \"$OUT\""),2)
+        self.assertIn("verify_proof_contract.py \"$OUT\"", text)
+        self.assertIn("verify_proof_contract.py \"$CACHE_OUT\"", text)
         self.assertIn("cachebust=${GITHUB_RUN_ID}",text)
         self.assertIn('"$OUT/versions/${manifest_sha}/manifest.json.ots"',text)
         self.assertIn("python verify_manifest.py paths",text)
