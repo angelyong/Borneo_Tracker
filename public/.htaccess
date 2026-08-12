@@ -5,3 +5,18 @@
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule ^ index.html [L]
 </IfModule>
+
+# Data, Manifest, anchors, and timestamp proofs are integrity evidence rather
+# than build assets. Keep the shared LiteSpeed cache away from this mutable
+# namespace without changing caching for Vite's content-hashed /assets files.
+<IfModule LiteSpeed>
+  CacheDisable public /data/
+  CacheDisable private /data/
+</IfModule>
+
+# Apache/LiteSpeed does not always infer GeoJSON from the extension.  Serving
+# the correct MIME type lets the deployment smoke test distinguish a real data
+# endpoint from an SPA fallback or generic binary response.
+<IfModule mod_mime.c>
+  AddType application/geo+json .geojson
+</IfModule>

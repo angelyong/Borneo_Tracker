@@ -200,6 +200,9 @@ The two preflight modes are manual and never change the hosted site. Keep
    - `dist/.htaccess is missing or empty` — `public/.htaccess` was deleted or emptied. It is a
      tracked file and carries the SPA rewrite; restore it. The workflow refuses to upload
      without it precisely because losing it 404s every deep link on the live site.
+   - `dist/data/.htaccess is missing or does not contain the required data cache policy` — do
+     not deploy. `public/data/.htaccess` is tracked evidence-delivery policy: it tells clients
+     and shared caches not to retain a stale Manifest, anchor log, or OpenTimestamps proof.
 3. After a green Dry Run, run the workflow again with
    **`release_mode=connection_test_only`** and the same exact SHA.
 
@@ -249,7 +252,7 @@ It asserts four things:
 | 1 | `GET /` returns **200**, `text/html`, and the body contains the app shell (`id="root"`). | The site is up and is actually our app. |
 | 2 | `GET /news` returns **200** `text/html` with the app shell. | `/news` is a client-side route with no file behind it. If `.htaccess` did not survive the upload, this 404s — and so does every other deep link. |
 | 3 | `GET /data/manifest.json` parses as JSON, and every declared **SHA-256 and byte count** equals this build. | The manifest claim itself is complete and current. |
-| 4 | `GET` each of `indicators.json`, `resilience.json` and `districts.json`; its downloaded SHA-256 and byte count must equal the manifest. | This proves the actual Production bytes match the build, not merely the manifest. |
+| 4 | `GET` every Manifest-declared data file; JSON must return `application/json`, GeoJSON must return `application/geo+json` (or compatible `application/json`), and each downloaded SHA-256 and byte count must equal the manifest. | This proves the actual Production bytes match the build, not merely the manifest, and that a data URL did not fall through to the SPA or an untyped binary response. |
 
 Every JSON check verifies the **content type**, not just the status code. This matters: the
 SPA rewrite in `.htaccess` answers *any* missing path with `index.html` and HTTP **200**, so a
@@ -268,7 +271,9 @@ Read the annotation. It is written to tell you which of these it is:
 | `... returned HTTP 000 / 5xx` | The site is down or unreachable. | Check DirectAdmin. |
 | `manifest.json -> 200 text/html` | The file is **not on the server** — the SPA rewrite answered instead. The upload did not land where you think. | `SFTP_REMOTE_DIR` is almost certainly wrong (chroot). |
 | `production 'indicators.json' is <hash>, we built <hash>` | Old data still being served. | Usually a cache — see the next row. |
-| `Stale cache, not a failed upload` | The new bytes **are** on the server (they match when fetched with a cache-buster) but the plain URL serves an old copy. | Ask the hosting administrator to purge/configure cache bypass for the domain, or use an approved domain-limited purge API. This DirectAdmin account has no LiteSpeed purge control. |
+| `Stale cache, not a failed upload` | The new bytes **are** on the server (they match when fetched with a cache-buster) but the plain URL serves an old copy. | Confirm that `public/.htaccess` and `public/data/.htaccess` deployed, then ask the hosting administrator to inspect any remaining server-level cache for this domain. This DirectAdmin account has no LiteSpeed purge control. |
+| `Production data endpoint/MIME error` | A cache-busted data URL itself is missing, is the SPA HTML fallback, or has the wrong content type. | This is not a cache-only failure. Check the remote path and deployed `.htaccess` files; GeoJSON must be served as `application/geo+json` or `application/json`. |
+| `Production byte mismatch` | Cache-busted public data endpoints are reachable, but their bytes or proof contract differ from this exact build. | Check the upload target and remote files. Do not treat this as a cache purge issue. |
 | `deep link /news returned HTTP 404` | `.htaccess` is missing or was overwritten on the server. | Restore it (see rollback) and check the "Server .htaccess replaced" warning in the previous run. |
 | `Strict TLS is enabled ... certificate ... is not valid` | The certificate expired, was issued for the wrong host, or otherwise regressed. | Do **not** normalize the error by leaving TLS disabled. Ask the hosting admin to fix the certificate. A temporary `SMOKE_ALLOW_INSECURE_TLS=true` diagnostic override needs explicit approval and must be removed immediately. |
 
@@ -314,10 +319,11 @@ If the bad commit is on `master`, `git revert` it first, produce and independent
 proof for the reverted master state, then deploy that resulting exact proof commit. This keeps
 the repository, proof, and production telling the same story.
 
-**To roll back only `.htaccess`** (the file whose loss breaks every deep link): every deploy
-attaches the *pre-deploy* copy of the live `.htaccess` to the run as an artifact named
-**`predeploy-htaccess`** (kept 30 days). Download it and put it back with the DirectAdmin File
-Manager.
+**To roll back either `.htaccess` policy:** every deploy attaches best-effort *pre-deploy*
+copies of both the root `.htaccess` and `data/.htaccess` to the run as an artifact named
+**`predeploy-htaccess`** (kept 30 days). Restore the root file only for an SPA routing rollback;
+restore `data/.htaccess` only for the data/proof cache-policy rollback. Download the appropriate
+file and put it back with the DirectAdmin File Manager.
 
 **Last resort:** build locally (`npm run build`) and upload `dist/` as a ZIP through the
 DirectAdmin File Manager, exactly as was done on 2026-07-23. The workflow does not remove that

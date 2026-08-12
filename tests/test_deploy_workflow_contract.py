@@ -13,6 +13,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / ".github" / "workflows" / "deploy.yml"
+ROOT_HTACCESS = ROOT / "public" / ".htaccess"
+DATA_HTACCESS = ROOT / "public" / "data" / ".htaccess"
 
 
 def step_block(text: str, start: str, end: str) -> str:
@@ -26,6 +28,61 @@ class DeployWorkflowContractTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.text = WORKFLOW.read_text(encoding="utf-8")
+
+    def test_data_cache_policy_is_scoped_and_geojson_has_a_real_mime_type(self):
+        root_htaccess = ROOT_HTACCESS.read_text(encoding="utf-8")
+        data_htaccess = DATA_HTACCESS.read_text(encoding="utf-8")
+
+        self.assertIn("RewriteEngine On", root_htaccess)
+        self.assertIn("CacheDisable public /data/", root_htaccess)
+        self.assertIn("CacheDisable private /data/", root_htaccess)
+        self.assertIn("AddType application/geo+json .geojson", root_htaccess)
+        self.assertNotIn("CacheDisable public /assets/", root_htaccess)
+        self.assertNotIn("CacheDisable private /assets/", root_htaccess)
+
+        self.assertIn("Cache-Control \"no-store, no-cache, must-revalidate, max-age=0\"", data_htaccess)
+        self.assertIn('Header always set Pragma "no-cache"', data_htaccess)
+        self.assertIn('Header always set Expires "0"', data_htaccess)
+
+    def test_build_requires_the_scoped_data_cache_policy(self):
+        self.assertIn("dist/data/.htaccess", self.text)
+        self.assertIn("dist/data/.htaccess does not contain the required data cache policy", self.text)
+
+    def test_upload_plan_explicitly_publishes_both_htaccess_files(self):
+        upload = step_block(
+            self.text,
+            "- name: Upload dist/ to DirectAdmin (non-destructive)",
+            "- name: Keep the previous .htaccess files for rollback",
+        )
+        self.assertIn('mirror --reverse --verbose --exclude-glob index.html --exclude-glob .htaccess . .', upload)
+        self.assertIn('echo "put data/.htaccess -o data/.htaccess"', upload)
+        self.assertIn('echo "put .htaccess"', upload)
+        self.assertIn('echo "get \\"${REMOTE_DIR}/data/.htaccess\\" -o \\"${BACKUP_DIR}/data-htaccess.live\\""', upload)
+        self.assertIn("Server data/.htaccess replaced", upload)
+
+        rollback = step_block(
+            self.text,
+            "- name: Keep the previous .htaccess files for rollback",
+            "- name: Smoke-test production",
+        )
+        self.assertIn("predeploy/data-htaccess.live", rollback)
+
+    def test_smoke_test_distinguishes_mime_endpoints_from_stale_cache(self):
+        smoke = step_block(
+            self.text,
+            "- name: Smoke-test production",
+            "- name: Write deployment summary",
+        )
+        self.assertIn("data_content_type_ok()", smoke)
+        self.assertIn("*.geojson)", smoke)
+        self.assertIn("application/geo+json", smoke)
+        self.assertIn("application/json", smoke)
+        self.assertIn("Cache-busted /data/${filename}", smoke)
+        self.assertIn("Production data endpoint/MIME error", smoke)
+        self.assertIn("Production endpoint error", smoke)
+        self.assertIn("Production byte mismatch", smoke)
+        self.assertIn("Stale cache, not a failed upload", smoke)
+        self.assertIn("verify_manifest.py verify-remote \"$CACHE_OUT\" \"$EXPECTED\"", smoke)
 
     def test_explicit_ftps_port_21_uses_auth_tls_not_implicit_ftps(self):
         self.assertIn('echo "set ftp:ssl-auth TLS"', self.text)
@@ -131,7 +188,7 @@ class DeployWorkflowContractTests(unittest.TestCase):
         self.assertIn("mode != 'connection_test_only'", setup_python)
         self.assertIn("if [ \"${RELEASE_MODE}\" != \"connection_test_only\" ]", self.text)
         self.assertIn("if [ \"${RELEASE_MODE}\" != \"dry_run\" ]", self.text)
-        upload = step_block(self.text, "- name: Upload dist/ to DirectAdmin (non-destructive)", "- name: Keep the previous .htaccess for rollback")
+        upload = step_block(self.text, "- name: Upload dist/ to DirectAdmin (non-destructive)", "- name: Keep the previous .htaccess files for rollback")
         self.assertIn("mode == 'production'", upload)
         self.assertIn("Verify exact proof release contract", self.text)
 
@@ -139,7 +196,7 @@ class DeployWorkflowContractTests(unittest.TestCase):
         upload = step_block(
             self.text,
             "- name: Upload dist/ to DirectAdmin (non-destructive)",
-            "- name: Keep the previous .htaccess for rollback",
+            "- name: Keep the previous .htaccess files for rollback",
         )
         self.assertIn(
             'mirror --reverse --verbose --exclude-glob index.html --exclude-glob .htaccess . .',

@@ -354,6 +354,7 @@ jobs:
           publish_files=(
             dist/index.html \
             dist/.htaccess \
+            dist/data/.htaccess \
             dist/data/manifest.json \
             dist/data/provenance.jsonl \
             dist/data/anchors.jsonl \
@@ -373,6 +374,10 @@ jobs:
           # Confirm it still carries the rewrite, not just that a file exists.
           if [ -s dist/.htaccess ] && ! grep -qi 'RewriteEngine' dist/.htaccess; then
             echo "::error title=Pre-upload assertion failed::dist/.htaccess does not contain a RewriteEngine directive — SPA deep links would break."
+            fail=1
+          fi
+          if [ -s dist/data/.htaccess ] && ! grep -qi 'Cache-Control' dist/data/.htaccess; then
+            echo "::error title=Pre-upload assertion failed::dist/data/.htaccess does not contain the required data cache policy."
             fail=1
           fi
 
@@ -685,10 +690,11 @@ jobs:
           fi
 
           {
-            # Best-effort snapshot of whatever .htaccess is live right now, so a
-            # bad deploy can have that one file put back by hand immediately.
+            # Best-effort snapshots of the two tracked .htaccess files, so a
+            # bad deploy can have either policy put back by hand immediately.
             echo "set cmd:fail-exit no"
             echo "get \"${REMOTE_DIR}/.htaccess\" -o \"${BACKUP_DIR}/htaccess.live\""
+            echo "get \"${REMOTE_DIR}/data/.htaccess\" -o \"${BACKUP_DIR}/data-htaccess.live\""
             echo "set cmd:fail-exit yes"
 
             # `cd` first: if REMOTE_DIR is wrong (e.g. the account is chrooted)
@@ -701,7 +707,9 @@ jobs:
             # --no-delete option) here.
             echo "mirror --reverse --verbose --exclude-glob index.html --exclude-glob .htaccess . ."
 
-            # Pass 2 — flip the entry point last.
+            # Pass 2 — the mirror excludes every .htaccess, so explicitly
+            # publish the data cache policy before flipping the SPA entry point.
+            echo "put data/.htaccess -o data/.htaccess"
             echo "put index.html"
             echo "put .htaccess"
             echo "bye"
@@ -722,15 +730,26 @@ jobs:
           else
             echo "No pre-existing remote .htaccess was found (or it could not be read)."
           fi
+          if [ -s "$BACKUP_DIR/data-htaccess.live" ]; then
+            if cmp -s "$BACKUP_DIR/data-htaccess.live" dist/data/.htaccess; then
+              echo "Live data/.htaccess was already identical to the one in the repo."
+            else
+              echo "::warning title=Server data/.htaccess replaced::The live data/.htaccess differed from public/data/.htaccess and has been overwritten with the repo version. The previous copy is attached to this run as the 'predeploy-htaccess' artifact."
+            fi
+          else
+            echo "No pre-existing remote data/.htaccess was found (or it could not be read)."
+          fi
 
           echo "Upload complete."
 
-      - name: Keep the previous .htaccess for rollback
+      - name: Keep the previous .htaccess files for rollback
         if: always() && steps.gate.outputs.mode == 'production'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: predeploy-htaccess
-          path: ${{ runner.temp }}/predeploy/htaccess.live
+          path: |
+            ${{ runner.temp }}/predeploy/htaccess.live
+            ${{ runner.temp }}/predeploy/data-htaccess.live
           if-no-files-found: ignore
           retention-days: 30
 
@@ -778,6 +797,36 @@ jobs:
             out="$("${CURL[@]}" -o "$2" -w '%{http_code} %{content_type}' "$1" 2>>"$OUT/curl.err")" || true
             if [ -z "$out" ]; then out="000 none"; fi
             printf '%s' "$out"
+          }
+
+          json_content_type_ok() {
+            case "$1" in *application/json*) return 0 ;; *) return 1 ;; esac
+          }
+
+          data_content_type_ok() {
+            local filename="$1" ctype="$2"
+            case "$filename" in
+              *.geojson)
+                case "$ctype" in *application/geo+json*|*application/json*) return 0 ;; *) return 1 ;; esac ;;
+              *) json_content_type_ok "$ctype" ;;
+            esac
+          }
+
+          expected_data_content_type() {
+            case "$1" in
+              *.geojson) printf '%s' 'application/geo+json or application/json' ;;
+              *) printf '%s' 'application/json' ;;
+            esac
+          }
+
+          data_endpoint_ok() {
+            [ "$2" = "200" ] && data_content_type_ok "$1" "$3"
+          }
+
+          # Anchors and .ots files have no portable standard MIME type.  Reject
+          # an SPA fallback explicitly, while the proof verifier checks bytes.
+          opaque_endpoint_ok() {
+            [ "$1" = "200" ] && ! grep -qiE '<!doctype|<html' "$2"
           }
 
           # check_html <path> <label> <body-file>
@@ -829,16 +878,18 @@ jobs:
               filename="${manifest_path#public/data/}"
               data_res="$(fetch "${BASE}/data/${filename}" "$OUT/${filename}")"
               data_code="${data_res%% *}"; data_type="${data_res#* }"
-              if [ "$data_code" != "200" ] || [ "${data_type#*json}" = "$data_type" ]; then
-                echo "  attempt ${attempt}: ${filename} -> ${data_code} ${data_type}"
+              if ! data_endpoint_ok "$filename" "$data_code" "$data_type"; then
+                echo "  attempt ${attempt}: ${filename} -> ${data_code} ${data_type}; expected $(expected_data_content_type "$filename")"
                 data_ok=0
               fi
             done < <(python verify_manifest.py paths)
 
             # A file that is NOT on the server answers 200 + text/html here (the
             # SPA rewrite catches it), so the content type is the real check.
-            if [ "$m_code" = "200" ] && [ "$a_code" = "200" ] && [ "$p_code" = "200" ] \
-               && [ "${m_type#*json}" != "$m_type" ] && [ "$data_ok" = "1" ]; then
+            if json_content_type_ok "$m_type" && [ "$m_code" = "200" ] \
+               && opaque_endpoint_ok "$a_code" "$OUT/anchors.jsonl" \
+               && opaque_endpoint_ok "$p_code" "$OUT/manifest.json.ots" \
+               && [ "$data_ok" = "1" ]; then
               if grep -qiE '<!doctype|<html' "$OUT/anchors.jsonl" "$OUT/manifest.json.ots"; then
                 echo "  attempt ${attempt}: proof endpoint returned SPA HTML"
                 continue
@@ -847,8 +898,10 @@ jobs:
               mkdir -p "$OUT/versions/${manifest_sha}"
               vm_res="$(fetch "${BASE}/data/versions/${manifest_sha}/manifest.json" "$OUT/versions/${manifest_sha}/manifest.json")"
               vp_res="$(fetch "${BASE}/data/versions/${manifest_sha}/manifest.json.ots" "$OUT/versions/${manifest_sha}/manifest.json.ots")"
-              if [ "${vm_res%% *}" != "200" ] || [ "${vp_res%% *}" != "200" ] \
-                 || grep -qiE '<!doctype|<html' "$OUT/versions/${manifest_sha}/manifest.json" "$OUT/versions/${manifest_sha}/manifest.json.ots" \
+              vm_code="${vm_res%% *}"; vm_type="${vm_res#* }"
+              vp_code="${vp_res%% *}"
+              if [ "$vm_code" != "200" ] || ! json_content_type_ok "$vm_type" \
+                 || ! opaque_endpoint_ok "$vp_code" "$OUT/versions/${manifest_sha}/manifest.json.ots" \
                  || ! python verify_proof_contract.py "$OUT" >/dev/null 2>&1; then
                 echo "  attempt ${attempt}: versioned Manifest/proof pair unavailable or mismatched"
                 continue
@@ -873,25 +926,58 @@ jobs:
             # Last probe, with a cache-buster. If THAT matches, the new bytes
             # really are on the server and the problem is an edge/page cache —
             # a completely different fix from "the upload never landed".
-            cache_data_ok=1
+            CACHE_OUT="$OUT/cache-bust"
+            mkdir -p "$CACHE_OUT"
+            cache_endpoint_ok=1
             while read -r manifest_path; do
               filename="${manifest_path#public/data/}"
-              "${CURL[@]}" -o "$OUT/${filename}" "${BASE}/data/${filename}?cachebust=${GITHUB_RUN_ID}" >/dev/null 2>&1 || cache_data_ok=0
+              data_res="$(fetch "${BASE}/data/${filename}?cachebust=${GITHUB_RUN_ID}" "$CACHE_OUT/${filename}")"
+              data_code="${data_res%% *}"; data_type="${data_res#* }"
+              if ! data_endpoint_ok "$filename" "$data_code" "$data_type"; then
+                echo "::error title=Production data endpoint/MIME error::Cache-busted /data/${filename} returned HTTP ${data_code} with content-type '${data_type}'; expected $(expected_data_content_type "$filename")."
+                cache_endpoint_ok=0
+              fi
             done < <(python verify_manifest.py paths)
-            if [ "$cache_data_ok" = "1" ] \
-               && "${CURL[@]}" -o "$OUT/manifest.json" "${BASE}/data/manifest.json?cachebust=${GITHUB_RUN_ID}" >/dev/null 2>&1 \
-               && "${CURL[@]}" -o "$OUT/anchors.jsonl" "${BASE}/data/anchors.jsonl?cachebust=${GITHUB_RUN_ID}" >/dev/null 2>&1 \
-               && "${CURL[@]}" -o "$OUT/manifest.json.ots" "${BASE}/data/manifest.json.ots?cachebust=${GITHUB_RUN_ID}" >/dev/null 2>&1 \
-               && manifest_sha="$(sha256sum "$OUT/manifest.json" | awk '{print $1}')" \
-               && mkdir -p "$OUT/versions/${manifest_sha}" \
-               && "${CURL[@]}" -o "$OUT/versions/${manifest_sha}/manifest.json" "${BASE}/data/versions/${manifest_sha}/manifest.json?cachebust=${GITHUB_RUN_ID}" >/dev/null 2>&1 \
-               && "${CURL[@]}" -o "$OUT/versions/${manifest_sha}/manifest.json.ots" "${BASE}/data/versions/${manifest_sha}/manifest.json.ots?cachebust=${GITHUB_RUN_ID}" >/dev/null 2>&1 \
-               && ! grep -qiE '<!doctype|<html' "$OUT/anchors.jsonl" "$OUT/manifest.json.ots" "$OUT/versions/${manifest_sha}/manifest.json" "$OUT/versions/${manifest_sha}/manifest.json.ots" \
-               && python verify_proof_contract.py "$OUT" >/dev/null 2>&1 \
-               && python verify_manifest.py verify-remote "$OUT" "$EXPECTED" >/dev/null 2>&1; then
-              echo "::error title=Stale cache, not a failed upload::The new files ARE on the server — they match when fetched with a cache-buster — but the plain URL still serves an old copy. Flush LiteSpeed/LSCache (or the CDN) for this domain."
+            cm_res="$(fetch "${BASE}/data/manifest.json?cachebust=${GITHUB_RUN_ID}" "$CACHE_OUT/manifest.json")"
+            ca_res="$(fetch "${BASE}/data/anchors.jsonl?cachebust=${GITHUB_RUN_ID}" "$CACHE_OUT/anchors.jsonl")"
+            cp_res="$(fetch "${BASE}/data/manifest.json.ots?cachebust=${GITHUB_RUN_ID}" "$CACHE_OUT/manifest.json.ots")"
+            cm_code="${cm_res%% *}"; cm_type="${cm_res#* }"
+            ca_code="${ca_res%% *}"; cp_code="${cp_res%% *}"
+            if [ "$cm_code" != "200" ] || ! json_content_type_ok "$cm_type"; then
+              echo "::error title=Production data endpoint/MIME error::Cache-busted /data/manifest.json returned HTTP ${cm_code} with content-type '${cm_type}'; expected application/json."
+              cache_endpoint_ok=0
+            fi
+            if ! opaque_endpoint_ok "$ca_code" "$CACHE_OUT/anchors.jsonl"; then
+              echo "::error title=Production endpoint error::Cache-busted /data/anchors.jsonl is missing or returned SPA HTML."
+              cache_endpoint_ok=0
+            fi
+            if ! opaque_endpoint_ok "$cp_code" "$CACHE_OUT/manifest.json.ots"; then
+              echo "::error title=Production endpoint error::Cache-busted /data/manifest.json.ots is missing or returned SPA HTML."
+              cache_endpoint_ok=0
+            fi
+            if [ "$cache_endpoint_ok" = "1" ]; then
+              manifest_sha="$(sha256sum "$CACHE_OUT/manifest.json" | awk '{print $1}')"
+              mkdir -p "$CACHE_OUT/versions/${manifest_sha}"
+              vm_res="$(fetch "${BASE}/data/versions/${manifest_sha}/manifest.json?cachebust=${GITHUB_RUN_ID}" "$CACHE_OUT/versions/${manifest_sha}/manifest.json")"
+              vp_res="$(fetch "${BASE}/data/versions/${manifest_sha}/manifest.json.ots?cachebust=${GITHUB_RUN_ID}" "$CACHE_OUT/versions/${manifest_sha}/manifest.json.ots")"
+              vm_code="${vm_res%% *}"; vm_type="${vm_res#* }"; vp_code="${vp_res%% *}"
+              if [ "$vm_code" != "200" ] || ! json_content_type_ok "$vm_type"; then
+                echo "::error title=Production data endpoint/MIME error::Cache-busted versioned Manifest returned HTTP ${vm_code} with content-type '${vm_type}'; expected application/json."
+                cache_endpoint_ok=0
+              fi
+              if ! opaque_endpoint_ok "$vp_code" "$CACHE_OUT/versions/${manifest_sha}/manifest.json.ots"; then
+                echo "::error title=Production endpoint error::Cache-busted versioned OTS proof is missing or returned SPA HTML."
+                cache_endpoint_ok=0
+              fi
+            fi
+            if [ "$cache_endpoint_ok" = "1" ] \
+               && python verify_proof_contract.py "$CACHE_OUT" >/dev/null 2>&1 \
+               && python verify_manifest.py verify-remote "$CACHE_OUT" "$EXPECTED" >/dev/null 2>&1; then
+              echo "::error title=Stale cache, not a failed upload::The new files are correct when fetched with a cache-buster, but the ordinary URL still serves an old copy. The upload succeeded; check LiteSpeed/LSCache or another shared cache for this domain."
+            elif [ "$cache_endpoint_ok" != "1" ]; then
+              echo "::error title=Production endpoint/MIME error::The cache-busted public data endpoint is invalid. This is not a stale-cache-only failure; check the deployed .htaccess and remote path."
             else
-              echo "::error title=Smoke test failed::Production /data/manifest.json does not match the build that was just uploaded."
+              echo "::error title=Production byte mismatch::The cache-busted data endpoints are reachable but do not match the exact build/proof contract. Check the upload target and deployed files."
             fi
           fi
 
