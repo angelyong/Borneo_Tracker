@@ -245,6 +245,12 @@ rewrite the proof merely to create another event.
 The smoke test is the point of the whole workflow. Uploading without verifying is still an open
 loop — the last four days of "green" runs that shipped nothing are the proof.
 
+Before a deployment change reaches `master`, the read-only **Validate deployment cache policy**
+workflow runs on pull requests that change deployment, `.htaccess`, data/proof, or their contract
+tests. It validates and builds the publishable artifact but has no deployment secrets and never
+contacts DirectAdmin. A green PR check is required evidence for code correctness; it is not a
+production deployment or a substitute for the controlled release steps below.
+
 It asserts four things:
 
 | # | Assertion | Why |
