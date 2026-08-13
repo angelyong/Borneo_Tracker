@@ -52,7 +52,7 @@ describe('static knowledge retriever', () => {
     ['Explain the Forest Cover indicator.', ['report-concept-forest-cover']],
     ['Which SDGs are monitored by Borneo Tracker?', ['sdg-monitored-goals']],
     ['Where does the environmental data come from?', ['environmental-data-sources']],
-    ['How do I generate a report?', ['generate-report-page-en']],
+    ['How do I generate a report?', ['generate-report-how-to']],
   ])('selects packaged verified knowledge for suggested question: %s', (question, expectedIds) => {
     const result = retrieveStaticKnowledge({
       question,
@@ -141,6 +141,69 @@ describe('static knowledge retriever', () => {
     expect(result.status).toBe('FOUND');
     expect(result.matches[0].record.id).toBe('sdg-progress-page-en');
     expect(result.matches[0].record.id).not.toBe('esg-vs-sdg');
+  });
+
+  it.each([
+    'How do I generate a report?',
+    'How can I create a report?',
+    'How do I download a report?',
+    'How do I create a PDF report?',
+    'What steps are needed to generate a report?',
+  ])('prefers the Generate Report how-to record for: %s', (question) => {
+    const result = retrieveStaticKnowledge({
+      question,
+      language: 'en',
+      currentPage: '/',
+      territories: [],
+      concepts: [],
+      limit: 5,
+    }, new KnowledgeRepository());
+
+    expect(result.status).toBe('FOUND');
+    expect(result.matches[0].record.id).toBe('generate-report-how-to');
+    expect(result.matches[0].record.status).toBe('verified');
+    expect(result.matches[0].record.placeholder).toBe(false);
+    expect(result.matches[0].record.runtimeIncluded).toBe(true);
+    expect(result.matches[0].matchedBy).toContain('query-hint:generate-report-how-to');
+  });
+
+  it('builds a deterministic Generate Report how-to answer without raw UI fragments', () => {
+    const retrieval = retrieveStaticKnowledge({
+      question: 'How do I generate a report?',
+      language: 'en',
+      currentPage: '/',
+      territories: [],
+      concepts: [],
+      limit: 5,
+    }, new KnowledgeRepository());
+    const answer = buildKnowledgeAnswer(retrieval, 'en');
+
+    expect(answer.recordIds).toEqual(['generate-report-how-to']);
+    expect(answer.answer).toContain('Select a territory, or choose All Borneo.');
+    expect(answer.answer).toContain('Choose the optional report sections you want to include');
+    expect(answer.answer).toContain('Click Generate & Download PDF.');
+    expect(answer.answer).toContain('reports that limitation instead of inventing unsupported content');
+    expect(answer.answer).not.toContain('1. Select Territory 2. Include Sections');
+    expect(answer.answer).not.toContain('No indicators are available for this selection.');
+  });
+
+  it('keeps Generate Report page-description questions on the page overview record', () => {
+    const result = retrieveStaticKnowledge({
+      question: 'What is the Generate Report page?',
+      language: 'en',
+      currentPage: '/',
+      territories: [],
+      concepts: [],
+      limit: 5,
+    }, new KnowledgeRepository());
+
+    expect(result.status).toBe('FOUND');
+    expect(result.matches[0].record.id).toBe('generate-report-page-en');
+    expect(result.matches[0].record.id).not.toBe('generate-report-how-to');
+
+    const answer = buildKnowledgeAnswer(result, 'en');
+    expect(answer.recordIds).toEqual(['generate-report-page-en']);
+    expect(answer.answer).not.toContain('Select a territory, or choose All Borneo.');
   });
 
   it.each([

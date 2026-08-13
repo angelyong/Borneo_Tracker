@@ -160,15 +160,6 @@ function recordsFromI18n(payload) {
 
   records.push(record('reports.overview', sidebar.generateReport || 'Generate Report', 'generate-report', joinFields(reports, [
       'subtitle',
-      'selectTerritory',
-      'includeSections',
-      'sectionExecutiveSummary',
-      'sectionSdgCoverage',
-      'sectionCoverageLimitations',
-      'sectionMethodologySources',
-      'generateDownloadPdf',
-      'noIndicatorsAvailable',
-      'allBorneo',
     ]), '/reports', {
       id: `generate-report-page-${language}`,
       language,

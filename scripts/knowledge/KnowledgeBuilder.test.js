@@ -119,6 +119,33 @@ describe('knowledge extraction', () => {
     expect(records[0].keywords).toEqual(expect.arrayContaining(['ESG vs SDG', 'pillar-based', 'goal-based']));
   });
 
+  it('extracts the Generate Report how-to record from the page workflow', () => {
+    const sourceText = [
+      "const TERRITORY_OPTIONS = [...TERRITORIES, ALL_BORNEO];",
+      'const DEFAULT_SECTIONS = { summary: true, sdg: true, coverage: true, methodology: true };',
+      'const esgRef = useRef(null);',
+      'const handleGenerate = async () => { await generatePdfFromSections(orderedSections, `${filename}.pdf`); };',
+      '<EsgIndicatorSection pillars={profile.pillars} />',
+      "{generating ? t('reports.generatingPdf') : t('reports.generateDownloadPdf')}",
+      "t('reports.noIndicatorsAvailable')",
+    ].join('\n');
+    const records = new PageContentExtractor().extract(sourceText, { kind: 'generate-report-page' });
+
+    expect(records).toEqual([expect.objectContaining({
+      id: 'generate-report-how-to',
+      title: 'How to Generate a Report',
+      category: 'generate-report',
+      pageUrl: '/reports',
+      sourcePath: 'GenerateReportPage',
+      sourceName: 'Borneo Tracker Generate Report page',
+      status: 'verified',
+    })]);
+    expect(records[0].content).toContain('Select a territory, or choose All Borneo.');
+    expect(records[0].content).toContain('Executive Summary, SDG Coverage, Coverage & Limitations, and Methodology & Sources.');
+    expect(records[0].content).toContain('Click Generate & Download PDF.');
+    expect(records[0].keywords).toEqual(expect.arrayContaining(['how to generate a report', 'create a PDF report', 'report sections']));
+  });
+
   it('extracts policy sections as incomplete records', () => {
     const sourceText = "const privacySections = [{ id: 'privacy-introduction', title: 'Introduction', body: ['This mock Privacy Policy explains how Borneo Tracker handles prototype information.'] },];";
     const records = new PageContentExtractor().extract(sourceText, { kind: 'policy' });
@@ -386,6 +413,40 @@ describe('knowledge build output', () => {
     expect(canonicalRecord.content).toContain('goal-based view');
     expect(canonicalRecord.content).toContain('same tracked indicator dataset');
     expect(esgPageRecord.content).not.toContain('No canonical indicators are available for this pillar yet.');
+    expect(packagedRecord).toEqual(canonicalRecord);
+  });
+
+  it('includes the verified Generate Report how-to record and keeps page overview copy clean', () => {
+    const canonical = JSON.parse(fs.readFileSync(path.resolve('knowledge/generated/knowledge-index.json'), 'utf8'));
+    const packaged = JSON.parse(fs.readFileSync(path.resolve('supabase/functions/ai-chat/knowledge-index.json'), 'utf8'));
+    const canonicalRecord = canonical.records.find((record) => record.id === 'generate-report-how-to');
+    const packagedRecord = packaged.records.find((record) => record.id === 'generate-report-how-to');
+    const pageRecord = canonical.records.find((record) => record.id === 'generate-report-page-en');
+
+    expect(canonicalRecord).toMatchObject({
+      id: 'generate-report-how-to',
+      title: 'How to Generate a Report',
+      category: 'generate-report',
+      language: 'en',
+      pageUrl: '/reports',
+      status: 'verified',
+      placeholder: false,
+      runtimeIncluded: true,
+      sourceFile: 'src/pages/reports/GenerateReportPage.jsx',
+      sourceType: 'page',
+      sourceId: 'generate-report-page',
+      sourcePath: 'GenerateReportPage',
+      sourceName: 'Borneo Tracker Generate Report page',
+    });
+    expect(canonicalRecord.content).toContain('Select a territory, or choose All Borneo.');
+    expect(canonicalRecord.content).toContain('Executive Summary, SDG Coverage, Coverage & Limitations, and Methodology & Sources.');
+    expect(canonicalRecord.content).toContain('Review the report content, including the ESG Indicators section.');
+    expect(canonicalRecord.content).toContain('Click Generate & Download PDF.');
+    expect(canonicalRecord.content).toContain('reports that limitation instead of inventing unsupported content');
+    expect(pageRecord.content).not.toContain('No indicators are available for this selection.');
+    expect(pageRecord.content).not.toContain('All Borneo');
+    expect(pageRecord.content).not.toContain('1. Select Territory');
+    expect(pageRecord.content).not.toContain('2. Include Sections');
     expect(packagedRecord).toEqual(canonicalRecord);
   });
 

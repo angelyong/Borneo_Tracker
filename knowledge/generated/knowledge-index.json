@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "generatedAt": "1970-01-01T00:00:00.000Z",
-  "recordCount": 86,
+  "recordCount": 87,
   "records": [
     {
       "id": "about-borneo-tracker-en",
@@ -803,10 +803,64 @@
       "searchableText": "esg and sdg in borneo tracker reports esg groups tracked indicators into the environment social and governance pillars sdg coverage maps the same tracked indicators to the un sustainable development goals they inform the distinction is that esg is the pillar-based view while sdg is the goal-based view they overlap because the same tracked indicator dataset can be interpreted through both frameworks esg vs sdg esg and sdg difference between esg and sdg esg compared with sdg esg pillars sdg goals pillar-based goal-based sustainability frameworks esg sdg overlap"
     },
     {
+      "id": "generate-report-how-to",
+      "title": "How to Generate a Report",
+      "category": "generate-report",
+      "content": "Open the Generate Report page. Select a territory, or choose All Borneo. Choose the optional report sections you want to include: Executive Summary, SDG Coverage, Coverage & Limitations, and Methodology & Sources. Review the report content, including the ESG Indicators section. Click Generate & Download PDF. If no indicators are available for the selected territory or data combination, the page reports that limitation instead of inventing unsupported content.",
+      "language": "en",
+      "pageUrl": "/reports",
+      "region": null,
+      "concept": null,
+      "sdgTags": [],
+      "keywords": [
+        "how to generate a report",
+        "generate a report",
+        "create a report",
+        "download a report",
+        "PDF report",
+        "create a PDF report",
+        "report steps",
+        "Generate & Download PDF",
+        "report sections",
+        "Executive Summary",
+        "SDG Coverage",
+        "Coverage & Limitations",
+        "Methodology & Sources",
+        "All Borneo"
+      ],
+      "regions": [],
+      "relatedSdgs": [],
+      "unit": null,
+      "sourceName": "Borneo Tracker Generate Report page",
+      "sourceUrl": "",
+      "sourceFile": "src/pages/reports/GenerateReportPage.jsx",
+      "sourceType": "page",
+      "sourceId": "generate-report-page",
+      "sourcePath": "GenerateReportPage",
+      "sourceTypeDetail": null,
+      "updatedAt": null,
+      "status": "verified",
+      "placeholder": false,
+      "runtimeIncluded": true,
+      "provenance": {
+        "sourceFile": "src/pages/reports/GenerateReportPage.jsx",
+        "sourceType": "page",
+        "sourceId": "generate-report-page",
+        "sourceName": "Borneo Tracker Generate Report page",
+        "sourceUrl": "",
+        "pageUrl": "/reports",
+        "route": "/reports",
+        "language": "en",
+        "sourcePath": "GenerateReportPage",
+        "extractedAt": null
+      },
+      "searchableText": "how to generate a report generate-report open the generate report page select a territory or choose all borneo choose the optional report sections you want to include executive summary sdg coverage coverage limitations and methodology sources review the report content including the esg indicators section click generate download pdf if no indicators are available for the selected territory or data combination the page reports that limitation instead of inventing unsupported content how to generate a report generate a report create a report download a report pdf report create a pdf report report steps generate download pdf report sections executive summary sdg coverage coverage limitations methodology sources all borneo"
+    },
+    {
       "id": "generate-report-page-en",
       "title": "Generate Report",
       "category": "generate-report",
-      "content": "A citable ESG & SDG data profile for one territory - every indicator we've gathered, explained in plain language and downloadable as a PDF. Built for compliance buyers, suppliers and investors, not just internal dashboards. 1. Select Territory 2. Include Sections Executive Summary SDG Coverage Coverage & Limitations Methodology & Sources Generate & Download PDF No indicators are available for this selection. All Borneo",
+      "content": "A citable ESG & SDG data profile for one territory - every indicator we've gathered, explained in plain language and downloadable as a PDF. Built for compliance buyers, suppliers and investors, not just internal dashboards.",
       "language": "en",
       "pageUrl": "/reports",
       "region": null,
@@ -864,13 +918,13 @@
         "sourcePath": "reports.overview",
         "extractedAt": null
       },
-      "searchableText": "generate report generate-report a citable esg sdg data profile for one territory - every indicator we ve gathered explained in plain language and downloadable as a pdf built for compliance buyers suppliers and investors not just internal dashboards 1 select territory 2 include sections executive summary sdg coverage coverage limitations methodology sources generate download pdf no indicators are available for this selection all borneo generate report generate-report citable esg sdg data profile for one territory every indicator gathered explained plain language and downloadable pdf built compliance buyers suppliers"
+      "searchableText": "generate report generate-report a citable esg sdg data profile for one territory - every indicator we ve gathered explained in plain language and downloadable as a pdf built for compliance buyers suppliers and investors not just internal dashboards generate report generate-report citable esg sdg data profile for one territory every indicator gathered explained plain language and downloadable pdf built compliance buyers suppliers"
     },
     {
       "id": "generate-report-page-ms",
       "title": "Jana Laporan",
       "category": "generate-report",
-      "content": "Profil data ESG & SDG yang boleh disitir untuk satu wilayah - setiap penunjuk yang telah kami kumpulkan, diterangkan dalam bahasa mudah dan boleh dimuat turun sebagai PDF. Dibina untuk pembeli pematuhan, pembekal dan pelabur, bukan sekadar papan pemuka dalaman. 1. Pilih Wilayah 2. Sertakan Bahagian Ringkasan Eksekutif Liputan SDG Liputan & Batasan Metodologi & Sumber Jana & Muat Turun PDF Tiada penunjuk tersedia untuk pilihan ini. Seluruh Borneo",
+      "content": "Profil data ESG & SDG yang boleh disitir untuk satu wilayah - setiap penunjuk yang telah kami kumpulkan, diterangkan dalam bahasa mudah dan boleh dimuat turun sebagai PDF. Dibina untuk pembeli pematuhan, pembekal dan pelabur, bukan sekadar papan pemuka dalaman.",
       "language": "ms",
       "pageUrl": "/reports",
       "region": null,
@@ -928,7 +982,7 @@
         "sourcePath": "reports.overview",
         "extractedAt": null
       },
-      "searchableText": "jana laporan generate-report profil data esg sdg yang boleh disitir untuk satu wilayah - setiap penunjuk yang telah kami kumpulkan diterangkan dalam bahasa mudah dan boleh dimuat turun sebagai pdf dibina untuk pembeli pematuhan pembekal dan pelabur bukan sekadar papan pemuka dalaman 1 pilih wilayah 2 sertakan bahagian ringkasan eksekutif liputan sdg liputan batasan metodologi sumber jana muat turun pdf tiada penunjuk tersedia untuk pilihan ini seluruh borneo jana laporan generate-report profil data esg sdg yang boleh disitir untuk satu wilayah setiap penunjuk telah kami kumpulkan diterangkan dalam bahasa mudah dan dimuat"
+      "searchableText": "jana laporan generate-report profil data esg sdg yang boleh disitir untuk satu wilayah - setiap penunjuk yang telah kami kumpulkan diterangkan dalam bahasa mudah dan boleh dimuat turun sebagai pdf dibina untuk pembeli pematuhan pembekal dan pelabur bukan sekadar papan pemuka dalaman jana laporan generate-report profil data esg sdg yang boleh disitir untuk satu wilayah setiap penunjuk telah kami kumpulkan diterangkan dalam bahasa mudah dan dimuat"
     },
     {
       "id": "news-page-en",

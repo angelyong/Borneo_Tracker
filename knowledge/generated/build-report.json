@@ -17,6 +17,11 @@
       "path": "src/pages/reports/reportContent.js"
     },
     {
+      "id": "generate-report-page",
+      "type": "page",
+      "path": "src/pages/reports/GenerateReportPage.jsx"
+    },
+    {
       "id": "report-sections",
       "type": "page",
       "path": "src/pages/reports/ReportSections.jsx"
@@ -86,6 +91,10 @@
       "recordsExtracted": 55
     },
     {
+      "id": "generate-report-page",
+      "recordsExtracted": 1
+    },
+    {
       "id": "report-sections",
       "recordsExtracted": 1
     },
@@ -132,9 +141,9 @@
   ],
   "missingSources": [],
   "unsafeSources": [],
-  "recordsCreated": 86,
-  "recordsValidated": 144,
-  "runtimeRecords": 86,
+  "recordsCreated": 87,
+  "recordsValidated": 145,
+  "runtimeRecords": 87,
   "recordsSkipped": 0,
   "duplicateRecords": [],
   "invalidRecords": [],
@@ -492,6 +501,7 @@
     "site-copy-en": 10,
     "site-copy-ms": 10,
     "report-content": 55,
+    "generate-report-page": 1,
     "report-sections": 1,
     "indicator-config": 1,
     "policy-page": 1,
@@ -503,7 +513,7 @@
     "esg-indicators": 2,
     "sdg-progress": 3,
     "regional": 2,
-    "generate-report": 2,
+    "generate-report": 3,
     "community": 2,
     "news": 2,
     "reports": 56,
@@ -511,11 +521,11 @@
     "methodology": 8
   },
   "countsByLanguage": {
-    "en": 76,
+    "en": 77,
     "ms": 10
   },
   "countsByStatus": {
-    "verified": 86
+    "verified": 87
   },
   "outputFiles": [
     "knowledge/generated/site-overview.json",

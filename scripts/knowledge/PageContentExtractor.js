@@ -256,6 +256,60 @@ function recordsFromReportContent(sourceText) {
   return [...indicatorRecords, ...conceptRecords];
 }
 
+function recordsFromGenerateReportPage(sourceText) {
+  const hasTerritoryOptions = sourceText.includes('const TERRITORY_OPTIONS = [...TERRITORIES, ALL_BORNEO]');
+  const hasDefaultSections = sourceText.includes('const DEFAULT_SECTIONS = {') &&
+    sourceText.includes('summary: true') &&
+    sourceText.includes('sdg: true') &&
+    sourceText.includes('coverage: true') &&
+    sourceText.includes('methodology: true');
+  const hasEsgPreview = sourceText.includes('EsgIndicatorSection') && sourceText.includes('esgRef');
+  const hasPdfGeneration = sourceText.includes('handleGenerate') &&
+    sourceText.includes('generatePdfFromSections') &&
+    sourceText.includes('reports.generateDownloadPdf');
+  const hasNoDataState = sourceText.includes('reports.noIndicatorsAvailable');
+  if (!hasTerritoryOptions || !hasDefaultSections || !hasEsgPreview || !hasPdfGeneration || !hasNoDataState) return [];
+
+  return [{
+    id: 'generate-report-how-to',
+    title: 'How to Generate a Report',
+    category: 'generate-report',
+    content: [
+      'Open the Generate Report page.',
+      'Select a territory, or choose All Borneo.',
+      'Choose the optional report sections you want to include: Executive Summary, SDG Coverage, Coverage & Limitations, and Methodology & Sources.',
+      'Review the report content, including the ESG Indicators section.',
+      'Click Generate & Download PDF.',
+      'If no indicators are available for the selected territory or data combination, the page reports that limitation instead of inventing unsupported content.',
+    ].join(' '),
+    pageUrl: '/reports',
+    region: null,
+    concept: null,
+    sdgTags: [],
+    relatedSdgs: [],
+    keywords: [
+      'how to generate a report',
+      'generate a report',
+      'create a report',
+      'download a report',
+      'PDF report',
+      'create a PDF report',
+      'report steps',
+      'Generate & Download PDF',
+      'report sections',
+      'Executive Summary',
+      'SDG Coverage',
+      'Coverage & Limitations',
+      'Methodology & Sources',
+      'All Borneo',
+    ],
+    sourcePath: 'GenerateReportPage',
+    sourceName: 'Borneo Tracker Generate Report page',
+    status: 'verified',
+    language: 'en',
+  }];
+}
+
 function recordsFromReportSections(sourceText) {
   const hasEsgSection = sourceText.includes('All tracked indicators, grouped Environment') &&
     sourceText.includes('Social') &&
@@ -346,6 +400,7 @@ export class PageContentExtractor {
   extract(sourceText, source) {
     if (source.kind === 'policy') return recordsFromPolicyPage(sourceText);
     if (source.kind === 'report-content') return recordsFromReportContent(sourceText);
+    if (source.kind === 'generate-report-page') return recordsFromGenerateReportPage(sourceText);
     if (source.kind === 'report-sections') return recordsFromReportSections(sourceText);
     if (source.kind === 'indicator-config') return recordsFromIndicatorConfig(sourceText);
     return [];

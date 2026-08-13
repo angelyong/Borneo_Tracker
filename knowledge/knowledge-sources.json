@@ -29,6 +29,16 @@
       "enabled": true
     },
     {
+      "id": "generate-report-page",
+      "type": "page",
+      "path": "src/pages/reports/GenerateReportPage.jsx",
+      "category": "generate-report",
+      "kind": "generate-report-page",
+      "language": "en",
+      "route": "/reports",
+      "enabled": true
+    },
+    {
       "id": "report-sections",
       "type": "page",
       "path": "src/pages/reports/ReportSections.jsx",

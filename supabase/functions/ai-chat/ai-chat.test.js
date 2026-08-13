@@ -1280,7 +1280,8 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     expect(response.status).toBe(200);
     expect(body.mode).toBe('template-fallback');
     expect(body.fallback.reason).toBe('KNOWLEDGE_GEMINI_UNAVAILABLE');
-    expect(body.answer.toLowerCase()).toContain('report');
+    expect(body.answer).toContain('Select a territory, or choose All Borneo.');
+    expect(body.answer).toContain('Click Generate & Download PDF.');
     expect(body.sources.length).toBeGreaterThan(0);
   });
 
@@ -1320,7 +1321,7 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     ['Explain the Forest Cover indicator.', ['report-concept-forest-cover']],
     ['Which SDGs are monitored by Borneo Tracker?', ['sdg-monitored-goals']],
     ['Where does the environmental data come from?', ['environmental-data-sources']],
-    ['How do I generate a report?', ['generate-report-page-en']],
+    ['How do I generate a report?', ['generate-report-how-to']],
   ])('grounds suggested knowledge question through the live handler path: %s', async (message, expectedIds) => {
     const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(500, 'MISSING_GEMINI_API_KEY', 'missing'));
     const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
@@ -1389,8 +1390,11 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     expect(geminiClient).toHaveBeenCalledTimes(1);
     expect(body.mode).toBe('template-fallback');
     expect(body.fallback.reason).toBe('GEMINI_TRUNCATED');
-    expect(body.answer).toContain('Generate Report');
-    expect(body.answer).toContain('downloadable as a PDF');
+    expect(body.answer).toContain('Select a territory, or choose All Borneo.');
+    expect(body.answer).toContain('Choose the optional report sections you want to include');
+    expect(body.answer).toContain('Click Generate & Download PDF.');
+    expect(body.answer).toContain('reports that limitation instead of inventing unsupported content');
+    expect(body.answer).not.toContain('No indicators are available for this selection.');
     expect(body.answer).not.toBe('To generate a report, which');
   });
 

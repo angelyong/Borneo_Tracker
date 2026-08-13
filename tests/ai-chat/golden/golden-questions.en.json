@@ -15,7 +15,7 @@
     "question": "How do I generate a report?",
     "context": { "currentPage": "/reports", "language": "en" },
     "implementationStatus": "IMPLEMENTED",
-    "expected": { "intent": "SITE_KNOWLEDGE", "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "districtLevel": false, "latest": false }, "blocked": false, "clarificationRequired": false, "knowledge": { "status": "FOUND", "expectedRecordIds": ["generate-report-page-en"], "sourceCountMin": 1 } },
+    "expected": { "intent": "SITE_KNOWLEDGE", "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "districtLevel": false, "latest": false }, "blocked": false, "clarificationRequired": false, "knowledge": { "status": "FOUND", "expectedRecordIds": ["generate-report-how-to"], "sourceCountMin": 1 } },
     "tags": ["site_knowledge"]
   },
   {
@@ -342,7 +342,7 @@
     "question": "How do I generate a report?",
     "context": { "currentPage": "/", "language": "en" },
     "implementationStatus": "IMPLEMENTED",
-    "expected": { "intent": "SITE_KNOWLEDGE", "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "districtLevel": false, "latest": false }, "blocked": false, "clarificationRequired": false, "knowledge": { "status": "FOUND", "expectedRecordIds": ["generate-report-page-en"], "sourceCountMin": 1 } },
+    "expected": { "intent": "SITE_KNOWLEDGE", "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "districtLevel": false, "latest": false }, "blocked": false, "clarificationRequired": false, "knowledge": { "status": "FOUND", "expectedRecordIds": ["generate-report-how-to"], "sourceCountMin": 1 } },
     "tags": ["site_knowledge", "suggested_question"]
   }
 ]

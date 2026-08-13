@@ -104,6 +104,38 @@ describe('knowledge answer builder', () => {
     expect(answer.answer).not.toContain('Generic SDG page copy');
   });
 
+  it('uses the dedicated Generate Report how-to record directly', () => {
+    const answer = buildKnowledgeAnswer({
+      status: 'FOUND',
+      matches: [
+        match({
+          score: 72,
+          record: {
+            id: 'generate-report-how-to',
+            category: 'generate-report',
+            title: 'How to Generate a Report',
+            content: [
+              'Open the Generate Report page.',
+              'Select a territory, or choose All Borneo.',
+              'Choose the optional report sections you want to include: Executive Summary, SDG Coverage, Coverage & Limitations, and Methodology & Sources.',
+              'Review the report content, including the ESG Indicators section.',
+              'Click Generate & Download PDF.',
+              'If no indicators are available for the selected territory or data combination, the page reports that limitation instead of inventing unsupported content.',
+            ].join(' '),
+          },
+        }),
+        match({ score: 26, record: { id: 'generate-report-page-en', category: 'generate-report', title: 'Generate Report', content: 'Generic Generate Report page overview.' } }),
+      ],
+      warnings: [],
+    }, 'en');
+
+    expect(answer.recordIds).toEqual(['generate-report-how-to']);
+    expect(answer.answer).toContain('Select a territory, or choose All Borneo.');
+    expect(answer.answer).toContain('Click Generate & Download PDF.');
+    expect(answer.answer).toContain('reports that limitation instead of inventing unsupported content');
+    expect(answer.answer).not.toContain('Generic Generate Report page overview');
+  });
+
   it('returns localized no-match and ambiguous answers', () => {
     const noMatch = buildKnowledgeAnswer({ status: 'NO_MATCH', matches: [], warnings: [] }, 'en');
     const ambiguous = buildKnowledgeAnswer({ status: 'AMBIGUOUS', matches: [], warnings: ['KNOWLEDGE_AMBIGUOUS'] }, 'ms');

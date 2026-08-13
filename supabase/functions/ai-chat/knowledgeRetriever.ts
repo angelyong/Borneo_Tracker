@@ -310,6 +310,14 @@ function queryHintBoost(record: AIChatKnowledgeRecord, question: string, questio
     score += 24;
     matchedBy.push('query-hint:environmental-data-sources');
   }
+  if (isGenerateReportHowToQuestion(question, questionTokens) && record.id === 'generate-report-how-to') {
+    score += 36;
+    matchedBy.push('query-hint:generate-report-how-to');
+  }
+  if (isGenerateReportOverviewQuestion(question) && record.id === 'generate-report-page-en') {
+    score += 24;
+    matchedBy.push('query-hint:generate-report-overview');
+  }
   if (phraseAppears(question, 'data sources') && category === 'site-overview') {
     score += 8;
     matchedBy.push('query-hint:data-sources');
@@ -376,6 +384,26 @@ function isEnvironmentalSourceQuestion(question: string, questionTokens: string[
     phraseAppears(question, 'environmental indicators') ||
     (has('environmental') && (has('data') || has('indicator') || has('indicators')));
   return asksSource && asksEnvironmental;
+}
+
+function isGenerateReportHowToQuestion(question: string, questionTokens: string[]): boolean {
+  const has = (token: string) => questionTokens.includes(token);
+  const hasReportContext = has('report') || phraseAppears(question, 'pdf report') || phraseAppears(question, 'generate report');
+  if (!hasReportContext || isGenerateReportOverviewQuestion(question)) return false;
+  return phraseAppears(question, 'how do i generate a report') ||
+    phraseAppears(question, 'how can i create a report') ||
+    phraseAppears(question, 'how do i download a report') ||
+    phraseAppears(question, 'how do i create a pdf report') ||
+    phraseAppears(question, 'what steps are needed to generate a report') ||
+    (/\b(?:how|steps|step|create|generate|download)\b/.test(question) && (has('report') || has('pdf')));
+}
+
+function isGenerateReportOverviewQuestion(question: string): boolean {
+  return phraseAppears(question, 'what is the generate report page') ||
+    phraseAppears(question, 'what is generate report page') ||
+    phraseAppears(question, 'what does the generate report page do') ||
+    phraseAppears(question, 'what does generate report page do') ||
+    phraseAppears(question, 'describe the generate report page');
 }
 
 function isComplementaryEsgSdg(matches: Scored[]): boolean {

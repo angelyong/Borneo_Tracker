@@ -335,9 +335,10 @@
         "intent": "SITE_KNOWLEDGE",
         "knowledge": {
           "answerRecordIds": [
-            "generate-report-page-en"
+            "generate-report-how-to"
           ],
           "recordIds": [
+            "generate-report-how-to",
             "generate-report-page-en",
             "esg-vs-sdg",
             "report-concept-air-quality",
@@ -346,12 +347,11 @@
             "report-concept-education",
             "report-concept-energy",
             "report-concept-entertainment",
-            "report-concept-fire-hotspots",
-            "report-concept-food"
+            "report-concept-fire-hotspots"
           ],
           "sourceCount": 1,
           "status": "FOUND",
-          "topRecordId": "generate-report-page-en",
+          "topRecordId": "generate-report-how-to",
           "warnings": []
         },
         "language": "en"
@@ -374,6 +374,7 @@
         {
           "actual": [
             "esg-vs-sdg",
+            "generate-report-how-to",
             "generate-report-page-en",
             "report-concept-air-quality",
             "report-concept-deforestation",
@@ -381,11 +382,10 @@
             "report-concept-education",
             "report-concept-energy",
             "report-concept-entertainment",
-            "report-concept-fire-hotspots",
-            "report-concept-food"
+            "report-concept-fire-hotspots"
           ],
           "expected": [
-            "generate-report-page-en"
+            "generate-report-how-to"
           ],
           "field": "recordIds",
           "metric": "knowledgeRecallAt10",
@@ -394,11 +394,11 @@
         {
           "actual": [
             "esg-vs-sdg",
-            "generate-report-page-en",
-            "report-concept-air-quality"
+            "generate-report-how-to",
+            "generate-report-page-en"
           ],
           "expected": [
-            "generate-report-page-en"
+            "generate-report-how-to"
           ],
           "field": "recordIds",
           "metric": "knowledgeRecallAt3",
@@ -419,8 +419,8 @@
           "pass": true
         },
         {
-          "actual": "generate-report-page-en",
-          "expected": "generate-report-page-en",
+          "actual": "generate-report-how-to",
+          "expected": "generate-report-how-to",
           "field": "topRecordId",
           "metric": "knowledgeTop1",
           "pass": true
@@ -6995,9 +6995,10 @@
         "intent": "SITE_KNOWLEDGE",
         "knowledge": {
           "answerRecordIds": [
-            "generate-report-page-en"
+            "generate-report-how-to"
           ],
           "recordIds": [
+            "generate-report-how-to",
             "generate-report-page-en",
             "dashboard-map-layers-en",
             "dashboard-resilience-en",
@@ -7006,12 +7007,11 @@
             "report-concept-deforestation",
             "report-concept-economy",
             "report-concept-education",
-            "report-concept-energy",
-            "report-concept-entertainment"
+            "report-concept-energy"
           ],
           "sourceCount": 1,
           "status": "FOUND",
-          "topRecordId": "generate-report-page-en",
+          "topRecordId": "generate-report-how-to",
           "warnings": []
         },
         "language": "en"
@@ -7036,16 +7036,16 @@
             "dashboard-map-layers-en",
             "dashboard-resilience-en",
             "esg-vs-sdg",
+            "generate-report-how-to",
             "generate-report-page-en",
             "report-concept-air-quality",
             "report-concept-deforestation",
             "report-concept-economy",
             "report-concept-education",
-            "report-concept-energy",
-            "report-concept-entertainment"
+            "report-concept-energy"
           ],
           "expected": [
-            "generate-report-page-en"
+            "generate-report-how-to"
           ],
           "field": "recordIds",
           "metric": "knowledgeRecallAt10",
@@ -7054,11 +7054,11 @@
         {
           "actual": [
             "dashboard-map-layers-en",
-            "dashboard-resilience-en",
+            "generate-report-how-to",
             "generate-report-page-en"
           ],
           "expected": [
-            "generate-report-page-en"
+            "generate-report-how-to"
           ],
           "field": "recordIds",
           "metric": "knowledgeRecallAt3",
@@ -7079,8 +7079,8 @@
           "pass": true
         },
         {
-          "actual": "generate-report-page-en",
-          "expected": "generate-report-page-en",
+          "actual": "generate-report-how-to",
+          "expected": "generate-report-how-to",
           "field": "topRecordId",
           "metric": "knowledgeTop1",
           "pass": true
@@ -13167,7 +13167,7 @@
   },
   "unsupportedFeatureSummary": {
     "knowledgeIndexAvailable": true,
-    "knowledgeIndexRuntimeRecords": 86,
+    "knowledgeIndexRuntimeRecords": 87,
     "leverInfrastructureImplemented": true,
     "liveStatus": "BLOCKED_BY_SUPABASE",
     "liveSupabaseRepositoryEvaluated": false,

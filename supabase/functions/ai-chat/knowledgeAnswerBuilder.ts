@@ -70,6 +70,7 @@ function emptyAnswer(
 
 function compatibleSelectedMatches(matches: AIChatKnowledgeMatch[]): AIChatKnowledgeMatch[] {
   if (!matches.length) return [];
+  if (usesDedicatedAnswerRecord(matches[0])) return [matches[0]];
   const complementary = complementaryEsgSdgMatches(matches);
   if (complementary.length) return complementary;
   const top = matches[0];
@@ -77,6 +78,10 @@ function compatibleSelectedMatches(matches: AIChatKnowledgeMatch[]): AIChatKnowl
   return matches
     .filter((match) => (match.record.concept || match.record.category) === topic)
     .slice(0, 2);
+}
+
+function usesDedicatedAnswerRecord(match: AIChatKnowledgeMatch): boolean {
+  return ['esg-vs-sdg', 'generate-report-how-to', 'generate-report-page-en'].includes(match.record.id);
 }
 
 function complementaryEsgSdgMatches(matches: AIChatKnowledgeMatch[]): AIChatKnowledgeMatch[] {
