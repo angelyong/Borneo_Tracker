@@ -71,6 +71,30 @@ describe('newsRetriever', () => {
     expect(warnings).toEqual([]);
   });
 
+  it('extracts controlled news topics from the user question and records latest in queryApplied', async () => {
+    const repository = {
+      findPublished: vi.fn().mockResolvedValue([item({ title: 'Forest fire update' })]),
+      countPending: vi.fn().mockResolvedValue(0),
+    };
+
+    const result = await retrieveAIChatNews({
+      intent,
+      entities: entities({ operations: { ...entities().operations, latest: true } }),
+      language: 'en',
+      repository,
+      userQuestion: 'What happened in the latest fire-related news?',
+    });
+
+    expect(repository.findPublished).toHaveBeenCalledWith(expect.objectContaining({
+      topics: ['fire'],
+      latest: true,
+    }));
+    expect(result.queryApplied).toMatchObject({
+      topics: ['fire'],
+      latest: true,
+    });
+  });
+
   it('converts entity years into inclusive date filters', () => {
     expect(buildNewsQuery({
       intent,
@@ -194,4 +218,3 @@ describe('newsRetriever', () => {
     expect(warnings).toEqual(['UNKNOWN_NEWS_TERRITORY']);
   });
 });
-

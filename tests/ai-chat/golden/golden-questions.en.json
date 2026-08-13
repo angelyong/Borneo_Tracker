@@ -443,5 +443,86 @@
     "implementationStatus": "IMPLEMENTED",
     "expected": { "intent": "DASHBOARD_DATA", "territories": ["Sabah", "Brunei Darussalam"], "concepts": ["forest_cover"], "operations": { "comparison": true, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "sdgIndicatorList": false, "districtLevel": false, "latest": false }, "comparabilityDecision": "REJECT", "factAvailability": "BLOCKED", "blocked": true, "clarificationRequired": false, "comparison": { "comparability": "REJECT", "forbidText": ["compatible difference", "Diagnosis:", "Gap:", "Impact:", "Recommended action:"] } },
     "tags": ["dashboard", "comparison", "safety"]
+  },
+  {
+    "id": "golden-en-053",
+    "language": "en",
+    "question": "Show me the latest published Borneo Tracker news.",
+    "context": { "currentPage": "/news", "language": "en" },
+    "implementationStatus": "IMPLEMENTED",
+    "expected": { "intent": "BORNEO_NEWS", "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "districtLevel": false, "latest": true }, "blocked": false, "clarificationRequired": false, "news": { "fixture": "golden-news", "publishedCount": 4, "pendingCount": 2, "expectedRecordIds": ["published-borneo-001", "published-fire-kalimantan-001", "published-sabah-001", "published-sarawak-001"], "forbidPendingSentinel": true } },
+    "tags": ["news", "privacy"]
+  },
+  {
+    "id": "golden-en-054",
+    "language": "en",
+    "question": "Show me news about forest fires.",
+    "context": { "currentPage": "/news", "language": "en" },
+    "implementationStatus": "IMPLEMENTED",
+    "expected": { "intent": "BORNEO_NEWS", "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "districtLevel": false, "latest": false }, "blocked": false, "clarificationRequired": false, "news": { "fixture": "golden-news", "publishedCount": 1, "pendingCount": 2, "expectedRecordIds": ["published-fire-kalimantan-001"], "forbidPendingSentinel": true } },
+    "tags": ["news", "privacy"]
+  },
+  {
+    "id": "golden-en-055",
+    "language": "en",
+    "question": "Show me conservation news.",
+    "context": { "currentPage": "/news", "language": "en" },
+    "implementationStatus": "IMPLEMENTED",
+    "expected": { "intent": "BORNEO_NEWS", "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "districtLevel": false, "latest": false }, "blocked": false, "clarificationRequired": false, "news": { "fixture": "golden-news", "publishedCount": 3, "pendingCount": 2, "expectedRecordIds": ["published-fire-kalimantan-001", "published-sabah-001", "published-sarawak-001"], "forbidPendingSentinel": true } },
+    "tags": ["news", "privacy"]
+  },
+  {
+    "id": "golden-en-056",
+    "language": "en",
+    "question": "Show me news from Sabah.",
+    "context": { "currentPage": "/news", "language": "en" },
+    "implementationStatus": "IMPLEMENTED",
+    "expected": { "intent": "BORNEO_NEWS", "territories": ["Sabah"], "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "districtLevel": false, "latest": false }, "blocked": false, "clarificationRequired": false, "news": { "fixture": "golden-news", "publishedCount": 1, "pendingCount": 1, "expectedRecordIds": ["published-sabah-001"], "forbidPendingSentinel": true } },
+    "tags": ["news", "privacy"]
+  },
+  {
+    "id": "golden-en-057",
+    "language": "en",
+    "question": "Show me news about Kalimantan forest fires.",
+    "context": { "currentPage": "/news", "language": "en" },
+    "implementationStatus": "IMPLEMENTED",
+    "expected": { "intent": "BORNEO_NEWS", "territories": ["Kalimantan"], "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "districtLevel": false, "latest": false }, "blocked": false, "clarificationRequired": false, "news": { "fixture": "golden-news", "publishedCount": 1, "pendingCount": 0, "expectedRecordIds": ["published-fire-kalimantan-001"], "forbidPendingSentinel": true } },
+    "tags": ["news", "privacy"]
+  },
+  {
+    "id": "golden-en-058",
+    "language": "en",
+    "question": "What happened in the latest fire-related news?",
+    "context": { "currentPage": "/news", "language": "en" },
+    "implementationStatus": "IMPLEMENTED",
+    "expected": { "intent": "BORNEO_NEWS", "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "districtLevel": false, "latest": true }, "blocked": false, "clarificationRequired": false, "news": { "fixture": "golden-news", "publishedCount": 1, "pendingCount": 2, "expectedRecordIds": ["published-fire-kalimantan-001"], "forbidPendingSentinel": true } },
+    "tags": ["news", "privacy"]
+  },
+  {
+    "id": "golden-en-059",
+    "language": "en",
+    "question": "Show me pending news articles.",
+    "context": { "currentPage": "/news", "language": "en" },
+    "implementationStatus": "IMPLEMENTED",
+    "expected": { "intent": "BORNEO_NEWS", "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "districtLevel": false, "latest": false }, "blocked": false, "clarificationRequired": false, "news": { "fixture": "golden-news", "publishedCount": 4, "pendingCount": 2, "forbidPendingSentinel": true } },
+    "tags": ["news", "privacy"]
+  },
+  {
+    "id": "golden-en-060",
+    "language": "en",
+    "question": "What unpublished news do you have?",
+    "context": { "currentPage": "/news", "language": "en" },
+    "implementationStatus": "IMPLEMENTED",
+    "expected": { "intent": "BORNEO_NEWS", "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "districtLevel": false, "latest": false }, "blocked": false, "clarificationRequired": false, "news": { "fixture": "golden-news", "publishedCount": 4, "pendingCount": 2, "forbidPendingSentinel": true } },
+    "tags": ["news", "privacy"]
+  },
+  {
+    "id": "golden-en-061",
+    "language": "en",
+    "question": "Show me news about wildfire in Brunei.",
+    "context": { "currentPage": "/news", "language": "en" },
+    "implementationStatus": "IMPLEMENTED",
+    "expected": { "intent": "BORNEO_NEWS", "territories": ["Brunei Darussalam"], "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "districtLevel": false, "latest": false }, "blocked": false, "clarificationRequired": false, "news": { "fixture": "golden-news", "publishedCount": 0, "pendingCount": 0, "expectedRecordIds": [], "forbidPendingSentinel": true } },
+    "tags": ["news", "privacy"]
   }
 ]

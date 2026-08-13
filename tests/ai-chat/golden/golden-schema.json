@@ -139,6 +139,10 @@
             "fixture": { "type": "string" },
             "publishedCount": { "type": "integer", "minimum": 0 },
             "pendingCount": { "type": "integer", "minimum": 0 },
+            "expectedRecordIds": {
+              "type": "array",
+              "items": { "type": "string" }
+            },
             "forbidPendingSentinel": { "type": "boolean" }
           }
         },

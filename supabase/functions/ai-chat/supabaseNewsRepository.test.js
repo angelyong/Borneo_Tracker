@@ -169,6 +169,28 @@ describe('SupabaseNewsRepository', () => {
     expect(result.find((item) => item.id === 'dup')?.title).toBe('First kept');
   });
 
+  it('post-filters published Supabase rows by controlled topics without inspecting pending rows', async () => {
+    const { repository, boundary } = repositoryWith([
+      row({ id: 'fire-1', title: 'Forest fire response in Kalimantan', territories: ['Kalimantan'] }),
+      row({ id: 'peat-1', title: 'Sarawak peat monitoring update', territories: ['Sarawak'] }),
+      PENDING_SENTINEL,
+    ], 1);
+
+    const result = await repository.findPublished({
+      territories: ['Kalimantan'],
+      topics: ['wildfire'],
+      limit: 3,
+    });
+
+    expect(boundary.selectPublished).toHaveBeenCalledWith(expect.objectContaining({
+      territories: ['Kalimantan'],
+      topics: ['fire'],
+      limit: 25,
+    }));
+    expect(result.map((item) => item.id)).toEqual(['fire-1']);
+    expect(JSON.stringify(result)).not.toContain('PENDING_SUPABASE_SECRET');
+  });
+
   it('returns count only for pending and does not pass language/date filters to the pending boundary', async () => {
     const { repository, boundary } = repositoryWith([], 2);
 
@@ -181,6 +203,7 @@ describe('SupabaseNewsRepository', () => {
 
     expect(boundary.countPending).toHaveBeenCalledWith({
       territories: ['Sabah'],
+      topics: [],
       fromDate: '2026-07-01',
       toDate: '2026-07-31',
       limit: 5,
@@ -236,15 +259,16 @@ describe('SupabaseNewsRepository', () => {
 
     await boundary.selectPublished({
       territories: ['Sabah'],
+      topics: [],
       fromDate: '2026-07-01',
       toDate: '2026-07-31',
       limit: 5,
     });
-    await expect(boundary.countPending({ territories: ['Sabah'], limit: 5 })).resolves.toBe(7);
+    await expect(boundary.countPending({ territories: ['Sabah'], topics: [], limit: 5 })).resolves.toBe(7);
 
     const [publishedUrl, publishedInit] = fetchImpl.mock.calls[0];
     const [pendingUrl, pendingInit] = fetchImpl.mock.calls[1];
-    expect(publishedUrl).toContain('select=id%2Ctitle%2Cbody%2Cpublished_at%2Cterritories%2Coriginal_lang%2Csources%2Cstatus');
+    expect(publishedUrl).toContain('select=id%2Ctitle%2Cbody%2Cpublished_at%2Cterritories%2Coriginal_lang%2Csources%2Cstatus%2Cbeat%2Cbeat_label%2Csdg%2Ccountry');
     expect(publishedUrl).toContain('status=eq.published');
     expect(publishedUrl).toContain('territories=cs.%7BSabah%7D');
     expect(publishedInit.headers).toMatchObject({

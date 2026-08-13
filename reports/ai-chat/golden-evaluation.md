@@ -4,10 +4,10 @@ Run ID: stage-6-golden-1970-01-01
 
 ## Summary
 
-- Questions: 88
-- English: 52
+- Questions: 97
+- English: 61
 - Malay: 36
-- Passed: 84
+- Passed: 93
 - Failed: 0
 - Skipped: 4
 - Safety-critical passed: true
@@ -16,13 +16,13 @@ Run ID: stage-6-golden-1970-01-01
 
 | Metric | Evaluated | Passed | Failed | Value |
 |---|---:|---:|---:|---:|
-| routingAccuracy | 84 | 84 | 0 | 1 |
-| entityResolutionAccuracy | 117 | 117 | 0 | 1 |
-| operationDetectionAccuracy | 840 | 840 | 0 | 1 |
+| routingAccuracy | 93 | 93 | 0 | 1 |
+| entityResolutionAccuracy | 120 | 120 | 0 | 1 |
+| operationDetectionAccuracy | 930 | 930 | 0 | 1 |
 | comparabilityAccuracy | 54 | 54 | 0 | 1 |
 | factAvailabilityAccuracy | 60 | 60 | 0 | 1 |
-| blockedClarificationAccuracy | 168 | 168 | 0 | 1 |
-| newsPrivacyPassRate | 12 | 12 | 0 | 1 |
+| blockedClarificationAccuracy | 186 | 186 | 0 | 1 |
+| newsPrivacyPassRate | 46 | 46 | 0 | 1 |
 | numericSecurityValidationPassRate | 12 | 12 | 0 | 1 |
 | fallbackCorrectness | 27 | 27 | 0 | 1 |
 | comparisonAnswerAccuracy | 26 | 26 | 0 | 1 |

@@ -142,6 +142,31 @@ describe('LocalNewsRepository', () => {
     expect(result.map((item) => item.id)).toEqual(['a', 'b']);
   });
 
+  it('filters published records by controlled topics after excluding pending records', async () => {
+    const repository = new LocalNewsRepository({
+      records: [
+        published({ id: 'fire-1', title: 'Kalimantan forest fire update', territories: ['Kalimantan'] }),
+        published({ id: 'conservation-1', title: 'Sabah conservation update', summary: 'Conservation field update.' }),
+        {
+          ...PENDING_SENTINEL,
+          title: 'PENDING_SECRET_FIRE_TITLE forest fire',
+          body: 'PENDING_SECRET_FIRE_SUMMARY wildfire',
+          sources: [{ name: 'PENDING_SECRET_SOURCE', url: 'https://pending-secret.example/fire' }],
+        },
+      ],
+    });
+
+    const fireResult = await repository.findPublished({ territories: ['Kalimantan'], topics: ['forest fires'] });
+    const conservationResult = await repository.findPublished({ territories: [], topics: ['conservation'] });
+    const serialized = JSON.stringify({ fireResult, conservationResult });
+
+    expect(fireResult.map((item) => item.id)).toEqual(['fire-1']);
+    expect(conservationResult.map((item) => item.id)).toEqual(['conservation-1']);
+    expect(serialized).not.toContain('PENDING_SECRET_FIRE_TITLE');
+    expect(serialized).not.toContain('PENDING_SECRET_FIRE_SUMMARY');
+    expect(serialized).not.toContain('PENDING_SECRET_SOURCE');
+  });
+
   it('uses language as a preference and does not translate', async () => {
     const repository = new LocalNewsRepository({
       records: [
@@ -184,4 +209,3 @@ describe('LocalNewsRepository', () => {
     await expect(repository.countPending({ territories: [] })).resolves.toBe(0);
   });
 });
-

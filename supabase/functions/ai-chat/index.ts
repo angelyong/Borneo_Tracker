@@ -293,6 +293,7 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
           entities,
           language: entities.language || route.language || chatRequest.language,
           repository: newsRepository,
+          userQuestion: chatRequest.message,
         });
         logger.info('news_query_executed', {
           newsQueryExecuted: true,
@@ -512,7 +513,7 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
         : undefined;
       if (!groundedPrompt) {
         if (route.intent === 'BORNEO_NEWS') {
-          const deterministicNews = buildDeterministicNewsResponse(newsResult);
+          const deterministicNews = buildDeterministicNewsResponse(newsResult, chatRequest.message);
           logger.info('request_completed', {
             mode: deterministicNews.mode,
             intent: route.intent,
@@ -979,31 +980,103 @@ function logQuotaGate(logger: SafeLogger, result: QuotaReservationResult): void 
   });
 }
 
-function buildDeterministicNewsResponse(newsResult: AIChatNewsResult | undefined): AIChatSuccessResponse {
+function buildDeterministicNewsResponse(newsResult: AIChatNewsResult | undefined, userQuestion = ''): AIChatSuccessResponse {
   const published = newsResult?.published || [];
   const pendingCount = newsResult?.pending.count || 0;
-  const lead = published.length
-    ? `Found ${published.length} published Borneo Tracker news item(s) matching this request.`
-    : 'No published Borneo Tracker news items matched this request.';
+  const query = newsResult?.queryApplied;
+  if (isPendingNewsRequest(userQuestion)) {
+    return {
+      answer: `I can only show published Borneo Tracker news. There are ${pendingCount} item(s) still pending review, but their titles, summaries, URLs, and other details are not shown.`,
+      mode: 'template-fallback',
+      sources: [],
+    };
+  }
+  if (!published.length) {
+    return {
+      answer: `No published Borneo Tracker news currently matches${newsQueryDescription(query)}.`,
+      mode: 'template-fallback',
+      sources: [],
+    };
+  }
+  const isDetail = isNewsDetailRequest(userQuestion);
+  const lead = isDetail
+    ? `Here is what the latest published Borneo Tracker news says${newsQueryDescription(query)}:`
+    : `Borneo Tracker found ${published.length} published news item(s)${newsQueryDescription(query)}:`;
   const pendingNote = pendingCount
     ? `${pendingCount} news item(s) are still pending review and are not shown.`
     : 'No pending review items are included.';
-  const titles = published
-    .slice(0, 3)
-    .map((item) => item.title.trim())
-    .filter(Boolean)
-    .join('; ');
+  const limit = isDetail ? 1 : Math.min(5, published.length);
+  const items = published.slice(0, limit).map(formatPublishedNewsItem).join('\n');
   return {
-    answer: titles ? `${lead} Published titles: ${titles}. ${pendingNote}` : `${lead} ${pendingNote}`,
+    answer: `${lead}\n${items}\n${pendingNote}`,
     mode: 'template-fallback',
     sources: published.map((item) => ({
-      id: item.id,
       publisher: item.publisher,
       title: item.title,
-      url: item.url,
-      sourceFile: item.sourceFile || 'public/data/ai-chat-news.json',
+      ...(publishedYear(item.publishedAt) ? { year: publishedYear(item.publishedAt) } : {}),
+      ...(safePublicUrl(item.url) ? { url: safePublicUrl(item.url) } : {}),
     })),
   };
+}
+
+function isPendingNewsRequest(question: string): boolean {
+  return /\b(pending|unpublished|draft|unreviewed)\b/i.test(question);
+}
+
+function isNewsDetailRequest(question: string): boolean {
+  return /\bwhat happened\b|\bhappened in\b|\bsummary\b|\bsummar/i.test(question);
+}
+
+function newsQueryDescription(query: AIChatNewsResult['queryApplied'] | undefined): string {
+  const parts: string[] = [];
+  if (query?.topics?.length) parts.push(`${query.topics.join(', ')} topic`);
+  if (query?.territories?.length) parts.push(`${query.territories.join(', ')} territory`);
+  if (query?.latest && !parts.length) parts.push('latest published news');
+  if (!parts.length) return '';
+  return ` for ${parts.join(' in ')}`;
+}
+
+function formatPublishedNewsItem(item: AIChatNewsResult['published'][number]): string {
+  const meta = [
+    formatPublishedDate(item.publishedAt),
+    item.territory,
+  ].filter(Boolean).join(' - ');
+  const summary = boundedPublishedSummary(item.summary, item.title);
+  return `- ${item.title}${meta ? ` (${meta})` : ''}: ${summary}`;
+}
+
+function boundedPublishedSummary(summary: string | undefined, title: string): string {
+  const clean = stripMarkup(summary || '').trim();
+  if (!clean) return `Only title-level information is available: ${title}`;
+  const firstSentence = clean.match(/^.*?[.!?](?=\s|$)/)?.[0] || clean;
+  return firstSentence.length > 220 ? `${firstSentence.slice(0, 217).trim()}...` : firstSentence;
+}
+
+function stripMarkup(value: string): string {
+  return value
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/[`*_#[\]()]/g, '')
+    .replace(/\s+/g, ' ');
+}
+
+function formatPublishedDate(value: string): string {
+  const date = new Date(value);
+  return Number.isFinite(date.getTime()) ? date.toISOString().slice(0, 10) : '';
+}
+
+function publishedYear(value: string): number | undefined {
+  const year = Number(formatPublishedDate(value).slice(0, 4));
+  return Number.isInteger(year) && year > 0 ? year : undefined;
+}
+
+function safePublicUrl(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  try {
+    const url = new URL(value);
+    return url.protocol === 'http:' || url.protocol === 'https:' ? url.toString() : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 export function mapFallbackReason(error: unknown): FallbackReason | undefined {

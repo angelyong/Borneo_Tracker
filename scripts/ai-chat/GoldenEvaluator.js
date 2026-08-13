@@ -346,6 +346,7 @@ export class GoldenEvaluator {
       entities,
       language: record.language,
       repository,
+      userQuestion: record.question,
     });
     const serialized = JSON.stringify({
       published: result.published,
@@ -358,11 +359,21 @@ export class GoldenEvaluator {
       actual: {
         publishedCount: result.published.length,
         pendingCount: result.pending.count,
+        recordIds: result.published.map((item) => item.id),
         pendingSentinelExposed: exposedSentinel,
       },
       checks: [
         checkEqual('newsPrivacy', expectedNews.publishedCount, result.published.length, 'publishedCount'),
         checkEqual('newsPrivacy', expectedNews.pendingCount, result.pending.count, 'pendingCount'),
+        ...(expectedNews.expectedRecordIds ? [
+          {
+            metric: 'newsPrivacy',
+            field: 'recordIds',
+            expected: sortStrings(expectedNews.expectedRecordIds),
+            actual: sortStrings(result.published.map((item) => item.id)),
+            pass: sameStringArray(expectedNews.expectedRecordIds, result.published.map((item) => item.id)),
+          },
+        ] : []),
         {
           metric: 'newsPrivacy',
           field: 'pendingSentinel',
@@ -474,9 +485,9 @@ export function validateGoldenData(loaded) {
     seenQuestions.set(duplicateKey, contextKey);
   }
 
-  if (loaded.byLanguage.en.length !== 52) errors.push(`golden-questions.en.json has ${loaded.byLanguage.en.length} records, expected 52`);
+  if (loaded.byLanguage.en.length !== 61) errors.push(`golden-questions.en.json has ${loaded.byLanguage.en.length} records, expected 61`);
   if (loaded.byLanguage.ms.length !== 36) errors.push(`golden-questions.ms.json has ${loaded.byLanguage.ms.length} records, expected 36`);
-  if (loaded.questions.length !== 88) errors.push(`Golden set has ${loaded.questions.length} records, expected 88`);
+  if (loaded.questions.length !== 97) errors.push(`Golden set has ${loaded.questions.length} records, expected 97`);
 
   for (const token of loaded.newsFixtures.pendingSentinels || []) {
     if (!/^PENDING_SENTINEL_/.test(token)) errors.push(`pending sentinel has unsafe realistic form: ${token}`);

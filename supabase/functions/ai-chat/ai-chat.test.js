@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AIChatHttpError, MAX_MESSAGE_LENGTH, validateChatRequest } from './contracts.ts';
 import { generateGeminiAnswer } from './geminiClient.ts';
 import { createAiChatHandler, handleAiChatRequest, mapFallbackReason } from './index.ts';
+import { LocalNewsRepository } from './localNewsRepository.ts';
 import { FailingTelemetryAdapter, MemoryTelemetryAdapter, AIChatTelemetryService } from './telemetry.ts';
 
 const validPayload = {
@@ -1641,8 +1642,13 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
       mode: 'template-fallback',
     });
     expect(body.answer).toContain('Safe published title');
+    expect(body.answer).toContain('2026-07-13');
+    expect(body.answer).toContain('Sabah');
+    expect(body.answer).toContain('Safe published summary.');
+    expect(JSON.stringify(body.sources)).not.toContain('sourceFile');
     expect(newsRepository.findPublished).toHaveBeenCalledWith(expect.objectContaining({
       territories: ['Sabah'],
+      topics: ['conservation'],
       latest: true,
       limit: 5,
     }));
@@ -1668,6 +1674,80 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
       pendingCount: 3,
       territoryCount: 1,
     });
+  });
+
+  it('answers news topic, territory, intersection, detail, no-match, and privacy requests deterministically', async () => {
+    const newsRepository = new LocalNewsRepository({
+      records: [
+        {
+          id: 'fire-kalimantan-new',
+          title: 'Kalimantan forest fire response',
+          summary: 'Published teams contained a forest fire near the monitoring area.',
+          status: 'published',
+          territories: ['Kalimantan'],
+          publishedAt: '2026-07-22T00:00:00Z',
+          originalLang: 'en',
+          sources: [{ name: 'Public Fire Source', url: 'https://example.com/fire' }],
+        },
+        {
+          id: 'fire-sabah-old',
+          title: 'Sabah land fire alert',
+          body: 'Published Sabah fire alert summary. Second sentence stays available.',
+          status: 'published',
+          territories: ['Sabah'],
+          publishedAt: '2026-07-20T00:00:00Z',
+          originalLang: 'en',
+        },
+        {
+          id: 'conservation-sabah',
+          title: 'Sabah conservation update',
+          summary: 'Published conservation summary.',
+          status: 'published',
+          territories: ['Sabah'],
+          publishedAt: '2026-07-21T00:00:00Z',
+          originalLang: 'en',
+        },
+        {
+          id: 'pending-fire-secret',
+          title: 'PENDING_SENTINEL_FIRE_TITLE forest fire',
+          summary: 'PENDING_SENTINEL_FIRE_SUMMARY',
+          body: 'PENDING_SENTINEL_FIRE_BODY',
+          publisher: 'PENDING_SENTINEL_FIRE_PUBLISHER',
+          url: 'https://pending-secret.example/fire',
+          status: 'pending',
+          territories: ['Kalimantan'],
+          publishedAt: '2026-07-23T00:00:00Z',
+        },
+      ],
+    });
+    const geminiClient = vi.fn();
+    const quotaService = allowAllQuotaService();
+    const handler = createAiChatHandler({ geminiClient, newsRepository, quotaService, logger: silentLogger });
+
+    const fire = await (await handler(request({ ...validPayload, message: 'Show me news about forest fires.', currentPage: '/news', region: '' }))).json();
+    const sabah = await (await handler(request({ ...validPayload, message: 'Show me news from Sabah.', currentPage: '/news', region: '' }))).json();
+    const kalimantanFire = await (await handler(request({ ...validPayload, message: 'Show me news about Kalimantan forest fires.', currentPage: '/news', region: '' }))).json();
+    const detail = await (await handler(request({ ...validPayload, message: 'What happened in the latest fire-related news?', currentPage: '/news', region: '' }))).json();
+    const pending = await (await handler(request({ ...validPayload, message: 'Show me pending news articles.', currentPage: '/news', region: '' }))).json();
+    const noMatch = await (await handler(request({ ...validPayload, message: 'Show me news about biodiversity.', currentPage: '/news', region: '' }))).json();
+
+    expect(fire.answer).toContain('for fire topic');
+    expect(fire.answer).toContain('Kalimantan forest fire response');
+    expect(fire.answer).toContain('Sabah land fire alert');
+    expect(fire.answer).not.toContain('Sabah conservation update');
+    expect(sabah.answer).toContain('for Sabah territory');
+    expect(sabah.answer).toContain('Sabah conservation update');
+    expect(sabah.answer).not.toContain('Kalimantan forest fire response');
+    expect(kalimantanFire.answer).toContain('for fire topic in Kalimantan territory');
+    expect(kalimantanFire.answer).toContain('Kalimantan forest fire response');
+    expect(kalimantanFire.answer).not.toContain('Sabah land fire alert');
+    expect(detail.answer).toContain('Here is what the latest published Borneo Tracker news says for fire topic');
+    expect(detail.answer).toContain('Published teams contained a forest fire near the monitoring area.');
+    expect(pending.answer).toBe('I can only show published Borneo Tracker news. There are 1 item(s) still pending review, but their titles, summaries, URLs, and other details are not shown.');
+    expect(noMatch.answer).toBe('No published Borneo Tracker news currently matches for biodiversity topic.');
+    expect(JSON.stringify({ fire, sabah, kalimantanFire, detail, pending, noMatch })).not.toContain('PENDING_SENTINEL');
+    expect(geminiClient).not.toHaveBeenCalled();
+    expect(quotaService.reserveForModelCall).not.toHaveBeenCalled();
   });
 
   it('does not invoke news repository for dashboard, site knowledge, or out-of-scope intents', async () => {

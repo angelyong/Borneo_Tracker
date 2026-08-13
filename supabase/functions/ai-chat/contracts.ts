@@ -172,7 +172,7 @@ export type FactSource = {
   title?: string;
   year?: number;
   url?: string;
-  sourceFile: string;
+  sourceFile?: string;
   sourcePath?: string;
 };
 
@@ -376,6 +376,7 @@ export type AIChatPublishedNewsItem = {
 
 export type AIChatNewsQuery = {
   territories: string[];
+  topics?: string[];
   fromDate?: string;
   toDate?: string;
   latest?: boolean;
@@ -393,8 +394,10 @@ export type AIChatNewsResult = {
   warnings: string[];
   queryApplied: {
     territories: string[];
+    topics: string[];
     fromDate?: string;
     toDate?: string;
+    latest: boolean;
     limit: number;
   };
 };

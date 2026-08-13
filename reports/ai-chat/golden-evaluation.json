@@ -6,10 +6,10 @@
     "fallback": 9,
     "language": 5,
     "lever": 2,
-    "news": 6,
+    "news": 15,
     "numeric": 4,
     "out_of_scope": 4,
-    "privacy": 4,
+    "privacy": 13,
     "safety": 23,
     "sdg": 10,
     "security": 6,
@@ -23,15 +23,15 @@
   "failuresByCategory": {},
   "implementationStatusCounts": {
     "BLOCKED_BY_SUPABASE": 2,
-    "IMPLEMENTED": 74,
+    "IMPLEMENTED": 83,
     "NO_VERIFIED_DATA": 2,
     "PARTIALLY_IMPLEMENTED": 10
   },
   "metrics": {
     "blockedClarificationAccuracy": {
-      "evaluated": 168,
+      "evaluated": 186,
       "failed": 0,
-      "passed": 168,
+      "passed": 186,
       "value": 1
     },
     "comparabilityAccuracy": {
@@ -47,9 +47,9 @@
       "value": 1
     },
     "entityResolutionAccuracy": {
-      "evaluated": 117,
+      "evaluated": 120,
       "failed": 0,
-      "passed": 117,
+      "passed": 120,
       "value": 1
     },
     "factAvailabilityAccuracy": {
@@ -95,9 +95,9 @@
       "value": 1
     },
     "newsPrivacyPassRate": {
-      "evaluated": 12,
+      "evaluated": 46,
       "failed": 0,
-      "passed": 12,
+      "passed": 46,
       "value": 1
     },
     "numericSecurityValidationPassRate": {
@@ -107,15 +107,15 @@
       "value": 1
     },
     "operationDetectionAccuracy": {
-      "evaluated": 840,
+      "evaluated": 930,
       "failed": 0,
-      "passed": 840,
+      "passed": 930,
       "value": 1
     },
     "routingAccuracy": {
-      "evaluated": 84,
+      "evaluated": 93,
       "failed": 0,
-      "passed": 84,
+      "passed": 93,
       "value": 1
     }
   },
@@ -4717,7 +4717,10 @@
         "news": {
           "pendingCount": 1,
           "pendingSentinelExposed": false,
-          "publishedCount": 1
+          "publishedCount": 1,
+          "recordIds": [
+            "published-sabah-001"
+          ]
         }
       },
       "checks": [
@@ -4887,7 +4890,10 @@
         "news": {
           "pendingCount": 1,
           "pendingSentinelExposed": false,
-          "publishedCount": 1
+          "publishedCount": 1,
+          "recordIds": [
+            "published-sarawak-001"
+          ]
         }
       },
       "checks": [
@@ -9666,6 +9672,1577 @@
           "operations": {
             "comparison": false,
             "districtLevel": false,
+            "latest": true,
+            "ranking": false,
+            "sdgIndicatorList": false,
+            "sdgProgress": false,
+            "strongest": false,
+            "targetGap": false,
+            "trend": false,
+            "weakest": false
+          },
+          "pillars": [],
+          "sdgGoals": [],
+          "territories": []
+        },
+        "intent": "BORNEO_NEWS",
+        "language": "en",
+        "news": {
+          "pendingCount": 2,
+          "pendingSentinelExposed": false,
+          "publishedCount": 4,
+          "recordIds": [
+            "published-borneo-001",
+            "published-fire-kalimantan-001",
+            "published-sabah-001",
+            "published-sarawak-001"
+          ]
+        }
+      },
+      "checks": [
+        {
+          "actual": false,
+          "expected": false,
+          "field": "blocked",
+          "metric": "blocked",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "clarification",
+          "metric": "clarification",
+          "pass": true
+        },
+        {
+          "actual": 4,
+          "expected": 4,
+          "field": "publishedCount",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": 2,
+          "expected": 2,
+          "field": "pendingCount",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": [
+            "published-borneo-001",
+            "published-fire-kalimantan-001",
+            "published-sabah-001",
+            "published-sarawak-001"
+          ],
+          "expected": [
+            "published-borneo-001",
+            "published-fire-kalimantan-001",
+            "published-sabah-001",
+            "published-sarawak-001"
+          ],
+          "field": "recordIds",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "pendingSentinel",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "comparison",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "ranking",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "trend",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "weakest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "strongest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "targetGap",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "districtLevel",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "field": "latest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": "BORNEO_NEWS",
+          "expected": "BORNEO_NEWS",
+          "field": "routing",
+          "metric": "routing",
+          "pass": true
+        }
+      ],
+      "failures": [],
+      "id": "golden-en-053",
+      "implementationStatus": "IMPLEMENTED",
+      "language": "en",
+      "safetyCritical": false,
+      "status": "passed",
+      "tags": [
+        "news",
+        "privacy"
+      ]
+    },
+    {
+      "actual": {
+        "blocked": false,
+        "clarificationRequired": false,
+        "entities": {
+          "concepts": [],
+          "districts": [],
+          "indicators": [],
+          "operations": {
+            "comparison": false,
+            "districtLevel": false,
+            "latest": false,
+            "ranking": false,
+            "sdgIndicatorList": false,
+            "sdgProgress": false,
+            "strongest": false,
+            "targetGap": false,
+            "trend": false,
+            "weakest": false
+          },
+          "pillars": [],
+          "sdgGoals": [],
+          "territories": []
+        },
+        "intent": "BORNEO_NEWS",
+        "language": "en",
+        "news": {
+          "pendingCount": 2,
+          "pendingSentinelExposed": false,
+          "publishedCount": 1,
+          "recordIds": [
+            "published-fire-kalimantan-001"
+          ]
+        }
+      },
+      "checks": [
+        {
+          "actual": false,
+          "expected": false,
+          "field": "blocked",
+          "metric": "blocked",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "clarification",
+          "metric": "clarification",
+          "pass": true
+        },
+        {
+          "actual": 1,
+          "expected": 1,
+          "field": "publishedCount",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": 2,
+          "expected": 2,
+          "field": "pendingCount",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": [
+            "published-fire-kalimantan-001"
+          ],
+          "expected": [
+            "published-fire-kalimantan-001"
+          ],
+          "field": "recordIds",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "pendingSentinel",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "comparison",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "ranking",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "trend",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "weakest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "strongest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "targetGap",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "districtLevel",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "latest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": "BORNEO_NEWS",
+          "expected": "BORNEO_NEWS",
+          "field": "routing",
+          "metric": "routing",
+          "pass": true
+        }
+      ],
+      "failures": [],
+      "id": "golden-en-054",
+      "implementationStatus": "IMPLEMENTED",
+      "language": "en",
+      "safetyCritical": false,
+      "status": "passed",
+      "tags": [
+        "news",
+        "privacy"
+      ]
+    },
+    {
+      "actual": {
+        "blocked": false,
+        "clarificationRequired": false,
+        "entities": {
+          "concepts": [],
+          "districts": [],
+          "indicators": [],
+          "operations": {
+            "comparison": false,
+            "districtLevel": false,
+            "latest": false,
+            "ranking": false,
+            "sdgIndicatorList": false,
+            "sdgProgress": false,
+            "strongest": false,
+            "targetGap": false,
+            "trend": false,
+            "weakest": false
+          },
+          "pillars": [],
+          "sdgGoals": [],
+          "territories": []
+        },
+        "intent": "BORNEO_NEWS",
+        "language": "en",
+        "news": {
+          "pendingCount": 2,
+          "pendingSentinelExposed": false,
+          "publishedCount": 3,
+          "recordIds": [
+            "published-fire-kalimantan-001",
+            "published-sabah-001",
+            "published-sarawak-001"
+          ]
+        }
+      },
+      "checks": [
+        {
+          "actual": false,
+          "expected": false,
+          "field": "blocked",
+          "metric": "blocked",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "clarification",
+          "metric": "clarification",
+          "pass": true
+        },
+        {
+          "actual": 3,
+          "expected": 3,
+          "field": "publishedCount",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": 2,
+          "expected": 2,
+          "field": "pendingCount",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": [
+            "published-fire-kalimantan-001",
+            "published-sabah-001",
+            "published-sarawak-001"
+          ],
+          "expected": [
+            "published-fire-kalimantan-001",
+            "published-sabah-001",
+            "published-sarawak-001"
+          ],
+          "field": "recordIds",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "pendingSentinel",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "comparison",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "ranking",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "trend",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "weakest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "strongest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "targetGap",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "districtLevel",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "latest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": "BORNEO_NEWS",
+          "expected": "BORNEO_NEWS",
+          "field": "routing",
+          "metric": "routing",
+          "pass": true
+        }
+      ],
+      "failures": [],
+      "id": "golden-en-055",
+      "implementationStatus": "IMPLEMENTED",
+      "language": "en",
+      "safetyCritical": false,
+      "status": "passed",
+      "tags": [
+        "news",
+        "privacy"
+      ]
+    },
+    {
+      "actual": {
+        "blocked": false,
+        "clarificationRequired": false,
+        "entities": {
+          "concepts": [],
+          "districts": [],
+          "indicators": [],
+          "operations": {
+            "comparison": false,
+            "districtLevel": false,
+            "latest": false,
+            "ranking": false,
+            "sdgIndicatorList": false,
+            "sdgProgress": false,
+            "strongest": false,
+            "targetGap": false,
+            "trend": false,
+            "weakest": false
+          },
+          "pillars": [],
+          "sdgGoals": [],
+          "territories": [
+            "Sabah"
+          ]
+        },
+        "intent": "BORNEO_NEWS",
+        "language": "en",
+        "news": {
+          "pendingCount": 1,
+          "pendingSentinelExposed": false,
+          "publishedCount": 1,
+          "recordIds": [
+            "published-sabah-001"
+          ]
+        }
+      },
+      "checks": [
+        {
+          "actual": false,
+          "expected": false,
+          "field": "blocked",
+          "metric": "blocked",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "clarification",
+          "metric": "clarification",
+          "pass": true
+        },
+        {
+          "actual": [
+            "Sabah"
+          ],
+          "expected": [
+            "Sabah"
+          ],
+          "field": "territories",
+          "metric": "entity",
+          "pass": true
+        },
+        {
+          "actual": 1,
+          "expected": 1,
+          "field": "publishedCount",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": 1,
+          "expected": 1,
+          "field": "pendingCount",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": [
+            "published-sabah-001"
+          ],
+          "expected": [
+            "published-sabah-001"
+          ],
+          "field": "recordIds",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "pendingSentinel",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "comparison",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "ranking",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "trend",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "weakest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "strongest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "targetGap",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "districtLevel",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "latest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": "BORNEO_NEWS",
+          "expected": "BORNEO_NEWS",
+          "field": "routing",
+          "metric": "routing",
+          "pass": true
+        }
+      ],
+      "failures": [],
+      "id": "golden-en-056",
+      "implementationStatus": "IMPLEMENTED",
+      "language": "en",
+      "safetyCritical": false,
+      "status": "passed",
+      "tags": [
+        "news",
+        "privacy"
+      ]
+    },
+    {
+      "actual": {
+        "blocked": false,
+        "clarificationRequired": false,
+        "entities": {
+          "concepts": [],
+          "districts": [],
+          "indicators": [],
+          "operations": {
+            "comparison": false,
+            "districtLevel": false,
+            "latest": false,
+            "ranking": false,
+            "sdgIndicatorList": false,
+            "sdgProgress": false,
+            "strongest": false,
+            "targetGap": false,
+            "trend": false,
+            "weakest": false
+          },
+          "pillars": [],
+          "sdgGoals": [],
+          "territories": [
+            "Kalimantan"
+          ]
+        },
+        "intent": "BORNEO_NEWS",
+        "language": "en",
+        "news": {
+          "pendingCount": 0,
+          "pendingSentinelExposed": false,
+          "publishedCount": 1,
+          "recordIds": [
+            "published-fire-kalimantan-001"
+          ]
+        }
+      },
+      "checks": [
+        {
+          "actual": false,
+          "expected": false,
+          "field": "blocked",
+          "metric": "blocked",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "clarification",
+          "metric": "clarification",
+          "pass": true
+        },
+        {
+          "actual": [
+            "Kalimantan"
+          ],
+          "expected": [
+            "Kalimantan"
+          ],
+          "field": "territories",
+          "metric": "entity",
+          "pass": true
+        },
+        {
+          "actual": 1,
+          "expected": 1,
+          "field": "publishedCount",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": 0,
+          "expected": 0,
+          "field": "pendingCount",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": [
+            "published-fire-kalimantan-001"
+          ],
+          "expected": [
+            "published-fire-kalimantan-001"
+          ],
+          "field": "recordIds",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "pendingSentinel",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "comparison",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "ranking",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "trend",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "weakest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "strongest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "targetGap",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "districtLevel",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "latest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": "BORNEO_NEWS",
+          "expected": "BORNEO_NEWS",
+          "field": "routing",
+          "metric": "routing",
+          "pass": true
+        }
+      ],
+      "failures": [],
+      "id": "golden-en-057",
+      "implementationStatus": "IMPLEMENTED",
+      "language": "en",
+      "safetyCritical": false,
+      "status": "passed",
+      "tags": [
+        "news",
+        "privacy"
+      ]
+    },
+    {
+      "actual": {
+        "blocked": false,
+        "clarificationRequired": false,
+        "entities": {
+          "concepts": [],
+          "districts": [],
+          "indicators": [],
+          "operations": {
+            "comparison": false,
+            "districtLevel": false,
+            "latest": true,
+            "ranking": false,
+            "sdgIndicatorList": false,
+            "sdgProgress": false,
+            "strongest": false,
+            "targetGap": false,
+            "trend": false,
+            "weakest": false
+          },
+          "pillars": [],
+          "sdgGoals": [],
+          "territories": []
+        },
+        "intent": "BORNEO_NEWS",
+        "language": "en",
+        "news": {
+          "pendingCount": 2,
+          "pendingSentinelExposed": false,
+          "publishedCount": 1,
+          "recordIds": [
+            "published-fire-kalimantan-001"
+          ]
+        }
+      },
+      "checks": [
+        {
+          "actual": false,
+          "expected": false,
+          "field": "blocked",
+          "metric": "blocked",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "clarification",
+          "metric": "clarification",
+          "pass": true
+        },
+        {
+          "actual": 1,
+          "expected": 1,
+          "field": "publishedCount",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": 2,
+          "expected": 2,
+          "field": "pendingCount",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": [
+            "published-fire-kalimantan-001"
+          ],
+          "expected": [
+            "published-fire-kalimantan-001"
+          ],
+          "field": "recordIds",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "pendingSentinel",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "comparison",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "ranking",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "trend",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "weakest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "strongest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "targetGap",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "districtLevel",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "field": "latest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": "BORNEO_NEWS",
+          "expected": "BORNEO_NEWS",
+          "field": "routing",
+          "metric": "routing",
+          "pass": true
+        }
+      ],
+      "failures": [],
+      "id": "golden-en-058",
+      "implementationStatus": "IMPLEMENTED",
+      "language": "en",
+      "safetyCritical": false,
+      "status": "passed",
+      "tags": [
+        "news",
+        "privacy"
+      ]
+    },
+    {
+      "actual": {
+        "blocked": false,
+        "clarificationRequired": false,
+        "entities": {
+          "concepts": [],
+          "districts": [],
+          "indicators": [],
+          "operations": {
+            "comparison": false,
+            "districtLevel": false,
+            "latest": false,
+            "ranking": false,
+            "sdgIndicatorList": false,
+            "sdgProgress": false,
+            "strongest": false,
+            "targetGap": false,
+            "trend": false,
+            "weakest": false
+          },
+          "pillars": [],
+          "sdgGoals": [],
+          "territories": []
+        },
+        "intent": "BORNEO_NEWS",
+        "language": "en",
+        "news": {
+          "pendingCount": 2,
+          "pendingSentinelExposed": false,
+          "publishedCount": 4,
+          "recordIds": [
+            "published-borneo-001",
+            "published-fire-kalimantan-001",
+            "published-sabah-001",
+            "published-sarawak-001"
+          ]
+        }
+      },
+      "checks": [
+        {
+          "actual": false,
+          "expected": false,
+          "field": "blocked",
+          "metric": "blocked",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "clarification",
+          "metric": "clarification",
+          "pass": true
+        },
+        {
+          "actual": 4,
+          "expected": 4,
+          "field": "publishedCount",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": 2,
+          "expected": 2,
+          "field": "pendingCount",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "pendingSentinel",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "comparison",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "ranking",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "trend",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "weakest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "strongest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "targetGap",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "districtLevel",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "latest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": "BORNEO_NEWS",
+          "expected": "BORNEO_NEWS",
+          "field": "routing",
+          "metric": "routing",
+          "pass": true
+        }
+      ],
+      "failures": [],
+      "id": "golden-en-059",
+      "implementationStatus": "IMPLEMENTED",
+      "language": "en",
+      "safetyCritical": false,
+      "status": "passed",
+      "tags": [
+        "news",
+        "privacy"
+      ]
+    },
+    {
+      "actual": {
+        "blocked": false,
+        "clarificationRequired": false,
+        "entities": {
+          "concepts": [],
+          "districts": [],
+          "indicators": [],
+          "operations": {
+            "comparison": false,
+            "districtLevel": false,
+            "latest": false,
+            "ranking": false,
+            "sdgIndicatorList": false,
+            "sdgProgress": false,
+            "strongest": false,
+            "targetGap": false,
+            "trend": false,
+            "weakest": false
+          },
+          "pillars": [],
+          "sdgGoals": [],
+          "territories": []
+        },
+        "intent": "BORNEO_NEWS",
+        "language": "en",
+        "news": {
+          "pendingCount": 2,
+          "pendingSentinelExposed": false,
+          "publishedCount": 4,
+          "recordIds": [
+            "published-borneo-001",
+            "published-fire-kalimantan-001",
+            "published-sabah-001",
+            "published-sarawak-001"
+          ]
+        }
+      },
+      "checks": [
+        {
+          "actual": false,
+          "expected": false,
+          "field": "blocked",
+          "metric": "blocked",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "clarification",
+          "metric": "clarification",
+          "pass": true
+        },
+        {
+          "actual": 4,
+          "expected": 4,
+          "field": "publishedCount",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": 2,
+          "expected": 2,
+          "field": "pendingCount",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "pendingSentinel",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "comparison",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "ranking",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "trend",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "weakest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "strongest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "targetGap",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "districtLevel",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "latest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": "BORNEO_NEWS",
+          "expected": "BORNEO_NEWS",
+          "field": "routing",
+          "metric": "routing",
+          "pass": true
+        }
+      ],
+      "failures": [],
+      "id": "golden-en-060",
+      "implementationStatus": "IMPLEMENTED",
+      "language": "en",
+      "safetyCritical": false,
+      "status": "passed",
+      "tags": [
+        "news",
+        "privacy"
+      ]
+    },
+    {
+      "actual": {
+        "blocked": false,
+        "clarificationRequired": false,
+        "entities": {
+          "concepts": [],
+          "districts": [],
+          "indicators": [],
+          "operations": {
+            "comparison": false,
+            "districtLevel": false,
+            "latest": false,
+            "ranking": false,
+            "sdgIndicatorList": false,
+            "sdgProgress": false,
+            "strongest": false,
+            "targetGap": false,
+            "trend": false,
+            "weakest": false
+          },
+          "pillars": [],
+          "sdgGoals": [],
+          "territories": [
+            "Brunei Darussalam"
+          ]
+        },
+        "intent": "BORNEO_NEWS",
+        "language": "en",
+        "news": {
+          "pendingCount": 0,
+          "pendingSentinelExposed": false,
+          "publishedCount": 0,
+          "recordIds": []
+        }
+      },
+      "checks": [
+        {
+          "actual": false,
+          "expected": false,
+          "field": "blocked",
+          "metric": "blocked",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "clarification",
+          "metric": "clarification",
+          "pass": true
+        },
+        {
+          "actual": [
+            "Brunei Darussalam"
+          ],
+          "expected": [
+            "Brunei Darussalam"
+          ],
+          "field": "territories",
+          "metric": "entity",
+          "pass": true
+        },
+        {
+          "actual": 0,
+          "expected": 0,
+          "field": "publishedCount",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": 0,
+          "expected": 0,
+          "field": "pendingCount",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "field": "recordIds",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "pendingSentinel",
+          "metric": "newsPrivacy",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "comparison",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "ranking",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "trend",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "weakest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "strongest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "targetGap",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "districtLevel",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "latest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": "BORNEO_NEWS",
+          "expected": "BORNEO_NEWS",
+          "field": "routing",
+          "metric": "routing",
+          "pass": true
+        }
+      ],
+      "failures": [],
+      "id": "golden-en-061",
+      "implementationStatus": "IMPLEMENTED",
+      "language": "en",
+      "safetyCritical": false,
+      "status": "passed",
+      "tags": [
+        "news",
+        "privacy"
+      ]
+    },
+    {
+      "actual": {
+        "blocked": false,
+        "clarificationRequired": false,
+        "entities": {
+          "concepts": [],
+          "districts": [],
+          "indicators": [],
+          "operations": {
+            "comparison": false,
+            "districtLevel": false,
             "latest": false,
             "ranking": false,
             "sdgIndicatorList": false,
@@ -14162,7 +15739,10 @@
         "news": {
           "pendingCount": 1,
           "pendingSentinelExposed": false,
-          "publishedCount": 1
+          "publishedCount": 1,
+          "recordIds": [
+            "published-sabah-001"
+          ]
         }
       },
       "checks": [
@@ -14332,7 +15912,10 @@
         "news": {
           "pendingCount": 0,
           "pendingSentinelExposed": false,
-          "publishedCount": 1
+          "publishedCount": 1,
+          "recordIds": [
+            "published-ms-001"
+          ]
         }
       },
       "checks": [
@@ -15970,11 +17553,11 @@
   ],
   "thresholdFailures": [],
   "totals": {
-    "english": 52,
+    "english": 61,
     "failed": 0,
     "malay": 36,
-    "passed": 84,
-    "questions": 88,
+    "passed": 93,
+    "questions": 97,
     "skipped": 4
   },
   "unsupportedFeatureSummary": {
@@ -15992,10 +17575,10 @@
     "verifiedRuntimeLeverCount": 0
   },
   "validation": {
-    "englishCount": 52,
+    "englishCount": 61,
     "errors": [],
     "malayCount": 36,
-    "questionCount": 88,
+    "questionCount": 97,
     "valid": true
   }
 }

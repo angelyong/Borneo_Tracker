@@ -7,6 +7,7 @@ import {
 } from './contracts.ts';
 import { envValue, type EnvLike } from './config.ts';
 import type { AIChatNewsRepository } from './newsRepository.ts';
+import { matchesNewsTopics, normalizeNewsTopics } from './newsTopics.ts';
 
 const SUPPORTED_TERRITORIES: AIChatNewsTerritory[] = [
   'Sabah',
@@ -17,7 +18,8 @@ const SUPPORTED_TERRITORIES: AIChatNewsTerritory[] = [
   'unknown',
 ];
 const DEFAULT_LIMIT = 5;
-const PUBLISHED_SELECT = 'id,title,body,published_at,territories,original_lang,sources,status';
+const PUBLISHED_SELECT = 'id,title,body,published_at,territories,original_lang,sources,status,beat,beat_label,sdg,country';
+const TOPIC_CANDIDATE_MIN_LIMIT = 25;
 
 export type SupabaseNewsRow = {
   id?: unknown;
@@ -28,6 +30,10 @@ export type SupabaseNewsRow = {
   original_lang?: unknown;
   sources?: unknown;
   status?: unknown;
+  beat?: unknown;
+  beat_label?: unknown;
+  sdg?: unknown;
+  country?: unknown;
 };
 
 export type SupabaseNewsQueryBoundary = {
@@ -37,6 +43,7 @@ export type SupabaseNewsQueryBoundary = {
 
 export type SupabaseNewsBoundaryQuery = {
   territories: AIChatNewsTerritory[];
+  topics: string[];
   fromDate?: string;
   toDate?: string;
   limit: number;
@@ -65,6 +72,7 @@ export class SupabaseNewsRepository implements AIChatNewsRepository {
 
   async findPublished(query: AIChatNewsQuery): Promise<AIChatPublishedNewsItem[]> {
     const boundaryQuery = normalizeBoundaryQuery(query);
+    const resultLimit = normalizeLimit(query.limit);
     let rows: SupabaseNewsRow[];
     try {
       rows = await this.boundary.selectPublished(boundaryQuery);
@@ -74,6 +82,8 @@ export class SupabaseNewsRepository implements AIChatNewsRepository {
     }
 
     const records = rows
+      .filter((row) => stringValue(row.status) === 'published')
+      .filter((row) => matchesNewsTopics(row, boundaryQuery.topics))
       .map((row) => mapPublishedRow(row))
       .filter((record): record is AIChatPublishedNewsItem => Boolean(record))
       .filter((record) => matchesAnyTerritory(record.territories, boundaryQuery.territories))
@@ -82,7 +92,7 @@ export class SupabaseNewsRepository implements AIChatNewsRepository {
 
     return dedupeById(preferred)
       .sort(comparePublishedNews)
-      .slice(0, boundaryQuery.limit)
+      .slice(0, resultLimit)
       .map(({ territories: _territories, ...record }) => record);
   }
 
@@ -198,10 +208,18 @@ function normalizeBoundaryQuery(query: AIChatNewsQuery): SupabaseNewsBoundaryQue
     territories: (query.territories || [])
       .map((territory) => normalizeTerritory(territory))
       .filter((territory): territory is AIChatNewsTerritory => Boolean(territory)),
+    topics: normalizeNewsTopics(query.topics),
     ...(isValidDateFilter(query.fromDate) ? { fromDate: query.fromDate } : {}),
     ...(isValidDateFilter(query.toDate) ? { toDate: query.toDate } : {}),
-    limit: normalizeLimit(query.limit),
+    limit: topicCandidateLimit(query),
   };
+}
+
+function topicCandidateLimit(query: AIChatNewsQuery): number {
+  const limit = normalizeLimit(query.limit);
+  return normalizeNewsTopics(query.topics).length
+    ? Math.max(limit * 5, TOPIC_CANDIDATE_MIN_LIMIT)
+    : limit;
 }
 
 function applyFilters(url: URL, query: SupabaseNewsBoundaryQuery): void {
