@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import indicatorsData from '../../../public/data/indicators.json';
+import resilienceData from '../../../public/data/resilience.json';
 import districtsData from '../../../public/data/districts.json';
 import { evaluateComparability } from './comparabilityGate.ts';
 import { resolveAiChatEntities } from './entityResolver.ts';
@@ -54,6 +55,7 @@ describe('fact data repository', () => {
 describe('fact object builder availability', () => {
   it('builds an available Sabah territory resilience score', () => {
     const fact = buildFact("What is Sabah's resilience score?");
+    expect(resilienceData.territories.Sabah.index).toBe(63.7);
     expect(fact.availability).toBe('AVAILABLE');
     expect(fact.values.overallResilience).toMatchObject({
       value: 63.7,

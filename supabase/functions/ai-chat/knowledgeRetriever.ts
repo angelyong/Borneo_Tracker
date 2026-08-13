@@ -164,6 +164,13 @@ function scoreRecord(record: AIChatKnowledgeRecord, query: AIChatKnowledgeQuery)
     matchedBy.push(`language-mismatch:${record.language}`);
   }
 
+  const hint = queryHintBoost(record, question, questionTokens);
+  if (hint.score) {
+    score += hint.score;
+    matchedBy.push(...hint.matchedBy);
+    strongSignal = true;
+  }
+
   const titleTokens = tokens(title, record.language);
   const titleOverlap = overlap(questionTokens, titleTokens);
   if (titleOverlap.length) {
@@ -206,7 +213,14 @@ function normalizeText(value: string): string {
 
 function tokens(value: string, language: string): string[] {
   const stopwords = language === 'ms' ? MS_STOPWORDS : EN_STOPWORDS;
-  return [...new Set(value.split(/\s+/).filter((token) => token.length >= 2 && !stopwords.has(token)))];
+  const result: string[] = [];
+  for (const token of value.split(/\s+/)) {
+    if (token.length < 2 || stopwords.has(token)) continue;
+    result.push(token);
+    if (token === 'sdgs') result.push('sdg');
+    if (token.length > 4 && token.endsWith('s')) result.push(token.slice(0, -1));
+  }
+  return [...new Set(result)];
 }
 
 function isStopwordPhrase(value: string, language: string): boolean {
@@ -253,11 +267,49 @@ function compareMatches(a: Scored, b: Scored): number {
 function isAmbiguous(top: Scored, matches: Scored[]): boolean {
   const close = matches.filter((match) => top.score - match.score <= KNOWLEDGE_AMBIGUITY_MARGIN);
   if (close.length < 2) return false;
+  if (isComplementaryEsgSdg(close)) return false;
   if (top.matchedBy.some((item) => /^exact-title|^concept:/.test(item))) return false;
   if (top.matchedBy.some((item) => /^keyword:.+\s/.test(item))) return false;
   if (top.matchedBy.includes('product-identity') || top.matchedBy.includes('page')) return false;
   if (top.matchedBy.includes('title-token-overlap') && close.slice(1).every((match) => match.score < top.score || !match.matchedBy.includes('title-token-overlap'))) return false;
   return close.some((match) => match.topicKey !== top.topicKey);
+}
+
+function queryHintBoost(record: AIChatKnowledgeRecord, question: string, questionTokens: string[]): { score: number; matchedBy: string[] } {
+  const matchedBy: string[] = [];
+  let score = 0;
+  const has = (token: string) => questionTokens.includes(token);
+  const category = record.category;
+  const concept = record.concept || '';
+
+  if (has('esg') && has('sdg') && (category === 'esg-indicators' || category === 'sdg-progress')) {
+    score += 12;
+    matchedBy.push(`query-hint:${category}`);
+  }
+  if (phraseAppears(question, 'forest cover') && (concept === 'forest_cover' || normalizeText(record.title) === 'forest cover')) {
+    score += 12;
+    matchedBy.push('query-hint:forest-cover');
+  }
+  if ((has('sdg') || has('sdgs')) && /\b(?:which|monitored|tracked|goals?)\b/.test(question) && category === 'sdg-progress') {
+    score += 24;
+    matchedBy.push('query-hint:sdg-progress');
+  }
+  if (phraseAppears(question, 'environmental data') && /\b(?:source|sources|from|come)\b/.test(question) && category === 'site-overview') {
+    score += 24;
+    matchedBy.push('query-hint:environmental-data-sources');
+  }
+  if (phraseAppears(question, 'data sources') && category === 'site-overview') {
+    score += 8;
+    matchedBy.push('query-hint:data-sources');
+  }
+
+  return { score, matchedBy };
+}
+
+function isComplementaryEsgSdg(matches: Scored[]): boolean {
+  const categories = new Set(matches.map((match) => match.record.category));
+  return categories.has('esg-indicators') && categories.has('sdg-progress') &&
+    matches.every((match) => ['esg-indicators', 'sdg-progress'].includes(match.record.category));
 }
 
 function normalizeLanguage(language: string): string {

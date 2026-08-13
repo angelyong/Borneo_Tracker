@@ -13,7 +13,8 @@
     "safety": 22,
     "sdg": 4,
     "security": 6,
-    "site_knowledge": 6,
+    "site_knowledge": 11,
+    "suggested_question": 5,
     "trend": 6
   },
   "deterministic": true,
@@ -22,15 +23,15 @@
   "failuresByCategory": {},
   "implementationStatusCounts": {
     "BLOCKED_BY_SUPABASE": 2,
-    "IMPLEMENTED": 58,
+    "IMPLEMENTED": 63,
     "NO_VERIFIED_DATA": 2,
     "PARTIALLY_IMPLEMENTED": 10
   },
   "metrics": {
     "blockedClarificationAccuracy": {
-      "evaluated": 136,
+      "evaluated": 146,
       "failed": 0,
-      "passed": 136,
+      "passed": 146,
       "value": 1
     },
     "comparabilityAccuracy": {
@@ -58,33 +59,33 @@
       "value": 1
     },
     "knowledgeRecallAt10": {
-      "evaluated": 6,
+      "evaluated": 11,
       "failed": 0,
-      "passed": 6,
+      "passed": 11,
       "value": 1
     },
     "knowledgeRecallAt3": {
-      "evaluated": 6,
+      "evaluated": 11,
       "failed": 0,
-      "passed": 6,
+      "passed": 11,
       "value": 1
     },
     "knowledgeRetrievalStatusAccuracy": {
-      "evaluated": 6,
+      "evaluated": 11,
       "failed": 0,
-      "passed": 6,
+      "passed": 11,
       "value": 1
     },
     "knowledgeSourcePassRate": {
-      "evaluated": 6,
+      "evaluated": 11,
       "failed": 0,
-      "passed": 6,
+      "passed": 11,
       "value": 1
     },
     "knowledgeTop1RetrievalAccuracy": {
-      "evaluated": 6,
+      "evaluated": 11,
       "failed": 0,
-      "passed": 6,
+      "passed": 11,
       "value": 1
     },
     "newsPrivacyPassRate": {
@@ -100,15 +101,15 @@
       "value": 1
     },
     "operationDetectionAccuracy": {
-      "evaluated": 612,
+      "evaluated": 657,
       "failed": 0,
-      "passed": 612,
+      "passed": 657,
       "value": 1
     },
     "routingAccuracy": {
-      "evaluated": 68,
+      "evaluated": 73,
       "failed": 0,
-      "passed": 68,
+      "passed": 73,
       "value": 1
     }
   },
@@ -537,12 +538,12 @@
             "report-indicator-mean-years-schooling-rls",
             "generate-report-page-en",
             "resilience-methodology-step-3-pillar-scores-resilience-index-two-numbers-by-design",
+            "report-indicator-paddy-production-per-capita",
             "report-concept-air-quality",
             "report-concept-deforestation",
             "report-concept-economy",
             "report-concept-education",
-            "report-concept-energy",
-            "report-concept-entertainment"
+            "report-concept-energy"
           ],
           "sourceCount": 1,
           "status": "FOUND",
@@ -575,8 +576,8 @@
             "report-concept-economy",
             "report-concept-education",
             "report-concept-energy",
-            "report-concept-entertainment",
             "report-indicator-mean-years-schooling-rls",
+            "report-indicator-paddy-production-per-capita",
             "resilience-methodology-step-3-pillar-scores-resilience-index-two-numbers-by-design"
           ],
           "expected": [
@@ -6175,6 +6176,998 @@
       "status": "skipped",
       "tags": [
         "lever"
+      ]
+    },
+    {
+      "actual": {
+        "blocked": false,
+        "clarificationRequired": false,
+        "entities": {
+          "concepts": [],
+          "districts": [],
+          "indicators": [],
+          "operations": {
+            "comparison": true,
+            "districtLevel": false,
+            "latest": false,
+            "ranking": false,
+            "sdgProgress": true,
+            "strongest": false,
+            "targetGap": false,
+            "trend": false,
+            "weakest": false
+          },
+          "pillars": [],
+          "territories": []
+        },
+        "intent": "SITE_KNOWLEDGE",
+        "knowledge": {
+          "answerRecordIds": [
+            "esg-indicators-page-en",
+            "sdg-progress-page-en"
+          ],
+          "recordIds": [
+            "esg-indicators-page-en",
+            "sdg-progress-page-en",
+            "generate-report-page-en",
+            "dashboard-map-layers-en",
+            "dashboard-resilience-en",
+            "report-concept-economy",
+            "report-concept-education",
+            "report-concept-energy",
+            "report-concept-food",
+            "report-concept-food-percapita"
+          ],
+          "sourceCount": 2,
+          "status": "FOUND",
+          "topRecordId": "esg-indicators-page-en",
+          "warnings": []
+        },
+        "language": "en"
+      },
+      "checks": [
+        {
+          "actual": false,
+          "expected": false,
+          "field": "blocked",
+          "metric": "blocked",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "clarification",
+          "metric": "clarification",
+          "pass": true
+        },
+        {
+          "actual": [
+            "dashboard-map-layers-en",
+            "dashboard-resilience-en",
+            "esg-indicators-page-en",
+            "generate-report-page-en",
+            "report-concept-economy",
+            "report-concept-education",
+            "report-concept-energy",
+            "report-concept-food",
+            "report-concept-food-percapita",
+            "sdg-progress-page-en"
+          ],
+          "expected": [
+            "esg-indicators-page-en",
+            "sdg-progress-page-en"
+          ],
+          "field": "recordIds",
+          "metric": "knowledgeRecallAt10",
+          "pass": true
+        },
+        {
+          "actual": [
+            "esg-indicators-page-en",
+            "generate-report-page-en",
+            "sdg-progress-page-en"
+          ],
+          "expected": [
+            "esg-indicators-page-en",
+            "sdg-progress-page-en"
+          ],
+          "field": "recordIds",
+          "metric": "knowledgeRecallAt3",
+          "pass": true
+        },
+        {
+          "actual": "FOUND",
+          "expected": "FOUND",
+          "field": "status",
+          "metric": "knowledgeRetrieval",
+          "pass": true
+        },
+        {
+          "actual": 2,
+          "expected": 2,
+          "field": "sourceCount",
+          "metric": "knowledgeSources",
+          "pass": true
+        },
+        {
+          "actual": "esg-indicators-page-en",
+          "expected": "esg-indicators-page-en",
+          "field": "topRecordId",
+          "metric": "knowledgeTop1",
+          "pass": true
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "field": "comparison",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "ranking",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "trend",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "weakest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "strongest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "targetGap",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "districtLevel",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "latest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": "SITE_KNOWLEDGE",
+          "expected": "SITE_KNOWLEDGE",
+          "field": "routing",
+          "metric": "routing",
+          "pass": true
+        }
+      ],
+      "failures": [],
+      "id": "golden-en-037",
+      "implementationStatus": "IMPLEMENTED",
+      "language": "en",
+      "safetyCritical": false,
+      "status": "passed",
+      "tags": [
+        "site_knowledge",
+        "suggested_question"
+      ]
+    },
+    {
+      "actual": {
+        "blocked": false,
+        "clarificationRequired": false,
+        "entities": {
+          "concepts": [
+            "forest_cover"
+          ],
+          "districts": [],
+          "indicators": [
+            "Forest cover"
+          ],
+          "operations": {
+            "comparison": false,
+            "districtLevel": false,
+            "latest": false,
+            "ranking": false,
+            "sdgProgress": false,
+            "strongest": false,
+            "targetGap": false,
+            "trend": false,
+            "weakest": false
+          },
+          "pillars": [],
+          "territories": []
+        },
+        "intent": "SITE_KNOWLEDGE",
+        "knowledge": {
+          "answerRecordIds": [
+            "report-concept-forest-cover"
+          ],
+          "recordIds": [
+            "report-concept-forest-cover",
+            "report-indicator-forest-cover",
+            "dashboard-map-layers-en",
+            "report-indicator-tree-cover-loss-annual",
+            "report-indicator-tree-cover-loss-cumulative",
+            "dashboard-resilience-en",
+            "report-indicator-forest-extent-2000",
+            "resilience-methodology-step-1-normalize-each-indicator-to-a-0-100-resilience-score",
+            "generate-report-page-en",
+            "regional-details-en"
+          ],
+          "sourceCount": 1,
+          "status": "FOUND",
+          "topRecordId": "report-concept-forest-cover",
+          "warnings": []
+        },
+        "language": "en"
+      },
+      "checks": [
+        {
+          "actual": false,
+          "expected": false,
+          "field": "blocked",
+          "metric": "blocked",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "clarification",
+          "metric": "clarification",
+          "pass": true
+        },
+        {
+          "actual": [
+            "dashboard-map-layers-en",
+            "dashboard-resilience-en",
+            "generate-report-page-en",
+            "regional-details-en",
+            "report-concept-forest-cover",
+            "report-indicator-forest-cover",
+            "report-indicator-forest-extent-2000",
+            "report-indicator-tree-cover-loss-annual",
+            "report-indicator-tree-cover-loss-cumulative",
+            "resilience-methodology-step-1-normalize-each-indicator-to-a-0-100-resilience-score"
+          ],
+          "expected": [
+            "report-concept-forest-cover"
+          ],
+          "field": "recordIds",
+          "metric": "knowledgeRecallAt10",
+          "pass": true
+        },
+        {
+          "actual": [
+            "dashboard-map-layers-en",
+            "report-concept-forest-cover",
+            "report-indicator-forest-cover"
+          ],
+          "expected": [
+            "report-concept-forest-cover"
+          ],
+          "field": "recordIds",
+          "metric": "knowledgeRecallAt3",
+          "pass": true
+        },
+        {
+          "actual": "FOUND",
+          "expected": "FOUND",
+          "field": "status",
+          "metric": "knowledgeRetrieval",
+          "pass": true
+        },
+        {
+          "actual": 1,
+          "expected": 1,
+          "field": "sourceCount",
+          "metric": "knowledgeSources",
+          "pass": true
+        },
+        {
+          "actual": "report-concept-forest-cover",
+          "expected": "report-concept-forest-cover",
+          "field": "topRecordId",
+          "metric": "knowledgeTop1",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "comparison",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "ranking",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "trend",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "weakest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "strongest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "targetGap",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "districtLevel",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "latest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": "SITE_KNOWLEDGE",
+          "expected": "SITE_KNOWLEDGE",
+          "field": "routing",
+          "metric": "routing",
+          "pass": true
+        }
+      ],
+      "failures": [],
+      "id": "golden-en-038",
+      "implementationStatus": "IMPLEMENTED",
+      "language": "en",
+      "safetyCritical": false,
+      "status": "passed",
+      "tags": [
+        "site_knowledge",
+        "suggested_question"
+      ]
+    },
+    {
+      "actual": {
+        "blocked": false,
+        "clarificationRequired": false,
+        "entities": {
+          "concepts": [],
+          "districts": [],
+          "indicators": [],
+          "operations": {
+            "comparison": false,
+            "districtLevel": false,
+            "latest": false,
+            "ranking": false,
+            "sdgProgress": false,
+            "strongest": false,
+            "targetGap": false,
+            "trend": false,
+            "weakest": false
+          },
+          "pillars": [],
+          "territories": []
+        },
+        "intent": "SITE_KNOWLEDGE",
+        "knowledge": {
+          "answerRecordIds": [
+            "sdg-progress-page-en"
+          ],
+          "recordIds": [
+            "sdg-progress-page-en",
+            "about-borneo-tracker-en",
+            "resilience-methodology-borneo-tracker-true-wealth-resilience-index-methodology-v1",
+            "news-page-en",
+            "dashboard-resilience-en",
+            "about-resilience-score-en",
+            "dashboard-map-layers-en",
+            "community-page-en",
+            "resilience-methodology-6-design-decisions-to-confirm-with-the-supervisor",
+            "resilience-methodology-5-worked-example-sabah-illustrative"
+          ],
+          "sourceCount": 1,
+          "status": "FOUND",
+          "topRecordId": "sdg-progress-page-en",
+          "warnings": []
+        },
+        "language": "en"
+      },
+      "checks": [
+        {
+          "actual": false,
+          "expected": false,
+          "field": "blocked",
+          "metric": "blocked",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "clarification",
+          "metric": "clarification",
+          "pass": true
+        },
+        {
+          "actual": [
+            "about-borneo-tracker-en",
+            "about-resilience-score-en",
+            "community-page-en",
+            "dashboard-map-layers-en",
+            "dashboard-resilience-en",
+            "news-page-en",
+            "resilience-methodology-5-worked-example-sabah-illustrative",
+            "resilience-methodology-6-design-decisions-to-confirm-with-the-supervisor",
+            "resilience-methodology-borneo-tracker-true-wealth-resilience-index-methodology-v1",
+            "sdg-progress-page-en"
+          ],
+          "expected": [
+            "sdg-progress-page-en"
+          ],
+          "field": "recordIds",
+          "metric": "knowledgeRecallAt10",
+          "pass": true
+        },
+        {
+          "actual": [
+            "about-borneo-tracker-en",
+            "resilience-methodology-borneo-tracker-true-wealth-resilience-index-methodology-v1",
+            "sdg-progress-page-en"
+          ],
+          "expected": [
+            "sdg-progress-page-en"
+          ],
+          "field": "recordIds",
+          "metric": "knowledgeRecallAt3",
+          "pass": true
+        },
+        {
+          "actual": "FOUND",
+          "expected": "FOUND",
+          "field": "status",
+          "metric": "knowledgeRetrieval",
+          "pass": true
+        },
+        {
+          "actual": 1,
+          "expected": 1,
+          "field": "sourceCount",
+          "metric": "knowledgeSources",
+          "pass": true
+        },
+        {
+          "actual": "sdg-progress-page-en",
+          "expected": "sdg-progress-page-en",
+          "field": "topRecordId",
+          "metric": "knowledgeTop1",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "comparison",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "ranking",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "trend",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "weakest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "strongest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "targetGap",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "districtLevel",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "latest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": "SITE_KNOWLEDGE",
+          "expected": "SITE_KNOWLEDGE",
+          "field": "routing",
+          "metric": "routing",
+          "pass": true
+        }
+      ],
+      "failures": [],
+      "id": "golden-en-039",
+      "implementationStatus": "IMPLEMENTED",
+      "language": "en",
+      "safetyCritical": false,
+      "status": "passed",
+      "tags": [
+        "site_knowledge",
+        "suggested_question"
+      ]
+    },
+    {
+      "actual": {
+        "blocked": false,
+        "clarificationRequired": false,
+        "entities": {
+          "concepts": [],
+          "districts": [],
+          "indicators": [],
+          "operations": {
+            "comparison": false,
+            "districtLevel": false,
+            "latest": false,
+            "ranking": false,
+            "sdgProgress": false,
+            "strongest": false,
+            "targetGap": false,
+            "trend": false,
+            "weakest": false
+          },
+          "pillars": [],
+          "territories": []
+        },
+        "intent": "SITE_KNOWLEDGE",
+        "knowledge": {
+          "answerRecordIds": [
+            "about-borneo-tracker-en"
+          ],
+          "recordIds": [
+            "about-borneo-tracker-en",
+            "about-resilience-score-en",
+            "dashboard-map-layers-en",
+            "dashboard-resilience-en",
+            "resilience-methodology-5-worked-example-sabah-illustrative",
+            "resilience-methodology-4-data-confidence-layer-the-ethics-e-of-abcde",
+            "esg-indicators-page-en",
+            "generate-report-page-en",
+            "news-page-en",
+            "report-indicator-electricity-access-households"
+          ],
+          "sourceCount": 1,
+          "status": "FOUND",
+          "topRecordId": "about-borneo-tracker-en",
+          "warnings": []
+        },
+        "language": "en"
+      },
+      "checks": [
+        {
+          "actual": false,
+          "expected": false,
+          "field": "blocked",
+          "metric": "blocked",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "clarification",
+          "metric": "clarification",
+          "pass": true
+        },
+        {
+          "actual": [
+            "about-borneo-tracker-en",
+            "about-resilience-score-en",
+            "dashboard-map-layers-en",
+            "dashboard-resilience-en",
+            "esg-indicators-page-en",
+            "generate-report-page-en",
+            "news-page-en",
+            "report-indicator-electricity-access-households",
+            "resilience-methodology-4-data-confidence-layer-the-ethics-e-of-abcde",
+            "resilience-methodology-5-worked-example-sabah-illustrative"
+          ],
+          "expected": [
+            "about-borneo-tracker-en"
+          ],
+          "field": "recordIds",
+          "metric": "knowledgeRecallAt10",
+          "pass": true
+        },
+        {
+          "actual": [
+            "about-borneo-tracker-en",
+            "about-resilience-score-en",
+            "dashboard-map-layers-en"
+          ],
+          "expected": [
+            "about-borneo-tracker-en"
+          ],
+          "field": "recordIds",
+          "metric": "knowledgeRecallAt3",
+          "pass": true
+        },
+        {
+          "actual": "FOUND",
+          "expected": "FOUND",
+          "field": "status",
+          "metric": "knowledgeRetrieval",
+          "pass": true
+        },
+        {
+          "actual": 1,
+          "expected": 1,
+          "field": "sourceCount",
+          "metric": "knowledgeSources",
+          "pass": true
+        },
+        {
+          "actual": "about-borneo-tracker-en",
+          "expected": "about-borneo-tracker-en",
+          "field": "topRecordId",
+          "metric": "knowledgeTop1",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "comparison",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "ranking",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "trend",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "weakest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "strongest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "targetGap",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "districtLevel",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "latest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": "SITE_KNOWLEDGE",
+          "expected": "SITE_KNOWLEDGE",
+          "field": "routing",
+          "metric": "routing",
+          "pass": true
+        }
+      ],
+      "failures": [],
+      "id": "golden-en-040",
+      "implementationStatus": "IMPLEMENTED",
+      "language": "en",
+      "safetyCritical": false,
+      "status": "passed",
+      "tags": [
+        "site_knowledge",
+        "suggested_question"
+      ]
+    },
+    {
+      "actual": {
+        "blocked": false,
+        "clarificationRequired": false,
+        "entities": {
+          "concepts": [],
+          "districts": [],
+          "indicators": [],
+          "operations": {
+            "comparison": false,
+            "districtLevel": false,
+            "latest": false,
+            "ranking": false,
+            "sdgProgress": false,
+            "strongest": false,
+            "targetGap": false,
+            "trend": false,
+            "weakest": false
+          },
+          "pillars": [],
+          "territories": []
+        },
+        "intent": "SITE_KNOWLEDGE",
+        "knowledge": {
+          "answerRecordIds": [
+            "generate-report-page-en"
+          ],
+          "recordIds": [
+            "generate-report-page-en",
+            "dashboard-map-layers-en",
+            "dashboard-resilience-en",
+            "report-concept-air-quality",
+            "report-concept-deforestation",
+            "report-concept-economy",
+            "report-concept-education",
+            "report-concept-energy",
+            "report-concept-entertainment",
+            "report-concept-fire-hotspots"
+          ],
+          "sourceCount": 1,
+          "status": "FOUND",
+          "topRecordId": "generate-report-page-en",
+          "warnings": []
+        },
+        "language": "en"
+      },
+      "checks": [
+        {
+          "actual": false,
+          "expected": false,
+          "field": "blocked",
+          "metric": "blocked",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "clarification",
+          "metric": "clarification",
+          "pass": true
+        },
+        {
+          "actual": [
+            "dashboard-map-layers-en",
+            "dashboard-resilience-en",
+            "generate-report-page-en",
+            "report-concept-air-quality",
+            "report-concept-deforestation",
+            "report-concept-economy",
+            "report-concept-education",
+            "report-concept-energy",
+            "report-concept-entertainment",
+            "report-concept-fire-hotspots"
+          ],
+          "expected": [
+            "generate-report-page-en"
+          ],
+          "field": "recordIds",
+          "metric": "knowledgeRecallAt10",
+          "pass": true
+        },
+        {
+          "actual": [
+            "dashboard-map-layers-en",
+            "dashboard-resilience-en",
+            "generate-report-page-en"
+          ],
+          "expected": [
+            "generate-report-page-en"
+          ],
+          "field": "recordIds",
+          "metric": "knowledgeRecallAt3",
+          "pass": true
+        },
+        {
+          "actual": "FOUND",
+          "expected": "FOUND",
+          "field": "status",
+          "metric": "knowledgeRetrieval",
+          "pass": true
+        },
+        {
+          "actual": 1,
+          "expected": 1,
+          "field": "sourceCount",
+          "metric": "knowledgeSources",
+          "pass": true
+        },
+        {
+          "actual": "generate-report-page-en",
+          "expected": "generate-report-page-en",
+          "field": "topRecordId",
+          "metric": "knowledgeTop1",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "comparison",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "ranking",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "trend",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "weakest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "strongest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "targetGap",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "districtLevel",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "latest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": "SITE_KNOWLEDGE",
+          "expected": "SITE_KNOWLEDGE",
+          "field": "routing",
+          "metric": "routing",
+          "pass": true
+        }
+      ],
+      "failures": [],
+      "id": "golden-en-041",
+      "implementationStatus": "IMPLEMENTED",
+      "language": "en",
+      "safetyCritical": false,
+      "status": "passed",
+      "tags": [
+        "site_knowledge",
+        "suggested_question"
       ]
     },
     {
@@ -12168,11 +13161,11 @@
   ],
   "thresholdFailures": [],
   "totals": {
-    "english": 36,
+    "english": 41,
     "failed": 0,
     "malay": 36,
-    "passed": 68,
-    "questions": 72,
+    "passed": 73,
+    "questions": 77,
     "skipped": 4
   },
   "unsupportedFeatureSummary": {
@@ -12190,10 +13183,10 @@
     "verifiedRuntimeLeverCount": 0
   },
   "validation": {
-    "englishCount": 36,
+    "englishCount": 41,
     "errors": [],
     "malayCount": 36,
-    "questionCount": 72,
+    "questionCount": 77,
     "valid": true
   }
 }

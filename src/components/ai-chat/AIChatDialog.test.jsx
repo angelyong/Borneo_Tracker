@@ -313,6 +313,30 @@ describe('AI chat dialog', () => {
     expect(document.body.textContent).toContain('2 responses remaining / 5 responses limit');
   });
 
+  it('renders full long backend answers without substring truncation', () => {
+    const longAnswer = [
+      'Generate Report lets users choose a territory and report sections.',
+      'The answer continues with methodology, sources, coverage, and limitations.',
+      'Final sentence marker: COMPLETE_BACKEND_ANSWER.',
+    ].join('\n');
+
+    render(
+      <AIChatMessage
+        message={{
+          id: 'assistant-long',
+          role: 'assistant',
+          mode: 'template-fallback',
+          content: longAnswer,
+          sources: [],
+        }}
+      />
+    );
+
+    expect(document.body.textContent).toContain('Generate Report lets users choose');
+    expect(document.body.textContent).toContain('Final sentence marker: COMPLETE_BACKEND_ANSWER.');
+    expect(document.querySelector('.ai-chat-message-bubble')?.textContent).toContain(longAnswer.replace(/\n/g, ''));
+  });
+
   it('shows safe missing-endpoint and malformed-response errors without fake answers', async () => {
     vi.stubEnv('VITE_AI_CHAT_ENDPOINT', '');
     render(<MemoryRouter><ControlledChat /></MemoryRouter>);

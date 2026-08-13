@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
+import crypto from 'node:crypto';
 
 const root = process.cwd();
 const checks = [];
@@ -25,6 +26,54 @@ function contains(rel, pattern) {
   if (!exists(rel)) return false;
   const text = read(rel);
   return typeof pattern === 'string' ? text.includes(pattern) : pattern.test(text);
+}
+
+function stableHash(value) {
+  return crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
+}
+
+function knowledgeParity() {
+  if (!exists('knowledge/generated/knowledge-index.json') || !exists('supabase/functions/ai-chat/knowledge-index.json')) {
+    return { ok: false, detail: 'missing knowledge index file' };
+  }
+  const canonical = JSON.parse(read('knowledge/generated/knowledge-index.json'));
+  const packaged = JSON.parse(read('supabase/functions/ai-chat/knowledge-index.json'));
+  const normalizeRecord = (record) => ({
+    id: record.id,
+    title: record.title,
+    category: record.category,
+    content: record.content,
+    language: record.language,
+    pageUrl: record.pageUrl,
+    region: record.region,
+    regions: record.regions,
+    concept: record.concept,
+    sdgTags: record.sdgTags,
+    relatedSdgs: record.relatedSdgs,
+    keywords: record.keywords,
+    searchableText: record.searchableText,
+    sourceName: record.sourceName,
+    sourceUrl: record.sourceUrl,
+    status: record.status,
+    placeholder: record.placeholder,
+    runtimeIncluded: record.runtimeIncluded,
+  });
+  const canonicalSummary = {
+    schemaVersion: canonical.schemaVersion,
+    recordCount: canonical.recordCount,
+    records: [...(canonical.records || [])].map(normalizeRecord).sort((a, b) => a.id.localeCompare(b.id)),
+  };
+  const packagedSummary = {
+    schemaVersion: packaged.schemaVersion,
+    recordCount: packaged.recordCount,
+    records: [...(packaged.records || [])].map(normalizeRecord).sort((a, b) => a.id.localeCompare(b.id)),
+  };
+  const canonicalHash = stableHash(canonicalSummary);
+  const packagedHash = stableHash(packagedSummary);
+  return {
+    ok: canonicalHash === packagedHash,
+    detail: canonicalHash === packagedHash ? '' : `canonical ${canonicalHash} packaged ${packagedHash}`,
+  };
 }
 
 function walkFiles(dir, predicate, output = []) {
@@ -128,6 +177,9 @@ check(
   jsonImportsWithoutAttributes.length === 0,
   jsonImportsWithoutAttributes.map((item) => item.rel).join(', ')
 );
+
+const parity = knowledgeParity();
+check('packaged ai-chat knowledge index matches generated canonical index', parity.ok, parity.detail);
 
 const failed = checks.filter((item) => !item.ok);
 for (const item of checks) {

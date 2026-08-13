@@ -34,7 +34,7 @@ function rawRequest(body, init = {}) {
   });
 }
 
-function geminiResponse(text) {
+function geminiResponse(text, finishReason = 'STOP') {
   return {
     ok: true,
     status: 200,
@@ -43,6 +43,7 @@ function geminiResponse(text) {
         content: {
           parts: [{ text }],
         },
+        finishReason,
       }],
     }),
   };
@@ -314,12 +315,60 @@ describe('Gemini client', () => {
       code: 'EMPTY_GEMINI_RESPONSE',
     });
   });
+
+  it('rejects provider MAX_TOKENS finish reason as truncated', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(geminiResponse('To generate a report, which', 'MAX_TOKENS'));
+
+    await expect(generateGeminiAnswer(validPayload, {
+      env: { AICHATBOTGEMINI_API_KEY: 'test-key' },
+      fetchImpl,
+    })).rejects.toMatchObject({
+      status: 502,
+      code: 'GEMINI_TRUNCATED',
+    });
+  });
+
+  it('rejects incomplete non-STOP candidates', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(geminiResponse('Blocked answer.', 'SAFETY'));
+
+    await expect(generateGeminiAnswer(validPayload, {
+      env: { AICHATBOTGEMINI_API_KEY: 'test-key' },
+      fetchImpl,
+    })).rejects.toMatchObject({
+      status: 502,
+      code: 'GEMINI_INCOMPLETE_SAFETY',
+    });
+  });
+
+  it('parses multipart completed Gemini responses fully', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({
+        candidates: [{
+          content: {
+            parts: [{ text: 'Part one. ' }, { text: 'Part two.' }],
+          },
+          finishReason: 'STOP',
+        }],
+      }),
+    });
+
+    const answer = await generateGeminiAnswer(validPayload, {
+      env: { AICHATBOTGEMINI_API_KEY: 'test-key' },
+      fetchImpl,
+    });
+
+    expect(answer).toBe('Part one. Part two.');
+  });
 });
 
 describe('Gemini fallback reason mapping', () => {
   it.each([
     ['GEMINI_TIMEOUT', 'GEMINI_TIMEOUT'],
     ['GEMINI_RATE_LIMITED', 'GEMINI_RATE_LIMIT'],
+    ['GEMINI_TRUNCATED', 'GEMINI_TRUNCATED'],
+    ['GEMINI_INCOMPLETE_SAFETY', 'GEMINI_TRUNCATED'],
     ['MISSING_GEMINI_API_KEY', 'GEMINI_NOT_CONFIGURED'],
     ['MALFORMED_GEMINI_RESPONSE', 'GEMINI_MALFORMED_RESPONSE'],
     ['EMPTY_GEMINI_RESPONSE', 'GEMINI_EMPTY_RESPONSE'],
@@ -1266,6 +1315,28 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     expect(prompt.groundingPayload.recordIds).toContain('about-borneo-tracker-ms');
   });
 
+  it.each([
+    ['What is the difference between ESG and SDG?', ['esg-indicators-page-en', 'sdg-progress-page-en']],
+    ['Explain the Forest Cover indicator.', ['report-concept-forest-cover']],
+    ['Which SDGs are monitored by Borneo Tracker?', ['sdg-progress-page-en']],
+    ['Where does the environmental data come from?', ['about-borneo-tracker-en']],
+    ['How do I generate a report?', ['generate-report-page-en']],
+  ])('grounds suggested knowledge question through the live handler path: %s', async (message, expectedIds) => {
+    const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(500, 'MISSING_GEMINI_API_KEY', 'missing'));
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
+
+    const response = await handler(request({ ...validPayload, message, currentPage: '/', region: '' }));
+    const body = await response.json();
+    const [, prompt] = geminiClient.mock.calls[0];
+
+    expect(response.status).toBe(200);
+    expect(body.mode).toBe('template-fallback');
+    expect(body.fallback.reason).toBe('KNOWLEDGE_GEMINI_UNAVAILABLE');
+    expect(prompt.groundingPayload.answerStatus).toBe('FOUND');
+    expect(prompt.groundingPayload.recordIds).toEqual(expect.arrayContaining(expectedIds));
+    expect(body.answer).not.toBe('The Borneo Tracker assistant can answer verified questions about Borneo Tracker, dashboard data, and published Borneo news.');
+  });
+
   it('returns deterministic knowledge no-match for explicit knowledge-base gaps without Gemini or quota', async () => {
     const geminiClient = vi.fn();
     const quotaService = allowAllQuotaService();
@@ -1285,6 +1356,37 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     expect(body.answer).toBe('The current Borneo Tracker knowledge base does not contain a verified answer for this question.');
     expect(geminiClient).not.toHaveBeenCalled();
     expect(quotaService.reserveForModelCall).not.toHaveBeenCalled();
+  });
+
+  it('falls back to deterministic site knowledge when Gemini truncates output', async () => {
+    const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(502, 'GEMINI_TRUNCATED', 'truncated'));
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
+
+    const response = await handler(request({ ...validPayload, message: 'How do I generate a report?', currentPage: '/reports', region: '' }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(geminiClient).toHaveBeenCalledTimes(1);
+    expect(body.mode).toBe('template-fallback');
+    expect(body.fallback.reason).toBe('GEMINI_TRUNCATED');
+    expect(body.answer).toContain('Generate Report');
+    expect(body.answer).toContain('downloadable as a PDF');
+    expect(body.answer).not.toBe('To generate a report, which');
+  });
+
+  it('falls back to deterministic dashboard answer when Gemini truncates output', async () => {
+    const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(502, 'GEMINI_TRUNCATED', 'truncated'));
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
+
+    const response = await handler(request({ ...validPayload, message: "What is Sabah's resilience score?", currentPage: '/dashboard', region: '' }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(geminiClient).toHaveBeenCalledTimes(1);
+    expect(body.mode).toBe('template-fallback');
+    expect(body.fallback.reason).toBe('GEMINI_TRUNCATED');
+    expect(body.answer).toContain("Sabah's overall resilience score is 63.7.");
+    expect(body.answer).not.toBe('To generate a report, which');
   });
 
   it('preserves both territories in live comparison grounding and deterministic fallback', async () => {

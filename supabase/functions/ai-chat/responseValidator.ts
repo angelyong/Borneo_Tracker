@@ -179,7 +179,16 @@ function normalizeAnswer(answer: unknown, issues: ResponseValidationIssue[], max
   if (normalized.length > maxLength) addIssue(issues, 'ANSWER_TOO_LONG', 'Gemini answer is longer than the configured maximum.');
   if (CONTROL_CHARACTER_PATTERN.test(normalized)) addIssue(issues, 'MALFORMED_OUTPUT', 'Gemini answer contains unsafe control characters.');
   if (SERIALIZATION_PATTERN.test(normalized)) addIssue(issues, 'MALFORMED_OUTPUT', 'Gemini answer looks like serialized data where plain text was required.');
+  if (looksTruncated(normalized)) addIssue(issues, 'TRUNCATED_OUTPUT', 'Gemini answer appears to end mid-sentence.');
   return normalized;
+}
+
+function looksTruncated(answer: string): boolean {
+  const trimmed = answer.trim();
+  if (!trimmed) return false;
+  if (/[.!?)]$/.test(trimmed)) return false;
+  if (/[\u2026:]$/.test(trimmed)) return true;
+  return /\b(?:and|or|but|because|which|that|with|for|to|from|by|in|on|as|the|a|an|dan|atau|yang|dengan|untuk|di|ke|sebagai)$/i.test(trimmed);
 }
 
 function validateNumericTokens(

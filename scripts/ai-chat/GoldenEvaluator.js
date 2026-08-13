@@ -456,9 +456,9 @@ export function validateGoldenData(loaded) {
     seenQuestions.set(duplicateKey, contextKey);
   }
 
-  if (loaded.byLanguage.en.length !== 36) errors.push(`golden-questions.en.json has ${loaded.byLanguage.en.length} records, expected 36`);
+  if (loaded.byLanguage.en.length !== 41) errors.push(`golden-questions.en.json has ${loaded.byLanguage.en.length} records, expected 41`);
   if (loaded.byLanguage.ms.length !== 36) errors.push(`golden-questions.ms.json has ${loaded.byLanguage.ms.length} records, expected 36`);
-  if (loaded.questions.length !== 72) errors.push(`Golden set has ${loaded.questions.length} records, expected 72`);
+  if (loaded.questions.length !== 77) errors.push(`Golden set has ${loaded.questions.length} records, expected 77`);
 
   for (const token of loaded.newsFixtures.pendingSentinels || []) {
     if (!/^PENDING_SENTINEL_/.test(token)) errors.push(`pending sentinel has unsafe realistic form: ${token}`);

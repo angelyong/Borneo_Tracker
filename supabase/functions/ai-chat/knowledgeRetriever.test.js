@@ -31,6 +31,27 @@ function repository(records) {
 }
 
 describe('static knowledge retriever', () => {
+  it.each([
+    ['What is the difference between ESG and SDG?', ['esg-indicators-page-en', 'sdg-progress-page-en']],
+    ['Explain the Forest Cover indicator.', ['report-concept-forest-cover']],
+    ['Which SDGs are monitored by Borneo Tracker?', ['sdg-progress-page-en']],
+    ['Where does the environmental data come from?', ['about-borneo-tracker-en']],
+    ['How do I generate a report?', ['generate-report-page-en']],
+  ])('selects packaged verified knowledge for suggested question: %s', (question, expectedIds) => {
+    const result = retrieveStaticKnowledge({
+      question,
+      language: 'en',
+      currentPage: '/',
+      territories: [],
+      concepts: [],
+      limit: 3,
+    }, new KnowledgeRepository());
+
+    expect(result.status).toBe('FOUND');
+    expect(result.matches.map((match) => match.record.id)).toEqual(expect.arrayContaining(expectedIds));
+    expect(result.matches.every((match) => match.record.runtimeIncluded && match.record.status === 'verified' && !match.record.placeholder)).toBe(true);
+  });
+
   it('matches exact title phrases', () => {
     const result = retrieveStaticKnowledge({
       question: 'What is Borneo Tracker Overview?',

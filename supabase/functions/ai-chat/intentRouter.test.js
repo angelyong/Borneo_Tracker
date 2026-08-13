@@ -9,6 +9,10 @@ describe('ai-chat intent router: SITE_KNOWLEDGE', () => {
   it.each([
     ['What is Borneo Tracker?'],
     ['Tell me something about Borneo Tracker that is not in your knowledge base.'],
+    ['What is the difference between ESG and SDG?'],
+    ['Explain the Forest Cover indicator.'],
+    ['Which SDGs are monitored by Borneo Tracker?'],
+    ['Where does the environmental data come from?'],
     ['How do I generate a report?'],
     ['Bagaimana menggunakan laman ini?', { language: 'ms' }],
     ['Apakah Borneo Tracker?', { language: 'ms' }],

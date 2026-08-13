@@ -861,7 +861,11 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
       }
       if (fallbackReason && canBuildKnowledgeTemplateFallback(knowledgeAnswer)) {
         try {
-          const knowledgeFallbackReason = fallbackReason === 'GEMINI_RESPONSE_REJECTED' ? 'KNOWLEDGE_RESPONSE_REJECTED' : 'KNOWLEDGE_GEMINI_UNAVAILABLE';
+          const knowledgeFallbackReason = fallbackReason === 'GEMINI_RESPONSE_REJECTED'
+            ? 'KNOWLEDGE_RESPONSE_REJECTED'
+            : fallbackReason === 'GEMINI_TRUNCATED'
+              ? 'GEMINI_TRUNCATED'
+              : 'KNOWLEDGE_GEMINI_UNAVAILABLE';
           const fallback = buildKnowledgeTemplateFallback({
             knowledgeAnswer,
             reason: knowledgeFallbackReason,
@@ -1008,6 +1012,7 @@ export function mapFallbackReason(error: unknown): FallbackReason | undefined {
   if (error.code === 'AI_CHAT_QUOTA_EXHAUSTED') return 'QUOTA_EXHAUSTED';
   if (error.code === 'GEMINI_TIMEOUT') return 'GEMINI_TIMEOUT';
   if (error.code === 'GEMINI_RATE_LIMITED') return 'GEMINI_RATE_LIMIT';
+  if (error.code === 'GEMINI_TRUNCATED' || error.code.startsWith('GEMINI_INCOMPLETE_')) return 'GEMINI_TRUNCATED';
   if (error.code === 'MISSING_GEMINI_API_KEY') return 'GEMINI_NOT_CONFIGURED';
   if (error.code === 'MALFORMED_GEMINI_RESPONSE') return 'GEMINI_MALFORMED_RESPONSE';
   if (error.code === 'EMPTY_GEMINI_RESPONSE') return 'GEMINI_EMPTY_RESPONSE';

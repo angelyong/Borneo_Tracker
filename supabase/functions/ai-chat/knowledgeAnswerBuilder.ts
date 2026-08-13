@@ -70,11 +70,22 @@ function emptyAnswer(
 
 function compatibleSelectedMatches(matches: AIChatKnowledgeMatch[]): AIChatKnowledgeMatch[] {
   if (!matches.length) return [];
+  const complementary = complementaryEsgSdgMatches(matches);
+  if (complementary.length) return complementary;
   const top = matches[0];
   const topic = top.record.concept || top.record.category;
   return matches
     .filter((match) => (match.record.concept || match.record.category) === topic)
     .slice(0, 2);
+}
+
+function complementaryEsgSdgMatches(matches: AIChatKnowledgeMatch[]): AIChatKnowledgeMatch[] {
+  const esg = matches.find((match) => match.record.category === 'esg-indicators');
+  const sdg = matches.find((match) => match.record.category === 'sdg-progress');
+  if (!esg || !sdg) return [];
+  const topScore = matches[0]?.score || 0;
+  if (topScore - esg.score > 4 || topScore - sdg.score > 4) return [];
+  return [esg, sdg].sort((a, b) => a.record.category.localeCompare(b.record.category));
 }
 
 function recordAnswerText(match: AIChatKnowledgeMatch): string {

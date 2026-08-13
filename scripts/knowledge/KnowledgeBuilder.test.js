@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { JsonContentExtractor } from './JsonContentExtractor.js';
 import { MarkdownContentExtractor } from './MarkdownContentExtractor.js';
@@ -20,6 +21,38 @@ const source = {
   repoPath: 'knowledge/faq.json',
   fullPath: path.resolve('knowledge/faq.json'),
 };
+
+function stableHash(value) {
+  return crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
+}
+
+function runtimeKnowledgeSummary(index) {
+  const normalizeRecord = (record) => ({
+    id: record.id,
+    title: record.title,
+    category: record.category,
+    content: record.content,
+    language: record.language,
+    pageUrl: record.pageUrl,
+    region: record.region,
+    regions: record.regions,
+    concept: record.concept,
+    sdgTags: record.sdgTags,
+    relatedSdgs: record.relatedSdgs,
+    keywords: record.keywords,
+    searchableText: record.searchableText,
+    sourceName: record.sourceName,
+    sourceUrl: record.sourceUrl,
+    status: record.status,
+    placeholder: record.placeholder,
+    runtimeIncluded: record.runtimeIncluded,
+  });
+  return {
+    schemaVersion: index.schemaVersion,
+    recordCount: index.recordCount,
+    records: [...(index.records || [])].map(normalizeRecord).sort((a, b) => a.id.localeCompare(b.id)),
+  };
+}
 
 describe('knowledge extraction', () => {
   it('extracts valid JSON source records', () => {
@@ -191,6 +224,21 @@ describe('knowledge build output', () => {
     const first = fs.readFileSync(path.join(tmp, 'a', 'knowledge-index.json'), 'utf8');
     const second = fs.readFileSync(path.join(tmp, 'b', 'knowledge-index.json'), 'utf8');
     expect(first).toBe(second);
+  });
+
+  it('keeps the packaged Edge Function knowledge index in parity with the generated index', () => {
+    const canonical = JSON.parse(fs.readFileSync(path.resolve('knowledge/generated/knowledge-index.json'), 'utf8'));
+    const packaged = JSON.parse(fs.readFileSync(path.resolve('supabase/functions/ai-chat/knowledge-index.json'), 'utf8'));
+    const canonicalSummary = runtimeKnowledgeSummary(canonical);
+    const packagedSummary = runtimeKnowledgeSummary(packaged);
+
+    expect(packagedSummary).toEqual(canonicalSummary);
+
+    const stalePackagedSummary = {
+      ...packagedSummary,
+      records: packagedSummary.records.map((record, index) => index === 0 ? { ...record, content: `${record.content} stale` } : record),
+    };
+    expect(stableHash(stalePackagedSummary)).not.toBe(stableHash(canonicalSummary));
   });
 
   it('handles missing sources as a critical validation failure', () => {

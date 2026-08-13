@@ -299,5 +299,50 @@
     "implementationStatus": "NO_VERIFIED_DATA",
     "expected": { "intent": "DASHBOARD_DATA", "territories": ["Sabah"], "concepts": ["food"], "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "districtLevel": false, "latest": false }, "comparabilityDecision": "ALLOW", "factAvailability": "AVAILABLE", "blocked": false, "clarificationRequired": false },
     "tags": ["lever"]
+  },
+  {
+    "id": "golden-en-037",
+    "language": "en",
+    "question": "What is the difference between ESG and SDG?",
+    "context": { "currentPage": "/", "language": "en" },
+    "implementationStatus": "IMPLEMENTED",
+    "expected": { "intent": "SITE_KNOWLEDGE", "operations": { "comparison": true, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": true, "districtLevel": false, "latest": false }, "blocked": false, "clarificationRequired": false, "knowledge": { "status": "FOUND", "expectedRecordIds": ["esg-indicators-page-en", "sdg-progress-page-en"], "sourceCountMin": 2 } },
+    "tags": ["site_knowledge", "suggested_question"]
+  },
+  {
+    "id": "golden-en-038",
+    "language": "en",
+    "question": "Explain the Forest Cover indicator.",
+    "context": { "currentPage": "/", "language": "en" },
+    "implementationStatus": "IMPLEMENTED",
+    "expected": { "intent": "SITE_KNOWLEDGE", "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "districtLevel": false, "latest": false }, "blocked": false, "clarificationRequired": false, "knowledge": { "status": "FOUND", "expectedRecordIds": ["report-concept-forest-cover"], "sourceCountMin": 1 } },
+    "tags": ["site_knowledge", "suggested_question"]
+  },
+  {
+    "id": "golden-en-039",
+    "language": "en",
+    "question": "Which SDGs are monitored by Borneo Tracker?",
+    "context": { "currentPage": "/", "language": "en" },
+    "implementationStatus": "IMPLEMENTED",
+    "expected": { "intent": "SITE_KNOWLEDGE", "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "districtLevel": false, "latest": false }, "blocked": false, "clarificationRequired": false, "knowledge": { "status": "FOUND", "expectedRecordIds": ["sdg-progress-page-en"], "sourceCountMin": 1 } },
+    "tags": ["site_knowledge", "suggested_question"]
+  },
+  {
+    "id": "golden-en-040",
+    "language": "en",
+    "question": "Where does the environmental data come from?",
+    "context": { "currentPage": "/", "language": "en" },
+    "implementationStatus": "IMPLEMENTED",
+    "expected": { "intent": "SITE_KNOWLEDGE", "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "districtLevel": false, "latest": false }, "blocked": false, "clarificationRequired": false, "knowledge": { "status": "FOUND", "expectedRecordIds": ["about-borneo-tracker-en"], "sourceCountMin": 1 } },
+    "tags": ["site_knowledge", "suggested_question"]
+  },
+  {
+    "id": "golden-en-041",
+    "language": "en",
+    "question": "How do I generate a report?",
+    "context": { "currentPage": "/", "language": "en" },
+    "implementationStatus": "IMPLEMENTED",
+    "expected": { "intent": "SITE_KNOWLEDGE", "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "districtLevel": false, "latest": false }, "blocked": false, "clarificationRequired": false, "knowledge": { "status": "FOUND", "expectedRecordIds": ["generate-report-page-en"], "sourceCountMin": 1 } },
+    "tags": ["site_knowledge", "suggested_question"]
   }
 ]
