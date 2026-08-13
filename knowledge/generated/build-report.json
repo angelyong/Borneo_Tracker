@@ -88,7 +88,7 @@
     },
     {
       "id": "report-content",
-      "recordsExtracted": 55
+      "recordsExtracted": 56
     },
     {
       "id": "generate-report-page",
@@ -141,9 +141,9 @@
   ],
   "missingSources": [],
   "unsafeSources": [],
-  "recordsCreated": 87,
-  "recordsValidated": 145,
-  "runtimeRecords": 87,
+  "recordsCreated": 88,
+  "recordsValidated": 146,
+  "runtimeRecords": 88,
   "recordsSkipped": 0,
   "duplicateRecords": [],
   "invalidRecords": [],
@@ -500,7 +500,7 @@
   "countsBySource": {
     "site-copy-en": 10,
     "site-copy-ms": 10,
-    "report-content": 55,
+    "report-content": 56,
     "generate-report-page": 1,
     "report-sections": 1,
     "indicator-config": 1,
@@ -516,16 +516,16 @@
     "generate-report": 3,
     "community": 2,
     "news": 2,
-    "reports": 56,
+    "reports": 57,
     "data-sources": 1,
     "methodology": 8
   },
   "countsByLanguage": {
-    "en": 77,
+    "en": 78,
     "ms": 10
   },
   "countsByStatus": {
-    "verified": 87
+    "verified": 88
   },
   "outputFiles": [
     "knowledge/generated/site-overview.json",

@@ -136,6 +136,39 @@ describe('knowledge answer builder', () => {
     expect(answer.answer).not.toContain('Generic Generate Report page overview');
   });
 
+  it('uses the dedicated Forest Cover indicator record directly', () => {
+    const answer = buildKnowledgeAnswer({
+      status: 'FOUND',
+      matches: [
+        match({
+          score: 84,
+          record: {
+            id: 'indicator-forest-cover',
+            category: 'reports',
+            concept: 'forest_cover',
+            title: 'Forest Cover Indicator',
+            content: [
+              'Forest Cover measures remaining forest: the amount or share of land under forest.',
+              'Borneo Tracker treats it as an environmental conservation indicator, mapped to ESG Environment and SDG15 - Life on Land.',
+              'It is relevant to EUDR-style sourcing checks, and the current indicator configuration treats higher values as better.',
+              'Current data is not expressed in one uniform unit across all territories: Brunei uses % land from World Bank, while Sabah, Sarawak, and Kalimantan currently use year-2000 forest extent in hectares from Global Forest Watch.',
+              'Because the units differ, Brunei percentage-of-land values should not be directly compared with the hectare baselines.',
+            ].join(' '),
+          },
+        }),
+        match({ score: 61, record: { id: 'report-concept-forest-cover', category: 'reports', concept: 'forest_cover', title: 'forest_cover', content: 'A measure of remaining forest - central to SDG 15 and EUDR checks.' } }),
+      ],
+      warnings: [],
+    }, 'en');
+
+    expect(answer.recordIds).toEqual(['indicator-forest-cover']);
+    expect(answer.answer).toContain('Forest Cover measures remaining forest');
+    expect(answer.answer).toContain('EUDR-style sourcing checks');
+    expect(answer.answer).toContain('Brunei uses % land from World Bank');
+    expect(answer.answer).toContain('should not be directly compared with the hectare baselines');
+    expect(answer.answer).not.toContain('EUDR checks');
+  });
+
   it('returns localized no-match and ambiguous answers', () => {
     const noMatch = buildKnowledgeAnswer({ status: 'NO_MATCH', matches: [], warnings: [] }, 'en');
     const ambiguous = buildKnowledgeAnswer({ status: 'AMBIGUOUS', matches: [], warnings: ['KNOWLEDGE_AMBIGUOUS'] }, 'ms');

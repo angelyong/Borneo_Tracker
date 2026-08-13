@@ -35,7 +35,7 @@ describe('KnowledgeRepository', () => {
     const repository = new KnowledgeRepository();
     const records = repository.getAllRuntimeRecords();
 
-    expect(records).toHaveLength(87);
+    expect(records).toHaveLength(88);
     expect(records.every((item) => item.runtimeIncluded)).toBe(true);
     expect(records.every((item) => item.status === 'verified')).toBe(true);
   });

@@ -81,7 +81,7 @@ function compatibleSelectedMatches(matches: AIChatKnowledgeMatch[]): AIChatKnowl
 }
 
 function usesDedicatedAnswerRecord(match: AIChatKnowledgeMatch): boolean {
-  return ['esg-vs-sdg', 'generate-report-how-to', 'generate-report-page-en'].includes(match.record.id);
+  return ['esg-vs-sdg', 'generate-report-how-to', 'generate-report-page-en', 'indicator-forest-cover'].includes(match.record.id);
 }
 
 function complementaryEsgSdgMatches(matches: AIChatKnowledgeMatch[]): AIChatKnowledgeMatch[] {

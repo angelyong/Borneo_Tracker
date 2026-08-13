@@ -244,7 +244,14 @@ function buildIndicatorFact(fact: AIChatFactObject, repository: FactDataReposito
       indicator: fact.indicators[0],
       pillar: fact.pillars[0],
     };
-    const result = repository.getIndicatorValue(filters);
+    let result = repository.getIndicatorValue(filters);
+    if (
+      result.status !== 'found' &&
+      filters.concept === 'forest_cover' &&
+      filters.indicator === 'Forest cover'
+    ) {
+      result = repository.getIndicatorValue({ ...filters, indicator: undefined });
+    }
     if (result.status !== 'found') {
       addLookupWarning(fact, result.reason, result.status);
       continue;

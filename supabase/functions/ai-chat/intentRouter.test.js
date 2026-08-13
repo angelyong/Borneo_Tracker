@@ -16,6 +16,11 @@ describe('ai-chat intent router: SITE_KNOWLEDGE', () => {
     ['What is ESG?'],
     ['What are SDGs?'],
     ['Explain the Forest Cover indicator.'],
+    ['What does Forest Cover mean?'],
+    ['What is the Forest Cover indicator?'],
+    ['How is Forest Cover measured in Borneo Tracker?'],
+    ['Where does the Forest Cover data come from?'],
+    ['What is the source of the Forest Cover data?'],
     ['Which SDGs are monitored by Borneo Tracker?'],
     ['Where does the environmental data come from?'],
     ['How do I generate a report?'],
@@ -37,6 +42,7 @@ describe('ai-chat intent router: SITE_KNOWLEDGE', () => {
 describe('ai-chat intent router: DASHBOARD_DATA', () => {
   it.each([
     ["What is Sabah's resilience score?"],
+    ["What is Sabah's Forest Cover value?"],
     ['Which pillar is weakest in Sarawak?'],
     ['Compare the energy indicator for Sabah and Brunei.'],
     ['Apakah skor daya tahan Sabah?', { language: 'ms' }],

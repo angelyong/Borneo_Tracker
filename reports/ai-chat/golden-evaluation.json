@@ -341,13 +341,13 @@
             "generate-report-how-to",
             "generate-report-page-en",
             "esg-vs-sdg",
+            "indicator-forest-cover",
             "report-concept-air-quality",
             "report-concept-deforestation",
             "report-concept-economy",
             "report-concept-education",
             "report-concept-energy",
-            "report-concept-entertainment",
-            "report-concept-fire-hotspots"
+            "report-concept-entertainment"
           ],
           "sourceCount": 1,
           "status": "FOUND",
@@ -376,13 +376,13 @@
             "esg-vs-sdg",
             "generate-report-how-to",
             "generate-report-page-en",
+            "indicator-forest-cover",
             "report-concept-air-quality",
             "report-concept-deforestation",
             "report-concept-economy",
             "report-concept-education",
             "report-concept-energy",
-            "report-concept-entertainment",
-            "report-concept-fire-hotspots"
+            "report-concept-entertainment"
           ],
           "expected": [
             "generate-report-how-to"
@@ -539,11 +539,11 @@
             "esg-vs-sdg",
             "generate-report-page-en",
             "resilience-methodology-step-3-pillar-scores-resilience-index-two-numbers-by-design",
+            "indicator-forest-cover",
             "report-indicator-paddy-production-per-capita",
             "report-concept-air-quality",
             "report-concept-deforestation",
-            "report-concept-economy",
-            "report-concept-education"
+            "report-concept-economy"
           ],
           "sourceCount": 1,
           "status": "FOUND",
@@ -572,10 +572,10 @@
             "esg-indicators-page-en",
             "esg-vs-sdg",
             "generate-report-page-en",
+            "indicator-forest-cover",
             "report-concept-air-quality",
             "report-concept-deforestation",
             "report-concept-economy",
-            "report-concept-education",
             "report-indicator-mean-years-schooling-rls",
             "report-indicator-paddy-production-per-capita",
             "resilience-methodology-step-3-pillar-scores-resilience-index-two-numbers-by-design"
@@ -6404,9 +6404,10 @@
         "intent": "SITE_KNOWLEDGE",
         "knowledge": {
           "answerRecordIds": [
-            "report-concept-forest-cover"
+            "indicator-forest-cover"
           ],
           "recordIds": [
+            "indicator-forest-cover",
             "report-concept-forest-cover",
             "report-indicator-forest-cover",
             "dashboard-map-layers-en",
@@ -6415,12 +6416,11 @@
             "dashboard-resilience-en",
             "report-indicator-forest-extent-2000",
             "resilience-methodology-step-1-normalize-each-indicator-to-a-0-100-resilience-score",
-            "generate-report-page-en",
-            "regional-details-en"
+            "generate-report-page-en"
           ],
           "sourceCount": 1,
           "status": "FOUND",
-          "topRecordId": "report-concept-forest-cover",
+          "topRecordId": "indicator-forest-cover",
           "warnings": []
         },
         "language": "en"
@@ -6445,7 +6445,7 @@
             "dashboard-map-layers-en",
             "dashboard-resilience-en",
             "generate-report-page-en",
-            "regional-details-en",
+            "indicator-forest-cover",
             "report-concept-forest-cover",
             "report-indicator-forest-cover",
             "report-indicator-forest-extent-2000",
@@ -6454,7 +6454,7 @@
             "resilience-methodology-step-1-normalize-each-indicator-to-a-0-100-resilience-score"
           ],
           "expected": [
-            "report-concept-forest-cover"
+            "indicator-forest-cover"
           ],
           "field": "recordIds",
           "metric": "knowledgeRecallAt10",
@@ -6462,12 +6462,12 @@
         },
         {
           "actual": [
-            "dashboard-map-layers-en",
+            "indicator-forest-cover",
             "report-concept-forest-cover",
             "report-indicator-forest-cover"
           ],
           "expected": [
-            "report-concept-forest-cover"
+            "indicator-forest-cover"
           ],
           "field": "recordIds",
           "metric": "knowledgeRecallAt3",
@@ -6488,8 +6488,8 @@
           "pass": true
         },
         {
-          "actual": "report-concept-forest-cover",
-          "expected": "report-concept-forest-cover",
+          "actual": "indicator-forest-cover",
+          "expected": "indicator-forest-cover",
           "field": "topRecordId",
           "metric": "knowledgeTop1",
           "pass": true
@@ -7003,11 +7003,11 @@
             "dashboard-map-layers-en",
             "dashboard-resilience-en",
             "esg-vs-sdg",
+            "indicator-forest-cover",
             "report-concept-air-quality",
             "report-concept-deforestation",
             "report-concept-economy",
-            "report-concept-education",
-            "report-concept-energy"
+            "report-concept-education"
           ],
           "sourceCount": 1,
           "status": "FOUND",
@@ -7038,11 +7038,11 @@
             "esg-vs-sdg",
             "generate-report-how-to",
             "generate-report-page-en",
+            "indicator-forest-cover",
             "report-concept-air-quality",
             "report-concept-deforestation",
             "report-concept-economy",
-            "report-concept-education",
-            "report-concept-energy"
+            "report-concept-education"
           ],
           "expected": [
             "generate-report-how-to"
@@ -13167,7 +13167,7 @@
   },
   "unsupportedFeatureSummary": {
     "knowledgeIndexAvailable": true,
-    "knowledgeIndexRuntimeRecords": 87,
+    "knowledgeIndexRuntimeRecords": 88,
     "leverInfrastructureImplemented": true,
     "liveStatus": "BLOCKED_BY_SUPABASE",
     "liveSupabaseRepositoryEvaluated": false,

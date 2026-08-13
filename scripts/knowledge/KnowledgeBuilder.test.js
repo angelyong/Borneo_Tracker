@@ -78,6 +78,41 @@ describe('knowledge extraction', () => {
     expect(records.map((record) => record.concept)).toContain('food');
   });
 
+  it('extracts the verified Forest Cover indicator record from report content with data-source support', () => {
+    const sourceText = [
+      "export const INDICATOR_EXPLANATIONS = {",
+      "  'Forest cover': 'Share of land still under forest - a headline conservation indicator (SDG 15) and a key input to EUDR-style sourcing checks.',",
+      '};',
+      'const CONCEPT_EXPLANATIONS = {',
+      "  forest_cover: 'A measure of remaining forest - central to SDG 15 and EUDR checks.',",
+      '};',
+    ].join('\n');
+    const records = new PageContentExtractor().extract(sourceText, { kind: 'report-content' });
+    const forestCover = records.find((record) => record.id === 'indicator-forest-cover');
+
+    expect(forestCover).toMatchObject({
+      id: 'indicator-forest-cover',
+      title: 'Forest Cover Indicator',
+      category: 'reports',
+      pageUrl: '/reports',
+      concept: 'forest_cover',
+      sdgTags: ['SDG15'],
+      relatedSdgs: ['SDG15'],
+      sourcePath: 'INDICATOR_EXPLANATIONS.Forest cover',
+      sourceName: 'Borneo Tracker report content',
+      status: 'verified',
+      language: 'en',
+    });
+    expect(forestCover.content).toContain('measures remaining forest');
+    expect(forestCover.content).toContain('ESG Environment');
+    expect(forestCover.content).toContain('SDG15 - Life on Land');
+    expect(forestCover.content).toContain('EUDR-style sourcing checks');
+    expect(forestCover.content).toContain('Brunei uses % land from World Bank');
+    expect(forestCover.content).toContain('Sabah, Sarawak, and Kalimantan currently use year-2000 forest extent in hectares from Global Forest Watch');
+    expect(forestCover.content).toContain('should not be directly compared with the hectare baselines');
+    expect(forestCover.keywords).toEqual(expect.arrayContaining(['World Bank', 'Global Forest Watch', 'mixed units']));
+  });
+
   it('extracts the monitored SDG coverage record from indicator configuration', () => {
     const sourceText = "export const SDG_GOALS = [\n  { goal: 'SDG1', label: 'No Poverty' },\n  { goal: 'SDG15', label: 'Life on Land' },\n];";
     const records = new PageContentExtractor().extract(sourceText, { kind: 'indicator-config' });
@@ -413,6 +448,41 @@ describe('knowledge build output', () => {
     expect(canonicalRecord.content).toContain('goal-based view');
     expect(canonicalRecord.content).toContain('same tracked indicator dataset');
     expect(esgPageRecord.content).not.toContain('No canonical indicators are available for this pillar yet.');
+    expect(packagedRecord).toEqual(canonicalRecord);
+  });
+
+  it('includes the verified Forest Cover indicator record in generated and packaged indexes', () => {
+    const canonical = JSON.parse(fs.readFileSync(path.resolve('knowledge/generated/knowledge-index.json'), 'utf8'));
+    const packaged = JSON.parse(fs.readFileSync(path.resolve('supabase/functions/ai-chat/knowledge-index.json'), 'utf8'));
+    const canonicalRecord = canonical.records.find((record) => record.id === 'indicator-forest-cover');
+    const packagedRecord = packaged.records.find((record) => record.id === 'indicator-forest-cover');
+
+    expect(canonicalRecord).toMatchObject({
+      id: 'indicator-forest-cover',
+      title: 'Forest Cover Indicator',
+      category: 'reports',
+      language: 'en',
+      pageUrl: '/reports',
+      concept: 'forest_cover',
+      status: 'verified',
+      placeholder: false,
+      runtimeIncluded: true,
+      sourceFile: 'src/pages/reports/reportContent.js',
+      sourceType: 'page',
+      sourceId: 'report-content',
+      sourcePath: 'INDICATOR_EXPLANATIONS.Forest cover',
+      sourceName: 'Borneo Tracker report content',
+    });
+    expect(canonicalRecord.content).toContain('Forest Cover measures remaining forest');
+    expect(canonicalRecord.content).toContain('ESG Environment');
+    expect(canonicalRecord.content).toContain('SDG15 - Life on Land');
+    expect(canonicalRecord.content).toContain('EUDR-style sourcing checks');
+    expect(canonicalRecord.content).toContain('Brunei uses % land from World Bank');
+    expect(canonicalRecord.content).toContain('Global Forest Watch');
+    expect(canonicalRecord.content).toContain('not expressed in one uniform unit');
+    expect(canonicalRecord.content).toContain('should not be directly compared with the hectare baselines');
+    expect(canonicalRecord.content).not.toContain('time series');
+    expect(canonicalRecord.content).not.toContain('EUDR compliance');
     expect(packagedRecord).toEqual(canonicalRecord);
   });
 

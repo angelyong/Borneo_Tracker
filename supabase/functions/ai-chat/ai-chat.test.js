@@ -1019,6 +1019,27 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     expect(result.completed.comparability.decision).toBe('ALLOW');
   });
 
+  it('keeps Sabah Forest Cover value on the dashboard data path', async () => {
+    const result = await runIntegratedRequest({
+      ...validPayload,
+      message: "What is Sabah's Forest Cover value?",
+      currentPage: '/',
+      region: '',
+    });
+
+    expect(result.response.status).toBe(200);
+    const lifecycle = result.completed || result.fallbackLog;
+    expect(lifecycle.intent).toBe('DASHBOARD_DATA');
+    if (result.completed) {
+      expect(result.completed.entityCounts.territories).toBe(1);
+      expect(result.completed.entityCounts.concepts).toBe(1);
+      expect(result.completed.comparability.decision).toBe('ALLOW');
+    }
+    expect(result.body.answer).toContain('Forest extent (2000)');
+    expect(result.body.answer).toMatch(/6,684,138|6684138/);
+    expect(JSON.stringify(result.geminiClient.mock.calls)).not.toContain('indicator-forest-cover');
+  });
+
   it('routes Malay comparison wording into a comparability rejection', async () => {
     const result = await runIntegratedRequest({
       ...validPayload,
@@ -1318,7 +1339,7 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
 
   it.each([
     ['What is the difference between ESG and SDG?', ['esg-vs-sdg']],
-    ['Explain the Forest Cover indicator.', ['report-concept-forest-cover']],
+    ['Explain the Forest Cover indicator.', ['indicator-forest-cover']],
     ['Which SDGs are monitored by Borneo Tracker?', ['sdg-monitored-goals']],
     ['Where does the environmental data come from?', ['environmental-data-sources']],
     ['How do I generate a report?', ['generate-report-how-to']],
@@ -1336,6 +1357,46 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     expect(prompt.groundingPayload.answerStatus).toBe('FOUND');
     expect(prompt.groundingPayload.recordIds).toEqual(expect.arrayContaining(expectedIds));
     expect(body.answer).not.toBe('The Borneo Tracker assistant can answer verified questions about Borneo Tracker, dashboard data, and published Borneo news.');
+  });
+
+  it('returns the deterministic Forest Cover explanation when Gemini is unavailable', async () => {
+    const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(500, 'MISSING_GEMINI_API_KEY', 'missing'));
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
+
+    const response = await handler(request({ ...validPayload, message: 'Explain the Forest Cover indicator.', currentPage: '/', region: '' }));
+    const body = await response.json();
+    const [, prompt] = geminiClient.mock.calls[0];
+
+    expect(response.status).toBe(200);
+    expect(body.mode).toBe('template-fallback');
+    expect(body.fallback.reason).toBe('KNOWLEDGE_GEMINI_UNAVAILABLE');
+    expect(prompt.groundingPayload.recordIds).toEqual(['indicator-forest-cover']);
+    expect(body.answer).toContain('Forest Cover measures remaining forest');
+    expect(body.answer).toContain('ESG Environment');
+    expect(body.answer).toContain('SDG15 - Life on Land');
+    expect(body.answer).toContain('EUDR-style sourcing checks');
+    expect(body.answer).toContain('Brunei uses % land from World Bank');
+    expect(body.answer).toContain('Global Forest Watch');
+    expect(body.answer).toContain('should not be directly compared with the hectare baselines');
+    expect(body.answer).not.toContain('EUDR checks');
+    expect(body.answer).not.toContain('time series');
+    expect(body.answer).not.toContain('EUDR compliance');
+  });
+
+  it('uses source-aware Forest Cover knowledge for provenance questions', async () => {
+    const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(500, 'MISSING_GEMINI_API_KEY', 'missing'));
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
+
+    const response = await handler(request({ ...validPayload, message: 'Where does the Forest Cover data come from?', currentPage: '/', region: '' }));
+    const body = await response.json();
+    const [, prompt] = geminiClient.mock.calls[0];
+
+    expect(response.status).toBe(200);
+    expect(body.mode).toBe('template-fallback');
+    expect(prompt.groundingPayload.recordIds).toEqual(['indicator-forest-cover']);
+    expect(body.answer).toContain('Brunei uses % land from World Bank');
+    expect(body.answer).toContain('Sabah, Sarawak, and Kalimantan currently use year-2000 forest extent in hectares from Global Forest Watch');
+    expect(body.answer).toContain('should not be directly compared with the hectare baselines');
   });
 
   it('returns the deterministic ESG versus SDG comparison when Gemini is unavailable', async () => {
@@ -1396,6 +1457,26 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     expect(body.answer).toContain('reports that limitation instead of inventing unsupported content');
     expect(body.answer).not.toContain('No indicators are available for this selection.');
     expect(body.answer).not.toBe('To generate a report, which');
+  });
+
+  it('falls back to the full deterministic Forest Cover explanation when Gemini truncates output', async () => {
+    const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(502, 'GEMINI_TRUNCATED', 'truncated'));
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
+
+    const response = await handler(request({ ...validPayload, message: 'Explain the Forest Cover indicator.', currentPage: '/', region: '' }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(geminiClient).toHaveBeenCalledTimes(1);
+    expect(body.mode).toBe('template-fallback');
+    expect(body.fallback.reason).toBe('GEMINI_TRUNCATED');
+    expect(body.answer).toContain('Forest Cover measures remaining forest');
+    expect(body.answer).toContain('ESG Environment');
+    expect(body.answer).toContain('SDG15 - Life on Land');
+    expect(body.answer).toContain('EUDR-style sourcing checks');
+    expect(body.answer).toContain('Brunei uses % land from World Bank');
+    expect(body.answer).toContain('Global Forest Watch');
+    expect(body.answer).toContain('should not be directly compared with the hectare baselines');
   });
 
   it('falls back to deterministic dashboard answer when Gemini truncates output', async () => {

@@ -206,6 +206,20 @@ describe('indicator, target, comparison, trend, SDG, and district facts', () => 
     expect(fact.approvedNumericTokens).toContain('98.0%');
   });
 
+  it('uses the canonical Forest Cover concept row for Sabah value requests', () => {
+    const fact = buildFact("What is Sabah's Forest Cover value?");
+    expect(fact.availability).toBe('AVAILABLE');
+    expect(fact.values.rawValues[0]).toMatchObject({
+      territory: 'Sabah',
+      concept: 'forest_cover',
+      indicator: 'Forest extent (2000)',
+      value: 6684138,
+      unit: 'ha',
+      status: 'direct',
+    });
+    expect(fact.approvedNumericTokens).toContain('6684138');
+  });
+
   it('calculates a target gap when a compatible target exists', () => {
     const fact = buildFact('What is the target gap for Sabah clean water access?');
     expect(fact.values.target).toMatchObject({ value: 100, unit: '%' });

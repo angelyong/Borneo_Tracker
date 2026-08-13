@@ -298,9 +298,9 @@ function queryHintBoost(record: AIChatKnowledgeRecord, question: string, questio
     score += 24;
     matchedBy.push('query-hint:sdg-overview');
   }
-  if (phraseAppears(question, 'forest cover') && (concept === 'forest_cover' || normalizeText(record.title) === 'forest cover')) {
-    score += 12;
-    matchedBy.push('query-hint:forest-cover');
+  if (isForestCoverKnowledgeQuestion(question, questionTokens) && record.id === 'indicator-forest-cover') {
+    score += 44;
+    matchedBy.push('query-hint:forest-cover-indicator');
   }
   if (isSdgCoverageListQuestion(question, questionTokens) && record.id === 'sdg-monitored-goals') {
     score += 32;
@@ -384,6 +384,18 @@ function isEnvironmentalSourceQuestion(question: string, questionTokens: string[
     phraseAppears(question, 'environmental indicators') ||
     (has('environmental') && (has('data') || has('indicator') || has('indicators')));
   return asksSource && asksEnvironmental;
+}
+
+function isForestCoverKnowledgeQuestion(question: string, questionTokens: string[]): boolean {
+  const has = (token: string) => questionTokens.includes(token);
+  if (!phraseAppears(question, 'forest cover')) return false;
+  const asksDashboardValue = /\b(?:value|score|number|amount|rate|percentage|percent)\b/.test(question) &&
+    /\b(?:sabah|sarawak|brunei|kalimantan|borneo)\b/.test(question);
+  if (asksDashboardValue) return false;
+  return /\b(?:explain|indicator|mean|meaning|measure|measured|definition|source|sources|from|come|comes|provenance)\b/.test(question) ||
+    phraseAppears(question, 'what is forest cover') ||
+    phraseAppears(question, 'what does forest cover') ||
+    (has('data') && (has('source') || has('sources') || has('from')));
 }
 
 function isGenerateReportHowToQuestion(question: string, questionTokens: string[]): boolean {

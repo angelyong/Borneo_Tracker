@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { normalizeWhitespace, slugify } from './text.js';
 
 function findMatchingBracket(text, startIndex) {
@@ -253,7 +255,93 @@ function recordsFromReportContent(sourceText) {
     language: 'en',
   }));
 
-  return [...indicatorRecords, ...conceptRecords];
+  return [...indicatorRecords, ...conceptRecords, ...curatedForestCoverIndicatorRecords(sourceText)];
+}
+
+function loadIndicatorDataSnapshot() {
+  try {
+    return JSON.parse(fs.readFileSync(path.resolve('public/data/indicators.json'), 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+function hasForestCoverReportSupport(sourceText) {
+  return sourceText.includes("'Forest cover': 'Share of land still under forest") &&
+    sourceText.includes('EUDR-style sourcing checks') &&
+    sourceText.includes("forest_cover: 'A measure of remaining forest");
+}
+
+function currentForestCoverRows(payload) {
+  const rows = Array.isArray(payload?.rows) ? payload.rows : Array.isArray(payload?.indicators) ? payload.indicators : [];
+  return rows.filter((row) => row?.dashboard_concept === 'forest_cover' && row?.canonical === 1);
+}
+
+function hasRequiredForestCoverRows(rows) {
+  const byTerritory = new Map(rows.map((row) => [row.territory, row]));
+  const brunei = byTerritory.get('Brunei');
+  const hectareRows = ['Sabah', 'Sarawak', 'Kalimantan'].map((territory) => byTerritory.get(territory));
+  return brunei?.indicator === 'Forest cover' &&
+    brunei?.unit === '% land' &&
+    brunei?.source === 'World Bank' &&
+    hectareRows.every((row) => (
+      row?.indicator === 'Forest extent (2000)' &&
+      row?.unit === 'ha' &&
+      String(row?.source || '').includes('Global Forest Watch')
+    ));
+}
+
+function curatedForestCoverIndicatorRecords(sourceText) {
+  const payload = loadIndicatorDataSnapshot();
+  const rows = currentForestCoverRows(payload);
+  if (!hasForestCoverReportSupport(sourceText) || !hasRequiredForestCoverRows(rows)) return [];
+
+  const updatedDates = [...new Set(rows.map((row) => row.last_updated).filter(Boolean))];
+  const generatedAt = payload?.generatedAt || null;
+  const dateSentence = generatedAt && updatedDates.length === 1
+    ? `The current snapshot was generated on ${generatedAt}, and these Forest Cover rows were last updated on ${updatedDates[0]}.`
+    : null;
+
+  return [{
+    id: 'indicator-forest-cover',
+    title: 'Forest Cover Indicator',
+    category: 'reports',
+    content: [
+      'Forest Cover measures remaining forest: the amount or share of land under forest.',
+      'Borneo Tracker treats it as an environmental conservation indicator, mapped to ESG Environment and SDG15 - Life on Land.',
+      'It is relevant to EUDR-style sourcing checks, and the current indicator configuration treats higher values as better.',
+      'Current data is not expressed in one uniform unit across all territories: Brunei uses % land from World Bank, while Sabah, Sarawak, and Kalimantan currently use year-2000 forest extent in hectares from Global Forest Watch.',
+      'Because the units differ, Brunei percentage-of-land values should not be directly compared with the hectare baselines.',
+      dateSentence,
+    ].filter(Boolean).join(' '),
+    pageUrl: '/reports',
+    region: null,
+    concept: 'forest_cover',
+    sdgTags: ['SDG15'],
+    relatedSdgs: ['SDG15'],
+    keywords: [
+      'Forest Cover',
+      'Forest Cover indicator',
+      'forest cover meaning',
+      'what does Forest Cover mean',
+      'how Forest Cover is measured',
+      'source of Forest Cover data',
+      'where Forest Cover data comes from',
+      'remaining forest',
+      'share of land under forest',
+      'ESG Environment',
+      'SDG15 Life on Land',
+      'EUDR-style sourcing checks',
+      'World Bank',
+      'Global Forest Watch',
+      'mixed units',
+      'higher values are better',
+    ],
+    sourcePath: 'INDICATOR_EXPLANATIONS.Forest cover',
+    sourceName: 'Borneo Tracker report content',
+    status: 'verified',
+    language: 'en',
+  }];
 }
 
 function recordsFromGenerateReportPage(sourceText) {

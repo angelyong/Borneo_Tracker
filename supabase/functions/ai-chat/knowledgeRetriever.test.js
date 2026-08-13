@@ -49,7 +49,7 @@ function repository(records) {
 describe('static knowledge retriever', () => {
   it.each([
     ['What is the difference between ESG and SDG?', ['esg-vs-sdg']],
-    ['Explain the Forest Cover indicator.', ['report-concept-forest-cover']],
+    ['Explain the Forest Cover indicator.', ['indicator-forest-cover']],
     ['Which SDGs are monitored by Borneo Tracker?', ['sdg-monitored-goals']],
     ['Where does the environmental data come from?', ['environmental-data-sources']],
     ['How do I generate a report?', ['generate-report-how-to']],
@@ -141,6 +141,81 @@ describe('static knowledge retriever', () => {
     expect(result.status).toBe('FOUND');
     expect(result.matches[0].record.id).toBe('sdg-progress-page-en');
     expect(result.matches[0].record.id).not.toBe('esg-vs-sdg');
+  });
+
+  it.each([
+    'Explain the Forest Cover indicator.',
+    'What does Forest Cover mean?',
+    'What is the Forest Cover indicator?',
+    'How is Forest Cover measured in Borneo Tracker?',
+  ])('prefers the verified Forest Cover indicator record for: %s', (question) => {
+    const result = retrieveStaticKnowledge({
+      question,
+      language: 'en',
+      currentPage: '/',
+      territories: [],
+      concepts: question === 'What does Forest Cover mean?' ? ['forest_cover'] : [],
+      limit: 5,
+    }, new KnowledgeRepository());
+
+    expect(result.status).toBe('FOUND');
+    expect(result.matches[0].record.id).toBe('indicator-forest-cover');
+    expect(result.matches[0].record.status).toBe('verified');
+    expect(result.matches[0].record.placeholder).toBe(false);
+    expect(result.matches[0].record.runtimeIncluded).toBe(true);
+    expect(result.matches[0].matchedBy).toContain('query-hint:forest-cover-indicator');
+    expect(result.matches[0].record.id).not.toBe('report-concept-forest-cover');
+  });
+
+  it.each([
+    'Where does the Forest Cover data come from?',
+    'What is the source of the Forest Cover data?',
+  ])('uses the Forest Cover source-aware record for: %s', (question) => {
+    const result = retrieveStaticKnowledge({
+      question,
+      language: 'en',
+      currentPage: '/',
+      territories: [],
+      concepts: ['forest_cover'],
+      limit: 5,
+    }, new KnowledgeRepository());
+    const answer = buildKnowledgeAnswer(result, 'en');
+
+    expect(result.status).toBe('FOUND');
+    expect(result.matches[0].record.id).toBe('indicator-forest-cover');
+    expect(answer.recordIds).toEqual(['indicator-forest-cover']);
+    expect(answer.answer).toContain('Brunei uses % land from World Bank');
+    expect(answer.answer).toContain('Sabah, Sarawak, and Kalimantan currently use year-2000 forest extent in hectares from Global Forest Watch');
+    expect(answer.answer).toContain('should not be directly compared with the hectare baselines');
+  });
+
+  it('builds a complete deterministic Forest Cover answer without unsupported claims', () => {
+    const retrieval = retrieveStaticKnowledge({
+      question: 'Explain the Forest Cover indicator.',
+      language: 'en',
+      currentPage: '/',
+      territories: [],
+      concepts: [],
+      limit: 5,
+    }, new KnowledgeRepository());
+    const answer = buildKnowledgeAnswer(retrieval, 'en');
+
+    expect(answer.recordIds).toEqual(['indicator-forest-cover']);
+    expect(answer.answer).toContain('Forest Cover measures remaining forest');
+    expect(answer.answer).toContain('amount or share of land under forest');
+    expect(answer.answer).toContain('ESG Environment');
+    expect(answer.answer).toContain('SDG15 - Life on Land');
+    expect(answer.answer).toContain('EUDR-style sourcing checks');
+    expect(answer.answer).toContain('higher values as better');
+    expect(answer.answer).toContain('not expressed in one uniform unit');
+    expect(answer.answer).toContain('Brunei uses % land from World Bank');
+    expect(answer.answer).toContain('Global Forest Watch');
+    expect(answer.answer).toContain('should not be directly compared with the hectare baselines');
+    expect(answer.answer).not.toContain('EUDR checks');
+    expect(answer.answer).not.toContain('time series');
+    expect(answer.answer).not.toContain('historical series');
+    expect(answer.answer).not.toContain('EUDR compliance');
+    expect(answer.answer).not.toContain('establishes legal compliance');
   });
 
   it.each([
