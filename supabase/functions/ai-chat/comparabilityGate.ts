@@ -175,6 +175,14 @@ export const CONCEPT_RULE_REGISTRY: Record<string, ConceptComparabilityRule> = {
     trendAvailable: false,
     disclosures: ['Protected-area count comparisons are misleading; use percentage-of-land basis.'],
   },
+  resilience: {
+    concept: 'resilience',
+    crossTerritoryComparable: true,
+    comparableBasis: 'Resilience Index score',
+    requiresSameUnit: true,
+    trendAvailable: false,
+    disclosures: ['Resilience comparisons use committed territory-level index scores from the same resilience methodology.'],
+  },
   shelter: {
     concept: 'shelter',
     crossTerritoryComparable: false,

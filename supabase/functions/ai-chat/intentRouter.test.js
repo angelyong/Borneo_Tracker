@@ -8,8 +8,10 @@ function route(message, options = {}) {
 describe('ai-chat intent router: SITE_KNOWLEDGE', () => {
   it.each([
     ['What is Borneo Tracker?'],
+    ['Tell me something about Borneo Tracker that is not in your knowledge base.'],
     ['How do I generate a report?'],
     ['Bagaimana menggunakan laman ini?', { language: 'ms' }],
+    ['Apakah Borneo Tracker?', { language: 'ms' }],
     ['Apakah maksud halaman ESG?', { language: 'ms' }],
   ])('routes %s', (message, options = {}) => {
     const result = route(message, options);

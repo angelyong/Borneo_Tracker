@@ -44,6 +44,23 @@ async function submitMessage(text) {
   });
 }
 
+async function waitFor(assertion, timeoutMs = 1000) {
+  const started = Date.now();
+  let lastError;
+  while (Date.now() - started < timeoutMs) {
+    try {
+      assertion();
+      return;
+    } catch (error) {
+      lastError = error;
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 10));
+      });
+    }
+  }
+  throw lastError;
+}
+
 const successResponse = (body) => ({
   ok: true,
   status: 200,
@@ -194,6 +211,44 @@ describe('AI chat dialog', () => {
     expect(document.body.textContent).toContain('Which territory do you mean?');
   });
 
+  it('renders deterministic knowledge no-match as a successful fallback answer', async () => {
+    fetch.mockResolvedValueOnce(successResponse({
+      answer: 'The current Borneo Tracker knowledge base does not contain a verified answer for this question.',
+      mode: 'template-fallback',
+      sources: [],
+      fallback: { used: true, reason: 'KNOWLEDGE_NO_MATCH', degraded: true },
+    }));
+
+    render(<MemoryRouter><ControlledChat /></MemoryRouter>);
+    click(document.querySelector('[aria-label="AI Assistant"]'));
+    await submitMessage('Tell me something about Borneo Tracker that is not in your knowledge base.');
+
+    await waitFor(() => {
+      expect(document.body.textContent).toContain('Verified data response');
+      expect(document.body.textContent).toContain('does not contain a verified answer');
+      expect(document.querySelector('[role="alert"]')).toBeFalsy();
+    });
+  });
+
+  it('renders comparison fallback answers without dropping the second territory', async () => {
+    fetch.mockResolvedValueOnce(successResponse({
+      answer: 'Conclusion: Comparison uses Resilience Index score. Sabah: 63.7; Sarawak: 72.5.',
+      mode: 'template-fallback',
+      sources: [{ title: 'Resilience Index', publisher: 'Borneo Tracker' }],
+      fallback: { used: true, reason: 'GEMINI_NOT_CONFIGURED', degraded: true },
+    }));
+
+    render(<MemoryRouter><ControlledChat /></MemoryRouter>);
+    click(document.querySelector('[aria-label="AI Assistant"]'));
+    await submitMessage('Compare Sabah and Sarawak resilience scores.');
+
+    await waitFor(() => {
+      expect(document.body.textContent).toContain('Sabah: 63.7');
+      expect(document.body.textContent).toContain('Sarawak: 72.5');
+      expect(document.body.textContent).toContain('Resilience Index');
+    });
+  });
+
   it('renders the fallback label in Malay', async () => {
     await i18n.changeLanguage('ms');
     fetch.mockResolvedValueOnce(successResponse(fallbackFixture));
@@ -264,13 +319,17 @@ describe('AI chat dialog', () => {
     click(document.querySelector('[aria-label="AI Assistant"]'));
 
     await submitMessage('What is Borneo Tracker?');
-    expect(document.querySelector('[role="alert"]')?.textContent).toContain('not configured yet');
+    await waitFor(() => {
+      expect(document.querySelector('[role="alert"]')?.textContent).toContain('not configured yet');
+    });
     expect(document.body.textContent).not.toContain('fake Borneo Tracker answer');
 
     vi.stubEnv('VITE_AI_CHAT_ENDPOINT', 'https://example.test/ai-chat');
     fetch.mockResolvedValueOnce(successResponse({ answer: '<b>bad</b>', mode: 'old-mode', sources: [] }));
     await submitMessage('Malformed');
-    expect(document.querySelector('[role="alert"]')?.textContent).toContain('invalid response');
+    await waitFor(() => {
+      expect(document.querySelector('[role="alert"]')?.textContent).toContain('invalid response');
+    });
     expect(document.body.textContent).not.toContain('<b>bad</b>');
   });
 });

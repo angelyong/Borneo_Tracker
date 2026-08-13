@@ -224,6 +224,44 @@ describe('indicator, target, comparison, trend, SDG, and district facts', () => 
     expect(fact.values.rawValues.length).toBeGreaterThanOrEqual(2);
   });
 
+  it('preserves both territory resilience values for comparison requests', () => {
+    const fact = buildFact('Compare Sabah and Sarawak resilience scores.');
+    expect(fact.comparison.requested).toBe(true);
+    expect(fact.comparison.allowed).toBe(true);
+    expect(fact.territories).toEqual(expect.arrayContaining(['Sabah', 'Sarawak']));
+    expect(fact.values.rawValues).toEqual(expect.arrayContaining([
+      expect.objectContaining({ territory: 'Sabah', concept: 'resilience', value: 63.7 }),
+      expect.objectContaining({ territory: 'Sarawak', concept: 'resilience', value: 72.5 }),
+    ]));
+    expect(fact.approvedNumericTokens).toEqual(expect.arrayContaining(['63.7', '72.5']));
+  });
+
+  it('uses injected resilience data rather than a hard-coded score', () => {
+    const repository = new FactDataRepository({
+      resilience: {
+        generatedAt: '2099-01-01',
+        territories: {
+          Sabah: {
+            index: 41.2,
+            weakestPillar: 'Food',
+            pillarScores: { Food: 41.2 },
+            detail: {},
+          },
+        },
+      },
+      indicators: { rows: [] },
+      districts: { rows: [] },
+    });
+
+    const fact = buildFact("What is Sabah's resilience score?", { repository });
+    expect(fact.values.overallResilience).toMatchObject({
+      territory: 'Sabah',
+      value: 41.2,
+      formattedValue: '41.2',
+    });
+    expect(fact.approvedNumericTokens).toContain('41.2');
+  });
+
   it('blocks rejected comparisons', () => {
     const fact = buildFact('Compare forest cover between Sabah and Brunei.');
     expect(fact.availability).toBe('BLOCKED');

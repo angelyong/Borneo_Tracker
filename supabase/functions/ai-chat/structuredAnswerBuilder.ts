@@ -354,6 +354,10 @@ function conclusionFromValues(fact: AIChatFactObject, context: BuilderContext): 
   references: string[];
 } {
   const { language } = context;
+  if (fact.comparison.requested) {
+    const comparison = comparisonConclusion(fact, language);
+    if (comparison) return comparison;
+  }
   if (fact.values.overallResilience) {
     const value = fact.values.overallResilience;
     return {
@@ -399,6 +403,30 @@ function conclusionFromValues(fact: AIChatFactObject, context: BuilderContext): 
     text: fact.conclusion?.text || 'The requested value is available only as supporting metadata.',
     code: fact.conclusion?.code || 'FACT_AVAILABLE',
     references: ['conclusion'],
+  };
+}
+
+function comparisonConclusion(fact: AIChatFactObject, language: SupportedLanguage): {
+  text: string;
+  code: string;
+  references: string[];
+} | undefined {
+  const comparableValues = fact.values.rawValues
+    .filter((value) => value.territory && value.label !== 'compatible difference')
+    .slice(0, 2);
+  if (comparableValues.length < 2) return undefined;
+
+  const [left, right] = comparableValues;
+  const basis = fact.comparison.basis || left.unit || right.unit || 'same committed basis';
+  const valueText = language === 'ms'
+    ? `${left.territory}: ${left.formattedValue}; ${right.territory}: ${right.formattedValue}`
+    : `${left.territory}: ${left.formattedValue}; ${right.territory}: ${right.formattedValue}`;
+  return {
+    text: language === 'ms'
+      ? `Perbandingan menggunakan ${basis}. ${valueText}.`
+      : `Comparison uses ${basis}. ${valueText}.`,
+    code: 'COMPARISON_CONCLUSION',
+    references: ['values.rawValues', 'comparison.basis'],
   };
 }
 

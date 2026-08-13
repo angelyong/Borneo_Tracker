@@ -1235,6 +1235,75 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     expect(body.sources.length).toBeGreaterThan(0);
   });
 
+  it('preserves selected site-overview content for Borneo Tracker identity when Gemini is unavailable', async () => {
+    const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(500, 'MISSING_GEMINI_API_KEY', 'missing'));
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
+
+    const response = await handler(request({ ...validPayload, message: 'What is Borneo Tracker?', currentPage: '/', region: '' }));
+    const body = await response.json();
+    const [, prompt] = geminiClient.mock.calls[0];
+
+    expect(response.status).toBe(200);
+    expect(body.mode).toBe('template-fallback');
+    expect(body.fallback.reason).toBe('KNOWLEDGE_GEMINI_UNAVAILABLE');
+    expect(body.answer).toContain('Borneo Tracker brings environmental, social and sustainability indicators together');
+    expect(body.answer).not.toBe('The Borneo Tracker assistant can answer verified questions about Borneo Tracker, dashboard data, and published Borneo news.');
+    expect(prompt.groundingPayload.recordIds).toContain('about-borneo-tracker-en');
+  });
+
+  it('prefers Malay site knowledge for Malay Borneo Tracker identity questions', async () => {
+    const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(500, 'MISSING_GEMINI_API_KEY', 'missing'));
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
+
+    const response = await handler(request({ ...validPayload, message: 'Apakah Borneo Tracker?', currentPage: '/', region: '', language: 'ms' }));
+    const body = await response.json();
+    const [, prompt] = geminiClient.mock.calls[0];
+
+    expect(response.status).toBe(200);
+    expect(body.mode).toBe('template-fallback');
+    expect(body.answer).toContain('Borneo Tracker menggabungkan penunjuk alam sekitar');
+    expect(prompt.groundingPayload.language).toBe('ms');
+    expect(prompt.groundingPayload.recordIds).toContain('about-borneo-tracker-ms');
+  });
+
+  it('returns deterministic knowledge no-match for explicit knowledge-base gaps without Gemini or quota', async () => {
+    const geminiClient = vi.fn();
+    const quotaService = allowAllQuotaService();
+    const handler = createAiChatHandler({ geminiClient, quotaService, logger: silentLogger });
+
+    const response = await handler(request({
+      ...validPayload,
+      message: 'Tell me something about Borneo Tracker that is not in your knowledge base.',
+      currentPage: '/',
+      region: '',
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.mode).toBe('template-fallback');
+    expect(body.fallback.reason).toBe('KNOWLEDGE_NO_MATCH');
+    expect(body.answer).toBe('The current Borneo Tracker knowledge base does not contain a verified answer for this question.');
+    expect(geminiClient).not.toHaveBeenCalled();
+    expect(quotaService.reserveForModelCall).not.toHaveBeenCalled();
+  });
+
+  it('preserves both territories in live comparison grounding and deterministic fallback', async () => {
+    const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(500, 'MISSING_GEMINI_API_KEY', 'missing'));
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
+
+    const response = await handler(request({ ...validPayload, message: 'Compare Sabah and Sarawak resilience scores.', currentPage: '/dashboard', region: '' }));
+    const body = await response.json();
+    const [, prompt] = geminiClient.mock.calls[0];
+
+    expect(response.status).toBe(200);
+    expect(body.mode).toBe('template-fallback');
+    expect(body.answer).toContain('Sabah: 63.7');
+    expect(body.answer).toContain('Sarawak: 72.5');
+    expect(body.answer).not.toContain("Sabah's overall resilience score is 63.7.");
+    expect(prompt.groundingPayload.conclusion).toContain('Sabah: 63.7');
+    expect(prompt.groundingPayload.conclusion).toContain('Sarawak: 72.5');
+  });
+
   it('bypasses Gemini for knowledge no-match and ambiguity', async () => {
     const geminiClient = vi.fn();
     const knowledgeRetriever = vi.fn()

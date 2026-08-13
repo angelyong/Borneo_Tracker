@@ -104,6 +104,35 @@ describe('static knowledge retriever', () => {
     expect(fallback.warnings).toContain('LANGUAGE_FALLBACK');
   });
 
+  it('prefers the verified Malay Borneo Tracker record for Malay product questions', () => {
+    const result = retrieveStaticKnowledge({
+      question: 'Apakah Borneo Tracker?',
+      language: 'ms',
+      currentPage: '/about',
+      territories: [],
+      concepts: [],
+    }, repository([
+      record({ id: 'about-en', language: 'en', keywords: ['borneo tracker'], content: 'Borneo Tracker brings trusted data together.' }),
+      record({ id: 'about-ms', language: 'ms', title: 'Memahami Borneo', keywords: ['borneo tracker'], content: 'Borneo Tracker menggabungkan data yang disahkan.' }),
+    ]));
+
+    expect(result.status).toBe('FOUND');
+    expect(result.matches[0].record.id).toBe('about-ms');
+    expect(result.matches[0].record.language).toBe('ms');
+  });
+
+  it('returns no-match when the user explicitly asks for content outside the knowledge base', () => {
+    const result = retrieveStaticKnowledge({
+      question: 'Tell me something about Borneo Tracker that is not in your knowledge base.',
+      language: 'en',
+      territories: [],
+      concepts: [],
+    }, repository([record({ id: 'about-en', keywords: ['borneo tracker'] })]));
+
+    expect(result.status).toBe('NO_MATCH');
+    expect(result.matches).toEqual([]);
+  });
+
   it('returns no match for weak guesses and prevents substring false positives', () => {
     const result = retrieveStaticKnowledge({
       question: 'art',

@@ -165,6 +165,20 @@ describe('structured answer AVAILABLE layers', () => {
     expect(answer.approvedYearTokens).toContain('2024');
   });
 
+  it('builds a comparison-specific resilience answer with both territories', () => {
+    const { answer, factObject, entities } = buildFactAndAnswer('Compare Sabah and Sarawak resilience scores.');
+
+    expect(entities.operations.comparison).toBe(true);
+    expect(factObject.values.rawValues).toEqual(expect.arrayContaining([
+      expect.objectContaining({ territory: 'Sabah', value: 63.7 }),
+      expect.objectContaining({ territory: 'Sarawak', value: 72.5 }),
+    ]));
+    expect(answer.layers.conclusion.text).toContain('Sabah: 63.7');
+    expect(answer.layers.conclusion.text).toContain('Sarawak: 72.5');
+    expect(answer.layers.conclusion.text).not.toBe("Sabah's overall resilience score is 63.7.");
+    expect(answer.summaryText).toContain('Sarawak: 72.5');
+  });
+
   it('builds a target and gap layer', () => {
     const { answer } = buildFactAndAnswer('What is the target gap for Sabah clean water access?');
 

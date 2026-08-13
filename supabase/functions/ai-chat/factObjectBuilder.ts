@@ -138,7 +138,7 @@ function buildResilienceFact(fact: AIChatFactObject, repository: FactDataReposit
       continue;
     }
     const sourcePath = `territories.${territory}.index`;
-    fact.values.overallResilience = {
+    const value: FactValue = {
       label: `${territory} Resilience Index`,
       territory,
       concept: 'resilience',
@@ -148,6 +148,8 @@ function buildResilienceFact(fact: AIChatFactObject, repository: FactDataReposit
       status: 'calculated',
       sourcePath,
     };
+    if (!fact.values.overallResilience) fact.values.overallResilience = value;
+    if (fact.comparison.requested) fact.values.rawValues.push(value);
     addSource(fact, repository.getSourceForResilience(sourcePath));
     addPillarScores(fact, territory, result.value.pillarScores || {}, repository);
     fact.diagnosis = {
@@ -588,4 +590,3 @@ function dedupeSources(sources: FactSource[]): FactSource[] {
 function pillarScoreInputs(scores: Record<string, number>) {
   return Object.entries(scores).map(([pillar, score]) => ({ pillar, score }));
 }
-

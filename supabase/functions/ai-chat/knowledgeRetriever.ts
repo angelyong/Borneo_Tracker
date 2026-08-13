@@ -41,6 +41,10 @@ export function retrieveStaticKnowledge(
   query: AIChatKnowledgeQuery,
   repository = new KnowledgeRepository()
 ): AIChatKnowledgeRetrievalResult {
+  if (requestsContentOutsideKnowledgeBase(query.question)) {
+    return { matches: [], status: 'NO_MATCH', warnings: ['KNOWLEDGE_NO_MATCH_REQUESTED'] };
+  }
+
   const records = repository.getAllRuntimeRecords();
   const scored = records
     .map((record) => scoreRecord(record, query))
@@ -258,4 +262,11 @@ function isAmbiguous(top: Scored, matches: Scored[]): boolean {
 
 function normalizeLanguage(language: string): string {
   return language === 'ms' ? 'ms' : 'en';
+}
+
+function requestsContentOutsideKnowledgeBase(question: string): boolean {
+  const normalized = normalizeText(question);
+  return /\b(?:not|isn t|is not|isnt|outside|beyond|tiada|bukan)\b.{0,40}\bknowledge base\b/i.test(normalized) ||
+    /\bknowledge base\b.{0,40}\b(?:not|outside|beyond)\b/i.test(normalized) ||
+    /\bpangkalan pengetahuan\b.{0,40}\b(?:tiada|bukan|di luar)\b/i.test(normalized);
 }

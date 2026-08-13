@@ -92,6 +92,7 @@ describe('comparability rule registry', () => {
       'internet_use',
       'poverty',
       'protected_areas',
+      'resilience',
       'shelter',
       'unemployment_rate',
     ]);

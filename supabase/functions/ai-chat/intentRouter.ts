@@ -25,6 +25,7 @@ const TERRITORY_TERMS = ['sabah', 'sarawak', 'brunei', 'kalimantan', 'borneo'];
 
 const SIGNALS: Record<Exclude<AIChatIntent, 'OUT_OF_SCOPE'>, IntentSignal[]> = {
   SITE_KNOWLEDGE: [
+    { phrase: 'borneo tracker', weight: 4, language: 'en' },
     { phrase: 'what is borneo tracker', weight: 5, language: 'en' },
     { phrase: 'how do i', weight: 3, language: 'en' },
     { phrase: 'how to use', weight: 4, language: 'en' },
@@ -39,6 +40,7 @@ const SIGNALS: Record<Exclude<AIChatIntent, 'OUT_OF_SCOPE'>, IntentSignal[]> = {
     { phrase: 'sdg page', weight: 4, language: 'en' },
     { phrase: 'data policy', weight: 3, language: 'en' },
     { phrase: 'bagaimana menggunakan', weight: 5, language: 'ms' },
+    { phrase: 'apakah borneo tracker', weight: 6, language: 'ms' },
     { phrase: 'apakah maksud', weight: 5, language: 'ms' },
     { phrase: 'cara guna', weight: 4, language: 'ms' },
     { phrase: 'jana laporan', weight: 5, language: 'ms' },

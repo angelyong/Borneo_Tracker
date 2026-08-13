@@ -43,7 +43,7 @@ function getTimeoutMs() {
 }
 
 function getChatEndpoint() {
-  return import.meta.env.VITE_AI_CHAT_ENDPOINT?.trim() || CHAT_ENDPOINT;
+  return import.meta.env.VITE_AI_CHAT_ENDPOINT?.trim() ?? CHAT_ENDPOINT;
 }
 
 function createRequestBody({ message, currentPage, region, language }) {
