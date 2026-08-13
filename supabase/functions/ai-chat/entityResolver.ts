@@ -1,6 +1,7 @@
 import indicatorsData from '../../../public/data/indicators.json' with { type: 'json' };
 import districtsData from '../../../public/data/districts.json' with { type: 'json' };
 import type { AIChatEntityResult, AIChatRequest } from './contracts.ts';
+import { normalizeSdgGoalCode, SUPPORTED_SDG_GOALS } from './factDataRepository.ts';
 
 type Alias = {
   term: string;
@@ -137,13 +138,14 @@ const PILLAR_ALIASES: Alias[] = [
 ];
 
 const OPERATION_ALIASES: Record<keyof AIChatEntityResult['operations'], string[]> = {
-  comparison: ['compare', 'versus', 'vs', 'difference', 'between', 'bandingkan', 'berbanding', 'perbezaan'],
+  comparison: ['compare', 'comparison', 'versus', 'vs', 'difference', 'between', 'bandingkan', 'berbanding', 'perbezaan'],
   ranking: ['rank', 'ranking', 'highest', 'lowest', 'kedudukan', 'tertinggi', 'terendah'],
   trend: ['trend', 'over time', 'from year to year', 'dari tahun ke tahun', 'siri sejarah'],
   weakest: ['weakest', 'weakest pillar', 'paling lemah', 'terlemah'],
   strongest: ['strongest', 'strongest pillar', 'paling kuat', 'terkuat'],
   targetGap: ['target', 'gap', 'target gap', 'sasaran', 'jurang'],
   sdgProgress: ['sdg progress', 'sdg', 'sustainable development goal', 'kemajuan sdg', 'matlamat pembangunan mampan'],
+  sdgIndicatorList: ['indicators support', 'indicators mapped', 'indicators are mapped', 'indicators tracked', 'indicators are tracked', 'indicators for', 'tracked under', 'support sdg', 'mapped to sdg', 'show me indicators', 'dashboard indicators map to', 'show for sdg'],
   districtLevel: ['district', 'district level', 'daerah', 'peringkat daerah'],
   latest: ['latest', 'current', 'recent', 'terkini', 'semasa', 'baru-baru ini'],
 };
@@ -273,6 +275,7 @@ function detectOperations(question: string, matchedTerms: string[]): AIChatEntit
     strongest: false,
     targetGap: false,
     sdgProgress: false,
+    sdgIndicatorList: false,
     districtLevel: false,
     latest: false,
   };
@@ -285,7 +288,62 @@ function detectOperations(question: string, matchedTerms: string[]): AIChatEntit
       break;
     }
   }
+  if (/(?:\bindicators?\b.*\b(?:sdg|life on land|climate action|clean water and sanitation|good health and well being)\b)|(?:\bsdg\s*\d+\b.*\bindicators?\b)|(?:\bwhat\b.*\bborneo tracker\b.*\bshow\b.*\bsdg\s*\d+\b)/i.test(question)) {
+    operations.sdgIndicatorList = true;
+    matchedTerms.push('sdg indicator list');
+  }
   return operations;
+}
+
+function detectComparisonQuery(
+  question: string,
+  territories: string[],
+  concepts: string[],
+  indicators: string[],
+  pillars: string[],
+  matchedTerms: string[]
+): AIChatEntityResult['comparisonQuery'] | undefined {
+  const hasDashboardEntityContext =
+    territories.length >= 2 &&
+    (concepts.length > 0 || indicators.length > 0 || pillars.length > 0 || /\b(?:score|indicator|metric|pillar|resilience|forest cover)\b/i.test(question));
+  const patterns: Array<{ kind: NonNullable<AIChatEntityResult['comparisonQuery']>['kind']; term: string; pattern: RegExp; needsEntityContext?: boolean }> = [
+    { kind: 'difference', term: 'how much higher', pattern: /\bhow\s+much\s+higher\b/i, needsEntityContext: true },
+    { kind: 'difference', term: 'how much lower', pattern: /\bhow\s+much\s+lower\b/i, needsEntityContext: true },
+    { kind: 'difference', term: 'difference between', pattern: /\bdifference\s+between\b/i, needsEntityContext: true },
+    { kind: 'higher', term: 'which has the higher', pattern: /\bwhich\s+has\s+the\s+higher\b/i, needsEntityContext: true },
+    { kind: 'higher', term: 'which is higher', pattern: /\bwhich\s+is\s+higher\b/i, needsEntityContext: true },
+    { kind: 'lower', term: 'which has the lower', pattern: /\bwhich\s+has\s+the\s+lower\b/i, needsEntityContext: true },
+    { kind: 'lower', term: 'which is lower', pattern: /\bwhich\s+is\s+lower\b/i, needsEntityContext: true },
+    { kind: 'higher', term: 'higher', pattern: /\bhigher\b/i, needsEntityContext: true },
+    { kind: 'lower', term: 'lower', pattern: /\blower\b/i, needsEntityContext: true },
+    { kind: 'generic', term: 'comparison', pattern: /\bcomparison\b/i },
+    { kind: 'generic', term: 'compare', pattern: /\bcompare\b/i },
+    { kind: 'generic', term: 'versus', pattern: /\bversus\b|\bvs\b/i },
+  ];
+
+  for (const item of patterns) {
+    if (item.needsEntityContext && !hasDashboardEntityContext) continue;
+    if (!item.pattern.test(question)) continue;
+    matchedTerms.push(item.term);
+    return { kind: item.kind, matchedTerm: item.term };
+  }
+  return undefined;
+}
+
+function resolveSdgGoals(question: string, matchedTerms: string[]): string[] {
+  const goals: string[] = [];
+  for (const match of question.matchAll(/\bsdg\s*0?(\d{1,2})\b/gi)) {
+    const goal = normalizeSdgGoalCode(match[0]);
+    if (!goal) continue;
+    addUnique(goals, goal);
+    matchedTerms.push(normalizeText(match[0]));
+  }
+  for (const goal of SUPPORTED_SDG_GOALS) {
+    if (!phrasePattern(goal.label).test(question)) continue;
+    addUnique(goals, goal.goal);
+    matchedTerms.push(normalizeText(goal.label));
+  }
+  return goals;
 }
 
 function detectLanguage(explicitLanguage: string | undefined, question: string, matchedTerms: string[]): string {
@@ -317,12 +375,14 @@ export function resolveAiChatEntities(
   const ambiguities: string[] = [];
   const years = detectYears(normalizedQuestion);
   const operations = detectOperations(normalizedQuestion, matchedTerms);
+  const sdgGoals = resolveSdgGoals(normalizedQuestion, matchedTerms);
 
   if (!normalizedQuestion) {
     return {
       territories: [],
       regions: [],
       concepts: [],
+      sdgGoals: [],
       indicators: [],
       pillars: [],
       districts: [],
@@ -353,6 +413,9 @@ export function resolveAiChatEntities(
   const pillars = matchAliases(normalizedQuestion, orderedAliases(PILLAR_ALIASES), matchedTerms, ambiguities);
   const districts = resolveDistricts(normalizedQuestion, repositoryData.districts?.rows || [], matchedTerms, ambiguities);
 
+  const comparisonQuery = detectComparisonQuery(normalizedQuestion, territories, concepts, indicators, pillars, matchedTerms);
+  if (comparisonQuery) operations.comparison = true;
+
   if (districts.length) operations.districtLevel = true;
   if (years.yearRange) operations.trend = true;
 
@@ -364,11 +427,13 @@ export function resolveAiChatEntities(
     territories,
     regions: [...new Set(regions)],
     concepts,
+    sdgGoals,
     indicators,
     pillars,
     districts,
     years: years.years,
     operations,
+    ...(comparisonQuery ? { comparisonQuery } : {}),
     ambiguities,
     matchedTerms: [...new Set(matchedTerms)],
     language: detectLanguage(options.language, normalizedQuestion, matchedTerms),

@@ -4,10 +4,10 @@ Run ID: stage-6-golden-1970-01-01
 
 ## Summary
 
-- Questions: 77
-- English: 41
+- Questions: 88
+- English: 52
 - Malay: 36
-- Passed: 73
+- Passed: 84
 - Failed: 0
 - Skipped: 4
 - Safety-critical passed: true
@@ -16,15 +16,16 @@ Run ID: stage-6-golden-1970-01-01
 
 | Metric | Evaluated | Passed | Failed | Value |
 |---|---:|---:|---:|---:|
-| routingAccuracy | 73 | 73 | 0 | 1 |
-| entityResolutionAccuracy | 95 | 95 | 0 | 1 |
-| operationDetectionAccuracy | 657 | 657 | 0 | 1 |
-| comparabilityAccuracy | 49 | 49 | 0 | 1 |
-| factAvailabilityAccuracy | 49 | 49 | 0 | 1 |
-| blockedClarificationAccuracy | 146 | 146 | 0 | 1 |
+| routingAccuracy | 84 | 84 | 0 | 1 |
+| entityResolutionAccuracy | 117 | 117 | 0 | 1 |
+| operationDetectionAccuracy | 840 | 840 | 0 | 1 |
+| comparabilityAccuracy | 54 | 54 | 0 | 1 |
+| factAvailabilityAccuracy | 60 | 60 | 0 | 1 |
+| blockedClarificationAccuracy | 168 | 168 | 0 | 1 |
 | newsPrivacyPassRate | 12 | 12 | 0 | 1 |
 | numericSecurityValidationPassRate | 12 | 12 | 0 | 1 |
 | fallbackCorrectness | 27 | 27 | 0 | 1 |
+| comparisonAnswerAccuracy | 26 | 26 | 0 | 1 |
 | knowledgeRetrievalStatusAccuracy | 11 | 11 | 0 | 1 |
 | knowledgeTop1RetrievalAccuracy | 11 | 11 | 0 | 1 |
 | knowledgeRecallAt3 | 11 | 11 | 0 | 1 |

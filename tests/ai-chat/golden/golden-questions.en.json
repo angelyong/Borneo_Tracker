@@ -344,5 +344,104 @@
     "implementationStatus": "IMPLEMENTED",
     "expected": { "intent": "SITE_KNOWLEDGE", "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "districtLevel": false, "latest": false }, "blocked": false, "clarificationRequired": false, "knowledge": { "status": "FOUND", "expectedRecordIds": ["generate-report-how-to"], "sourceCountMin": 1 } },
     "tags": ["site_knowledge", "suggested_question"]
+  },
+  {
+    "id": "golden-en-042",
+    "language": "en",
+    "question": "Which indicators support SDG 15?",
+    "context": { "currentPage": "/", "language": "en" },
+    "implementationStatus": "IMPLEMENTED",
+    "expected": { "intent": "DASHBOARD_DATA", "sdgGoals": ["SDG15"], "sdgIndicators": ["Forest cover", "Forest extent (2000)", "National parks (count)"], "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": true, "sdgIndicatorList": true, "districtLevel": false, "latest": false }, "factAvailability": "AVAILABLE", "blocked": false, "clarificationRequired": false },
+    "tags": ["dashboard", "sdg"]
+  },
+  {
+    "id": "golden-en-043",
+    "language": "en",
+    "question": "Which indicators are mapped to SDG 13?",
+    "context": { "currentPage": "/", "language": "en" },
+    "implementationStatus": "IMPLEMENTED",
+    "expected": { "intent": "DASHBOARD_DATA", "sdgGoals": ["SDG13"], "sdgIndicators": ["Air quality (AQI, live)", "Fire alerts (VIIRS, annual)", "Tree cover loss (cumulative)"], "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": true, "sdgIndicatorList": true, "districtLevel": false, "latest": false }, "factAvailability": "AVAILABLE", "blocked": false, "clarificationRequired": false },
+    "tags": ["dashboard", "sdg"]
+  },
+  {
+    "id": "golden-en-044",
+    "language": "en",
+    "question": "What indicators are tracked under SDG 6?",
+    "context": { "currentPage": "/", "language": "en" },
+    "implementationStatus": "IMPLEMENTED",
+    "expected": { "intent": "DASHBOARD_DATA", "sdgGoals": ["SDG6"], "sdgIndicators": ["Clean water access"], "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": true, "sdgIndicatorList": true, "districtLevel": false, "latest": false }, "factAvailability": "AVAILABLE", "blocked": false, "clarificationRequired": false },
+    "tags": ["dashboard", "sdg"]
+  },
+  {
+    "id": "golden-en-045",
+    "language": "en",
+    "question": "Show me indicators for SDG 3.",
+    "context": { "currentPage": "/", "language": "en" },
+    "implementationStatus": "IMPLEMENTED",
+    "expected": { "intent": "DASHBOARD_DATA", "sdgGoals": ["SDG3"], "sdgIndicators": ["Life expectancy"], "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": true, "sdgIndicatorList": true, "districtLevel": false, "latest": false }, "factAvailability": "AVAILABLE", "blocked": false, "clarificationRequired": false },
+    "tags": ["dashboard", "sdg"]
+  },
+  {
+    "id": "golden-en-046",
+    "language": "en",
+    "question": "Which dashboard indicators map to Life on Land?",
+    "context": { "currentPage": "/", "language": "en" },
+    "implementationStatus": "IMPLEMENTED",
+    "expected": { "intent": "DASHBOARD_DATA", "sdgGoals": ["SDG15"], "sdgIndicators": ["Forest cover", "Forest extent (2000)", "National parks (count)"], "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "sdgIndicatorList": true, "districtLevel": false, "latest": false }, "factAvailability": "AVAILABLE", "blocked": false, "clarificationRequired": false },
+    "tags": ["dashboard", "sdg"]
+  },
+  {
+    "id": "golden-en-047",
+    "language": "en",
+    "question": "Which indicators support SDG 5?",
+    "context": { "currentPage": "/", "language": "en" },
+    "implementationStatus": "IMPLEMENTED",
+    "expected": { "intent": "DASHBOARD_DATA", "sdgGoals": ["SDG5"], "sdgIndicators": [], "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": true, "sdgIndicatorList": true, "districtLevel": false, "latest": false }, "factAvailability": "UNAVAILABLE", "blocked": false, "clarificationRequired": false },
+    "tags": ["dashboard", "sdg"]
+  },
+  {
+    "id": "golden-en-048",
+    "language": "en",
+    "question": "Compare Sabah and Sarawak resilience scores.",
+    "context": { "currentPage": "/dashboard", "language": "en" },
+    "implementationStatus": "IMPLEMENTED",
+    "expected": { "intent": "DASHBOARD_DATA", "territories": ["Sabah", "Sarawak"], "concepts": ["resilience"], "operations": { "comparison": true, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "sdgIndicatorList": false, "districtLevel": false, "latest": false }, "comparabilityDecision": "ALLOW", "factAvailability": "AVAILABLE", "blocked": false, "clarificationRequired": false, "comparison": { "values": { "Sabah": 63.7, "Sarawak": 72.5 }, "difference": 8.8, "direction": "Sarawak is higher", "comparability": "ALLOW", "forbidText": ["Diagnosis:", "Gap:", "Impact:", "Recommended action:"] } },
+    "tags": ["dashboard", "comparison"]
+  },
+  {
+    "id": "golden-en-049",
+    "language": "en",
+    "question": "Which has the higher resilience score, Sabah or Sarawak?",
+    "context": { "currentPage": "/dashboard", "language": "en" },
+    "implementationStatus": "IMPLEMENTED",
+    "expected": { "intent": "DASHBOARD_DATA", "territories": ["Sabah", "Sarawak"], "concepts": ["resilience"], "operations": { "comparison": true, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "sdgIndicatorList": false, "districtLevel": false, "latest": false }, "comparabilityDecision": "ALLOW", "factAvailability": "AVAILABLE", "blocked": false, "clarificationRequired": false, "comparison": { "values": { "Sabah": 63.7, "Sarawak": 72.5 }, "difference": 8.8, "direction": "Sarawak has the higher resilience score", "comparability": "ALLOW", "forbidText": ["Diagnosis:", "Gap:", "Impact:", "Recommended action:"] } },
+    "tags": ["dashboard", "comparison"]
+  },
+  {
+    "id": "golden-en-050",
+    "language": "en",
+    "question": "How much higher is Sarawak's resilience score than Sabah's?",
+    "context": { "currentPage": "/dashboard", "language": "en" },
+    "implementationStatus": "IMPLEMENTED",
+    "expected": { "intent": "DASHBOARD_DATA", "territories": ["Sarawak", "Sabah"], "concepts": ["resilience"], "operations": { "comparison": true, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "sdgIndicatorList": false, "districtLevel": false, "latest": false }, "comparabilityDecision": "ALLOW", "factAvailability": "AVAILABLE", "blocked": false, "clarificationRequired": false, "comparison": { "values": { "Sabah": 63.7, "Sarawak": 72.5 }, "difference": 8.8, "direction": "The difference is 8.8 points", "comparability": "ALLOW", "forbidText": ["Diagnosis:", "Gap:", "Impact:", "Recommended action:"] } },
+    "tags": ["dashboard", "comparison"]
+  },
+  {
+    "id": "golden-en-051",
+    "language": "en",
+    "question": "Compare Sarawak and Brunei resilience scores.",
+    "context": { "currentPage": "/dashboard", "language": "en" },
+    "implementationStatus": "IMPLEMENTED",
+    "expected": { "intent": "DASHBOARD_DATA", "territories": ["Sarawak", "Brunei Darussalam"], "concepts": ["resilience"], "operations": { "comparison": true, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "sdgIndicatorList": false, "districtLevel": false, "latest": false }, "comparabilityDecision": "ALLOW", "factAvailability": "AVAILABLE", "blocked": false, "clarificationRequired": false, "comparison": { "values": { "Sarawak": 72.5, "Brunei": 79 }, "difference": 6.5, "direction": "Brunei is higher than Sarawak by 6.5 points", "comparability": "ALLOW", "forbidText": ["Diagnosis:", "Gap:", "Impact:", "Recommended action:", "-6.5"] } },
+    "tags": ["dashboard", "comparison"]
+  },
+  {
+    "id": "golden-en-052",
+    "language": "en",
+    "question": "Compare Sabah and Brunei Forest Cover.",
+    "context": { "currentPage": "/dashboard", "language": "en" },
+    "implementationStatus": "IMPLEMENTED",
+    "expected": { "intent": "DASHBOARD_DATA", "territories": ["Sabah", "Brunei Darussalam"], "concepts": ["forest_cover"], "operations": { "comparison": true, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "sdgIndicatorList": false, "districtLevel": false, "latest": false }, "comparabilityDecision": "REJECT", "factAvailability": "BLOCKED", "blocked": true, "clarificationRequired": false, "comparison": { "comparability": "REJECT", "forbidText": ["compatible difference", "Diagnosis:", "Gap:", "Impact:", "Recommended action:"] } },
+    "tags": ["dashboard", "comparison", "safety"]
   }
 ]

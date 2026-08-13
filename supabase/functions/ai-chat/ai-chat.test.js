@@ -1218,6 +1218,68 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     }));
   });
 
+  it('grounds comparison answers with both values, direction, difference, and no advisory layers', async () => {
+    const result = await runIntegratedRequest({
+      ...validPayload,
+      message: 'Compare Sabah and Sarawak resilience scores.',
+      region: '',
+    });
+    const [, prompt] = result.geminiClient.mock.calls[0];
+
+    expect(result.response.status).toBe(200);
+    expect(prompt.groundingPayload.conclusion).toContain('Sabah');
+    expect(prompt.groundingPayload.conclusion).toContain('63.7');
+    expect(prompt.groundingPayload.conclusion).toContain('Sarawak');
+    expect(prompt.groundingPayload.conclusion).toContain('72.5');
+    expect(prompt.groundingPayload.conclusion).toContain('8.8 points');
+    expect(prompt.groundingPayload.conclusion).toContain('Sarawak is higher');
+    expect(prompt.groundingPayload.diagnosis).toBe('');
+    expect(prompt.groundingPayload.gap).toBe('');
+    expect(prompt.groundingPayload.impact).toBe('');
+    expect(prompt.groundingPayload.lever).toBe('');
+  });
+
+  it('falls back to comparison-specific text on provider truncation without a second Gemini call', async () => {
+    const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(502, 'GEMINI_TRUNCATED', 'truncated'));
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
+
+    const response = await handler(request({
+      ...validPayload,
+      message: 'Compare Sabah and Sarawak resilience scores.',
+      region: '',
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(geminiClient).toHaveBeenCalledTimes(1);
+    expect(body.mode).toBe('template-fallback');
+    expect(body.fallback.reason).toBe('GEMINI_TRUNCATED');
+    expect(body.answer).toContain('Sarawak is higher than Sabah by 8.8 points');
+    expect(body.answer).not.toContain('Diagnosis:');
+    expect(body.answer).not.toContain('Gap:');
+    expect(body.answer).not.toContain('Impact:');
+    expect(body.answer).not.toContain('Recommended action:');
+  });
+
+  it('falls back to comparison-specific text on validation rejection without a second Gemini call', async () => {
+    const geminiClient = vi.fn().mockResolvedValue('Sarawak should improve resilience to 99.');
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
+
+    const response = await handler(request({
+      ...validPayload,
+      message: 'Compare Sabah and Sarawak resilience scores.',
+      region: '',
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(geminiClient).toHaveBeenCalledTimes(1);
+    expect(body.mode).toBe('template-fallback');
+    expect(body.fallback.reason).toBe('GEMINI_RESPONSE_REJECTED');
+    expect(body.answer).toContain('Sarawak is higher than Sabah by 8.8 points');
+    expect(body.answer).not.toContain('Recommended action:');
+  });
+
   it('passes only the grounded prompt, not raw fact or structured answer objects, to Gemini', async () => {
     const structuredAnswerBuilder = vi.fn((input) => ({
       availability: input.factObject.availability,

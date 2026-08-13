@@ -245,6 +245,11 @@ export function evaluateComparability(input: ComparabilityInput): ComparabilityR
   evaluateDistricts(resolvedInput, result);
   if (result.decision === 'NEEDS_CLARIFICATION' || result.decision === 'REJECT') return finalize(result);
 
+  if (operations.includes('compare') && territories.length > 2) {
+    requireClarification(result, 'Borneo Tracker currently supports two territories at a time for deterministic comparisons. Please choose exactly two territories.', ['compare']);
+    return finalize(result);
+  }
+
   if (operations.includes('sdg_progress')) {
     downgrade(result, 'Repository metadata has SDG mappings but no target fields, so progress-to-target cannot be calculated.', 'sdg_progress');
     result.requiredDisclosures.push('SDG progress-to-target cannot be calculated; only SDG coverage or indicator mapping can be explained.');

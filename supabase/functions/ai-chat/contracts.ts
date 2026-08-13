@@ -25,6 +25,7 @@ export type AIChatEntityResult = {
   territories: string[];
   regions: string[];
   concepts: string[];
+  sdgGoals: string[];
   indicators: string[];
   pillars: string[];
   districts: string[];
@@ -41,8 +42,13 @@ export type AIChatEntityResult = {
     strongest: boolean;
     targetGap: boolean;
     sdgProgress: boolean;
+    sdgIndicatorList: boolean;
     districtLevel: boolean;
     latest: boolean;
+  };
+  comparisonQuery?: {
+    kind: 'generic' | 'higher' | 'lower' | 'difference';
+    matchedTerm: string;
   };
   ambiguities: string[];
   matchedTerms: string[];
@@ -404,6 +410,7 @@ export type AIChatFactObject = {
   intent: AIChatIntent;
   territories: string[];
   concepts: string[];
+  sdgGoals: string[];
   indicators: string[];
   pillars: string[];
   districts: string[];
@@ -415,6 +422,21 @@ export type AIChatFactObject = {
     weakestPillar?: string;
     strongestPillar?: string;
     supportingPillars?: string[];
+  };
+  sdgIndicatorList?: {
+    sdgGoal: string;
+    label?: string;
+    supported: boolean;
+    supportedGoals: Array<{ goal: string; label: string }>;
+    groups: Array<{
+      indicator: string;
+      concept?: string;
+      unit?: string;
+      territories: string[];
+      years: number[];
+      sources: string[];
+      sourcePaths: string[];
+    }>;
   };
   values: {
     rawValues: FactValue[];

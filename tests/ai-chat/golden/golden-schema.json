@@ -64,6 +64,14 @@
           "type": "array",
           "items": { "type": "string" }
         },
+        "sdgGoals": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "sdgIndicators": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
         "indicators": {
           "type": "array",
           "items": { "type": "string" }
@@ -98,6 +106,7 @@
             "strongest": { "type": "boolean" },
             "targetGap": { "type": "boolean" },
             "sdgProgress": { "type": "boolean" },
+            "sdgIndicatorList": { "type": "boolean" },
             "districtLevel": { "type": "boolean" },
             "latest": { "type": "boolean" }
           }
@@ -145,6 +154,31 @@
         },
         "fallbackReason": { "type": "string" }
         ,
+        "comparison": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "values": {
+              "type": "object",
+              "additionalProperties": { "type": "number" }
+            },
+            "difference": { "type": "number" },
+            "direction": { "type": "string" },
+            "comparability": {
+              "enum": [
+                "ALLOW",
+                "ALLOW_WITH_WARNING",
+                "DOWNGRADE",
+                "REJECT",
+                "NEEDS_CLARIFICATION"
+              ]
+            },
+            "forbidText": {
+              "type": "array",
+              "items": { "type": "string" }
+            }
+          }
+        },
         "knowledge": {
           "type": "object",
           "additionalProperties": false,

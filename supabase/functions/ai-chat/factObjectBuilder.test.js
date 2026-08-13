@@ -50,6 +50,38 @@ describe('fact data repository', () => {
 
     expect(repository.getTerritoryResilience('Sabah')).toMatchObject({ status: 'malformed' });
   });
+
+  it('returns stable canonical rows for an SDG goal only', () => {
+    const repository = new FactDataRepository();
+    const result = repository.getCanonicalIndicatorsForSdg('SDG15');
+    expect(result.status).toBe('found');
+    expect(result.status === 'found' ? result.value.map((row) => row.indicator) : []).toEqual([
+      'Forest cover',
+      'Forest extent (2000)',
+      'Forest extent (2000)',
+      'Forest extent (2000)',
+      'National parks (count)',
+      'National parks (count)',
+      'National parks (count)',
+      'National parks (count)',
+    ]);
+    expect(result.status === 'found' ? result.value : []).not.toContainEqual(expect.objectContaining({
+      territory: 'Brunei',
+      indicator: 'Forest extent (2000)',
+    }));
+  });
+
+  it('supports injected zero-row SDG mappings deterministically', () => {
+    const repository = new FactDataRepository({
+      indicators: { rows: [] },
+      resilience: { territories: {} },
+      districts: { rows: [] },
+    });
+    expect(repository.getCanonicalIndicatorsForSdg('SDG15')).toMatchObject({
+      status: 'missing',
+      reason: 'No canonical indicators are mapped to SDG15.',
+    });
+  });
 });
 
 describe('fact object builder availability', () => {
@@ -252,6 +284,24 @@ describe('indicator, target, comparison, trend, SDG, and district facts', () => 
     expect(fact.approvedNumericTokens).toEqual(expect.arrayContaining(['63.7', '72.5']));
   });
 
+  it('preserves the compatible difference for comparison requests', () => {
+    const fact = buildFact('Compare Sabah and Sarawak resilience scores.');
+    expect(fact.values.rawValues).toContainEqual(expect.objectContaining({
+      label: 'compatible difference',
+      value: 8.8,
+      formattedValue: '8.8',
+      unit: 'score/100',
+    }));
+    expect(fact.approvedNumericTokens).toContain('8.8');
+  });
+
+  it('clarifies more-than-two territory comparisons instead of truncating', () => {
+    const fact = buildFact('Compare Sabah, Sarawak and Brunei resilience scores.');
+    expect(fact.availability).toBe('BLOCKED');
+    expect(fact.comparison.decision).toBe('NEEDS_CLARIFICATION');
+    expect(fact.conclusion?.text).toContain('two territories at a time');
+  });
+
   it('uses injected resilience data rather than a hard-coded score', () => {
     const repository = new FactDataRepository({
       resilience: {
@@ -282,6 +332,14 @@ describe('indicator, target, comparison, trend, SDG, and district facts', () => 
     const fact = buildFact('Compare forest cover between Sabah and Brunei.');
     expect(fact.availability).toBe('BLOCKED');
     expect(fact.comparison.decision).toBe('REJECT');
+  });
+
+  it('keeps incompatible forest-cover comparison blocked without a difference', () => {
+    const fact = buildFact('Compare Sabah and Brunei Forest Cover.');
+    expect(fact.availability).toBe('BLOCKED');
+    expect(fact.comparison.decision).toBe('REJECT');
+    expect(fact.conclusion?.text).toContain('percentage-of-land values');
+    expect(fact.values.rawValues).not.toContainEqual(expect.objectContaining({ label: 'compatible difference' }));
   });
 
   it('returns partial facts for downgraded comparisons', () => {
@@ -349,6 +407,50 @@ describe('indicator, target, comparison, trend, SDG, and district facts', () => 
     expect(fact.availability).toBe('PARTIAL');
     expect(fact.conclusion?.code).toBe('SDG_PROGRESS_DOWNGRADED');
     expect(fact.requiredDisclosures.join(' ')).toContain('cannot be calculated');
+  });
+
+  it('builds a canonical SDG15 indicator-list fact without requiring territory context', () => {
+    const fact = buildFact('Which indicators support SDG 15?');
+    expect(fact.availability).toBe('AVAILABLE');
+    expect(fact.sdgGoals).toEqual(['SDG15']);
+    expect(fact.sdgIndicatorList).toMatchObject({
+      sdgGoal: 'SDG15',
+      label: 'Life on Land',
+      supported: true,
+    });
+    expect(fact.sdgIndicatorList?.groups.map((group) => group.indicator)).toEqual([
+      'Forest cover',
+      'Forest extent (2000)',
+      'National parks (count)',
+    ]);
+    expect(fact.sdgIndicatorList?.groups.find((group) => group.indicator === 'Forest extent (2000)')?.territories).toEqual([
+      'Kalimantan',
+      'Sabah',
+      'Sarawak',
+    ]);
+    expect(fact.sdgIndicatorList?.groups.find((group) => group.indicator === 'Forest cover')?.territories).toEqual(['Brunei']);
+  });
+
+  it('builds canonical SDG13, SDG6, and SDG3 indicator-list identities', () => {
+    expect(buildFact('Which indicators are mapped to SDG 13?').sdgIndicatorList?.groups.map((group) => group.indicator)).toEqual([
+      'Air quality (AQI, live)',
+      'Fire alerts (VIIRS, annual)',
+      'Tree cover loss (cumulative)',
+    ]);
+    expect(buildFact('What indicators are tracked under SDG 6?').sdgIndicatorList?.groups.map((group) => group.indicator)).toEqual([
+      'Clean water access',
+    ]);
+    expect(buildFact('Show me indicators for SDG 3.').sdgIndicatorList?.groups.map((group) => group.indicator)).toEqual([
+      'Life expectancy',
+    ]);
+  });
+
+  it('returns a deterministic unsupported SDG clarification', () => {
+    const fact = buildFact('Which indicators support SDG 5?');
+    expect(fact.availability).toBe('UNAVAILABLE');
+    expect(fact.sdgIndicatorList?.supported).toBe(false);
+    expect(fact.conclusion?.code).toBe('UNSUPPORTED_SDG_GOAL');
+    expect(fact.conclusion?.text).toContain('Supported goals are SDG1, SDG2, SDG3, SDG4, SDG6, SDG7, SDG8, SDG9, SDG11, SDG13, SDG15, SDG16');
   });
 
   it('builds exact district facts', () => {

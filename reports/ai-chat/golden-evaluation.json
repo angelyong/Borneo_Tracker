@@ -1,7 +1,7 @@
 {
   "categoryCounts": {
-    "comparison": 16,
-    "dashboard": 18,
+    "comparison": 21,
+    "dashboard": 29,
     "district": 4,
     "fallback": 9,
     "language": 5,
@@ -10,8 +10,8 @@
     "numeric": 4,
     "out_of_scope": 4,
     "privacy": 4,
-    "safety": 22,
-    "sdg": 4,
+    "safety": 23,
+    "sdg": 10,
     "security": 6,
     "site_knowledge": 11,
     "suggested_question": 5,
@@ -23,33 +23,39 @@
   "failuresByCategory": {},
   "implementationStatusCounts": {
     "BLOCKED_BY_SUPABASE": 2,
-    "IMPLEMENTED": 63,
+    "IMPLEMENTED": 74,
     "NO_VERIFIED_DATA": 2,
     "PARTIALLY_IMPLEMENTED": 10
   },
   "metrics": {
     "blockedClarificationAccuracy": {
-      "evaluated": 146,
+      "evaluated": 168,
       "failed": 0,
-      "passed": 146,
+      "passed": 168,
       "value": 1
     },
     "comparabilityAccuracy": {
-      "evaluated": 49,
+      "evaluated": 54,
       "failed": 0,
-      "passed": 49,
+      "passed": 54,
+      "value": 1
+    },
+    "comparisonAnswerAccuracy": {
+      "evaluated": 26,
+      "failed": 0,
+      "passed": 26,
       "value": 1
     },
     "entityResolutionAccuracy": {
-      "evaluated": 95,
+      "evaluated": 117,
       "failed": 0,
-      "passed": 95,
+      "passed": 117,
       "value": 1
     },
     "factAvailabilityAccuracy": {
-      "evaluated": 49,
+      "evaluated": 60,
       "failed": 0,
-      "passed": 49,
+      "passed": 60,
       "value": 1
     },
     "fallbackCorrectness": {
@@ -101,15 +107,15 @@
       "value": 1
     },
     "operationDetectionAccuracy": {
-      "evaluated": 657,
+      "evaluated": 840,
       "failed": 0,
-      "passed": 657,
+      "passed": 840,
       "value": 1
     },
     "routingAccuracy": {
-      "evaluated": 73,
+      "evaluated": 84,
       "failed": 0,
-      "passed": 73,
+      "passed": 84,
       "value": 1
     }
   },
@@ -127,6 +133,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -134,6 +141,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": []
         },
         "intent": "SITE_KNOWLEDGE",
@@ -281,6 +289,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -323,6 +338,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -330,6 +346,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": []
         },
         "intent": "SITE_KNOWLEDGE",
@@ -477,6 +494,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -519,6 +543,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -526,6 +551,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": []
         },
         "intent": "SITE_KNOWLEDGE",
@@ -673,6 +699,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -718,6 +751,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -725,6 +759,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -863,6 +898,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -909,6 +951,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -918,6 +961,7 @@
           "pillars": [
             "Energy"
           ],
+          "sdgGoals": [],
           "territories": [
             "Sarawak"
           ]
@@ -1030,6 +1074,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -1077,6 +1128,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -1084,6 +1136,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Brunei Darussalam"
           ]
@@ -1207,6 +1260,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -1250,6 +1310,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -1257,6 +1318,7 @@
             "weakest": true
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -1352,6 +1414,13 @@
           "actual": false,
           "expected": false,
           "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
           "metric": "operation",
           "pass": true
         },
@@ -1401,6 +1470,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": true,
             "targetGap": false,
@@ -1408,6 +1478,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Kalimantan"
           ]
@@ -1503,6 +1574,13 @@
           "actual": false,
           "expected": false,
           "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
           "metric": "operation",
           "pass": true
         },
@@ -1556,6 +1634,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": true,
@@ -1563,6 +1642,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -1701,6 +1781,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -1747,6 +1834,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": true,
@@ -1754,6 +1842,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -1892,6 +1981,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -1940,6 +2036,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -1947,6 +2044,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Brunei Darussalam",
             "Sabah"
@@ -2088,6 +2186,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -2135,6 +2240,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -2142,6 +2248,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Brunei Darussalam",
             "Sabah"
@@ -2251,6 +2358,13 @@
           "actual": false,
           "expected": false,
           "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
           "metric": "operation",
           "pass": true
         },
@@ -2303,6 +2417,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -2310,6 +2425,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah",
             "Sarawak"
@@ -2419,6 +2535,13 @@
           "actual": false,
           "expected": false,
           "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
           "metric": "operation",
           "pass": true
         },
@@ -2473,6 +2596,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -2480,6 +2604,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Kalimantan",
             "Sabah"
@@ -2595,6 +2720,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -2640,6 +2772,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -2647,6 +2780,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Kalimantan",
             "Sabah"
@@ -2762,6 +2896,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -2807,6 +2948,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -2814,6 +2956,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah",
             "Sarawak"
@@ -2929,6 +3072,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -2974,6 +3124,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -2983,6 +3134,7 @@
           "pillars": [
             "Energy"
           ],
+          "sdgGoals": [],
           "territories": [
             "Sabah",
             "Sarawak"
@@ -3098,6 +3250,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -3145,6 +3304,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -3155,6 +3315,7 @@
             "Energy",
             "Food"
           ],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -3295,6 +3456,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -3342,6 +3510,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -3349,6 +3518,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -3461,6 +3631,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -3508,6 +3685,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -3515,6 +3693,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -3621,6 +3800,13 @@
           "actual": false,
           "expected": false,
           "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
           "metric": "operation",
           "pass": true
         },
@@ -3673,6 +3859,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -3680,6 +3867,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -3786,6 +3974,13 @@
           "actual": false,
           "expected": false,
           "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
           "metric": "operation",
           "pass": true
         },
@@ -3840,6 +4035,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": true,
             "strongest": false,
             "targetGap": false,
@@ -3847,6 +4043,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -3959,6 +4156,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -4002,6 +4206,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": true,
             "strongest": false,
             "targetGap": false,
@@ -4009,6 +4214,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -4110,6 +4316,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -4157,6 +4370,7 @@
             "districtLevel": true,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -4164,6 +4378,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": []
         },
         "factAvailability": "AVAILABLE",
@@ -4272,6 +4487,13 @@
           "pass": true
         },
         {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
           "actual": true,
           "expected": true,
           "field": "districtLevel",
@@ -4319,6 +4541,7 @@
             "districtLevel": true,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -4326,6 +4549,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": []
         },
         "factAvailability": "BLOCKED",
@@ -4423,6 +4647,13 @@
           "pass": true
         },
         {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
           "actual": true,
           "expected": true,
           "field": "districtLevel",
@@ -4468,6 +4699,7 @@
             "districtLevel": false,
             "latest": true,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -4475,6 +4707,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -4580,6 +4813,13 @@
           "actual": false,
           "expected": false,
           "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
           "metric": "operation",
           "pass": true
         },
@@ -4629,6 +4869,7 @@
             "districtLevel": false,
             "latest": true,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -4636,6 +4877,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sarawak"
           ]
@@ -4747,6 +4989,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -4790,6 +5039,7 @@
             "districtLevel": false,
             "latest": true,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -4797,6 +5047,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Brunei Darussalam"
           ]
@@ -4882,6 +5133,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -4924,6 +5182,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -4931,6 +5190,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": []
         },
         "intent": "OUT_OF_SCOPE",
@@ -4997,6 +5257,13 @@
           "actual": false,
           "expected": false,
           "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
           "metric": "operation",
           "pass": true
         },
@@ -5045,6 +5312,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -5052,6 +5320,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": []
         },
         "intent": "OUT_OF_SCOPE",
@@ -5118,6 +5387,13 @@
           "actual": false,
           "expected": false,
           "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
           "metric": "operation",
           "pass": true
         },
@@ -5169,6 +5445,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -5176,6 +5453,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -5288,6 +5566,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -5334,6 +5619,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -5341,6 +5627,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -5453,6 +5740,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -5499,6 +5793,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -5506,6 +5801,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -5640,6 +5936,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -5684,6 +5987,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -5691,6 +5995,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": []
         },
         "intent": "OUT_OF_SCOPE",
@@ -5789,6 +6094,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -5833,6 +6145,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -5840,6 +6153,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": []
         },
         "factAvailability": "UNAVAILABLE",
@@ -5936,6 +6250,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -5984,6 +6305,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -5993,6 +6315,7 @@
           "pillars": [
             "Food"
           ],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -6113,6 +6436,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -6191,6 +6521,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": true,
             "strongest": false,
             "targetGap": false,
@@ -6198,6 +6529,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": []
         },
         "intent": "SITE_KNOWLEDGE",
@@ -6345,6 +6677,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -6392,6 +6731,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -6399,6 +6739,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": []
         },
         "intent": "SITE_KNOWLEDGE",
@@ -6546,6 +6887,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -6589,6 +6937,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -6596,6 +6945,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": []
         },
         "intent": "SITE_KNOWLEDGE",
@@ -6743,6 +7093,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -6786,6 +7143,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -6793,6 +7151,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": []
         },
         "intent": "SITE_KNOWLEDGE",
@@ -6940,6 +7299,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -6983,6 +7349,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -6990,6 +7357,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": []
         },
         "intent": "SITE_KNOWLEDGE",
@@ -7137,6 +7505,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -7171,6 +7546,7 @@
       "actual": {
         "blocked": false,
         "clarificationRequired": false,
+        "comparabilityDecision": "NEEDS_CLARIFICATION",
         "entities": {
           "concepts": [],
           "districts": [],
@@ -7180,6 +7556,675 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": true,
+            "sdgProgress": true,
+            "strongest": false,
+            "targetGap": false,
+            "trend": false,
+            "weakest": false
+          },
+          "pillars": [],
+          "sdgGoals": [
+            "SDG15"
+          ],
+          "territories": []
+        },
+        "factAvailability": "AVAILABLE",
+        "intent": "DASHBOARD_DATA",
+        "language": "en",
+        "leverCount": 0
+      },
+      "checks": [
+        {
+          "actual": false,
+          "expected": false,
+          "field": "blocked",
+          "metric": "blocked",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "clarification",
+          "metric": "clarification",
+          "pass": true
+        },
+        {
+          "actual": [
+            "SDG15"
+          ],
+          "expected": [
+            "SDG15"
+          ],
+          "field": "sdgGoals",
+          "metric": "entity",
+          "pass": true
+        },
+        {
+          "actual": [
+            "Forest cover",
+            "Forest extent (2000)",
+            "National parks (count)"
+          ],
+          "expected": [
+            "Forest cover",
+            "Forest extent (2000)",
+            "National parks (count)"
+          ],
+          "field": "sdgIndicators",
+          "metric": "entity",
+          "pass": true
+        },
+        {
+          "actual": "AVAILABLE",
+          "expected": "AVAILABLE",
+          "field": "factAvailability",
+          "metric": "factAvailability",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "comparison",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "ranking",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "trend",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "weakest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "strongest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "targetGap",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "districtLevel",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "latest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": "DASHBOARD_DATA",
+          "expected": "DASHBOARD_DATA",
+          "field": "routing",
+          "metric": "routing",
+          "pass": true
+        }
+      ],
+      "failures": [],
+      "id": "golden-en-042",
+      "implementationStatus": "IMPLEMENTED",
+      "language": "en",
+      "safetyCritical": false,
+      "status": "passed",
+      "tags": [
+        "dashboard",
+        "sdg"
+      ]
+    },
+    {
+      "actual": {
+        "blocked": false,
+        "clarificationRequired": false,
+        "comparabilityDecision": "NEEDS_CLARIFICATION",
+        "entities": {
+          "concepts": [],
+          "districts": [],
+          "indicators": [],
+          "operations": {
+            "comparison": false,
+            "districtLevel": false,
+            "latest": false,
+            "ranking": false,
+            "sdgIndicatorList": true,
+            "sdgProgress": true,
+            "strongest": false,
+            "targetGap": false,
+            "trend": false,
+            "weakest": false
+          },
+          "pillars": [],
+          "sdgGoals": [
+            "SDG13"
+          ],
+          "territories": []
+        },
+        "factAvailability": "AVAILABLE",
+        "intent": "DASHBOARD_DATA",
+        "language": "en",
+        "leverCount": 0
+      },
+      "checks": [
+        {
+          "actual": false,
+          "expected": false,
+          "field": "blocked",
+          "metric": "blocked",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "clarification",
+          "metric": "clarification",
+          "pass": true
+        },
+        {
+          "actual": [
+            "SDG13"
+          ],
+          "expected": [
+            "SDG13"
+          ],
+          "field": "sdgGoals",
+          "metric": "entity",
+          "pass": true
+        },
+        {
+          "actual": [
+            "Air quality (AQI, live)",
+            "Fire alerts (VIIRS, annual)",
+            "Tree cover loss (cumulative)"
+          ],
+          "expected": [
+            "Air quality (AQI, live)",
+            "Fire alerts (VIIRS, annual)",
+            "Tree cover loss (cumulative)"
+          ],
+          "field": "sdgIndicators",
+          "metric": "entity",
+          "pass": true
+        },
+        {
+          "actual": "AVAILABLE",
+          "expected": "AVAILABLE",
+          "field": "factAvailability",
+          "metric": "factAvailability",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "comparison",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "ranking",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "trend",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "weakest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "strongest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "targetGap",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "districtLevel",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "latest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": "DASHBOARD_DATA",
+          "expected": "DASHBOARD_DATA",
+          "field": "routing",
+          "metric": "routing",
+          "pass": true
+        }
+      ],
+      "failures": [],
+      "id": "golden-en-043",
+      "implementationStatus": "IMPLEMENTED",
+      "language": "en",
+      "safetyCritical": false,
+      "status": "passed",
+      "tags": [
+        "dashboard",
+        "sdg"
+      ]
+    },
+    {
+      "actual": {
+        "blocked": false,
+        "clarificationRequired": false,
+        "comparabilityDecision": "NEEDS_CLARIFICATION",
+        "entities": {
+          "concepts": [],
+          "districts": [],
+          "indicators": [],
+          "operations": {
+            "comparison": false,
+            "districtLevel": false,
+            "latest": false,
+            "ranking": false,
+            "sdgIndicatorList": true,
+            "sdgProgress": true,
+            "strongest": false,
+            "targetGap": false,
+            "trend": false,
+            "weakest": false
+          },
+          "pillars": [],
+          "sdgGoals": [
+            "SDG6"
+          ],
+          "territories": []
+        },
+        "factAvailability": "AVAILABLE",
+        "intent": "DASHBOARD_DATA",
+        "language": "en",
+        "leverCount": 0
+      },
+      "checks": [
+        {
+          "actual": false,
+          "expected": false,
+          "field": "blocked",
+          "metric": "blocked",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "clarification",
+          "metric": "clarification",
+          "pass": true
+        },
+        {
+          "actual": [
+            "SDG6"
+          ],
+          "expected": [
+            "SDG6"
+          ],
+          "field": "sdgGoals",
+          "metric": "entity",
+          "pass": true
+        },
+        {
+          "actual": [
+            "Clean water access"
+          ],
+          "expected": [
+            "Clean water access"
+          ],
+          "field": "sdgIndicators",
+          "metric": "entity",
+          "pass": true
+        },
+        {
+          "actual": "AVAILABLE",
+          "expected": "AVAILABLE",
+          "field": "factAvailability",
+          "metric": "factAvailability",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "comparison",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "ranking",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "trend",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "weakest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "strongest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "targetGap",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "districtLevel",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "latest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": "DASHBOARD_DATA",
+          "expected": "DASHBOARD_DATA",
+          "field": "routing",
+          "metric": "routing",
+          "pass": true
+        }
+      ],
+      "failures": [],
+      "id": "golden-en-044",
+      "implementationStatus": "IMPLEMENTED",
+      "language": "en",
+      "safetyCritical": false,
+      "status": "passed",
+      "tags": [
+        "dashboard",
+        "sdg"
+      ]
+    },
+    {
+      "actual": {
+        "blocked": false,
+        "clarificationRequired": false,
+        "comparabilityDecision": "NEEDS_CLARIFICATION",
+        "entities": {
+          "concepts": [],
+          "districts": [],
+          "indicators": [],
+          "operations": {
+            "comparison": false,
+            "districtLevel": false,
+            "latest": false,
+            "ranking": false,
+            "sdgIndicatorList": true,
+            "sdgProgress": true,
+            "strongest": false,
+            "targetGap": false,
+            "trend": false,
+            "weakest": false
+          },
+          "pillars": [],
+          "sdgGoals": [
+            "SDG3"
+          ],
+          "territories": []
+        },
+        "factAvailability": "AVAILABLE",
+        "intent": "DASHBOARD_DATA",
+        "language": "en",
+        "leverCount": 0
+      },
+      "checks": [
+        {
+          "actual": false,
+          "expected": false,
+          "field": "blocked",
+          "metric": "blocked",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "clarification",
+          "metric": "clarification",
+          "pass": true
+        },
+        {
+          "actual": [
+            "SDG3"
+          ],
+          "expected": [
+            "SDG3"
+          ],
+          "field": "sdgGoals",
+          "metric": "entity",
+          "pass": true
+        },
+        {
+          "actual": [
+            "Life expectancy"
+          ],
+          "expected": [
+            "Life expectancy"
+          ],
+          "field": "sdgIndicators",
+          "metric": "entity",
+          "pass": true
+        },
+        {
+          "actual": "AVAILABLE",
+          "expected": "AVAILABLE",
+          "field": "factAvailability",
+          "metric": "factAvailability",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "comparison",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "ranking",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "trend",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "weakest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "strongest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "targetGap",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "districtLevel",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "latest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": "DASHBOARD_DATA",
+          "expected": "DASHBOARD_DATA",
+          "field": "routing",
+          "metric": "routing",
+          "pass": true
+        }
+      ],
+      "failures": [],
+      "id": "golden-en-045",
+      "implementationStatus": "IMPLEMENTED",
+      "language": "en",
+      "safetyCritical": false,
+      "status": "passed",
+      "tags": [
+        "dashboard",
+        "sdg"
+      ]
+    },
+    {
+      "actual": {
+        "blocked": false,
+        "clarificationRequired": false,
+        "comparabilityDecision": "ALLOW",
+        "entities": {
+          "concepts": [],
+          "districts": [],
+          "indicators": [],
+          "operations": {
+            "comparison": false,
+            "districtLevel": false,
+            "latest": false,
+            "ranking": false,
+            "sdgIndicatorList": true,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -7187,6 +8232,1451 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [
+            "SDG15"
+          ],
+          "territories": []
+        },
+        "factAvailability": "AVAILABLE",
+        "intent": "DASHBOARD_DATA",
+        "language": "en",
+        "leverCount": 0
+      },
+      "checks": [
+        {
+          "actual": false,
+          "expected": false,
+          "field": "blocked",
+          "metric": "blocked",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "clarification",
+          "metric": "clarification",
+          "pass": true
+        },
+        {
+          "actual": [
+            "SDG15"
+          ],
+          "expected": [
+            "SDG15"
+          ],
+          "field": "sdgGoals",
+          "metric": "entity",
+          "pass": true
+        },
+        {
+          "actual": [
+            "Forest cover",
+            "Forest extent (2000)",
+            "National parks (count)"
+          ],
+          "expected": [
+            "Forest cover",
+            "Forest extent (2000)",
+            "National parks (count)"
+          ],
+          "field": "sdgIndicators",
+          "metric": "entity",
+          "pass": true
+        },
+        {
+          "actual": "AVAILABLE",
+          "expected": "AVAILABLE",
+          "field": "factAvailability",
+          "metric": "factAvailability",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "comparison",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "ranking",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "trend",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "weakest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "strongest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "targetGap",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "districtLevel",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "latest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": "DASHBOARD_DATA",
+          "expected": "DASHBOARD_DATA",
+          "field": "routing",
+          "metric": "routing",
+          "pass": true
+        }
+      ],
+      "failures": [],
+      "id": "golden-en-046",
+      "implementationStatus": "IMPLEMENTED",
+      "language": "en",
+      "safetyCritical": false,
+      "status": "passed",
+      "tags": [
+        "dashboard",
+        "sdg"
+      ]
+    },
+    {
+      "actual": {
+        "blocked": false,
+        "clarificationRequired": false,
+        "comparabilityDecision": "NEEDS_CLARIFICATION",
+        "entities": {
+          "concepts": [],
+          "districts": [],
+          "indicators": [],
+          "operations": {
+            "comparison": false,
+            "districtLevel": false,
+            "latest": false,
+            "ranking": false,
+            "sdgIndicatorList": true,
+            "sdgProgress": true,
+            "strongest": false,
+            "targetGap": false,
+            "trend": false,
+            "weakest": false
+          },
+          "pillars": [],
+          "sdgGoals": [
+            "SDG5"
+          ],
+          "territories": []
+        },
+        "factAvailability": "UNAVAILABLE",
+        "intent": "DASHBOARD_DATA",
+        "language": "en",
+        "leverCount": 0
+      },
+      "checks": [
+        {
+          "actual": false,
+          "expected": false,
+          "field": "blocked",
+          "metric": "blocked",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "clarification",
+          "metric": "clarification",
+          "pass": true
+        },
+        {
+          "actual": [
+            "SDG5"
+          ],
+          "expected": [
+            "SDG5"
+          ],
+          "field": "sdgGoals",
+          "metric": "entity",
+          "pass": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "field": "sdgIndicators",
+          "metric": "entity",
+          "pass": true
+        },
+        {
+          "actual": "UNAVAILABLE",
+          "expected": "UNAVAILABLE",
+          "field": "factAvailability",
+          "metric": "factAvailability",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "comparison",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "ranking",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "trend",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "weakest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "strongest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "targetGap",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "districtLevel",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "latest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": "DASHBOARD_DATA",
+          "expected": "DASHBOARD_DATA",
+          "field": "routing",
+          "metric": "routing",
+          "pass": true
+        }
+      ],
+      "failures": [],
+      "id": "golden-en-047",
+      "implementationStatus": "IMPLEMENTED",
+      "language": "en",
+      "safetyCritical": false,
+      "status": "passed",
+      "tags": [
+        "dashboard",
+        "sdg"
+      ]
+    },
+    {
+      "actual": {
+        "blocked": false,
+        "clarificationRequired": false,
+        "comparabilityDecision": "ALLOW",
+        "comparison": {
+          "difference": 8.8,
+          "directionFound": true,
+          "forbiddenMatches": [],
+          "summaryText": "Conclusion: Sarawak's resilience score is 72.5 and Sabah's is 63.7. Sarawak: 72.5; Sabah: 63.7. Sarawak is higher than Sabah by 8.8 points. The comparison uses the Resilience Index score.\nLimitations: Important limitations and disclosures are attached to this structured answer.",
+          "values": {
+            "Sabah": 63.7,
+            "Sarawak": 72.5
+          }
+        },
+        "entities": {
+          "concepts": [
+            "resilience"
+          ],
+          "districts": [],
+          "indicators": [],
+          "operations": {
+            "comparison": true,
+            "districtLevel": false,
+            "latest": false,
+            "ranking": false,
+            "sdgIndicatorList": false,
+            "sdgProgress": false,
+            "strongest": false,
+            "targetGap": false,
+            "trend": false,
+            "weakest": false
+          },
+          "pillars": [],
+          "sdgGoals": [],
+          "territories": [
+            "Sabah",
+            "Sarawak"
+          ]
+        },
+        "factAvailability": "AVAILABLE",
+        "intent": "DASHBOARD_DATA",
+        "language": "en",
+        "leverCount": 0
+      },
+      "checks": [
+        {
+          "actual": false,
+          "expected": false,
+          "field": "blocked",
+          "metric": "blocked",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "clarification",
+          "metric": "clarification",
+          "pass": true
+        },
+        {
+          "actual": "ALLOW",
+          "expected": "ALLOW",
+          "field": "comparability",
+          "metric": "comparability",
+          "pass": true
+        },
+        {
+          "actual": 63.7,
+          "expected": 63.7,
+          "field": "value.Sabah",
+          "metric": "comparisonAnswer",
+          "pass": true
+        },
+        {
+          "actual": 72.5,
+          "expected": 72.5,
+          "field": "value.Sarawak",
+          "metric": "comparisonAnswer",
+          "pass": true
+        },
+        {
+          "actual": 8.8,
+          "expected": 8.8,
+          "field": "difference",
+          "metric": "comparisonAnswer",
+          "pass": true
+        },
+        {
+          "actual": "Conclusion: Sarawak's resilience score is 72.5 and Sabah's is 63.7. Sarawak: 72.5; Sabah: 63.7. Sarawak is higher than Sabah by 8.8 points. The comparison uses the Resilience Index score.\nLimitations: Important limitations and disclosures are attached to this structured answer.",
+          "expected": "Sarawak is higher",
+          "field": "direction",
+          "metric": "comparisonAnswer",
+          "pass": true
+        },
+        {
+          "actual": "ALLOW",
+          "expected": "ALLOW",
+          "field": "comparability",
+          "metric": "comparisonAnswer",
+          "pass": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "field": "forbidText",
+          "metric": "comparisonAnswer",
+          "pass": true
+        },
+        {
+          "actual": [
+            "Sabah",
+            "Sarawak"
+          ],
+          "expected": [
+            "Sabah",
+            "Sarawak"
+          ],
+          "field": "territories",
+          "metric": "entity",
+          "pass": true
+        },
+        {
+          "actual": [
+            "resilience"
+          ],
+          "expected": [
+            "resilience"
+          ],
+          "field": "concepts",
+          "metric": "entity",
+          "pass": true
+        },
+        {
+          "actual": "AVAILABLE",
+          "expected": "AVAILABLE",
+          "field": "factAvailability",
+          "metric": "factAvailability",
+          "pass": true
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "field": "comparison",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "ranking",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "trend",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "weakest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "strongest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "targetGap",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "districtLevel",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "latest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": "DASHBOARD_DATA",
+          "expected": "DASHBOARD_DATA",
+          "field": "routing",
+          "metric": "routing",
+          "pass": true
+        }
+      ],
+      "failures": [],
+      "id": "golden-en-048",
+      "implementationStatus": "IMPLEMENTED",
+      "language": "en",
+      "safetyCritical": false,
+      "status": "passed",
+      "tags": [
+        "comparison",
+        "dashboard"
+      ]
+    },
+    {
+      "actual": {
+        "blocked": false,
+        "clarificationRequired": false,
+        "comparabilityDecision": "ALLOW",
+        "comparison": {
+          "difference": 8.8,
+          "directionFound": true,
+          "forbiddenMatches": [],
+          "summaryText": "Conclusion: Sarawak has the higher resilience score. Sarawak: 72.5; Sabah: 63.7. Sarawak is higher by 8.8 points. The comparison uses the Resilience Index score.\nLimitations: Important limitations and disclosures are attached to this structured answer.",
+          "values": {
+            "Sabah": 63.7,
+            "Sarawak": 72.5
+          }
+        },
+        "entities": {
+          "concepts": [
+            "resilience"
+          ],
+          "districts": [],
+          "indicators": [],
+          "operations": {
+            "comparison": true,
+            "districtLevel": false,
+            "latest": false,
+            "ranking": false,
+            "sdgIndicatorList": false,
+            "sdgProgress": false,
+            "strongest": false,
+            "targetGap": false,
+            "trend": false,
+            "weakest": false
+          },
+          "pillars": [],
+          "sdgGoals": [],
+          "territories": [
+            "Sabah",
+            "Sarawak"
+          ]
+        },
+        "factAvailability": "AVAILABLE",
+        "intent": "DASHBOARD_DATA",
+        "language": "en",
+        "leverCount": 0
+      },
+      "checks": [
+        {
+          "actual": false,
+          "expected": false,
+          "field": "blocked",
+          "metric": "blocked",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "clarification",
+          "metric": "clarification",
+          "pass": true
+        },
+        {
+          "actual": "ALLOW",
+          "expected": "ALLOW",
+          "field": "comparability",
+          "metric": "comparability",
+          "pass": true
+        },
+        {
+          "actual": 63.7,
+          "expected": 63.7,
+          "field": "value.Sabah",
+          "metric": "comparisonAnswer",
+          "pass": true
+        },
+        {
+          "actual": 72.5,
+          "expected": 72.5,
+          "field": "value.Sarawak",
+          "metric": "comparisonAnswer",
+          "pass": true
+        },
+        {
+          "actual": 8.8,
+          "expected": 8.8,
+          "field": "difference",
+          "metric": "comparisonAnswer",
+          "pass": true
+        },
+        {
+          "actual": "Conclusion: Sarawak has the higher resilience score. Sarawak: 72.5; Sabah: 63.7. Sarawak is higher by 8.8 points. The comparison uses the Resilience Index score.\nLimitations: Important limitations and disclosures are attached to this structured answer.",
+          "expected": "Sarawak has the higher resilience score",
+          "field": "direction",
+          "metric": "comparisonAnswer",
+          "pass": true
+        },
+        {
+          "actual": "ALLOW",
+          "expected": "ALLOW",
+          "field": "comparability",
+          "metric": "comparisonAnswer",
+          "pass": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "field": "forbidText",
+          "metric": "comparisonAnswer",
+          "pass": true
+        },
+        {
+          "actual": [
+            "Sabah",
+            "Sarawak"
+          ],
+          "expected": [
+            "Sabah",
+            "Sarawak"
+          ],
+          "field": "territories",
+          "metric": "entity",
+          "pass": true
+        },
+        {
+          "actual": [
+            "resilience"
+          ],
+          "expected": [
+            "resilience"
+          ],
+          "field": "concepts",
+          "metric": "entity",
+          "pass": true
+        },
+        {
+          "actual": "AVAILABLE",
+          "expected": "AVAILABLE",
+          "field": "factAvailability",
+          "metric": "factAvailability",
+          "pass": true
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "field": "comparison",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "ranking",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "trend",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "weakest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "strongest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "targetGap",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "districtLevel",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "latest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": "DASHBOARD_DATA",
+          "expected": "DASHBOARD_DATA",
+          "field": "routing",
+          "metric": "routing",
+          "pass": true
+        }
+      ],
+      "failures": [],
+      "id": "golden-en-049",
+      "implementationStatus": "IMPLEMENTED",
+      "language": "en",
+      "safetyCritical": false,
+      "status": "passed",
+      "tags": [
+        "comparison",
+        "dashboard"
+      ]
+    },
+    {
+      "actual": {
+        "blocked": false,
+        "clarificationRequired": false,
+        "comparabilityDecision": "ALLOW",
+        "comparison": {
+          "difference": 8.8,
+          "directionFound": true,
+          "forbiddenMatches": [],
+          "summaryText": "Conclusion: The difference is 8.8 points. Sarawak is higher than Sabah by 8.8 points. Sarawak: 72.5; Sabah: 63.7. The comparison uses the Resilience Index score.\nLimitations: Important limitations and disclosures are attached to this structured answer.",
+          "values": {
+            "Sabah": 63.7,
+            "Sarawak": 72.5
+          }
+        },
+        "entities": {
+          "concepts": [
+            "resilience"
+          ],
+          "districts": [],
+          "indicators": [],
+          "operations": {
+            "comparison": true,
+            "districtLevel": false,
+            "latest": false,
+            "ranking": false,
+            "sdgIndicatorList": false,
+            "sdgProgress": false,
+            "strongest": false,
+            "targetGap": false,
+            "trend": false,
+            "weakest": false
+          },
+          "pillars": [],
+          "sdgGoals": [],
+          "territories": [
+            "Sabah",
+            "Sarawak"
+          ]
+        },
+        "factAvailability": "AVAILABLE",
+        "intent": "DASHBOARD_DATA",
+        "language": "en",
+        "leverCount": 0
+      },
+      "checks": [
+        {
+          "actual": false,
+          "expected": false,
+          "field": "blocked",
+          "metric": "blocked",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "clarification",
+          "metric": "clarification",
+          "pass": true
+        },
+        {
+          "actual": "ALLOW",
+          "expected": "ALLOW",
+          "field": "comparability",
+          "metric": "comparability",
+          "pass": true
+        },
+        {
+          "actual": 63.7,
+          "expected": 63.7,
+          "field": "value.Sabah",
+          "metric": "comparisonAnswer",
+          "pass": true
+        },
+        {
+          "actual": 72.5,
+          "expected": 72.5,
+          "field": "value.Sarawak",
+          "metric": "comparisonAnswer",
+          "pass": true
+        },
+        {
+          "actual": 8.8,
+          "expected": 8.8,
+          "field": "difference",
+          "metric": "comparisonAnswer",
+          "pass": true
+        },
+        {
+          "actual": "Conclusion: The difference is 8.8 points. Sarawak is higher than Sabah by 8.8 points. Sarawak: 72.5; Sabah: 63.7. The comparison uses the Resilience Index score.\nLimitations: Important limitations and disclosures are attached to this structured answer.",
+          "expected": "The difference is 8.8 points",
+          "field": "direction",
+          "metric": "comparisonAnswer",
+          "pass": true
+        },
+        {
+          "actual": "ALLOW",
+          "expected": "ALLOW",
+          "field": "comparability",
+          "metric": "comparisonAnswer",
+          "pass": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "field": "forbidText",
+          "metric": "comparisonAnswer",
+          "pass": true
+        },
+        {
+          "actual": [
+            "Sabah",
+            "Sarawak"
+          ],
+          "expected": [
+            "Sabah",
+            "Sarawak"
+          ],
+          "field": "territories",
+          "metric": "entity",
+          "pass": true
+        },
+        {
+          "actual": [
+            "resilience"
+          ],
+          "expected": [
+            "resilience"
+          ],
+          "field": "concepts",
+          "metric": "entity",
+          "pass": true
+        },
+        {
+          "actual": "AVAILABLE",
+          "expected": "AVAILABLE",
+          "field": "factAvailability",
+          "metric": "factAvailability",
+          "pass": true
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "field": "comparison",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "ranking",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "trend",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "weakest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "strongest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "targetGap",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "districtLevel",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "latest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": "DASHBOARD_DATA",
+          "expected": "DASHBOARD_DATA",
+          "field": "routing",
+          "metric": "routing",
+          "pass": true
+        }
+      ],
+      "failures": [],
+      "id": "golden-en-050",
+      "implementationStatus": "IMPLEMENTED",
+      "language": "en",
+      "safetyCritical": false,
+      "status": "passed",
+      "tags": [
+        "comparison",
+        "dashboard"
+      ]
+    },
+    {
+      "actual": {
+        "blocked": false,
+        "clarificationRequired": false,
+        "comparabilityDecision": "ALLOW",
+        "comparison": {
+          "difference": -6.5,
+          "directionFound": true,
+          "forbiddenMatches": [],
+          "summaryText": "Conclusion: Sarawak's resilience score is 72.5 and Brunei's is 79.0. Sarawak: 72.5; Brunei: 79.0. Brunei is higher than Sarawak by 6.5 points. The comparison uses the Resilience Index score.\nLimitations: Important limitations and disclosures are attached to this structured answer.",
+          "values": {
+            "Brunei": 79,
+            "Sarawak": 72.5
+          }
+        },
+        "entities": {
+          "concepts": [
+            "resilience"
+          ],
+          "districts": [],
+          "indicators": [],
+          "operations": {
+            "comparison": true,
+            "districtLevel": false,
+            "latest": false,
+            "ranking": false,
+            "sdgIndicatorList": false,
+            "sdgProgress": false,
+            "strongest": false,
+            "targetGap": false,
+            "trend": false,
+            "weakest": false
+          },
+          "pillars": [],
+          "sdgGoals": [],
+          "territories": [
+            "Brunei Darussalam",
+            "Sarawak"
+          ]
+        },
+        "factAvailability": "AVAILABLE",
+        "intent": "DASHBOARD_DATA",
+        "language": "en",
+        "leverCount": 0
+      },
+      "checks": [
+        {
+          "actual": false,
+          "expected": false,
+          "field": "blocked",
+          "metric": "blocked",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "clarification",
+          "metric": "clarification",
+          "pass": true
+        },
+        {
+          "actual": "ALLOW",
+          "expected": "ALLOW",
+          "field": "comparability",
+          "metric": "comparability",
+          "pass": true
+        },
+        {
+          "actual": 72.5,
+          "expected": 72.5,
+          "field": "value.Sarawak",
+          "metric": "comparisonAnswer",
+          "pass": true
+        },
+        {
+          "actual": 79,
+          "expected": 79,
+          "field": "value.Brunei",
+          "metric": "comparisonAnswer",
+          "pass": true
+        },
+        {
+          "actual": 6.5,
+          "expected": 6.5,
+          "field": "difference",
+          "metric": "comparisonAnswer",
+          "pass": true
+        },
+        {
+          "actual": "Conclusion: Sarawak's resilience score is 72.5 and Brunei's is 79.0. Sarawak: 72.5; Brunei: 79.0. Brunei is higher than Sarawak by 6.5 points. The comparison uses the Resilience Index score.\nLimitations: Important limitations and disclosures are attached to this structured answer.",
+          "expected": "Brunei is higher than Sarawak by 6.5 points",
+          "field": "direction",
+          "metric": "comparisonAnswer",
+          "pass": true
+        },
+        {
+          "actual": "ALLOW",
+          "expected": "ALLOW",
+          "field": "comparability",
+          "metric": "comparisonAnswer",
+          "pass": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "field": "forbidText",
+          "metric": "comparisonAnswer",
+          "pass": true
+        },
+        {
+          "actual": [
+            "Brunei Darussalam",
+            "Sarawak"
+          ],
+          "expected": [
+            "Brunei Darussalam",
+            "Sarawak"
+          ],
+          "field": "territories",
+          "metric": "entity",
+          "pass": true
+        },
+        {
+          "actual": [
+            "resilience"
+          ],
+          "expected": [
+            "resilience"
+          ],
+          "field": "concepts",
+          "metric": "entity",
+          "pass": true
+        },
+        {
+          "actual": "AVAILABLE",
+          "expected": "AVAILABLE",
+          "field": "factAvailability",
+          "metric": "factAvailability",
+          "pass": true
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "field": "comparison",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "ranking",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "trend",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "weakest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "strongest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "targetGap",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "districtLevel",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "latest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": "DASHBOARD_DATA",
+          "expected": "DASHBOARD_DATA",
+          "field": "routing",
+          "metric": "routing",
+          "pass": true
+        }
+      ],
+      "failures": [],
+      "id": "golden-en-051",
+      "implementationStatus": "IMPLEMENTED",
+      "language": "en",
+      "safetyCritical": false,
+      "status": "passed",
+      "tags": [
+        "comparison",
+        "dashboard"
+      ]
+    },
+    {
+      "actual": {
+        "blocked": true,
+        "clarificationRequired": false,
+        "comparabilityDecision": "REJECT",
+        "comparison": {
+          "forbiddenMatches": [],
+          "summaryText": "Conclusion: This comparison cannot be made reliably using the available data. Forest cover mixes Brunei percentage-of-land values with 2000 hectare baselines for other territories.\nLimitations: Important limitations and disclosures are attached to this structured answer.",
+          "values": {}
+        },
+        "entities": {
+          "concepts": [
+            "forest_cover"
+          ],
+          "districts": [],
+          "indicators": [
+            "Forest cover"
+          ],
+          "operations": {
+            "comparison": true,
+            "districtLevel": false,
+            "latest": false,
+            "ranking": false,
+            "sdgIndicatorList": false,
+            "sdgProgress": false,
+            "strongest": false,
+            "targetGap": false,
+            "trend": false,
+            "weakest": false
+          },
+          "pillars": [],
+          "sdgGoals": [],
+          "territories": [
+            "Brunei Darussalam",
+            "Sabah"
+          ]
+        },
+        "factAvailability": "BLOCKED",
+        "intent": "DASHBOARD_DATA",
+        "language": "en",
+        "leverCount": 0
+      },
+      "checks": [
+        {
+          "actual": true,
+          "expected": true,
+          "field": "blocked",
+          "metric": "blocked",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "clarification",
+          "metric": "clarification",
+          "pass": true
+        },
+        {
+          "actual": "REJECT",
+          "expected": "REJECT",
+          "field": "comparability",
+          "metric": "comparability",
+          "pass": true
+        },
+        {
+          "actual": "REJECT",
+          "expected": "REJECT",
+          "field": "comparability",
+          "metric": "comparisonAnswer",
+          "pass": true
+        },
+        {
+          "actual": [],
+          "expected": [],
+          "field": "forbidText",
+          "metric": "comparisonAnswer",
+          "pass": true
+        },
+        {
+          "actual": [
+            "Brunei Darussalam",
+            "Sabah"
+          ],
+          "expected": [
+            "Brunei Darussalam",
+            "Sabah"
+          ],
+          "field": "territories",
+          "metric": "entity",
+          "pass": true
+        },
+        {
+          "actual": [
+            "forest_cover"
+          ],
+          "expected": [
+            "forest_cover"
+          ],
+          "field": "concepts",
+          "metric": "entity",
+          "pass": true
+        },
+        {
+          "actual": "BLOCKED",
+          "expected": "BLOCKED",
+          "field": "factAvailability",
+          "metric": "factAvailability",
+          "pass": true
+        },
+        {
+          "actual": true,
+          "expected": true,
+          "field": "comparison",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "ranking",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "trend",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "weakest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "strongest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "targetGap",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "districtLevel",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "latest",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": "DASHBOARD_DATA",
+          "expected": "DASHBOARD_DATA",
+          "field": "routing",
+          "metric": "routing",
+          "pass": true
+        }
+      ],
+      "failures": [],
+      "id": "golden-en-052",
+      "implementationStatus": "IMPLEMENTED",
+      "language": "en",
+      "safetyCritical": false,
+      "status": "passed",
+      "tags": [
+        "comparison",
+        "dashboard",
+        "safety"
+      ]
+    },
+    {
+      "actual": {
+        "blocked": false,
+        "clarificationRequired": false,
+        "entities": {
+          "concepts": [],
+          "districts": [],
+          "indicators": [],
+          "operations": {
+            "comparison": false,
+            "districtLevel": false,
+            "latest": false,
+            "ranking": false,
+            "sdgIndicatorList": false,
+            "sdgProgress": false,
+            "strongest": false,
+            "targetGap": false,
+            "trend": false,
+            "weakest": false
+          },
+          "pillars": [],
+          "sdgGoals": [],
           "territories": []
         },
         "intent": "SITE_KNOWLEDGE",
@@ -7334,6 +9824,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -7376,6 +9873,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -7383,6 +9881,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": []
         },
         "intent": "SITE_KNOWLEDGE",
@@ -7530,6 +10029,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -7572,6 +10078,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -7579,6 +10086,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": []
         },
         "intent": "SITE_KNOWLEDGE",
@@ -7726,6 +10234,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -7771,6 +10286,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -7778,6 +10294,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -7916,6 +10433,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -7962,6 +10486,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -7971,6 +10496,7 @@
           "pillars": [
             "Energy"
           ],
+          "sdgGoals": [],
           "territories": [
             "Sarawak"
           ]
@@ -8083,6 +10609,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -8128,6 +10661,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -8135,6 +10669,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Brunei Darussalam"
           ]
@@ -8247,6 +10782,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -8290,6 +10832,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -8297,6 +10840,7 @@
             "weakest": true
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -8392,6 +10936,13 @@
           "actual": false,
           "expected": false,
           "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
           "metric": "operation",
           "pass": true
         },
@@ -8441,6 +10992,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": true,
             "targetGap": false,
@@ -8448,6 +11000,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Kalimantan"
           ]
@@ -8543,6 +11096,13 @@
           "actual": false,
           "expected": false,
           "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
           "metric": "operation",
           "pass": true
         },
@@ -8594,6 +11154,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": true,
@@ -8601,6 +11162,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -8739,6 +11301,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -8785,6 +11354,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": true,
@@ -8792,6 +11362,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -8904,6 +11475,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -8949,6 +11527,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -8956,6 +11535,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Brunei Darussalam",
             "Sabah"
@@ -9065,6 +11645,13 @@
           "actual": false,
           "expected": false,
           "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
           "metric": "operation",
           "pass": true
         },
@@ -9117,6 +11704,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -9124,6 +11712,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Brunei Darussalam",
             "Sabah"
@@ -9233,6 +11822,13 @@
           "actual": false,
           "expected": false,
           "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
           "metric": "operation",
           "pass": true
         },
@@ -9285,6 +11881,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -9292,6 +11889,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah",
             "Sarawak"
@@ -9407,6 +12005,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -9453,6 +12058,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -9460,6 +12066,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Kalimantan",
             "Sabah"
@@ -9575,6 +12182,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -9620,6 +12234,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -9627,6 +12242,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Kalimantan",
             "Sabah"
@@ -9736,6 +12352,13 @@
           "actual": false,
           "expected": false,
           "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
           "metric": "operation",
           "pass": true
         },
@@ -9787,6 +12410,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -9794,6 +12418,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah",
             "Sarawak"
@@ -9909,6 +12534,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -9954,6 +12586,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -9963,6 +12596,7 @@
           "pillars": [
             "Energy"
           ],
+          "sdgGoals": [],
           "territories": [
             "Sabah",
             "Sarawak"
@@ -10078,6 +12712,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -10125,6 +12766,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -10135,6 +12777,7 @@
             "Energy",
             "Food"
           ],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -10249,6 +12892,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -10295,6 +12945,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -10302,6 +12953,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -10414,6 +13066,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -10459,6 +13118,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -10466,6 +13126,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -10578,6 +13239,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -10624,6 +13292,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -10631,6 +13300,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -10769,6 +13439,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -10816,6 +13493,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": true,
             "strongest": false,
             "targetGap": false,
@@ -10823,6 +13501,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -10935,6 +13614,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -10978,6 +13664,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": true,
             "strongest": false,
             "targetGap": false,
@@ -10985,6 +13672,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -11086,6 +13774,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -11133,6 +13828,7 @@
             "districtLevel": true,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -11140,6 +13836,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": []
         },
         "factAvailability": "AVAILABLE",
@@ -11248,6 +13945,13 @@
           "pass": true
         },
         {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
           "actual": true,
           "expected": true,
           "field": "districtLevel",
@@ -11293,6 +13997,7 @@
             "districtLevel": true,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -11300,6 +14005,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": []
         },
         "factAvailability": "BLOCKED",
@@ -11386,6 +14092,13 @@
           "pass": true
         },
         {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
           "actual": true,
           "expected": true,
           "field": "districtLevel",
@@ -11431,6 +14144,7 @@
             "districtLevel": false,
             "latest": true,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -11438,6 +14152,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -11549,6 +14264,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -11592,6 +14314,7 @@
             "districtLevel": false,
             "latest": true,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -11599,6 +14322,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Kalimantan"
           ]
@@ -11710,6 +14434,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -11754,6 +14485,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -11761,6 +14493,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Brunei Darussalam"
           ]
@@ -11846,6 +14579,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -11888,6 +14628,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -11895,6 +14636,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": []
         },
         "intent": "OUT_OF_SCOPE",
@@ -11961,6 +14703,13 @@
           "actual": false,
           "expected": false,
           "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
           "metric": "operation",
           "pass": true
         },
@@ -12009,6 +14758,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -12016,6 +14766,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": []
         },
         "intent": "OUT_OF_SCOPE",
@@ -12082,6 +14833,13 @@
           "actual": false,
           "expected": false,
           "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
           "metric": "operation",
           "pass": true
         },
@@ -12133,6 +14891,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -12140,6 +14899,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -12246,6 +15006,13 @@
           "actual": false,
           "expected": false,
           "field": "sdgProgress",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
+          "field": "sdgIndicatorList",
           "metric": "operation",
           "pass": true
         },
@@ -12298,6 +15065,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -12305,6 +15073,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -12417,6 +15186,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -12461,6 +15237,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -12468,6 +15245,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -12603,6 +15381,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -12648,6 +15433,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -12655,6 +15441,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": []
         },
         "intent": "OUT_OF_SCOPE",
@@ -12753,6 +15540,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -12797,6 +15591,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -12804,6 +15599,7 @@
             "weakest": false
           },
           "pillars": [],
+          "sdgGoals": [],
           "territories": []
         },
         "factAvailability": "UNAVAILABLE",
@@ -12900,6 +15696,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -12948,6 +15751,7 @@
             "districtLevel": false,
             "latest": false,
             "ranking": false,
+            "sdgIndicatorList": false,
             "sdgProgress": false,
             "strongest": false,
             "targetGap": false,
@@ -12957,6 +15761,7 @@
           "pillars": [
             "Food"
           ],
+          "sdgGoals": [],
           "territories": [
             "Sabah"
           ]
@@ -13077,6 +15882,13 @@
         {
           "actual": false,
           "expected": false,
+          "field": "sdgIndicatorList",
+          "metric": "operation",
+          "pass": true
+        },
+        {
+          "actual": false,
+          "expected": false,
           "field": "districtLevel",
           "metric": "operation",
           "pass": true
@@ -13158,11 +15970,11 @@
   ],
   "thresholdFailures": [],
   "totals": {
-    "english": 41,
+    "english": 52,
     "failed": 0,
     "malay": 36,
-    "passed": 73,
-    "questions": 77,
+    "passed": 84,
+    "questions": 88,
     "skipped": 4
   },
   "unsupportedFeatureSummary": {
@@ -13180,10 +15992,10 @@
     "verifiedRuntimeLeverCount": 0
   },
   "validation": {
-    "englishCount": 41,
+    "englishCount": 52,
     "errors": [],
     "malayCount": 36,
-    "questionCount": 77,
+    "questionCount": 88,
     "valid": true
   }
 }

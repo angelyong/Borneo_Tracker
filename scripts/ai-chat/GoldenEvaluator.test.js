@@ -58,8 +58,8 @@ describe('Golden data validator', () => {
   it('accepts the committed Golden files', () => {
     expect(evaluator().validateGoldenFiles()).toMatchObject({
       valid: true,
-      questionCount: 77,
-      englishCount: 41,
+      questionCount: 88,
+      englishCount: 52,
       malayCount: 36,
     });
   });
@@ -109,8 +109,8 @@ describe('Golden data validator', () => {
 describe('Golden evaluator', () => {
   it('runs over the complete committed set with deterministic ordering and reports', async () => {
     const report = await evaluator().evaluate();
-    expect(report.totals.questions).toBe(77);
-    expect(report.totals.english).toBe(41);
+    expect(report.totals.questions).toBe(88);
+    expect(report.totals.english).toBe(52);
     expect(report.totals.malay).toBe(36);
     expect(report.records.map((record) => record.id)).toEqual([...report.records.map((record) => record.id)].sort());
     expect(report.unsupportedFeatureSummary).toMatchObject({
@@ -125,9 +125,9 @@ describe('Golden evaluator', () => {
 
   it('calculates routing, entity, operation, comparability, and fact metrics', async () => {
     const report = await evaluator().evaluate();
-    expect(report.metrics.routingAccuracy.evaluated).toBe(73);
+    expect(report.metrics.routingAccuracy.evaluated).toBe(84);
     expect(report.metrics.entityResolutionAccuracy.evaluated).toBeGreaterThan(0);
-    expect(report.metrics.operationDetectionAccuracy.evaluated).toBe(73 * 9);
+    expect(report.metrics.operationDetectionAccuracy.evaluated).toBe(84 * 10);
     expect(report.metrics.comparabilityAccuracy.evaluated).toBeGreaterThan(0);
     expect(report.metrics.factAvailabilityAccuracy.evaluated).toBeGreaterThan(0);
     expect(report.metrics.knowledgeTop1RetrievalAccuracy.value).toBe(1);

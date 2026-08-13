@@ -131,7 +131,7 @@ export function buildStructuredAnswer(input: StructuredAnswerBuilderInput): AICh
     language: language.value,
     warnings,
   };
-  const layers = {
+  const layers = buildSdgIndicatorListLayers(context) || buildComparisonLayers(context) || {
     conclusion: buildConclusionLayer(context),
     diagnosis: buildDiagnosisLayer(context),
     gap: buildGapLayer(context),
@@ -161,7 +161,104 @@ export function buildStructuredAnswer(input: StructuredAnswerBuilderInput): AICh
     approvedNumericTokens: [...input.factObject.approvedNumericTokens],
     approvedYearTokens: [...input.factObject.approvedYearTokens],
     blocked: input.factObject.availability === 'BLOCKED',
-    clarificationRequired: input.comparability.decision === 'NEEDS_CLARIFICATION',
+    clarificationRequired: input.factObject.sdgIndicatorList ? false : input.comparability.decision === 'NEEDS_CLARIFICATION',
+  };
+}
+
+function buildSdgIndicatorListLayers(context: BuilderContext): AIChatStructuredAnswer['layers'] | undefined {
+  const { fact, templates } = context;
+  const sdgList = fact.sdgIndicatorList;
+  if (!sdgList) return undefined;
+
+  const conclusion = baseLayer('conclusion', fact.availability === 'AVAILABLE' ? 'AVAILABLE' : 'UNAVAILABLE', templates.headings.conclusion);
+  const detail = baseLayer('diagnosis', fact.availability === 'AVAILABLE' ? 'AVAILABLE' : 'UNAVAILABLE', templates.headings.diagnosis);
+  const limitations = baseLayer('honesty', fact.requiredDisclosures.length ? 'PARTIAL' : 'AVAILABLE', templates.headings.honesty);
+
+  if (!sdgList.supported) {
+    conclusion.text = fact.conclusion?.text || 'Borneo Tracker does not have a supported canonical SDG indicator mapping for that goal.';
+    conclusion.codes = [fact.conclusion?.code || 'UNSUPPORTED_SDG_GOAL'];
+    conclusion.factReferences = ['sdgIndicatorList.supportedGoals'];
+  } else if (!sdgList.groups.length) {
+    conclusion.text = fact.conclusion?.text || `Borneo Tracker has no canonical indicators currently mapped to ${sdgList.sdgGoal}.`;
+    conclusion.codes = [fact.conclusion?.code || 'NO_CANONICAL_SDG_INDICATORS'];
+    conclusion.factReferences = ['sdgIndicatorList.groups'];
+  } else {
+    conclusion.text = `Borneo Tracker maps these canonical indicators to ${sdgList.sdgGoal}${sdgList.label ? ` (${sdgList.label})` : ''}: ${sdgList.groups.map((group) => group.indicator).join('; ')}.`;
+    conclusion.codes = [fact.conclusion?.code || 'SDG_INDICATOR_LIST_AVAILABLE'];
+    conclusion.factReferences = ['sdgIndicatorList.groups'];
+    detail.text = sdgList.groups.map((group) => {
+      const territories = group.territories.join(', ');
+      const years = group.years.length ? ` Years: ${group.years.join(', ')}.` : '';
+      const unit = group.unit ? ` Unit: ${group.unit}.` : '';
+      const sources = group.sources.length ? ` Sources: ${group.sources.join('; ')}.` : '';
+      return `${group.indicator}${group.concept ? ` (${group.concept})` : ''}: ${territories}.${unit}${years}${sources}`;
+    }).join('\n');
+    detail.codes = ['SDG_INDICATOR_DETAILS_AVAILABLE'];
+    detail.factReferences = ['sdgIndicatorList.groups.sourcePaths'];
+  }
+
+  limitations.text = fact.requiredDisclosures.length ? fact.requiredDisclosures.join(' ') : '';
+  limitations.codes = fact.requiredDisclosures.length ? ['LIMITATIONS_PRESENT'] : ['NO_LIMITATIONS'];
+  limitations.factReferences = ['requiredDisclosures'];
+  limitations.warnings = [...fact.requiredDisclosures];
+
+  return {
+    conclusion,
+    diagnosis: detail,
+    gap: { ...baseLayer('gap', 'NOT_APPLICABLE', templates.headings.gap), text: '' },
+    impact: { ...baseLayer('impact', 'NOT_APPLICABLE', templates.headings.impact), text: '' },
+    lever: { ...baseLayer('lever', 'NOT_APPLICABLE', templates.headings.lever), text: '', leverIds: [], requiresGeminiPhrasing: false },
+    honesty: limitations,
+  };
+}
+
+function buildComparisonLayers(context: BuilderContext): AIChatStructuredAnswer['layers'] | undefined {
+  const { fact, comparability, templates } = context;
+  if (!fact.comparison.requested || fact.sdgIndicatorList) return undefined;
+
+  const conclusion = baseLayer('conclusion', fact.availability === 'BLOCKED' ? 'BLOCKED' : 'UNAVAILABLE', templates.headings.conclusion);
+  if (comparability.decision === 'NEEDS_CLARIFICATION') {
+    conclusion.text = firstText([...comparability.reasons, ...fact.warnings.map((warning) => warning.message)], templates.clarification);
+    conclusion.codes = ['CLARIFICATION_REQUIRED'];
+    conclusion.factReferences = ['comparison.decision'];
+    conclusion.warnings = [...comparability.reasons];
+  } else if (fact.availability === 'BLOCKED' || fact.comparison.allowed === false) {
+    conclusion.status = 'BLOCKED';
+    const reason = firstText([...comparability.reasons, fact.conclusion?.text || ''], '');
+    conclusion.text = reason ? `${templates.blockedComparison} ${reason}` : templates.blockedComparison;
+    conclusion.codes = [fact.conclusion?.code || 'COMPARISON_BLOCKED'];
+    conclusion.factReferences = ['comparison.decision', 'conclusion'];
+    conclusion.warnings = [...comparability.reasons];
+  } else {
+    const comparison = comparisonConclusion(fact, context.language, context.entities.comparisonQuery?.kind || 'generic');
+    if (!comparison) return undefined;
+    conclusion.status = fact.availability === 'PARTIAL' ? 'PARTIAL' : 'AVAILABLE';
+    conclusion.text = comparison.text;
+    conclusion.codes = [comparison.code];
+    conclusion.factReferences = comparison.references;
+  }
+
+  const honestyWarnings = dedupe([
+    ...comparability.reasons,
+    ...comparability.warnings,
+    ...fact.warnings.map((warning) => warning.message),
+    ...fact.requiredDisclosures,
+  ]);
+  const honesty = {
+    ...baseLayer('honesty', honestyWarnings.length ? (fact.availability === 'BLOCKED' ? 'BLOCKED' as const : 'PARTIAL' as const) : 'AVAILABLE', templates.headings.honesty),
+    text: honestyWarnings.length ? templates.limitationsAvailable : '',
+    codes: honestyWarnings.length ? ['LIMITATIONS_PRESENT'] : ['NO_LIMITATIONS'],
+    factReferences: ['warnings', 'requiredDisclosures', 'comparison.decision'],
+    warnings: honestyWarnings,
+  };
+
+  return {
+    conclusion,
+    diagnosis: { ...baseLayer('diagnosis', 'NOT_APPLICABLE', templates.headings.diagnosis), text: '' },
+    gap: { ...baseLayer('gap', 'NOT_APPLICABLE', templates.headings.gap), text: '' },
+    impact: { ...baseLayer('impact', 'NOT_APPLICABLE', templates.headings.impact), text: '' },
+    lever: { ...baseLayer('lever', 'NOT_APPLICABLE', templates.headings.lever), text: '', leverIds: [], requiresGeminiPhrasing: false },
+    honesty,
   };
 }
 
@@ -406,7 +503,7 @@ function conclusionFromValues(fact: AIChatFactObject, context: BuilderContext): 
   };
 }
 
-function comparisonConclusion(fact: AIChatFactObject, language: SupportedLanguage): {
+function comparisonConclusion(fact: AIChatFactObject, language: SupportedLanguage, queryKind: 'generic' | 'higher' | 'lower' | 'difference' = 'generic'): {
   text: string;
   code: string;
   references: string[];
@@ -417,17 +514,57 @@ function comparisonConclusion(fact: AIChatFactObject, language: SupportedLanguag
   if (comparableValues.length < 2) return undefined;
 
   const [left, right] = comparableValues;
+  if (typeof left.value !== 'number' || typeof right.value !== 'number') return undefined;
+  const difference = fact.values.rawValues.find((value) => value.label === 'compatible difference');
+  const magnitude = typeof difference?.value === 'number'
+    ? Math.abs(difference.value)
+    : Math.abs(Number((left.value - right.value).toFixed(1)));
+  const magnitudeText = Number.isInteger(magnitude) ? String(magnitude) : magnitude.toFixed(1);
+  const higher = left.value === right.value ? undefined : left.value > right.value ? left : right;
+  const lower = left.value === right.value ? undefined : left.value < right.value ? left : right;
   const basis = fact.comparison.basis || left.unit || right.unit || 'same committed basis';
-  const valueText = language === 'ms'
-    ? `${left.territory}: ${left.formattedValue}; ${right.territory}: ${right.formattedValue}`
-    : `${left.territory}: ${left.formattedValue}; ${right.territory}: ${right.formattedValue}`;
+  const unitText = comparisonUnitText(left.unit || right.unit);
+  const leftFormatted = comparisonFormattedValue(left);
+  const rightFormatted = comparisonFormattedValue(right);
+  const valueText = `${left.territory}: ${leftFormatted}; ${right.territory}: ${rightFormatted}`;
+  const directionText = higher
+    ? `${higher.territory} is higher than ${lower?.territory} by ${magnitudeText} ${unitText}`
+    : `${left.territory} and ${right.territory} are tied`;
+  const basisText = `The comparison uses the ${basis}.`;
+  let text = `${left.territory}'s resilience score is ${leftFormatted} and ${right.territory}'s is ${rightFormatted}. ${valueText}. ${directionText}. ${basisText}`;
+  if (queryKind === 'higher') {
+    text = higher
+      ? `${higher.territory} has the higher resilience score. ${valueText}. ${higher.territory} is higher by ${magnitudeText} ${unitText}. ${basisText}`
+      : `Neither territory is higher. ${valueText}. ${basisText}`;
+  } else if (queryKind === 'lower') {
+    text = lower
+      ? `${lower.territory} has the lower resilience score. ${valueText}. ${lower.territory} is lower by ${magnitudeText} ${unitText}. ${basisText}`
+      : `Neither territory is lower. ${valueText}. ${basisText}`;
+  } else if (queryKind === 'difference') {
+    text = higher
+      ? `The difference is ${magnitudeText} ${unitText}. ${directionText}. ${valueText}. ${basisText}`
+      : `The difference is 0 ${unitText}. ${valueText}. ${basisText}`;
+  } else if (left.concept !== 'resilience' && right.concept !== 'resilience') {
+    text = `Comparison uses ${basis}. ${valueText}. ${directionText}.`;
+  }
   return {
     text: language === 'ms'
-      ? `Perbandingan menggunakan ${basis}. ${valueText}.`
-      : `Comparison uses ${basis}. ${valueText}.`,
+      ? text
+      : text,
     code: 'COMPARISON_CONCLUSION',
-    references: ['values.rawValues', 'comparison.basis'],
+    references: ['values.rawValues', 'comparison.basis', 'values.rawValues.compatibleDifference'],
   };
+}
+
+function comparisonUnitText(unit?: string): string {
+  if (unit === 'score/100') return 'points';
+  if (!unit || unit === 'count') return 'units';
+  return unit;
+}
+
+function comparisonFormattedValue(value: FactValue): string {
+  if (value.unit === 'score/100' && typeof value.value === 'number') return value.value.toFixed(1);
+  return value.formattedValue;
 }
 
 function diagnosisText(fact: AIChatFactObject): string {
