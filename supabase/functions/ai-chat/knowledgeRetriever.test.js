@@ -48,7 +48,7 @@ function repository(records) {
 
 describe('static knowledge retriever', () => {
   it.each([
-    ['What is the difference between ESG and SDG?', ['esg-indicators-page-en', 'sdg-progress-page-en']],
+    ['What is the difference between ESG and SDG?', ['esg-vs-sdg']],
     ['Explain the Forest Cover indicator.', ['report-concept-forest-cover']],
     ['Which SDGs are monitored by Borneo Tracker?', ['sdg-monitored-goals']],
     ['Where does the environmental data come from?', ['environmental-data-sources']],
@@ -66,6 +66,81 @@ describe('static knowledge retriever', () => {
     expect(result.status).toBe('FOUND');
     expect(result.matches.map((match) => match.record.id)).toEqual(expect.arrayContaining(expectedIds));
     expect(result.matches.every((match) => match.record.runtimeIncluded && match.record.status === 'verified' && !match.record.placeholder)).toBe(true);
+  });
+
+  it.each([
+    'What is the difference between ESG and SDG?',
+    'How are ESG and SDG different?',
+    'What is ESG compared with SDG?',
+    'Explain ESG versus SDG in Borneo Tracker.',
+  ])('prefers the ESG versus SDG comparison record for: %s', (question) => {
+    const result = retrieveStaticKnowledge({
+      question,
+      language: 'en',
+      currentPage: '/',
+      territories: [],
+      concepts: [],
+      limit: 5,
+    }, new KnowledgeRepository());
+
+    expect(result.status).toBe('FOUND');
+    expect(result.matches[0].record.id).toBe('esg-vs-sdg');
+    expect(result.matches[0].record.status).toBe('verified');
+    expect(result.matches[0].record.placeholder).toBe(false);
+    expect(result.matches[0].record.runtimeIncluded).toBe(true);
+    expect(result.matches[0].record.category).toBe('reports');
+    expect(result.matches[0].matchedBy).toContain('query-hint:esg-vs-sdg');
+    expect(result.matches[0].record.id).not.toBe('about-borneo-tracker-en');
+  });
+
+  it('builds a deterministic ESG versus SDG answer without ESG empty-state text', () => {
+    const retrieval = retrieveStaticKnowledge({
+      question: 'What is the difference between ESG and SDG?',
+      language: 'en',
+      currentPage: '/',
+      territories: [],
+      concepts: [],
+      limit: 5,
+    }, new KnowledgeRepository());
+    const answer = buildKnowledgeAnswer(retrieval, 'en');
+
+    expect(answer.recordIds).toEqual(['esg-vs-sdg']);
+    expect(answer.answer).toContain('ESG groups tracked indicators into the Environment, Social, and Governance pillars.');
+    expect(answer.answer).toContain('SDG coverage maps the same tracked indicators to the UN Sustainable Development Goals they inform.');
+    expect(answer.answer).toContain('ESG is the pillar-based view');
+    expect(answer.answer).toContain('SDG is the goal-based view');
+    expect(answer.answer).toContain('same tracked indicator dataset');
+    expect(answer.answer).not.toContain('No canonical indicators are available for this pillar yet.');
+  });
+
+  it('keeps single-concept ESG questions on ESG-specific knowledge', () => {
+    const result = retrieveStaticKnowledge({
+      question: 'What is ESG?',
+      language: 'en',
+      currentPage: '/',
+      territories: [],
+      concepts: [],
+      limit: 5,
+    }, new KnowledgeRepository());
+
+    expect(result.status).toBe('FOUND');
+    expect(result.matches[0].record.id).toBe('esg-indicators-page-en');
+    expect(result.matches[0].record.id).not.toBe('esg-vs-sdg');
+  });
+
+  it('keeps single-concept SDG questions on SDG-specific knowledge', () => {
+    const result = retrieveStaticKnowledge({
+      question: 'What are SDGs?',
+      language: 'en',
+      currentPage: '/',
+      territories: [],
+      concepts: [],
+      limit: 5,
+    }, new KnowledgeRepository());
+
+    expect(result.status).toBe('FOUND');
+    expect(result.matches[0].record.id).toBe('sdg-progress-page-en');
+    expect(result.matches[0].record.id).not.toBe('esg-vs-sdg');
   });
 
   it.each([

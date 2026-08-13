@@ -121,7 +121,6 @@ function recordsFromI18n(payload) {
     'confidenceMix',
     'trendStatus',
     'historicalSeriesNotEnabled',
-    'noCanonicalIndicators',
   ]), '/esg', {
     id: `esg-indicators-page-${language}`,
     language,

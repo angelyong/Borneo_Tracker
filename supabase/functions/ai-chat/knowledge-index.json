@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "generatedAt": "1970-01-01T00:00:00.000Z",
-  "recordCount": 85,
+  "recordCount": 86,
   "records": [
     {
       "id": "about-borneo-tracker-en",
@@ -628,7 +628,7 @@
       "id": "esg-indicators-page-en",
       "title": "ESG Indicators",
       "category": "esg-indicators",
-      "content": "Real snapshot data grouped by pillar with visible confidence tags Environment Social Governance canonical indicators available Latest data year Confidence mix Trend status Historical series not enabled yet No canonical indicators are available for this pillar yet.",
+      "content": "Real snapshot data grouped by pillar with visible confidence tags Environment Social Governance canonical indicators available Latest data year Confidence mix Trend status Historical series not enabled yet",
       "language": "en",
       "pageUrl": "/esg",
       "region": null,
@@ -686,13 +686,13 @@
         "sourcePath": "esg.overview",
         "extractedAt": null
       },
-      "searchableText": "esg indicators esg-indicators real snapshot data grouped by pillar with visible confidence tags environment social governance canonical indicators available latest data year confidence mix trend status historical series not enabled yet no canonical indicators are available for this pillar yet esg indicators esg-indicators real snapshot data grouped pillar with visible confidence tags environment social governance canonical available latest year mix trend status historical series"
+      "searchableText": "esg indicators esg-indicators real snapshot data grouped by pillar with visible confidence tags environment social governance canonical indicators available latest data year confidence mix trend status historical series not enabled yet esg indicators esg-indicators real snapshot data grouped pillar with visible confidence tags environment social governance canonical available latest year mix trend status historical series"
     },
     {
       "id": "esg-indicators-page-ms",
       "title": "Penunjuk ESG",
       "category": "esg-indicators",
-      "content": "Data gambaran sebenar dikumpulkan mengikut tunjang dengan tanda keyakinan yang jelas Alam Sekitar Sosial Tadbir Urus penunjuk kanonik tersedia Tahun data terkini Campuran keyakinan Status trend Siri sejarah belum diaktifkan Belum ada penunjuk kanonik untuk tunjang ini.",
+      "content": "Data gambaran sebenar dikumpulkan mengikut tunjang dengan tanda keyakinan yang jelas Alam Sekitar Sosial Tadbir Urus penunjuk kanonik tersedia Tahun data terkini Campuran keyakinan Status trend Siri sejarah belum diaktifkan",
       "language": "ms",
       "pageUrl": "/esg",
       "region": null,
@@ -750,7 +750,57 @@
         "sourcePath": "esg.overview",
         "extractedAt": null
       },
-      "searchableText": "penunjuk esg esg-indicators data gambaran sebenar dikumpulkan mengikut tunjang dengan tanda keyakinan yang jelas alam sekitar sosial tadbir urus penunjuk kanonik tersedia tahun data terkini campuran keyakinan status trend siri sejarah belum diaktifkan belum ada penunjuk kanonik untuk tunjang ini penunjuk esg esg-indicators data gambaran sebenar dikumpulkan mengikut tunjang dengan tanda keyakinan yang jelas alam sekitar sosial tadbir urus kanonik tersedia tahun terkini campuran"
+      "searchableText": "penunjuk esg esg-indicators data gambaran sebenar dikumpulkan mengikut tunjang dengan tanda keyakinan yang jelas alam sekitar sosial tadbir urus penunjuk kanonik tersedia tahun data terkini campuran keyakinan status trend siri sejarah belum diaktifkan penunjuk esg esg-indicators data gambaran sebenar dikumpulkan mengikut tunjang dengan tanda keyakinan yang jelas alam sekitar sosial tadbir urus kanonik tersedia tahun terkini campuran"
+    },
+    {
+      "id": "esg-vs-sdg",
+      "title": "ESG and SDG in Borneo Tracker",
+      "category": "reports",
+      "content": "ESG groups tracked indicators into the Environment, Social, and Governance pillars. SDG coverage maps the same tracked indicators to the UN Sustainable Development Goals they inform. The distinction is that ESG is the pillar-based view, while SDG is the goal-based view. They overlap because the same tracked indicator dataset can be interpreted through both frameworks.",
+      "language": "en",
+      "pageUrl": "/reports",
+      "region": null,
+      "concept": null,
+      "sdgTags": [],
+      "keywords": [
+        "ESG vs SDG",
+        "ESG and SDG",
+        "difference between ESG and SDG",
+        "ESG compared with SDG",
+        "ESG pillars",
+        "SDG goals",
+        "pillar-based",
+        "goal-based",
+        "sustainability frameworks",
+        "ESG SDG overlap"
+      ],
+      "regions": [],
+      "relatedSdgs": [],
+      "unit": null,
+      "sourceName": "Borneo Tracker report sections",
+      "sourceUrl": "",
+      "sourceFile": "src/pages/reports/ReportSections.jsx",
+      "sourceType": "page",
+      "sourceId": "report-sections",
+      "sourcePath": "EsgIndicatorSection/SdgCoverageSection",
+      "sourceTypeDetail": null,
+      "updatedAt": null,
+      "status": "verified",
+      "placeholder": false,
+      "runtimeIncluded": true,
+      "provenance": {
+        "sourceFile": "src/pages/reports/ReportSections.jsx",
+        "sourceType": "page",
+        "sourceId": "report-sections",
+        "sourceName": "Borneo Tracker report sections",
+        "sourceUrl": "",
+        "pageUrl": "/reports",
+        "route": "/reports",
+        "language": "en",
+        "sourcePath": "EsgIndicatorSection/SdgCoverageSection",
+        "extractedAt": null
+      },
+      "searchableText": "esg and sdg in borneo tracker reports esg groups tracked indicators into the environment social and governance pillars sdg coverage maps the same tracked indicators to the un sustainable development goals they inform the distinction is that esg is the pillar-based view while sdg is the goal-based view they overlap because the same tracked indicator dataset can be interpreted through both frameworks esg vs sdg esg and sdg difference between esg and sdg esg compared with sdg esg pillars sdg goals pillar-based goal-based sustainability frameworks esg sdg overlap"
     },
     {
       "id": "generate-report-page-en",

@@ -286,6 +286,18 @@ function queryHintBoost(record: AIChatKnowledgeRecord, question: string, questio
     score += 12;
     matchedBy.push(`query-hint:${category}`);
   }
+  if (isEsgSdgComparisonQuestion(question, questionTokens) && record.id === 'esg-vs-sdg') {
+    score += 36;
+    matchedBy.push('query-hint:esg-vs-sdg');
+  }
+  if (isSingleEsgQuestion(question, questionTokens) && record.id === 'esg-indicators-page-en') {
+    score += 24;
+    matchedBy.push('query-hint:esg-overview');
+  }
+  if (isSingleSdgQuestion(question, questionTokens) && record.id === 'sdg-progress-page-en') {
+    score += 24;
+    matchedBy.push('query-hint:sdg-overview');
+  }
   if (phraseAppears(question, 'forest cover') && (concept === 'forest_cover' || normalizeText(record.title) === 'forest cover')) {
     score += 12;
     matchedBy.push('query-hint:forest-cover');
@@ -304,6 +316,37 @@ function queryHintBoost(record: AIChatKnowledgeRecord, question: string, questio
   }
 
   return { score, matchedBy };
+}
+
+function isSingleEsgQuestion(question: string, questionTokens: string[]): boolean {
+  const has = (token: string) => questionTokens.includes(token);
+  if (!has('esg') || has('sdg')) return false;
+  return phraseAppears(question, 'what is esg') ||
+    /\b(?:explain|define|meaning)\b.{0,20}\besg\b/.test(question) ||
+    /\besg\b.{0,20}\b(?:mean|means)\b/.test(question);
+}
+
+function isSingleSdgQuestion(question: string, questionTokens: string[]): boolean {
+  const has = (token: string) => questionTokens.includes(token);
+  if (!has('sdg') || has('esg')) return false;
+  const isSpecificGoal = /\bsdgs?\s*\d+\b/i.test(question) ||
+    /\bsustainable development goals?\s*\d+\b/i.test(question);
+  if (isSpecificGoal || isSdgCoverageListQuestion(question, questionTokens)) return false;
+  return phraseAppears(question, 'what are sdgs') ||
+    phraseAppears(question, 'what is sdg') ||
+    phraseAppears(question, 'what are sustainable development goals') ||
+    /\b(?:explain|define|meaning)\b.{0,40}\b(?:sdgs?|sustainable development goals?)\b/.test(question) ||
+    /\b(?:sdgs?|sustainable development goals?)\b.{0,20}\b(?:mean|means)\b/.test(question);
+}
+
+function isEsgSdgComparisonQuestion(question: string, questionTokens: string[]): boolean {
+  const has = (token: string) => questionTokens.includes(token);
+  if (!has('esg') || !has('sdg')) return false;
+  return /\b(?:difference|different|compared|compare|versus|vs|between)\b/.test(question) ||
+    phraseAppears(question, 'esg and sdg') ||
+    phraseAppears(question, 'esg vs sdg') ||
+    phraseAppears(question, 'esg versus sdg') ||
+    phraseAppears(question, 'esg compared with sdg');
 }
 
 function isSdgCoverageListQuestion(question: string, questionTokens: string[]): boolean {

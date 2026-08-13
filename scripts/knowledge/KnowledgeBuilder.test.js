@@ -96,6 +96,29 @@ describe('knowledge extraction', () => {
     expect(records[0].keywords).toEqual(expect.arrayContaining(['monitored SDGs', 'SDG coverage']));
   });
 
+  it('extracts the ESG versus SDG comparison record from report sections', () => {
+    const sourceText = [
+      '<h2>ESG Indicators</h2>',
+      'All tracked indicators, grouped Environment · Social · Governance.',
+      '<h2>SDG Coverage</h2>',
+      'The same indicators mapped to the UN Sustainable Development Goals they inform — for readers working from SDGs, not ESG pillars.',
+    ].join('\n');
+    const records = new PageContentExtractor().extract(sourceText, { kind: 'report-sections' });
+
+    expect(records).toEqual([expect.objectContaining({
+      id: 'esg-vs-sdg',
+      title: 'ESG and SDG in Borneo Tracker',
+      category: 'reports',
+      pageUrl: '/reports',
+      sourcePath: 'EsgIndicatorSection/SdgCoverageSection',
+      sourceName: 'Borneo Tracker report sections',
+      status: 'verified',
+    })]);
+    expect(records[0].content).toContain('ESG groups tracked indicators into the Environment, Social, and Governance pillars.');
+    expect(records[0].content).toContain('SDG coverage maps the same tracked indicators to the UN Sustainable Development Goals they inform.');
+    expect(records[0].keywords).toEqual(expect.arrayContaining(['ESG vs SDG', 'pillar-based', 'goal-based']));
+  });
+
   it('extracts policy sections as incomplete records', () => {
     const sourceText = "const privacySections = [{ id: 'privacy-introduction', title: 'Introduction', body: ['This mock Privacy Policy explains how Borneo Tracker handles prototype information.'] },];";
     const records = new PageContentExtractor().extract(sourceText, { kind: 'policy' });
@@ -332,6 +355,37 @@ describe('knowledge build output', () => {
     }
     expect(canonicalRecord.content).not.toContain('No canonical indicators are available for this goal');
     expect(sdgPageRecord.content).not.toContain('No canonical indicators are available for this goal');
+    expect(packagedRecord).toEqual(canonicalRecord);
+  });
+
+  it('includes the verified ESG versus SDG record and keeps generic ESG page copy clean', () => {
+    const canonical = JSON.parse(fs.readFileSync(path.resolve('knowledge/generated/knowledge-index.json'), 'utf8'));
+    const packaged = JSON.parse(fs.readFileSync(path.resolve('supabase/functions/ai-chat/knowledge-index.json'), 'utf8'));
+    const canonicalRecord = canonical.records.find((record) => record.id === 'esg-vs-sdg');
+    const packagedRecord = packaged.records.find((record) => record.id === 'esg-vs-sdg');
+    const esgPageRecord = canonical.records.find((record) => record.id === 'esg-indicators-page-en');
+
+    expect(canonicalRecord).toMatchObject({
+      id: 'esg-vs-sdg',
+      title: 'ESG and SDG in Borneo Tracker',
+      category: 'reports',
+      language: 'en',
+      pageUrl: '/reports',
+      status: 'verified',
+      placeholder: false,
+      runtimeIncluded: true,
+      sourceFile: 'src/pages/reports/ReportSections.jsx',
+      sourceType: 'page',
+      sourceId: 'report-sections',
+      sourcePath: 'EsgIndicatorSection/SdgCoverageSection',
+      sourceName: 'Borneo Tracker report sections',
+    });
+    expect(canonicalRecord.content).toContain('ESG groups tracked indicators into the Environment, Social, and Governance pillars.');
+    expect(canonicalRecord.content).toContain('SDG coverage maps the same tracked indicators to the UN Sustainable Development Goals they inform.');
+    expect(canonicalRecord.content).toContain('pillar-based view');
+    expect(canonicalRecord.content).toContain('goal-based view');
+    expect(canonicalRecord.content).toContain('same tracked indicator dataset');
+    expect(esgPageRecord.content).not.toContain('No canonical indicators are available for this pillar yet.');
     expect(packagedRecord).toEqual(canonicalRecord);
   });
 

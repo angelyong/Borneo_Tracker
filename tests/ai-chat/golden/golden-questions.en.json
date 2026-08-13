@@ -306,7 +306,7 @@
     "question": "What is the difference between ESG and SDG?",
     "context": { "currentPage": "/", "language": "en" },
     "implementationStatus": "IMPLEMENTED",
-    "expected": { "intent": "SITE_KNOWLEDGE", "operations": { "comparison": true, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": true, "districtLevel": false, "latest": false }, "blocked": false, "clarificationRequired": false, "knowledge": { "status": "FOUND", "expectedRecordIds": ["esg-indicators-page-en", "sdg-progress-page-en"], "sourceCountMin": 2 } },
+    "expected": { "intent": "SITE_KNOWLEDGE", "operations": { "comparison": true, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": true, "districtLevel": false, "latest": false }, "blocked": false, "clarificationRequired": false, "knowledge": { "status": "FOUND", "expectedRecordIds": ["esg-vs-sdg"], "sourceCountMin": 1 } },
     "tags": ["site_knowledge", "suggested_question"]
   },
   {

@@ -29,6 +29,16 @@
       "enabled": true
     },
     {
+      "id": "report-sections",
+      "type": "page",
+      "path": "src/pages/reports/ReportSections.jsx",
+      "category": "reports",
+      "kind": "report-sections",
+      "language": "en",
+      "route": "/reports",
+      "enabled": true
+    },
+    {
       "id": "indicator-config",
       "type": "page",
       "path": "src/data/useIndicators.js",

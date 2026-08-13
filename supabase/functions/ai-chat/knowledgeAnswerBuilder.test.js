@@ -70,6 +70,40 @@ describe('knowledge answer builder', () => {
     expect(answer.answer).toContain('tracks Sustainable Development Goals');
   });
 
+  it('uses the dedicated ESG versus SDG comparison record directly', () => {
+    const answer = buildKnowledgeAnswer({
+      status: 'FOUND',
+      matches: [
+        match({
+          score: 72,
+          record: {
+            id: 'esg-vs-sdg',
+            category: 'reports',
+            title: 'ESG and SDG in Borneo Tracker',
+            content: [
+              'ESG groups tracked indicators into the Environment, Social, and Governance pillars.',
+              'SDG coverage maps the same tracked indicators to the UN Sustainable Development Goals they inform.',
+              'The distinction is that ESG is the pillar-based view, while SDG is the goal-based view.',
+              'They overlap because the same tracked indicator dataset can be interpreted through both frameworks.',
+            ].join(' '),
+          },
+        }),
+        match({ score: 26, record: { id: 'esg', category: 'esg-indicators', title: 'ESG Indicators', content: 'Generic ESG page copy.' } }),
+        match({ score: 26, record: { id: 'sdg', category: 'sdg-progress', title: 'SDG Progress', content: 'Generic SDG page copy.' } }),
+      ],
+      warnings: [],
+    }, 'en');
+
+    expect(answer.recordIds).toEqual(['esg-vs-sdg']);
+    expect(answer.answer).toContain('ESG groups tracked indicators into the Environment, Social, and Governance pillars.');
+    expect(answer.answer).toContain('SDG coverage maps the same tracked indicators to the UN Sustainable Development Goals they inform.');
+    expect(answer.answer).toContain('ESG is the pillar-based view');
+    expect(answer.answer).toContain('SDG is the goal-based view');
+    expect(answer.answer).toContain('same tracked indicator dataset');
+    expect(answer.answer).not.toContain('Generic ESG page copy');
+    expect(answer.answer).not.toContain('Generic SDG page copy');
+  });
+
   it('returns localized no-match and ambiguous answers', () => {
     const noMatch = buildKnowledgeAnswer({ status: 'NO_MATCH', matches: [], warnings: [] }, 'en');
     const ambiguous = buildKnowledgeAnswer({ status: 'AMBIGUOUS', matches: [], warnings: ['KNOWLEDGE_AMBIGUOUS'] }, 'ms');

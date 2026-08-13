@@ -256,6 +256,47 @@ function recordsFromReportContent(sourceText) {
   return [...indicatorRecords, ...conceptRecords];
 }
 
+function recordsFromReportSections(sourceText) {
+  const hasEsgSection = sourceText.includes('All tracked indicators, grouped Environment') &&
+    sourceText.includes('Social') &&
+    sourceText.includes('Governance');
+  const hasSdgSection = sourceText.includes('The same indicators mapped to the UN Sustainable Development Goals they inform');
+  if (!hasEsgSection || !hasSdgSection) return [];
+
+  return [{
+    id: 'esg-vs-sdg',
+    title: 'ESG and SDG in Borneo Tracker',
+    category: 'reports',
+    content: [
+      'ESG groups tracked indicators into the Environment, Social, and Governance pillars.',
+      'SDG coverage maps the same tracked indicators to the UN Sustainable Development Goals they inform.',
+      'The distinction is that ESG is the pillar-based view, while SDG is the goal-based view.',
+      'They overlap because the same tracked indicator dataset can be interpreted through both frameworks.',
+    ].join(' '),
+    pageUrl: '/reports',
+    region: null,
+    concept: null,
+    sdgTags: [],
+    relatedSdgs: [],
+    keywords: [
+      'ESG vs SDG',
+      'ESG and SDG',
+      'difference between ESG and SDG',
+      'ESG compared with SDG',
+      'ESG pillars',
+      'SDG goals',
+      'pillar-based',
+      'goal-based',
+      'sustainability frameworks',
+      'ESG SDG overlap',
+    ],
+    sourcePath: 'EsgIndicatorSection/SdgCoverageSection',
+    sourceName: 'Borneo Tracker report sections',
+    status: 'verified',
+    language: 'en',
+  }];
+}
+
 function parseSdgGoals(sourceText) {
   const arraySource = extractArraySource(sourceText, 'SDG_GOALS');
   if (!arraySource) return [];
@@ -305,6 +346,7 @@ export class PageContentExtractor {
   extract(sourceText, source) {
     if (source.kind === 'policy') return recordsFromPolicyPage(sourceText);
     if (source.kind === 'report-content') return recordsFromReportContent(sourceText);
+    if (source.kind === 'report-sections') return recordsFromReportSections(sourceText);
     if (source.kind === 'indicator-config') return recordsFromIndicatorConfig(sourceText);
     return [];
   }

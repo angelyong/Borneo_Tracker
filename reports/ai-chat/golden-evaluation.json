@@ -339,6 +339,7 @@
           ],
           "recordIds": [
             "generate-report-page-en",
+            "esg-vs-sdg",
             "report-concept-air-quality",
             "report-concept-deforestation",
             "report-concept-economy",
@@ -346,8 +347,7 @@
             "report-concept-energy",
             "report-concept-entertainment",
             "report-concept-fire-hotspots",
-            "report-concept-food",
-            "report-concept-food-percapita"
+            "report-concept-food"
           ],
           "sourceCount": 1,
           "status": "FOUND",
@@ -373,6 +373,7 @@
         },
         {
           "actual": [
+            "esg-vs-sdg",
             "generate-report-page-en",
             "report-concept-air-quality",
             "report-concept-deforestation",
@@ -381,8 +382,7 @@
             "report-concept-energy",
             "report-concept-entertainment",
             "report-concept-fire-hotspots",
-            "report-concept-food",
-            "report-concept-food-percapita"
+            "report-concept-food"
           ],
           "expected": [
             "generate-report-page-en"
@@ -393,9 +393,9 @@
         },
         {
           "actual": [
+            "esg-vs-sdg",
             "generate-report-page-en",
-            "report-concept-air-quality",
-            "report-concept-deforestation"
+            "report-concept-air-quality"
           ],
           "expected": [
             "generate-report-page-en"
@@ -536,14 +536,14 @@
           "recordIds": [
             "esg-indicators-page-en",
             "report-indicator-mean-years-schooling-rls",
+            "esg-vs-sdg",
             "generate-report-page-en",
             "resilience-methodology-step-3-pillar-scores-resilience-index-two-numbers-by-design",
             "report-indicator-paddy-production-per-capita",
             "report-concept-air-quality",
             "report-concept-deforestation",
             "report-concept-economy",
-            "report-concept-education",
-            "report-concept-energy"
+            "report-concept-education"
           ],
           "sourceCount": 1,
           "status": "FOUND",
@@ -570,12 +570,12 @@
         {
           "actual": [
             "esg-indicators-page-en",
+            "esg-vs-sdg",
             "generate-report-page-en",
             "report-concept-air-quality",
             "report-concept-deforestation",
             "report-concept-economy",
             "report-concept-education",
-            "report-concept-energy",
             "report-indicator-mean-years-schooling-rls",
             "report-indicator-paddy-production-per-capita",
             "resilience-methodology-step-3-pillar-scores-resilience-index-two-numbers-by-design"
@@ -590,7 +590,7 @@
         {
           "actual": [
             "esg-indicators-page-en",
-            "generate-report-page-en",
+            "esg-vs-sdg",
             "report-indicator-mean-years-schooling-rls"
           ],
           "expected": [
@@ -6203,10 +6203,10 @@
         "intent": "SITE_KNOWLEDGE",
         "knowledge": {
           "answerRecordIds": [
-            "esg-indicators-page-en",
-            "sdg-progress-page-en"
+            "esg-vs-sdg"
           ],
           "recordIds": [
+            "esg-vs-sdg",
             "esg-indicators-page-en",
             "sdg-progress-page-en",
             "generate-report-page-en",
@@ -6215,12 +6215,11 @@
             "dashboard-resilience-en",
             "report-concept-economy",
             "report-concept-education",
-            "report-concept-energy",
-            "report-concept-food"
+            "report-concept-energy"
           ],
-          "sourceCount": 2,
+          "sourceCount": 1,
           "status": "FOUND",
-          "topRecordId": "esg-indicators-page-en",
+          "topRecordId": "esg-vs-sdg",
           "warnings": []
         },
         "language": "en"
@@ -6245,17 +6244,16 @@
             "dashboard-map-layers-en",
             "dashboard-resilience-en",
             "esg-indicators-page-en",
+            "esg-vs-sdg",
             "generate-report-page-en",
             "report-concept-economy",
             "report-concept-education",
             "report-concept-energy",
-            "report-concept-food",
             "sdg-monitored-goals",
             "sdg-progress-page-en"
           ],
           "expected": [
-            "esg-indicators-page-en",
-            "sdg-progress-page-en"
+            "esg-vs-sdg"
           ],
           "field": "recordIds",
           "metric": "knowledgeRecallAt10",
@@ -6264,12 +6262,11 @@
         {
           "actual": [
             "esg-indicators-page-en",
-            "generate-report-page-en",
+            "esg-vs-sdg",
             "sdg-progress-page-en"
           ],
           "expected": [
-            "esg-indicators-page-en",
-            "sdg-progress-page-en"
+            "esg-vs-sdg"
           ],
           "field": "recordIds",
           "metric": "knowledgeRecallAt3",
@@ -6283,15 +6280,15 @@
           "pass": true
         },
         {
-          "actual": 2,
-          "expected": 2,
+          "actual": 1,
+          "expected": 1,
           "field": "sourceCount",
           "metric": "knowledgeSources",
           "pass": true
         },
         {
-          "actual": "esg-indicators-page-en",
-          "expected": "esg-indicators-page-en",
+          "actual": "esg-vs-sdg",
+          "expected": "esg-vs-sdg",
           "field": "topRecordId",
           "metric": "knowledgeTop1",
           "pass": true
@@ -6614,9 +6611,9 @@
             "dashboard-resilience-en",
             "about-resilience-score-en",
             "dashboard-map-layers-en",
+            "esg-vs-sdg",
             "community-page-en",
-            "resilience-methodology-6-design-decisions-to-confirm-with-the-supervisor",
-            "resilience-methodology-5-worked-example-sabah-illustrative"
+            "resilience-methodology-6-design-decisions-to-confirm-with-the-supervisor"
           ],
           "sourceCount": 1,
           "status": "FOUND",
@@ -6647,8 +6644,8 @@
             "community-page-en",
             "dashboard-map-layers-en",
             "dashboard-resilience-en",
+            "esg-vs-sdg",
             "news-page-en",
-            "resilience-methodology-5-worked-example-sabah-illustrative",
             "resilience-methodology-6-design-decisions-to-confirm-with-the-supervisor",
             "resilience-methodology-borneo-tracker-true-wealth-resilience-index-methodology-v1",
             "sdg-monitored-goals"
@@ -7004,13 +7001,13 @@
             "generate-report-page-en",
             "dashboard-map-layers-en",
             "dashboard-resilience-en",
+            "esg-vs-sdg",
             "report-concept-air-quality",
             "report-concept-deforestation",
             "report-concept-economy",
             "report-concept-education",
             "report-concept-energy",
-            "report-concept-entertainment",
-            "report-concept-fire-hotspots"
+            "report-concept-entertainment"
           ],
           "sourceCount": 1,
           "status": "FOUND",
@@ -7038,14 +7035,14 @@
           "actual": [
             "dashboard-map-layers-en",
             "dashboard-resilience-en",
+            "esg-vs-sdg",
             "generate-report-page-en",
             "report-concept-air-quality",
             "report-concept-deforestation",
             "report-concept-economy",
             "report-concept-education",
             "report-concept-energy",
-            "report-concept-entertainment",
-            "report-concept-fire-hotspots"
+            "report-concept-entertainment"
           ],
           "expected": [
             "generate-report-page-en"
@@ -13170,7 +13167,7 @@
   },
   "unsupportedFeatureSummary": {
     "knowledgeIndexAvailable": true,
-    "knowledgeIndexRuntimeRecords": 85,
+    "knowledgeIndexRuntimeRecords": 86,
     "leverInfrastructureImplemented": true,
     "liveStatus": "BLOCKED_BY_SUPABASE",
     "liveSupabaseRepositoryEvaluated": false,

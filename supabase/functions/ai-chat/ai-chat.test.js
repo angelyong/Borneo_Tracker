@@ -1316,7 +1316,7 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
   });
 
   it.each([
-    ['What is the difference between ESG and SDG?', ['esg-indicators-page-en', 'sdg-progress-page-en']],
+    ['What is the difference between ESG and SDG?', ['esg-vs-sdg']],
     ['Explain the Forest Cover indicator.', ['report-concept-forest-cover']],
     ['Which SDGs are monitored by Borneo Tracker?', ['sdg-monitored-goals']],
     ['Where does the environmental data come from?', ['environmental-data-sources']],
@@ -1335,6 +1335,26 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     expect(prompt.groundingPayload.answerStatus).toBe('FOUND');
     expect(prompt.groundingPayload.recordIds).toEqual(expect.arrayContaining(expectedIds));
     expect(body.answer).not.toBe('The Borneo Tracker assistant can answer verified questions about Borneo Tracker, dashboard data, and published Borneo news.');
+  });
+
+  it('returns the deterministic ESG versus SDG comparison when Gemini is unavailable', async () => {
+    const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(500, 'MISSING_GEMINI_API_KEY', 'missing'));
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
+
+    const response = await handler(request({ ...validPayload, message: 'What is the difference between ESG and SDG?', currentPage: '/', region: '' }));
+    const body = await response.json();
+    const [, prompt] = geminiClient.mock.calls[0];
+
+    expect(response.status).toBe(200);
+    expect(body.mode).toBe('template-fallback');
+    expect(body.fallback.reason).toBe('KNOWLEDGE_GEMINI_UNAVAILABLE');
+    expect(prompt.groundingPayload.recordIds).toEqual(['esg-vs-sdg']);
+    expect(body.answer).toContain('ESG groups tracked indicators into the Environment, Social, and Governance pillars.');
+    expect(body.answer).toContain('SDG coverage maps the same tracked indicators to the UN Sustainable Development Goals they inform.');
+    expect(body.answer).toContain('ESG is the pillar-based view');
+    expect(body.answer).toContain('SDG is the goal-based view');
+    expect(body.answer).toContain('same tracked indicator dataset');
+    expect(body.answer).not.toContain('No canonical indicators are available for this pillar yet.');
   });
 
   it('returns deterministic knowledge no-match for explicit knowledge-base gaps without Gemini or quota', async () => {

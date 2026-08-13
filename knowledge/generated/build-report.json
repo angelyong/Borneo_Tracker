@@ -17,6 +17,11 @@
       "path": "src/pages/reports/reportContent.js"
     },
     {
+      "id": "report-sections",
+      "type": "page",
+      "path": "src/pages/reports/ReportSections.jsx"
+    },
+    {
       "id": "indicator-config",
       "type": "page",
       "path": "src/data/useIndicators.js"
@@ -81,6 +86,10 @@
       "recordsExtracted": 55
     },
     {
+      "id": "report-sections",
+      "recordsExtracted": 1
+    },
+    {
       "id": "indicator-config",
       "recordsExtracted": 1
     },
@@ -123,9 +132,9 @@
   ],
   "missingSources": [],
   "unsafeSources": [],
-  "recordsCreated": 85,
-  "recordsValidated": 143,
-  "runtimeRecords": 85,
+  "recordsCreated": 86,
+  "recordsValidated": 144,
+  "runtimeRecords": 86,
   "recordsSkipped": 0,
   "duplicateRecords": [],
   "invalidRecords": [],
@@ -483,6 +492,7 @@
     "site-copy-en": 10,
     "site-copy-ms": 10,
     "report-content": 55,
+    "report-sections": 1,
     "indicator-config": 1,
     "policy-page": 1,
     "resilience-methodology": 8
@@ -496,16 +506,16 @@
     "generate-report": 2,
     "community": 2,
     "news": 2,
-    "reports": 55,
+    "reports": 56,
     "data-sources": 1,
     "methodology": 8
   },
   "countsByLanguage": {
-    "en": 75,
+    "en": 76,
     "ms": 10
   },
   "countsByStatus": {
-    "verified": 85
+    "verified": 86
   },
   "outputFiles": [
     "knowledge/generated/site-overview.json",
