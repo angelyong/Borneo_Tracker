@@ -6210,13 +6210,13 @@
             "esg-indicators-page-en",
             "sdg-progress-page-en",
             "generate-report-page-en",
+            "sdg-monitored-goals",
             "dashboard-map-layers-en",
             "dashboard-resilience-en",
             "report-concept-economy",
             "report-concept-education",
             "report-concept-energy",
-            "report-concept-food",
-            "report-concept-food-percapita"
+            "report-concept-food"
           ],
           "sourceCount": 2,
           "status": "FOUND",
@@ -6250,7 +6250,7 @@
             "report-concept-education",
             "report-concept-energy",
             "report-concept-food",
-            "report-concept-food-percapita",
+            "sdg-monitored-goals",
             "sdg-progress-page-en"
           ],
           "expected": [
@@ -6604,10 +6604,10 @@
         "intent": "SITE_KNOWLEDGE",
         "knowledge": {
           "answerRecordIds": [
-            "sdg-progress-page-en"
+            "sdg-monitored-goals"
           ],
           "recordIds": [
-            "sdg-progress-page-en",
+            "sdg-monitored-goals",
             "about-borneo-tracker-en",
             "resilience-methodology-borneo-tracker-true-wealth-resilience-index-methodology-v1",
             "news-page-en",
@@ -6620,7 +6620,7 @@
           ],
           "sourceCount": 1,
           "status": "FOUND",
-          "topRecordId": "sdg-progress-page-en",
+          "topRecordId": "sdg-monitored-goals",
           "warnings": []
         },
         "language": "en"
@@ -6651,10 +6651,10 @@
             "resilience-methodology-5-worked-example-sabah-illustrative",
             "resilience-methodology-6-design-decisions-to-confirm-with-the-supervisor",
             "resilience-methodology-borneo-tracker-true-wealth-resilience-index-methodology-v1",
-            "sdg-progress-page-en"
+            "sdg-monitored-goals"
           ],
           "expected": [
-            "sdg-progress-page-en"
+            "sdg-monitored-goals"
           ],
           "field": "recordIds",
           "metric": "knowledgeRecallAt10",
@@ -6664,10 +6664,10 @@
           "actual": [
             "about-borneo-tracker-en",
             "resilience-methodology-borneo-tracker-true-wealth-resilience-index-methodology-v1",
-            "sdg-progress-page-en"
+            "sdg-monitored-goals"
           ],
           "expected": [
-            "sdg-progress-page-en"
+            "sdg-monitored-goals"
           ],
           "field": "recordIds",
           "metric": "knowledgeRecallAt3",
@@ -6688,8 +6688,8 @@
           "pass": true
         },
         {
-          "actual": "sdg-progress-page-en",
-          "expected": "sdg-progress-page-en",
+          "actual": "sdg-monitored-goals",
+          "expected": "sdg-monitored-goals",
           "field": "topRecordId",
           "metric": "knowledgeTop1",
           "pass": true
@@ -6801,15 +6801,15 @@
         "intent": "SITE_KNOWLEDGE",
         "knowledge": {
           "answerRecordIds": [
-            "about-borneo-tracker-en"
+            "environmental-data-sources"
           ],
           "recordIds": [
-            "about-borneo-tracker-en",
-            "about-resilience-score-en",
+            "environmental-data-sources",
             "dashboard-map-layers-en",
             "dashboard-resilience-en",
             "resilience-methodology-5-worked-example-sabah-illustrative",
             "resilience-methodology-4-data-confidence-layer-the-ethics-e-of-abcde",
+            "about-borneo-tracker-en",
             "esg-indicators-page-en",
             "generate-report-page-en",
             "news-page-en",
@@ -6817,7 +6817,7 @@
           ],
           "sourceCount": 1,
           "status": "FOUND",
-          "topRecordId": "about-borneo-tracker-en",
+          "topRecordId": "environmental-data-sources",
           "warnings": []
         },
         "language": "en"
@@ -6840,9 +6840,9 @@
         {
           "actual": [
             "about-borneo-tracker-en",
-            "about-resilience-score-en",
             "dashboard-map-layers-en",
             "dashboard-resilience-en",
+            "environmental-data-sources",
             "esg-indicators-page-en",
             "generate-report-page-en",
             "news-page-en",
@@ -6851,7 +6851,7 @@
             "resilience-methodology-5-worked-example-sabah-illustrative"
           ],
           "expected": [
-            "about-borneo-tracker-en"
+            "environmental-data-sources"
           ],
           "field": "recordIds",
           "metric": "knowledgeRecallAt10",
@@ -6859,12 +6859,12 @@
         },
         {
           "actual": [
-            "about-borneo-tracker-en",
-            "about-resilience-score-en",
-            "dashboard-map-layers-en"
+            "dashboard-map-layers-en",
+            "dashboard-resilience-en",
+            "environmental-data-sources"
           ],
           "expected": [
-            "about-borneo-tracker-en"
+            "environmental-data-sources"
           ],
           "field": "recordIds",
           "metric": "knowledgeRecallAt3",
@@ -6885,8 +6885,8 @@
           "pass": true
         },
         {
-          "actual": "about-borneo-tracker-en",
-          "expected": "about-borneo-tracker-en",
+          "actual": "environmental-data-sources",
+          "expected": "environmental-data-sources",
           "field": "topRecordId",
           "metric": "knowledgeTop1",
           "pass": true
@@ -13170,7 +13170,7 @@
   },
   "unsupportedFeatureSummary": {
     "knowledgeIndexAvailable": true,
-    "knowledgeIndexRuntimeRecords": 83,
+    "knowledgeIndexRuntimeRecords": 85,
     "leverInfrastructureImplemented": true,
     "liveStatus": "BLOCKED_BY_SUPABASE",
     "liveSupabaseRepositoryEvaluated": false,

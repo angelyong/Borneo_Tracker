@@ -1,0 +1,52 @@
+[
+  {
+    "id": "environmental-data-sources",
+    "title": "Environmental Data Sources",
+    "category": "data-sources",
+    "content": "Environmental data in Borneo Tracker may come from official statistical, satellite, institutional, public open-data, and public or third-party sources where applicable. Repository-supported source families include World Bank, UN SDG resources, Global Forest Watch, NASA FIRMS, government open-data portals, and WAQI / aqicn. Individual indicators preserve source, year, and update context where available; imported or transformed data should preserve source labels, units, geography, and year information.",
+    "language": "en",
+    "pageUrl": "/data-policy",
+    "region": null,
+    "concept": null,
+    "sdgTags": [],
+    "keywords": [
+      "environmental data",
+      "data source",
+      "data sources",
+      "source of environmental data",
+      "where data comes from",
+      "environmental indicators",
+      "methodology",
+      "provenance",
+      "source attribution",
+      "update information"
+    ],
+    "regions": [],
+    "relatedSdgs": [],
+    "unit": null,
+    "sourceName": "Borneo Tracker policy page",
+    "sourceUrl": "",
+    "sourceFile": "src/pages/policies/PolicyPage.jsx",
+    "sourceType": "page",
+    "sourceId": "policy-page",
+    "sourcePath": "data-sources",
+    "sourceTypeDetail": null,
+    "updatedAt": null,
+    "status": "verified",
+    "placeholder": false,
+    "runtimeIncluded": true,
+    "provenance": {
+      "sourceFile": "src/pages/policies/PolicyPage.jsx",
+      "sourceType": "page",
+      "sourceId": "policy-page",
+      "sourceName": "Borneo Tracker policy page",
+      "sourceUrl": "",
+      "pageUrl": "/data-policy",
+      "route": "/data-policy",
+      "language": "en",
+      "sourcePath": "data-sources",
+      "extractedAt": null
+    },
+    "searchableText": "environmental data sources data-sources environmental data in borneo tracker may come from official statistical satellite institutional public open-data and public or third-party sources where applicable repository-supported source families include world bank un sdg resources global forest watch nasa firms government open-data portals and waqi aqicn individual indicators preserve source year and update context where available imported or transformed data should preserve source labels units geography and year information environmental data data source data sources source of environmental data where data comes from environmental indicators methodology provenance source attribution update information"
+  }
+]

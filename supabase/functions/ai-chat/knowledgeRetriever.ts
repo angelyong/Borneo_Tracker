@@ -290,11 +290,11 @@ function queryHintBoost(record: AIChatKnowledgeRecord, question: string, questio
     score += 12;
     matchedBy.push('query-hint:forest-cover');
   }
-  if ((has('sdg') || has('sdgs')) && /\b(?:which|monitored|tracked|goals?)\b/.test(question) && category === 'sdg-progress') {
-    score += 24;
-    matchedBy.push('query-hint:sdg-progress');
+  if (isSdgCoverageListQuestion(question, questionTokens) && record.id === 'sdg-monitored-goals') {
+    score += 32;
+    matchedBy.push('query-hint:sdg-monitored-goals');
   }
-  if (phraseAppears(question, 'environmental data') && /\b(?:source|sources|from|come)\b/.test(question) && category === 'site-overview') {
+  if (isEnvironmentalSourceQuestion(question, questionTokens) && record.id === 'environmental-data-sources') {
     score += 24;
     matchedBy.push('query-hint:environmental-data-sources');
   }
@@ -304,6 +304,35 @@ function queryHintBoost(record: AIChatKnowledgeRecord, question: string, questio
   }
 
   return { score, matchedBy };
+}
+
+function isSdgCoverageListQuestion(question: string, questionTokens: string[]): boolean {
+  const has = (token: string) => questionTokens.includes(token);
+  const hasSdg = has('sdg') || has('sdgs') ||
+    phraseAppears(question, 'sustainable development goal') ||
+    phraseAppears(question, 'sustainable development goals');
+  if (!hasSdg) return false;
+  const asksList = /\b(?:show|list|covered|coverage|monitored|monitor|tracked|tracks)\b/.test(question) ||
+    phraseAppears(question, 'which sdgs') ||
+    phraseAppears(question, 'what sdgs') ||
+    phraseAppears(question, 'sdg coverage') ||
+    phraseAppears(question, 'sustainable development goals tracked') ||
+    (phraseAppears(question, 'sustainable development goals') && /\b(?:which|what|tracked|covered|monitored)\b/.test(question));
+  const isSpecificGoal = /\bsdgs?\s*\d+\b/i.test(question) ||
+    /\bsustainable development goals?\s*\d+\b/i.test(question);
+  return asksList && !isSpecificGoal;
+}
+
+function isEnvironmentalSourceQuestion(question: string, questionTokens: string[]): boolean {
+  const has = (token: string) => questionTokens.includes(token);
+  const asksSource = /\b(?:source|sources|from|come|comes|get|gets|originate|provenance)\b/.test(question) ||
+    phraseAppears(question, 'data source') ||
+    phraseAppears(question, 'data sources') ||
+    phraseAppears(question, 'where data comes from');
+  const asksEnvironmental = phraseAppears(question, 'environmental data') ||
+    phraseAppears(question, 'environmental indicators') ||
+    (has('environmental') && (has('data') || has('indicator') || has('indicators')));
+  return asksSource && asksEnvironmental;
 }
 
 function isComplementaryEsgSdg(matches: Scored[]): boolean {

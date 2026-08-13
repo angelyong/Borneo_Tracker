@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "generatedAt": "1970-01-01T00:00:00.000Z",
-  "recordCount": 83,
+  "recordCount": 85,
   "records": [
     {
       "id": "about-borneo-tracker-en",
@@ -573,6 +573,56 @@
         "extractedAt": null
       },
       "searchableText": "status daya tahan keseluruhan dashboard status daya tahan keseluruhan indeks daya tahan 0-100 ketat daya tahan sebenar jurang kerapuhan liputan tunjang daya tahan mengikut tunjang heksagon kekayaan sebenar skor daya tahan 0-100 wang vs daya tahan kekayaan di atas kertas vs kekayaan sebenar liputan tunjang 6 berskor tiada data setanding - tidak pernah dianggarkan status daya tahan keseluruhan dashboard indeks 0-100 ketat sebenar jurang kerapuhan liputan tunjang mengikut heksagon kekayaan skor wang atas kertas berskor tiada data setanding resilience index"
+    },
+    {
+      "id": "environmental-data-sources",
+      "title": "Environmental Data Sources",
+      "category": "data-sources",
+      "content": "Environmental data in Borneo Tracker may come from official statistical, satellite, institutional, public open-data, and public or third-party sources where applicable. Repository-supported source families include World Bank, UN SDG resources, Global Forest Watch, NASA FIRMS, government open-data portals, and WAQI / aqicn. Individual indicators preserve source, year, and update context where available; imported or transformed data should preserve source labels, units, geography, and year information.",
+      "language": "en",
+      "pageUrl": "/data-policy",
+      "region": null,
+      "concept": null,
+      "sdgTags": [],
+      "keywords": [
+        "environmental data",
+        "data source",
+        "data sources",
+        "source of environmental data",
+        "where data comes from",
+        "environmental indicators",
+        "methodology",
+        "provenance",
+        "source attribution",
+        "update information"
+      ],
+      "regions": [],
+      "relatedSdgs": [],
+      "unit": null,
+      "sourceName": "Borneo Tracker policy page",
+      "sourceUrl": "",
+      "sourceFile": "src/pages/policies/PolicyPage.jsx",
+      "sourceType": "page",
+      "sourceId": "policy-page",
+      "sourcePath": "data-sources",
+      "sourceTypeDetail": null,
+      "updatedAt": null,
+      "status": "verified",
+      "placeholder": false,
+      "runtimeIncluded": true,
+      "provenance": {
+        "sourceFile": "src/pages/policies/PolicyPage.jsx",
+        "sourceType": "page",
+        "sourceId": "policy-page",
+        "sourceName": "Borneo Tracker policy page",
+        "sourceUrl": "",
+        "pageUrl": "/data-policy",
+        "route": "/data-policy",
+        "language": "en",
+        "sourcePath": "data-sources",
+        "extractedAt": null
+      },
+      "searchableText": "environmental data sources data-sources environmental data in borneo tracker may come from official statistical satellite institutional public open-data and public or third-party sources where applicable repository-supported source families include world bank un sdg resources global forest watch nasa firms government open-data portals and waqi aqicn individual indicators preserve source year and update context where available imported or transformed data should preserve source labels units geography and year information environmental data data source data sources source of environmental data where data comes from environmental indicators methodology provenance source attribution update information"
     },
     {
       "id": "esg-indicators-page-en",
@@ -4396,10 +4446,84 @@
       "searchableText": "step 3 - pillar scores resilience index two numbers by design methodology optional strict resilience mode use the geometric mean instead of the average it drops sharply if any pillar is near zero - mathematically expressing no food no resilience however good the entertainment good as a secondary more philosophically pure number step pillar scores resilience index two numbers design methodology optional strict mode use the geometric mean instead average drops sharply any near zero mathematically resilience index"
     },
     {
+      "id": "sdg-monitored-goals",
+      "title": "SDGs Monitored by Borneo Tracker",
+      "category": "sdg-progress",
+      "content": "Borneo Tracker currently represents these repository-supported SDGs: SDG1 - No Poverty; SDG2 - Zero Hunger; SDG3 - Good Health; SDG4 - Quality Education; SDG6 - Clean Water; SDG7 - Clean Energy; SDG8 - Economic Growth; SDG9 - Industry & Innovation; SDG11 - Sustainable Cities; SDG13 - Climate Action; SDG15 - Life on Land; SDG16 - Peace & Justice. This is the supported repository list, not a claim that all 17 UN SDGs are covered.",
+      "language": "en",
+      "pageUrl": "/sdg",
+      "region": null,
+      "concept": null,
+      "sdgTags": [
+        "SDG1",
+        "SDG2",
+        "SDG3",
+        "SDG4",
+        "SDG6",
+        "SDG7",
+        "SDG8",
+        "SDG9",
+        "SDG11",
+        "SDG13",
+        "SDG15",
+        "SDG16"
+      ],
+      "keywords": [
+        "monitored SDGs",
+        "which SDGs",
+        "SDGs monitored",
+        "tracked SDGs",
+        "SDG coverage",
+        "Sustainable Development Goals tracked",
+        "goals monitored",
+        "Borneo Tracker SDGs"
+      ],
+      "regions": [],
+      "relatedSdgs": [
+        "SDG1",
+        "SDG2",
+        "SDG3",
+        "SDG4",
+        "SDG6",
+        "SDG7",
+        "SDG8",
+        "SDG9",
+        "SDG11",
+        "SDG13",
+        "SDG15",
+        "SDG16"
+      ],
+      "unit": null,
+      "sourceName": "Borneo Tracker indicator configuration",
+      "sourceUrl": "",
+      "sourceFile": "src/data/useIndicators.js",
+      "sourceType": "page",
+      "sourceId": "indicator-config",
+      "sourcePath": "SDG_GOALS",
+      "sourceTypeDetail": null,
+      "updatedAt": null,
+      "status": "verified",
+      "placeholder": false,
+      "runtimeIncluded": true,
+      "provenance": {
+        "sourceFile": "src/data/useIndicators.js",
+        "sourceType": "page",
+        "sourceId": "indicator-config",
+        "sourceName": "Borneo Tracker indicator configuration",
+        "sourceUrl": "",
+        "pageUrl": "/sdg",
+        "route": "/sdg",
+        "language": "en",
+        "sourcePath": "SDG_GOALS",
+        "extractedAt": null
+      },
+      "searchableText": "sdgs monitored by borneo tracker sdg-progress borneo tracker currently represents these repository-supported sdgs sdg1 - no poverty sdg2 - zero hunger sdg3 - good health sdg4 - quality education sdg6 - clean water sdg7 - clean energy sdg8 - economic growth sdg9 - industry innovation sdg11 - sustainable cities sdg13 - climate action sdg15 - life on land sdg16 - peace justice this is the supported repository list not a claim that all 17 un sdgs are covered monitored sdgs which sdgs sdgs monitored tracked sdgs sdg coverage sustainable development goals tracked goals monitored borneo tracker sdgs sdg1 sdg2 sdg3 sdg4 sdg6 sdg7 sdg8 sdg9 sdg11 sdg13 sdg15 sdg16"
+    },
+    {
       "id": "sdg-progress-page-en",
       "title": "SDG Progress",
       "category": "sdg-progress",
-      "content": "UN Sustainable Development Goals tracked with real snapshot data and visible confidence tags No canonical indicators are available for this goal in yet.",
+      "content": "UN Sustainable Development Goals tracked with real snapshot data and visible confidence tags",
       "language": "en",
       "pageUrl": "/sdg",
       "region": null,
@@ -4420,15 +4544,7 @@
         "and",
         "visible",
         "confidence",
-        "tags",
-        "canonical",
-        "indicators",
-        "are",
-        "available",
-        "for",
-        "this",
-        "goal",
-        "yet"
+        "tags"
       ],
       "regions": [],
       "relatedSdgs": [],
@@ -4456,13 +4572,13 @@
         "sourcePath": "sdg.overview",
         "extractedAt": null
       },
-      "searchableText": "sdg progress sdg-progress un sustainable development goals tracked with real snapshot data and visible confidence tags no canonical indicators are available for this goal in yet sdg progress sdg-progress sustainable development goals tracked with real snapshot data and visible confidence tags canonical indicators are available for this goal yet"
+      "searchableText": "sdg progress sdg-progress un sustainable development goals tracked with real snapshot data and visible confidence tags sdg progress sdg-progress sustainable development goals tracked with real snapshot data and visible confidence tags"
     },
     {
       "id": "sdg-progress-page-ms",
       "title": "Kemajuan SDG",
       "category": "sdg-progress",
-      "content": "Matlamat Pembangunan Mampan (SDG) PBB dijejaki dengan data gambaran sebenar dan tanda keyakinan yang jelas Belum ada penunjuk kanonik untuk matlamat ini di .",
+      "content": "Matlamat Pembangunan Mampan (SDG) PBB dijejaki dengan data gambaran sebenar dan tanda keyakinan yang jelas",
       "language": "ms",
       "pageUrl": "/sdg",
       "region": null,
@@ -4485,13 +4601,7 @@
         "tanda",
         "keyakinan",
         "yang",
-        "jelas",
-        "belum",
-        "ada",
-        "penunjuk",
-        "kanonik",
-        "untuk",
-        "ini"
+        "jelas"
       ],
       "regions": [],
       "relatedSdgs": [],
@@ -4519,7 +4629,7 @@
         "sourcePath": "sdg.overview",
         "extractedAt": null
       },
-      "searchableText": "kemajuan sdg sdg-progress matlamat pembangunan mampan sdg pbb dijejaki dengan data gambaran sebenar dan tanda keyakinan yang jelas belum ada penunjuk kanonik untuk matlamat ini di kemajuan sdg sdg-progress matlamat pembangunan mampan pbb dijejaki dengan data gambaran sebenar dan tanda keyakinan yang jelas belum ada penunjuk kanonik untuk ini"
+      "searchableText": "kemajuan sdg sdg-progress matlamat pembangunan mampan sdg pbb dijejaki dengan data gambaran sebenar dan tanda keyakinan yang jelas kemajuan sdg sdg-progress matlamat pembangunan mampan pbb dijejaki dengan data gambaran sebenar dan tanda keyakinan yang jelas"
     }
   ]
 }

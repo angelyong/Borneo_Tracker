@@ -1318,8 +1318,8 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
   it.each([
     ['What is the difference between ESG and SDG?', ['esg-indicators-page-en', 'sdg-progress-page-en']],
     ['Explain the Forest Cover indicator.', ['report-concept-forest-cover']],
-    ['Which SDGs are monitored by Borneo Tracker?', ['sdg-progress-page-en']],
-    ['Where does the environmental data come from?', ['about-borneo-tracker-en']],
+    ['Which SDGs are monitored by Borneo Tracker?', ['sdg-monitored-goals']],
+    ['Where does the environmental data come from?', ['environmental-data-sources']],
     ['How do I generate a report?', ['generate-report-page-en']],
   ])('grounds suggested knowledge question through the live handler path: %s', async (message, expectedIds) => {
     const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(500, 'MISSING_GEMINI_API_KEY', 'missing'));

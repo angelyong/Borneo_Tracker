@@ -120,7 +120,7 @@ const POLICY_CONFIG = [
 ];
 
 function recordsFromPolicyPage(sourceText) {
-  return POLICY_CONFIG.flatMap((policy) => (
+  const policyRecords = POLICY_CONFIG.flatMap((policy) => (
     parsePolicySections(sourceText, policy.variableName).map((section) => ({
       id: `${policy.concept}-${section.id}`,
       title: `${policy.title}: ${section.title}`,
@@ -134,6 +134,48 @@ function recordsFromPolicyPage(sourceText) {
       language: 'en',
     }))
   ));
+  return [...policyRecords, ...curatedDataPolicyRecords(sourceText)];
+}
+
+function curatedDataPolicyRecords(sourceText) {
+  const dataSections = parsePolicySections(sourceText, 'dataSections');
+  const dataSources = dataSections.find((section) => section.id === 'data-sources');
+  const collection = dataSections.find((section) => section.id === 'data-collection-integration');
+  const updateFrequency = dataSections.find((section) => section.id === 'data-update-frequency');
+  const attribution = dataSections.find((section) => section.id === 'data-source-attribution');
+  if (!dataSources || !collection || !updateFrequency || !attribution) return [];
+
+  return [{
+    id: 'environmental-data-sources',
+    title: 'Environmental Data Sources',
+    category: 'data-sources',
+    content: [
+      'Environmental data in Borneo Tracker may come from official statistical, satellite, institutional, public open-data, and public or third-party sources where applicable.',
+      'Repository-supported source families include World Bank, UN SDG resources, Global Forest Watch, NASA FIRMS, government open-data portals, and WAQI / aqicn.',
+      'Individual indicators preserve source, year, and update context where available; imported or transformed data should preserve source labels, units, geography, and year information.',
+    ].join(' '),
+    pageUrl: '/data-policy',
+    region: null,
+    concept: null,
+    sdgTags: [],
+    relatedSdgs: [],
+    keywords: [
+      'environmental data',
+      'data source',
+      'data sources',
+      'source of environmental data',
+      'where data comes from',
+      'environmental indicators',
+      'methodology',
+      'provenance',
+      'source attribution',
+      'update information',
+    ],
+    sourcePath: dataSources.id,
+    sourceName: 'Borneo Tracker policy page',
+    status: 'verified',
+    language: 'en',
+  }];
 }
 
 function parseObjectKeys(sourceText, objectName) {
@@ -214,10 +256,56 @@ function recordsFromReportContent(sourceText) {
   return [...indicatorRecords, ...conceptRecords];
 }
 
+function parseSdgGoals(sourceText) {
+  const arraySource = extractArraySource(sourceText, 'SDG_GOALS');
+  if (!arraySource) return [];
+  return [...arraySource.matchAll(/\{\s*goal:\s*'([^']+)'\s*,\s*label:\s*'((?:\\'|[^'])*)'\s*\}/g)]
+    .map((match) => ({
+      goal: normalizeWhitespace(match[1]),
+      label: normalizeWhitespace(match[2].replace(/\\'/g, "'")),
+    }))
+    .filter((item) => /^SDG\d+$/.test(item.goal) && item.label);
+}
+
+function recordsFromIndicatorConfig(sourceText) {
+  const goals = parseSdgGoals(sourceText);
+  if (!goals.length) return [];
+  const goalList = goals.map((item) => `${item.goal} - ${item.label}`).join('; ');
+  return [{
+    id: 'sdg-monitored-goals',
+    title: 'SDGs Monitored by Borneo Tracker',
+    category: 'sdg-progress',
+    content: [
+      `Borneo Tracker currently represents these repository-supported SDGs: ${goalList}.`,
+      'This is the supported repository list, not a claim that all 17 UN SDGs are covered.',
+    ].join(' '),
+    pageUrl: '/sdg',
+    region: null,
+    concept: null,
+    sdgTags: goals.map((item) => item.goal),
+    relatedSdgs: goals.map((item) => item.goal),
+    keywords: [
+      'monitored SDGs',
+      'which SDGs',
+      'SDGs monitored',
+      'tracked SDGs',
+      'SDG coverage',
+      'Sustainable Development Goals tracked',
+      'goals monitored',
+      'Borneo Tracker SDGs',
+    ],
+    sourcePath: 'SDG_GOALS',
+    sourceName: 'Borneo Tracker indicator configuration',
+    status: 'verified',
+    language: 'en',
+  }];
+}
+
 export class PageContentExtractor {
   extract(sourceText, source) {
     if (source.kind === 'policy') return recordsFromPolicyPage(sourceText);
     if (source.kind === 'report-content') return recordsFromReportContent(sourceText);
+    if (source.kind === 'indicator-config') return recordsFromIndicatorConfig(sourceText);
     return [];
   }
 }

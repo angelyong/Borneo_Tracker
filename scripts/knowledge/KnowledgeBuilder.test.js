@@ -78,6 +78,24 @@ describe('knowledge extraction', () => {
     expect(records.map((record) => record.concept)).toContain('food');
   });
 
+  it('extracts the monitored SDG coverage record from indicator configuration', () => {
+    const sourceText = "export const SDG_GOALS = [\n  { goal: 'SDG1', label: 'No Poverty' },\n  { goal: 'SDG15', label: 'Life on Land' },\n];";
+    const records = new PageContentExtractor().extract(sourceText, { kind: 'indicator-config' });
+
+    expect(records).toEqual([expect.objectContaining({
+      id: 'sdg-monitored-goals',
+      title: 'SDGs Monitored by Borneo Tracker',
+      category: 'sdg-progress',
+      pageUrl: '/sdg',
+      sourcePath: 'SDG_GOALS',
+      sourceName: 'Borneo Tracker indicator configuration',
+      status: 'verified',
+    })]);
+    expect(records[0].content).toContain('SDG1 - No Poverty');
+    expect(records[0].content).toContain('SDG15 - Life on Land');
+    expect(records[0].keywords).toEqual(expect.arrayContaining(['monitored SDGs', 'SDG coverage']));
+  });
+
   it('extracts policy sections as incomplete records', () => {
     const sourceText = "const privacySections = [{ id: 'privacy-introduction', title: 'Introduction', body: ['This mock Privacy Policy explains how Borneo Tracker handles prototype information.'] },];";
     const records = new PageContentExtractor().extract(sourceText, { kind: 'policy' });
@@ -239,6 +257,82 @@ describe('knowledge build output', () => {
       records: packagedSummary.records.map((record, index) => index === 0 ? { ...record, content: `${record.content} stale` } : record),
     };
     expect(stableHash(stalePackagedSummary)).not.toBe(stableHash(canonicalSummary));
+  });
+
+  it('includes the verified environmental data source record in generated and packaged indexes', () => {
+    const canonical = JSON.parse(fs.readFileSync(path.resolve('knowledge/generated/knowledge-index.json'), 'utf8'));
+    const packaged = JSON.parse(fs.readFileSync(path.resolve('supabase/functions/ai-chat/knowledge-index.json'), 'utf8'));
+    const canonicalRecord = canonical.records.find((record) => record.id === 'environmental-data-sources');
+    const packagedRecord = packaged.records.find((record) => record.id === 'environmental-data-sources');
+
+    expect(canonicalRecord).toMatchObject({
+      id: 'environmental-data-sources',
+      title: 'Environmental Data Sources',
+      category: 'data-sources',
+      language: 'en',
+      pageUrl: '/data-policy',
+      status: 'verified',
+      placeholder: false,
+      runtimeIncluded: true,
+      sourceFile: 'src/pages/policies/PolicyPage.jsx',
+      sourceType: 'page',
+      sourceId: 'policy-page',
+      sourcePath: 'data-sources',
+      sourceName: 'Borneo Tracker policy page',
+    });
+    expect(canonicalRecord.content).toContain('World Bank');
+    expect(canonicalRecord.content).toContain('Global Forest Watch');
+    expect(canonicalRecord.content).toContain('WAQI / aqicn');
+    expect(canonicalRecord.keywords).toEqual(expect.arrayContaining([
+      'environmental data',
+      'data sources',
+      'provenance',
+      'source attribution',
+    ]));
+    expect(packagedRecord).toEqual(canonicalRecord);
+  });
+
+  it('includes the verified monitored SDG record and keeps generic SDG page copy clean', () => {
+    const canonical = JSON.parse(fs.readFileSync(path.resolve('knowledge/generated/knowledge-index.json'), 'utf8'));
+    const packaged = JSON.parse(fs.readFileSync(path.resolve('supabase/functions/ai-chat/knowledge-index.json'), 'utf8'));
+    const canonicalRecord = canonical.records.find((record) => record.id === 'sdg-monitored-goals');
+    const packagedRecord = packaged.records.find((record) => record.id === 'sdg-monitored-goals');
+    const sdgPageRecord = canonical.records.find((record) => record.id === 'sdg-progress-page-en');
+
+    expect(canonicalRecord).toMatchObject({
+      id: 'sdg-monitored-goals',
+      title: 'SDGs Monitored by Borneo Tracker',
+      category: 'sdg-progress',
+      language: 'en',
+      pageUrl: '/sdg',
+      status: 'verified',
+      placeholder: false,
+      runtimeIncluded: true,
+      sourceFile: 'src/data/useIndicators.js',
+      sourceType: 'page',
+      sourceId: 'indicator-config',
+      sourcePath: 'SDG_GOALS',
+      sourceName: 'Borneo Tracker indicator configuration',
+    });
+    for (const goal of [
+      'SDG1 - No Poverty',
+      'SDG2 - Zero Hunger',
+      'SDG3 - Good Health',
+      'SDG4 - Quality Education',
+      'SDG6 - Clean Water',
+      'SDG7 - Clean Energy',
+      'SDG8 - Economic Growth',
+      'SDG9 - Industry & Innovation',
+      'SDG11 - Sustainable Cities',
+      'SDG13 - Climate Action',
+      'SDG15 - Life on Land',
+      'SDG16 - Peace & Justice',
+    ]) {
+      expect(canonicalRecord.content).toContain(goal);
+    }
+    expect(canonicalRecord.content).not.toContain('No canonical indicators are available for this goal');
+    expect(sdgPageRecord.content).not.toContain('No canonical indicators are available for this goal');
+    expect(packagedRecord).toEqual(canonicalRecord);
   });
 
   it('handles missing sources as a critical validation failure', () => {

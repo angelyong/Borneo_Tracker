@@ -324,7 +324,7 @@
     "question": "Which SDGs are monitored by Borneo Tracker?",
     "context": { "currentPage": "/", "language": "en" },
     "implementationStatus": "IMPLEMENTED",
-    "expected": { "intent": "SITE_KNOWLEDGE", "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "districtLevel": false, "latest": false }, "blocked": false, "clarificationRequired": false, "knowledge": { "status": "FOUND", "expectedRecordIds": ["sdg-progress-page-en"], "sourceCountMin": 1 } },
+    "expected": { "intent": "SITE_KNOWLEDGE", "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "districtLevel": false, "latest": false }, "blocked": false, "clarificationRequired": false, "knowledge": { "status": "FOUND", "expectedRecordIds": ["sdg-monitored-goals"], "sourceCountMin": 1 } },
     "tags": ["site_knowledge", "suggested_question"]
   },
   {
@@ -333,7 +333,7 @@
     "question": "Where does the environmental data come from?",
     "context": { "currentPage": "/", "language": "en" },
     "implementationStatus": "IMPLEMENTED",
-    "expected": { "intent": "SITE_KNOWLEDGE", "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "districtLevel": false, "latest": false }, "blocked": false, "clarificationRequired": false, "knowledge": { "status": "FOUND", "expectedRecordIds": ["about-borneo-tracker-en"], "sourceCountMin": 1 } },
+    "expected": { "intent": "SITE_KNOWLEDGE", "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "districtLevel": false, "latest": false }, "blocked": false, "clarificationRequired": false, "knowledge": { "status": "FOUND", "expectedRecordIds": ["environmental-data-sources"], "sourceCountMin": 1 } },
     "tags": ["site_knowledge", "suggested_question"]
   },
   {

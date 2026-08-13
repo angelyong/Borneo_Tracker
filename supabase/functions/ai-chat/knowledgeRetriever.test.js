@@ -1,6 +1,22 @@
 import { describe, expect, it } from 'vitest';
+import { buildKnowledgeAnswer } from './knowledgeAnswerBuilder.ts';
 import { KnowledgeRepository } from './knowledgeRepository.ts';
 import { retrieveStaticKnowledge } from './knowledgeRetriever.ts';
+
+const MONITORED_SDGS = [
+  'SDG1 - No Poverty',
+  'SDG2 - Zero Hunger',
+  'SDG3 - Good Health',
+  'SDG4 - Quality Education',
+  'SDG6 - Clean Water',
+  'SDG7 - Clean Energy',
+  'SDG8 - Economic Growth',
+  'SDG9 - Industry & Innovation',
+  'SDG11 - Sustainable Cities',
+  'SDG13 - Climate Action',
+  'SDG15 - Life on Land',
+  'SDG16 - Peace & Justice',
+];
 
 function record(overrides = {}) {
   return {
@@ -34,8 +50,8 @@ describe('static knowledge retriever', () => {
   it.each([
     ['What is the difference between ESG and SDG?', ['esg-indicators-page-en', 'sdg-progress-page-en']],
     ['Explain the Forest Cover indicator.', ['report-concept-forest-cover']],
-    ['Which SDGs are monitored by Borneo Tracker?', ['sdg-progress-page-en']],
-    ['Where does the environmental data come from?', ['about-borneo-tracker-en']],
+    ['Which SDGs are monitored by Borneo Tracker?', ['sdg-monitored-goals']],
+    ['Where does the environmental data come from?', ['environmental-data-sources']],
     ['How do I generate a report?', ['generate-report-page-en']],
   ])('selects packaged verified knowledge for suggested question: %s', (question, expectedIds) => {
     const result = retrieveStaticKnowledge({
@@ -50,6 +66,98 @@ describe('static knowledge retriever', () => {
     expect(result.status).toBe('FOUND');
     expect(result.matches.map((match) => match.record.id)).toEqual(expect.arrayContaining(expectedIds));
     expect(result.matches.every((match) => match.record.runtimeIncluded && match.record.status === 'verified' && !match.record.placeholder)).toBe(true);
+  });
+
+  it.each([
+    'Which SDGs are monitored by Borneo Tracker?',
+    'What SDGs does Borneo Tracker monitor?',
+    'Which Sustainable Development Goals are tracked?',
+    'Show me the SDGs covered by Borneo Tracker.',
+  ])('prefers the monitored SDG coverage record for: %s', (question) => {
+    const result = retrieveStaticKnowledge({
+      question,
+      language: 'en',
+      currentPage: '/',
+      territories: [],
+      concepts: [],
+      limit: 5,
+    }, new KnowledgeRepository());
+
+    expect(result.status).toBe('FOUND');
+    expect(result.matches[0].record.id).toBe('sdg-monitored-goals');
+    expect(result.matches[0].record.status).toBe('verified');
+    expect(result.matches[0].record.placeholder).toBe(false);
+    expect(result.matches[0].record.runtimeIncluded).toBe(true);
+  });
+
+  it('builds a deterministic monitored SDG answer without single-goal empty-state text', () => {
+    const retrieval = retrieveStaticKnowledge({
+      question: 'Which SDGs are monitored by Borneo Tracker?',
+      language: 'en',
+      currentPage: '/',
+      territories: [],
+      concepts: [],
+      limit: 5,
+    }, new KnowledgeRepository());
+    const answer = buildKnowledgeAnswer(retrieval, 'en');
+
+    expect(answer.recordIds).toEqual(['sdg-monitored-goals']);
+    for (const goal of MONITORED_SDGS) {
+      expect(answer.answer).toContain(goal);
+    }
+    expect(answer.answer).not.toContain('No canonical indicators are available for this goal');
+  });
+
+  it('keeps specific single-SDG questions off the monitored-goals list record', () => {
+    const result = retrieveStaticKnowledge({
+      question: 'What does Borneo Tracker show for SDG 15?',
+      language: 'en',
+      currentPage: '/',
+      territories: [],
+      concepts: [],
+      limit: 5,
+    }, new KnowledgeRepository());
+
+    expect(result.status).toBe('FOUND');
+    expect(result.matches[0].record.id).toBe('about-borneo-tracker-en');
+    expect(result.matches[0].record.id).not.toBe('sdg-monitored-goals');
+  });
+
+  it.each([
+    'Where does the environmental data come from?',
+    'Where does Borneo Tracker get its environmental data?',
+    'What are the sources of the environmental data?',
+    'What is the source of the environmental indicators?',
+  ])('prefers environmental data source provenance record for: %s', (question) => {
+    const result = retrieveStaticKnowledge({
+      question,
+      language: 'en',
+      currentPage: '/',
+      territories: [],
+      concepts: [],
+      limit: 5,
+    }, new KnowledgeRepository());
+
+    expect(result.status).toBe('FOUND');
+    expect(result.matches[0].record.id).toBe('environmental-data-sources');
+    expect(result.matches[0].record.status).toBe('verified');
+    expect(result.matches[0].record.placeholder).toBe(false);
+    expect(result.matches[0].record.runtimeIncluded).toBe(true);
+    expect(result.matches.map((match) => match.record.id)).not.toEqual(['about-borneo-tracker-en']);
+  });
+
+  it('keeps the product overview question on the site overview record', () => {
+    const result = retrieveStaticKnowledge({
+      question: 'What is Borneo Tracker?',
+      language: 'en',
+      currentPage: '/',
+      territories: [],
+      concepts: [],
+      limit: 3,
+    }, new KnowledgeRepository());
+
+    expect(result.status).toBe('FOUND');
+    expect(result.matches[0].record.id).toBe('about-borneo-tracker-en');
   });
 
   it('matches exact title phrases', () => {

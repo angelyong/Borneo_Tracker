@@ -130,7 +130,6 @@ function recordsFromI18n(payload) {
 
   records.push(record('sdg.overview', sdg.title || sidebar.sdgProgress || 'SDG Progress', 'sdg-progress', joinFields(sdg, [
     'subtitle',
-    'noCanonicalIndicatorsForRegion',
   ]), '/sdg', {
     id: `sdg-progress-page-${language}`,
     language,
