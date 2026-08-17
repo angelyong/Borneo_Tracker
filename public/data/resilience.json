@@ -7,28 +7,28 @@
   },
   "territories": {
     "Sabah": {
-      "index": 72.1,
-      "rag": "green",
-      "indexStrict": 66.1,
+      "index": 67.6,
+      "rag": "amber",
+      "indexStrict": 62.0,
       "ragStrict": "amber",
       "weakestPillar": "Food",
       "pillarScores": {
         "Food": 28.6,
         "Energy": 98.5,
+        "Education": 45.0,
         "Shelter": 61.0,
         "Healthcare": 76.5,
         "Entertainment": 96.0
       },
       "scoredPillars": [
+        "Education",
         "Energy",
         "Entertainment",
         "Food",
         "Healthcare",
         "Shelter"
       ],
-      "unscoredPillars": [
-        "Education"
-      ],
+      "unscoredPillars": [],
       "detail": {
         "Food": [
           {
@@ -51,6 +51,18 @@
             "confidence": "high",
             "source": "data.gov.my / OpenDOSM",
             "year": "2024",
+            "last_updated": "2026-08-17"
+          }
+        ],
+        "Education": [
+          {
+            "indicator": "Mean years schooling (RLS)",
+            "value": 8.7,
+            "unit": "years",
+            "score": 45.0,
+            "confidence": "medium",
+            "source": "Global Data Lab Subnational HDI (globaldatalab.org)",
+            "year": "2023",
             "last_updated": "2026-08-17"
           }
         ],
@@ -93,28 +105,28 @@
       }
     },
     "Sarawak": {
-      "index": 79.3,
+      "index": 73.6,
       "rag": "green",
-      "indexStrict": 77.7,
+      "indexStrict": 71.0,
       "ragStrict": "green",
-      "weakestPillar": "Food",
+      "weakestPillar": "Education",
       "pillarScores": {
         "Food": 58.0,
         "Energy": 98.1,
+        "Education": 45.0,
         "Shelter": 67.4,
         "Healthcare": 77.0,
         "Entertainment": 96.0
       },
       "scoredPillars": [
+        "Education",
         "Energy",
         "Entertainment",
         "Food",
         "Healthcare",
         "Shelter"
       ],
-      "unscoredPillars": [
-        "Education"
-      ],
+      "unscoredPillars": [],
       "detail": {
         "Food": [
           {
@@ -137,6 +149,18 @@
             "confidence": "high",
             "source": "data.gov.my / OpenDOSM",
             "year": "2024",
+            "last_updated": "2026-08-17"
+          }
+        ],
+        "Education": [
+          {
+            "indicator": "Mean years schooling (RLS)",
+            "value": 8.7,
+            "unit": "years",
+            "score": 45.0,
+            "confidence": "medium",
+            "source": "Global Data Lab Subnational HDI (globaldatalab.org)",
+            "year": "2023",
             "last_updated": "2026-08-17"
           }
         ],
