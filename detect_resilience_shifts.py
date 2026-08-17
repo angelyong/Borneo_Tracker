@@ -80,8 +80,15 @@ def compare(prev, cur):
 
     ct = cur.get("territories") or {}
     pt = prev.get("territories") or {}
-    for terr in sorted(ct):
-        c, p = ct[terr], pt.get(terr)
+    for terr in sorted(set(ct) | set(pt)):
+        c, p = ct.get(terr), pt.get(terr)
+        if c is None:
+            flag(
+                f"- ⚠ **{terr}**: territory disappeared from resilience output",
+                f"{terr} disappeared from resilience output",
+                "The prior committed resilience artifact contained this territory.",
+            )
+            continue
         if not p:
             lines.append(f"- ℹ **{terr}**: new territory")
             continue
@@ -106,7 +113,24 @@ def compare(prev, cur):
 
         cs = c.get("pillarScores") or {}
         ps = p.get("pillarScores") or {}
-        for pillar in sorted(cs):
+        # The old one-sided loop only visited pillars still present in `cs`, so
+        # a lost pillar (the Sabah/Sarawak Education incident) produced no
+        # warning. Diff both directions before checking numeric movement.
+        lost_pillars = sorted(set(ps) - set(cs))
+        added_pillars = sorted(set(cs) - set(ps))
+        if lost_pillars:
+            flag(
+                f"- ⚠ **{terr}** lost scored pillar(s): {', '.join(lost_pillars)}",
+                f"{terr} scored pillar(s) lost",
+                f"Lost: {', '.join(lost_pillars)}.",
+            )
+        if added_pillars:
+            flag(
+                f"- ℹ **{terr}** added scored pillar(s): {', '.join(added_pillars)}",
+                f"{terr} scored pillar(s) added",
+                f"Added: {', '.join(added_pillars)}.",
+            )
+        for pillar in sorted(set(cs) & set(ps)):
             a, b = cs.get(pillar), ps.get(pillar)
             if isinstance(a, (int, float)) and isinstance(b, (int, float)) and abs(a - b) >= PILLAR_SHIFT:
                 flag(

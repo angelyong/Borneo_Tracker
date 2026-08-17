@@ -306,7 +306,7 @@ describe('indicator, target, comparison, trend, SDG, and district facts', () => 
   it('includes current district freshness metadata without a stale warning', () => {
     const fact = buildFact('Show district data for Kota Kinabalu.');
     expect(fact.warnings.some((warning) => warning.message.includes('District metadata is stale'))).toBe(false);
-    expect(fact.requiredDisclosures).toContain('District metadata freshness date: 2026-08-09.');
+    expect(fact.requiredDisclosures).toContain(`District metadata freshness date: ${districtsData.generatedAt}.`);
   });
 
   it('blocks unknown district facts', () => {

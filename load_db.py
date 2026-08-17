@@ -6,7 +6,7 @@ import sqlite3
 import tempfile
 from pathlib import Path
 
-from data_model import DASHBOARD_TERRITORIES, load_indicator_rows
+from data_model import DASHBOARD_TERRITORIES, canonical_sort_key, load_indicator_rows
 from project_time import project_today_iso
 
 ROOT = Path(__file__).parent
@@ -59,7 +59,43 @@ def load_history_rows():
     return rows
 
 
+def select_snapshot_rows(rows):
+    """Return one deterministic current snapshot row per database primary key.
+
+    The ``indicators`` table is intentionally a current snapshot keyed by
+    ``(territory, indicator)``; multi-year observations belong in the separate
+    ``indicator_observations`` table.  ``INSERT OR REPLACE`` therefore must
+    never be allowed to let a later non-canonical duplicate overwrite an
+    already selected canonical row.
+
+    Prefer the row selected by ``assign_canonical()``.  When none of the rows
+    for an identity is canonical, use the existing source-selection ordering
+    and the original input index as a stable final tie-breaker.  This preserves
+    the current deterministic treatment of legitimate multi-year inputs while
+    making the snapshot write boundary safe against duplicate source rows.
+    """
+    grouped = {}
+    for index, row in enumerate(rows):
+        key = (row["territory"], row["indicator"])
+        grouped.setdefault(key, []).append((index, row))
+
+    selected_indexes = set()
+    for candidates in grouped.values():
+        index, _ = min(
+            candidates,
+            key=lambda candidate: (
+                -int(candidate[1].get("canonical") or 0),
+                *canonical_sort_key(candidate[1]),
+                candidate[0],
+            ),
+        )
+        selected_indexes.add(index)
+
+    return [row for index, row in enumerate(rows) if index in selected_indexes]
+
+
 def build_db(path, rows, obs_rows=()):
+    snapshot_rows = select_snapshot_rows(rows)
     conn = sqlite3.connect(path)
     cursor = conn.cursor()
     cursor.execute("DROP TABLE IF EXISTS indicators")
@@ -117,7 +153,7 @@ def build_db(path, rows, obs_rows=()):
                 row["derived_from"],
                 row["source_count"],
             )
-            for row in rows
+            for row in snapshot_rows
         ],
     )
     cursor.execute("DROP TABLE IF EXISTS indicator_observations")
