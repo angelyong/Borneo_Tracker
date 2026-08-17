@@ -19,8 +19,18 @@ class DeployPrValidationWorkflowTests(unittest.TestCase):
         for path in (
             '".github/workflows/deploy.yml"',
             '".github/workflows/deployment-pr-validation.yml"',
+            '".github/workflows/refresh-data.yml"',
+            '".github/workflows/resilience-watch.yml"',
             '"public/.htaccess"',
             '"public/data/**"',
+            '"validate_data.py"',
+            '"detect_resilience_shifts.py"',
+            '"compute_resilience.py"',
+            '"data_model.py"',
+            '"load_db.py"',
+            '"tests/test_resilience_pillar_guardrails.py"',
+            '"tests/test_canonical_snapshot_selection.py"',
+            '"tests/fixtures/resilience-pillar-loss/**"',
         ):
             self.assertIn(path, self.text)
 
@@ -40,7 +50,10 @@ class DeployPrValidationWorkflowTests(unittest.TestCase):
     def test_validates_contract_and_publishable_htaccess_files(self):
         self.assertIn("tests.test_deploy_workflow_contract", self.text)
         self.assertIn("tests.test_workflow_contract", self.text)
-        self.assertIn("python validate_data.py", self.text)
+        self.assertIn("python validate_data.py --baseline-ref", self.text)
+        self.assertIn("github.event.pull_request.base.sha || github.sha", self.text)
+        self.assertIn("--require-baseline", self.text)
+        self.assertIn("fetch-depth: 0", self.text)
         self.assertIn("python verify_manifest.py verify public/data", self.text)
         self.assertIn("python verify_proof_contract.py public/data", self.text)
         self.assertIn("python verify_anchor.py --allow-pending", self.text)

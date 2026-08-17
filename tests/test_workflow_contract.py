@@ -53,6 +53,7 @@ class WorkflowContractTests(unittest.TestCase):
         self.assertNotIn("manifest_tool.py",text)
         refresh=self.read("refresh-data.yml")
         self.assertIn("mapfile -t manifest_paths < <(python verify_manifest.py paths)",refresh)
+        self.assertIn('python validate_data.py --baseline-ref "${{ github.sha }}" --require-baseline', refresh)
     def test_catchup_refuses_branch_tip_stamping(self):
         text=(ROOT/"catch_up_anchors.py").read_text(encoding="utf-8")
         self.assertIn("never infer a byte sequence from branch tip",text)

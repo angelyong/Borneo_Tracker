@@ -565,7 +565,7 @@ describe('structured answer honesty, sources, and numeric integrity', () => {
   it('includes current district freshness metadata without a stale warning', () => {
     const { answer } = buildFactAndAnswer('Show district data for Kota Kinabalu.');
     expect(answer.layers.honesty.warnings.join(' ')).not.toContain('District metadata is stale');
-    expect(answer.layers.honesty.warnings.join(' ')).toContain('District metadata freshness date: 2026-08-09.');
+    expect(answer.layers.honesty.warnings.join(' ')).toContain(`District metadata freshness date: ${districtsData.generatedAt}.`);
   });
 
   it('includes Kalimantan derived disclosure', () => {

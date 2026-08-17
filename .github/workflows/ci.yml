@@ -1,0 +1,45 @@
+name: Full test suites
+
+on:
+  pull_request:
+    branches: [master]
+  push:
+    branches: [master]
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: full-test-suites-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: JavaScript and Python test suites
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+
+      - name: Run Python unit tests and anchoring golden test
+        run: |
+          python -m unittest discover -s tests -t . -p "test_*.py"
+          python test_anchoring.py
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22.21.1"
+          cache: npm
+
+      - name: Install JavaScript dependencies
+        run: npm ci
+
+      - name: Lint and run JavaScript tests
+        run: |
+          npm run lint
+          npm test

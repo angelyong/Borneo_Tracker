@@ -50,9 +50,10 @@ jobs:
 
       # The gate. Runs AFTER the pipeline and BEFORE the commit: if a source broke
       # and the pipeline kept stale or gutted data, this fails the job red and
-      # nothing is committed. See validate_data.py for the checks.
+      # nothing is committed. The checked-out SHA is the pre-refresh approved
+      # baseline; make that identity explicit so this can never self-compare.
       - name: Validate refreshed data
-        run: python validate_data.py
+        run: python validate_data.py --baseline-ref "${{ github.sha }}" --require-baseline
 
       - name: Commit refreshed data
         env:
