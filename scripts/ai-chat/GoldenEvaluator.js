@@ -24,6 +24,8 @@ const SAFETY_FAILURE_CODES = new Set([
   'INVALID_GEMINI_OUTPUT_ACCEPTED',
   'REQUEST_VALIDATION_BYPASS',
   'GEMINI_SOURCE_ACCEPTED',
+  'COMPARISON_FACT_LOST',
+  'COMPARISON_ADVISORY_SECTION',
 ]);
 
 const OPERATION_KEYS = [
@@ -34,6 +36,7 @@ const OPERATION_KEYS = [
   'strongest',
   'targetGap',
   'sdgProgress',
+  'sdgIndicatorList',
   'districtLevel',
   'latest',
 ];
@@ -184,6 +187,16 @@ export class GoldenEvaluator {
       if (expected.factAvailability) {
         checks.push(checkEqual('factAvailability', expected.factAvailability, factObject.availability));
       }
+      if (expected.sdgIndicators) {
+        const actualIndicators = factObject.sdgIndicatorList?.groups?.map((group) => group.indicator) || [];
+        checks.push({
+          metric: 'entity',
+          field: 'sdgIndicators',
+          expected: sortStrings(expected.sdgIndicators),
+          actual: sortStrings(actualIndicators),
+          pass: sameStringArray(expected.sdgIndicators, actualIndicators),
+        });
+      }
 
       levers = this.modules.retrieveVerifiedLevers({
         concepts: entities.concepts,
@@ -216,6 +229,11 @@ export class GoldenEvaluator {
       actual.clarificationRequired = structuredAnswer.clarificationRequired;
       checks.push(checkEqual('blocked', expected.blocked, structuredAnswer.blocked));
       checks.push(checkEqual('clarification', expected.clarificationRequired, structuredAnswer.clarificationRequired));
+      if (expected.comparison) {
+        const comparisonResult = evaluateComparisonExpectation(expected.comparison, factObject, structuredAnswer);
+        actual.comparison = comparisonResult.actual;
+        checks.push(...comparisonResult.checks);
+      }
     } else if (expected.intent === 'SITE_KNOWLEDGE') {
       const repository = new this.modules.KnowledgeRepository({ artifact: this.data.knowledgeIndex });
       const retrieval = this.modules.retrieveStaticKnowledge({
@@ -328,6 +346,7 @@ export class GoldenEvaluator {
       entities,
       language: record.language,
       repository,
+      userQuestion: record.question,
     });
     const serialized = JSON.stringify({
       published: result.published,
@@ -340,11 +359,21 @@ export class GoldenEvaluator {
       actual: {
         publishedCount: result.published.length,
         pendingCount: result.pending.count,
+        recordIds: result.published.map((item) => item.id),
         pendingSentinelExposed: exposedSentinel,
       },
       checks: [
         checkEqual('newsPrivacy', expectedNews.publishedCount, result.published.length, 'publishedCount'),
         checkEqual('newsPrivacy', expectedNews.pendingCount, result.pending.count, 'pendingCount'),
+        ...(expectedNews.expectedRecordIds ? [
+          {
+            metric: 'newsPrivacy',
+            field: 'recordIds',
+            expected: sortStrings(expectedNews.expectedRecordIds),
+            actual: sortStrings(result.published.map((item) => item.id)),
+            pass: sameStringArray(expectedNews.expectedRecordIds, result.published.map((item) => item.id)),
+          },
+        ] : []),
         {
           metric: 'newsPrivacy',
           field: 'pendingSentinel',
@@ -456,9 +485,9 @@ export function validateGoldenData(loaded) {
     seenQuestions.set(duplicateKey, contextKey);
   }
 
-  if (loaded.byLanguage.en.length !== 36) errors.push(`golden-questions.en.json has ${loaded.byLanguage.en.length} records, expected 36`);
+  if (loaded.byLanguage.en.length !== 61) errors.push(`golden-questions.en.json has ${loaded.byLanguage.en.length} records, expected 61`);
   if (loaded.byLanguage.ms.length !== 36) errors.push(`golden-questions.ms.json has ${loaded.byLanguage.ms.length} records, expected 36`);
-  if (loaded.questions.length !== 72) errors.push(`Golden set has ${loaded.questions.length} records, expected 72`);
+  if (loaded.questions.length !== 97) errors.push(`Golden set has ${loaded.questions.length} records, expected 97`);
 
   for (const token of loaded.newsFixtures.pendingSentinels || []) {
     if (!/^PENDING_SENTINEL_/.test(token)) errors.push(`pending sentinel has unsafe realistic form: ${token}`);
@@ -520,6 +549,7 @@ function calculateMetrics(recordResults) {
     newsPrivacyPassRate: metric(evaluatedRecords, 'newsPrivacy'),
     numericSecurityValidationPassRate: metric(evaluatedRecords, 'numericSecurityValidation'),
     fallbackCorrectness: metric(evaluatedRecords, 'fallbackBehavior'),
+    comparisonAnswerAccuracy: metric(evaluatedRecords, 'comparisonAnswer'),
     knowledgeRetrievalStatusAccuracy: metric(evaluatedRecords, 'knowledgeRetrieval'),
     knowledgeTop1RetrievalAccuracy: metric(evaluatedRecords, 'knowledgeTop1'),
     knowledgeRecallAt3: metric(evaluatedRecords, 'knowledgeRecallAt3'),
@@ -576,6 +606,7 @@ function checkExpectedArrays(expected, entities) {
   for (const [field, actualField] of [
     ['territories', 'territories'],
     ['concepts', 'concepts'],
+    ['sdgGoals', 'sdgGoals'],
     ['indicators', 'indicators'],
     ['pillars', 'pillars'],
     ['districts', 'districts'],
@@ -600,6 +631,80 @@ function checkOperations(expectedOperations, actualOperations) {
     actual: Boolean(actualOperations[key]),
     pass: Boolean(expectedOperations[key]) === Boolean(actualOperations[key]),
   }));
+}
+
+function evaluateComparisonExpectation(expected, factObject, structuredAnswer) {
+  const values = Object.fromEntries(
+    (factObject.values.rawValues || [])
+      .filter((value) => value.territory && value.label !== 'compatible difference')
+      .map((value) => [value.territory, value.value])
+  );
+  const difference = (factObject.values.rawValues || []).find((value) => value.label === 'compatible difference');
+  const summary = structuredAnswer.summaryText || '';
+  const forbiddenMatches = (expected.forbidText || []).filter((pattern) => new RegExp(pattern, 'i').test(summary));
+  const checks = [];
+
+  for (const [territory, value] of Object.entries(expected.values || {})) {
+    checks.push({
+      metric: 'comparisonAnswer',
+      field: `value.${territory}`,
+      expected: value,
+      actual: values[territory],
+      pass: values[territory] === value,
+      safetyCode: values[territory] === value ? undefined : 'COMPARISON_FACT_LOST',
+    });
+  }
+  if (Object.hasOwn(expected, 'difference')) {
+    const actualDifference = typeof difference?.value === 'number' ? Math.abs(difference.value) : undefined;
+    checks.push({
+      metric: 'comparisonAnswer',
+      field: 'difference',
+      expected: expected.difference,
+      actual: actualDifference,
+      pass: actualDifference === expected.difference,
+      safetyCode: actualDifference === expected.difference ? undefined : 'COMPARISON_FACT_LOST',
+    });
+  }
+  if (expected.direction) {
+    checks.push({
+      metric: 'comparisonAnswer',
+      field: 'direction',
+      expected: expected.direction,
+      actual: summary,
+      pass: summary.toLowerCase().includes(expected.direction.toLowerCase()),
+      safetyCode: summary.toLowerCase().includes(expected.direction.toLowerCase()) ? undefined : 'COMPARISON_FACT_LOST',
+    });
+  }
+  if (expected.comparability) {
+    checks.push({
+      metric: 'comparisonAnswer',
+      field: 'comparability',
+      expected: expected.comparability,
+      actual: factObject.comparison.decision,
+      pass: factObject.comparison.decision === expected.comparability,
+    });
+  }
+  if (expected.forbidText?.length) {
+    checks.push({
+      metric: 'comparisonAnswer',
+      field: 'forbidText',
+      expected: [],
+      actual: forbiddenMatches,
+      pass: forbiddenMatches.length === 0,
+      safetyCode: forbiddenMatches.length ? 'COMPARISON_ADVISORY_SECTION' : undefined,
+    });
+  }
+
+  return {
+    actual: {
+      values,
+      difference: difference?.value,
+      directionFound: expected.direction ? summary.toLowerCase().includes(expected.direction.toLowerCase()) : undefined,
+      forbiddenMatches,
+      summaryText: summary,
+    },
+    checks,
+  };
 }
 
 function checkEqual(metricName, expected, actual, field = metricName) {
@@ -633,6 +738,7 @@ function summarizeEntities(entities) {
   return {
     territories: sortStrings(entities.territories),
     concepts: sortStrings(entities.concepts),
+    sdgGoals: sortStrings(entities.sdgGoals || []),
     indicators: sortStrings(entities.indicators),
     pillars: sortStrings(entities.pillars),
     districts: sortStrings(entities.districts),

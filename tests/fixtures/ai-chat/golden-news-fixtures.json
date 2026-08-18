@@ -42,6 +42,17 @@
       "publisher": "Golden Fixture Publisher"
     },
     {
+      "id": "published-fire-kalimantan-001",
+      "status": "published",
+      "territory": "Kalimantan",
+      "language": "en",
+      "title": "Kalimantan forest fire response",
+      "summary": "Published fire crews contained a forest fire near a monitored conservation area.",
+      "publishedAt": "2026-07-23T00:00:00.000Z",
+      "publisher": "Golden Fixture Publisher",
+      "url": "https://example.invalid/published-fire-kalimantan-001"
+    },
+    {
       "id": "pending-sentinel-001",
       "status": "pending",
       "territory": "Sabah",

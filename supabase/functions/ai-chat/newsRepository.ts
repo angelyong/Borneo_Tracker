@@ -19,10 +19,14 @@ export type AIChatRawNewsRecord = {
   url?: unknown;
   sourceFile?: unknown;
   status?: unknown;
+  beat?: unknown;
+  beatLabel?: unknown;
+  beat_label?: unknown;
+  sdg?: unknown;
+  country?: unknown;
   territory?: unknown;
   territories?: unknown;
   language?: unknown;
   originalLang?: unknown;
   sources?: unknown;
 };
-

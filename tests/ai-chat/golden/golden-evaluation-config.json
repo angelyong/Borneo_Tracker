@@ -69,7 +69,8 @@
     "fallback",
     "lever",
     "privacy",
-    "safety"
+    "safety",
+    "suggested_question"
   ],
   "thresholds": {
     "routingAccuracy": 1,

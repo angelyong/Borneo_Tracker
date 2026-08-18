@@ -86,6 +86,24 @@ describe('entity resolver operations and years', () => {
     expect(resolve('compare Sabah and Brunei').operations.comparison).toBe(true);
   });
 
+  it.each([
+    'Compare Sabah and Sarawak resilience scores.',
+    'Which has the higher resilience score, Sabah or Sarawak?',
+    'Which is lower for resilience, Sabah or Sarawak?',
+    "How much higher is Sarawak's resilience score than Sabah's?",
+    'What is the difference between Sabah and Sarawak resilience scores?',
+  ])('detects dashboard comparison wording: %s', (question) => {
+    const result = resolve(question);
+    expect(result.operations.comparison).toBe(true);
+    expect(result.territories.length).toBeGreaterThanOrEqual(2);
+    expect(result.concepts).toContain('resilience');
+  });
+
+  it('does not classify arbitrary higher/lower wording as comparison without dashboard entities', () => {
+    const result = resolve('Is a higher budget always better?');
+    expect(result.operations.comparison).toBe(false);
+  });
+
   it('detects trend and year range', () => {
     const result = resolve('Show poverty trend from 2020 to 2024.');
     expect(result.operations.trend).toBe(true);
@@ -108,6 +126,17 @@ describe('entity resolver operations and years', () => {
 
   it('detects ranking terms', () => {
     expect(resolve('Rank territories by poverty.').operations.ranking).toBe(true);
+  });
+
+  it.each([
+    ['Which indicators support SDG 15?', 'SDG15'],
+    ['Which indicators support SDG15?', 'SDG15'],
+    ['Which indicators are mapped to Climate Action?', 'SDG13'],
+    ['Show me indicators for Life on Land.', 'SDG15'],
+  ])('resolves SDG indicator-list entity %s', (question, expectedGoal) => {
+    const result = resolve(question);
+    expect(result.sdgGoals).toContain(expectedGoal);
+    expect(result.operations.sdgIndicatorList).toBe(true);
   });
 
   it('detects a single year and latest/current phrase', () => {

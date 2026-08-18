@@ -1,13 +1,14 @@
-import { AIChatHttpError, type AIChatPrompt, type AIChatRequest } from './contracts.ts';
+import { AIChatHttpError, type AIChatPrompt, type AIChatRequest, type AIChatSiteKnowledgePrompt } from './contracts.ts';
 import { type EnvLike, parseAiChatConfig } from './config.ts';
 
 const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
+export const GEMINI_MAX_OUTPUT_TOKENS = 512;
 
 type GeminiClientOptions = {
   env?: EnvLike;
   fetchImpl?: typeof fetch;
   timeoutMs?: number;
-  prompt?: AIChatPrompt;
+  prompt?: AIChatPrompt | AIChatSiteKnowledgePrompt;
 };
 
 type GeminiGenerateContentResponse = {
@@ -17,7 +18,11 @@ type GeminiGenerateContentResponse = {
         text?: string;
       }>;
     };
+    finishReason?: string;
   }>;
+  promptFeedback?: {
+    blockReason?: string;
+  };
 };
 
 function buildPrompt(request: AIChatRequest): string {
@@ -42,6 +47,31 @@ function connectionTestSystemInstruction(): string {
 function extractText(payload: GeminiGenerateContentResponse): string {
   const parts = payload.candidates?.[0]?.content?.parts || [];
   return parts.map((part) => part.text || '').join('').trim();
+}
+
+function assertCompleteGeminiCandidate(payload: GeminiGenerateContentResponse): void {
+  const candidate = payload.candidates?.[0];
+  if (!candidate) {
+    throw new AIChatHttpError(
+      502,
+      'EMPTY_GEMINI_RESPONSE',
+      'The AI assistant provider returned no candidate response.'
+    );
+  }
+  const finishReason = candidate.finishReason || '';
+  if (finishReason === 'STOP') return;
+  if (finishReason === 'MAX_TOKENS') {
+    throw new AIChatHttpError(
+      502,
+      'GEMINI_TRUNCATED',
+      'The AI assistant provider stopped before completing the answer.'
+    );
+  }
+  throw new AIChatHttpError(
+    502,
+    finishReason ? `GEMINI_INCOMPLETE_${finishReason}` : 'GEMINI_INCOMPLETE_RESPONSE',
+    'The AI assistant provider returned an incomplete response.'
+  );
 }
 
 function geminiHttpError(status: number): AIChatHttpError {
@@ -104,7 +134,7 @@ export async function generateGeminiAnswer(
         }],
         generationConfig: {
           temperature: 0.2,
-          maxOutputTokens: 128,
+          maxOutputTokens: GEMINI_MAX_OUTPUT_TOKENS,
         },
       }),
       signal: controller.signal,
@@ -125,6 +155,7 @@ export async function generateGeminiAnswer(
       );
     }
 
+    assertCompleteGeminiCandidate(payload);
     const answer = extractText(payload);
     if (!answer) {
       throw new AIChatHttpError(

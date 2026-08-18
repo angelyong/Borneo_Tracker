@@ -91,6 +91,39 @@ describe('template fallback builder', () => {
     expect(result.sources.map((source) => source.title)).not.toContain('Gemini');
   });
 
+  it('uses a comparison-specific deterministic fallback summary', () => {
+    const result = buildTemplateFallback({
+      structuredAnswer: structuredAnswer({
+        layers: {
+          ...structuredAnswer().layers,
+          conclusion: {
+            status: 'AVAILABLE',
+            heading: 'Conclusion',
+            text: "Sabah's resilience score is 63.7 and Sarawak's is 72.5. Sarawak is higher than Sabah by 8.8 points. The comparison uses the Resilience Index score.",
+            codes: [],
+            factReferences: [],
+            warnings: [],
+          },
+          diagnosis: { ...structuredAnswer().layers.diagnosis, status: 'NOT_APPLICABLE' },
+          gap: { ...structuredAnswer().layers.gap, status: 'NOT_APPLICABLE' },
+          impact: { ...structuredAnswer().layers.impact, status: 'NOT_APPLICABLE' },
+          lever: { ...structuredAnswer().layers.lever, status: 'NOT_APPLICABLE' },
+        },
+        summaryText: "Conclusion: Sabah's resilience score is 63.7 and Sarawak's is 72.5. Sarawak is higher than Sabah by 8.8 points. The comparison uses the Resilience Index score.",
+        approvedNumericTokens: ['63.7', '72.5', '8.8'],
+      }),
+      reason: 'GEMINI_TRUNCATED',
+      language: 'en',
+      intent: route,
+    });
+
+    expect(result.answer).toContain('Sarawak is higher than Sabah by 8.8 points');
+    expect(result.answer).not.toContain('Diagnosis:');
+    expect(result.answer).not.toContain('Gap:');
+    expect(result.answer).not.toContain('Impact:');
+    expect(result.answer).not.toContain('Recommended action:');
+  });
+
   it('rejects fallback prose that would introduce unapproved numbers or URLs', () => {
     expect(() => buildTemplateFallback({
       structuredAnswer: structuredAnswer({ summaryText: 'Conclusion: See https://example.com/2026.' }),

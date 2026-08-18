@@ -5,6 +5,7 @@ import type {
   AIChatPublishedNewsItem,
 } from './contracts.ts';
 import type { AIChatNewsRepository, AIChatRawNewsRecord } from './newsRepository.ts';
+import { matchesNewsTopics, normalizeNewsTopics } from './newsTopics.ts';
 
 const SUPPORTED_TERRITORIES: AIChatNewsTerritory[] = [
   'Sabah',
@@ -33,6 +34,7 @@ export class LocalNewsRepository implements AIChatNewsRepository {
     const normalizedQuery = normalizeQuery(query);
     const normalized = this.records
       .filter((record) => record.status === 'published')
+      .filter((record) => matchesNewsTopics(record, normalizedQuery.topics))
       .map((record) => normalizePublishedRecord(record))
       .filter((record): record is AIChatPublishedNewsItem => Boolean(record))
       .filter((record) => matchesTerritory(record.territory, normalizedQuery.territories))
@@ -101,6 +103,7 @@ function normalizeQuery(query: AIChatNewsQuery): Required<Pick<AIChatNewsQuery, 
     territories: (query.territories || [])
       .map((territory) => normalizeTerritory(territory))
       .filter((territory): territory is AIChatNewsTerritory => Boolean(territory)),
+    topics: normalizeNewsTopics(query.topics),
   };
 }
 
@@ -185,4 +188,3 @@ function endBoundary(value?: string): number | undefined {
   if (!value) return undefined;
   return /^\d{4}-\d{2}-\d{2}$/.test(value) ? Date.parse(`${value}T23:59:59.999Z`) : parseIsoTime(value);
 }
-

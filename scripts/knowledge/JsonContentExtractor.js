@@ -121,7 +121,6 @@ function recordsFromI18n(payload) {
     'confidenceMix',
     'trendStatus',
     'historicalSeriesNotEnabled',
-    'noCanonicalIndicators',
   ]), '/esg', {
     id: `esg-indicators-page-${language}`,
     language,
@@ -130,7 +129,6 @@ function recordsFromI18n(payload) {
 
   records.push(record('sdg.overview', sdg.title || sidebar.sdgProgress || 'SDG Progress', 'sdg-progress', joinFields(sdg, [
     'subtitle',
-    'noCanonicalIndicatorsForRegion',
   ]), '/sdg', {
     id: `sdg-progress-page-${language}`,
     language,
@@ -162,15 +160,6 @@ function recordsFromI18n(payload) {
 
   records.push(record('reports.overview', sidebar.generateReport || 'Generate Report', 'generate-report', joinFields(reports, [
       'subtitle',
-      'selectTerritory',
-      'includeSections',
-      'sectionExecutiveSummary',
-      'sectionSdgCoverage',
-      'sectionCoverageLimitations',
-      'sectionMethodologySources',
-      'generateDownloadPdf',
-      'noIndicatorsAvailable',
-      'allBorneo',
     ]), '/reports', {
       id: `generate-report-page-${language}`,
       language,

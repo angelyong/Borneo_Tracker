@@ -93,6 +93,21 @@ export type LookupResult<T> =
   | { status: 'missing'; reason: string }
   | { status: 'malformed'; reason: string; sourcePath?: string };
 
+export const SUPPORTED_SDG_GOALS = [
+  { goal: 'SDG1', label: 'No Poverty' },
+  { goal: 'SDG2', label: 'Zero Hunger' },
+  { goal: 'SDG3', label: 'Good Health and Well-being' },
+  { goal: 'SDG4', label: 'Quality Education' },
+  { goal: 'SDG6', label: 'Clean Water and Sanitation' },
+  { goal: 'SDG7', label: 'Affordable and Clean Energy' },
+  { goal: 'SDG8', label: 'Decent Work and Economic Growth' },
+  { goal: 'SDG9', label: 'Industry, Innovation and Infrastructure' },
+  { goal: 'SDG11', label: 'Sustainable Cities and Communities' },
+  { goal: 'SDG13', label: 'Climate Action' },
+  { goal: 'SDG15', label: 'Life on Land' },
+  { goal: 'SDG16', label: 'Peace, Justice and Strong Institutions' },
+] as const;
+
 const RUNTIME_DATA: FactRepositoryData = {
   indicators: indicatorsData,
   resilience: resilienceData,
@@ -119,6 +134,15 @@ export class FactDataRepository {
       ...(this.data.indicators?.territories || []),
       ...Object.keys(this.data.resilience?.territories || {}),
     ])].sort();
+  }
+
+  getSupportedSdgGoals(): Array<{ goal: string; label: string }> {
+    return SUPPORTED_SDG_GOALS.map((goal) => ({ ...goal }));
+  }
+
+  getSdgGoalLabel(sdgGoal: string): string | undefined {
+    const normalized = normalizeSdgGoalCode(sdgGoal);
+    return SUPPORTED_SDG_GOALS.find((goal) => goal.goal === normalized)?.label;
   }
 
   getTerritoryResilience(territory: string): LookupResult<TerritoryResilienceRecord> {
@@ -148,17 +172,41 @@ export class FactDataRepository {
     concepts?: string[];
     indicators?: string[];
     pillars?: string[];
+    sdgGoals?: string[];
     canonicalOnly?: boolean;
   } = {}): IndicatorRow[] {
     const territories = normalizeTerritories(filters.territories || []);
+    const sdgGoals = (filters.sdgGoals || []).map(normalizeSdgGoalCode).filter(Boolean);
     return (this.data.indicators?.rows || []).filter((row) => {
       if (filters.canonicalOnly && !isCanonical(row)) return false;
       if (territories.length && !territories.includes(normalizeTerritory(row.territory || ''))) return false;
       if (filters.concepts?.length && !filters.concepts.includes(row.dashboard_concept || '')) return false;
       if (filters.indicators?.length && !filters.indicators.includes(row.indicator || '')) return false;
       if (filters.pillars?.length && !filters.pillars.includes(row.hexagon_pillar || '')) return false;
+      if (sdgGoals.length && !sdgGoals.includes(normalizeSdgGoalCode(row.sdg_goal || ''))) return false;
       return true;
+    }).sort(stableIndicatorRowSort);
+  }
+
+  getCanonicalIndicatorsForSdg(sdgGoal: string): LookupResult<IndicatorRow[]> {
+    const normalized = normalizeSdgGoalCode(sdgGoal);
+    if (!normalized || !SUPPORTED_SDG_GOALS.some((goal) => goal.goal === normalized)) {
+      return {
+        status: 'missing',
+        reason: `Unsupported SDG goal ${sdgGoal}.`,
+      };
+    }
+    const rows = this.getIndicatorRows({
+      sdgGoals: [normalized],
+      canonicalOnly: true,
     });
+    if (!rows.length) {
+      return {
+        status: 'missing',
+        reason: `No canonical indicators are mapped to ${normalized}.`,
+      };
+    }
+    return { status: 'found', value: rows };
   }
 
   getIndicatorValue(filters: {
@@ -272,6 +320,11 @@ export function normalizeTerritories(values: string[]): string[] {
   return values.map(normalizeTerritory).filter((value) => value && value !== 'Borneo-wide' && value !== 'Borneo Malaysia');
 }
 
+export function normalizeSdgGoalCode(value: string): string {
+  const match = String(value || '').toUpperCase().match(/\bSDG\s*0?(\d{1,2})\b/);
+  return match ? `SDG${Number(match[1])}` : '';
+}
+
 export function parseYear(value: unknown): number | undefined {
   if (typeof value === 'number' && Number.isFinite(value)) return value;
   const match = String(value || '').match(/\b(19\d{2}|20\d{2})\b/);
@@ -303,4 +356,12 @@ function sourceFromText(source: string, sourceFile: string, sourcePath: string, 
 
 function compactKey(value: string): string {
   return String(value || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function stableIndicatorRowSort(left: IndicatorRow, right: IndicatorRow): number {
+  return String(left.indicator || '').localeCompare(String(right.indicator || '')) ||
+    String(left.unit || '').localeCompare(String(right.unit || '')) ||
+    String(left.territory || '').localeCompare(String(right.territory || '')) ||
+    String(left.source || '').localeCompare(String(right.source || '')) ||
+    String(left.year || '').localeCompare(String(right.year || ''));
 }

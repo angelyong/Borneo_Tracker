@@ -19,6 +19,7 @@ import {
 import {
   FactDataRepository,
   type IndicatorRow,
+  normalizeSdgGoalCode,
   normalizeTerritories,
   parseYear,
   rowPath,
@@ -45,6 +46,11 @@ export class FactObjectBuilder {
   build(input: FactObjectBuilderInput): AIChatFactObject {
     const fact = this.baseFact(input);
     if (input.intent.intent !== 'DASHBOARD_DATA') return fact;
+
+    if (input.entities.operations.sdgIndicatorList || fact.sdgGoals.length) {
+      buildSdgIndicatorListFact(fact, this.repository);
+      return finalizeFact(fact);
+    }
 
     if (input.comparability.decision === 'REJECT' || input.comparability.decision === 'NEEDS_CLARIFICATION') {
       fact.availability = 'BLOCKED';
@@ -94,6 +100,7 @@ export class FactObjectBuilder {
       intent: input.intent.intent,
       territories,
       concepts: [...input.entities.concepts],
+      sdgGoals: [...(input.entities.sdgGoals || [])],
       indicators: [...input.entities.indicators],
       pillars: [...input.entities.pillars],
       districts: [...input.entities.districts],
@@ -138,7 +145,7 @@ function buildResilienceFact(fact: AIChatFactObject, repository: FactDataReposit
       continue;
     }
     const sourcePath = `territories.${territory}.index`;
-    fact.values.overallResilience = {
+    const value: FactValue = {
       label: `${territory} Resilience Index`,
       territory,
       concept: 'resilience',
@@ -148,6 +155,8 @@ function buildResilienceFact(fact: AIChatFactObject, repository: FactDataReposit
       status: 'calculated',
       sourcePath,
     };
+    if (!fact.values.overallResilience) fact.values.overallResilience = value;
+    if (fact.comparison.requested) fact.values.rawValues.push(value);
     addSource(fact, repository.getSourceForResilience(sourcePath));
     addPillarScores(fact, territory, result.value.pillarScores || {}, repository);
     fact.diagnosis = {
@@ -242,7 +251,14 @@ function buildIndicatorFact(fact: AIChatFactObject, repository: FactDataReposito
       indicator: fact.indicators[0],
       pillar: fact.pillars[0],
     };
-    const result = repository.getIndicatorValue(filters);
+    let result = repository.getIndicatorValue(filters);
+    if (
+      result.status !== 'found' &&
+      filters.concept === 'forest_cover' &&
+      filters.indicator === 'Forest cover'
+    ) {
+      result = repository.getIndicatorValue({ ...filters, indicator: undefined });
+    }
     if (result.status !== 'found') {
       addLookupWarning(fact, result.reason, result.status);
       continue;
@@ -378,6 +394,81 @@ function buildSdgCoverageFact(fact: AIChatFactObject, repository: FactDataReposi
   fact.availability = rows.length ? 'PARTIAL' : 'UNAVAILABLE';
 }
 
+function buildSdgIndicatorListFact(fact: AIChatFactObject, repository: FactDataRepository): void {
+  const sdgGoal = normalizeSdgGoalCode(fact.sdgGoals[0] || '');
+  const supportedGoals = repository.getSupportedSdgGoals();
+  const label = repository.getSdgGoalLabel(sdgGoal);
+  fact.sdgIndicatorList = {
+    sdgGoal: sdgGoal || fact.sdgGoals[0] || '',
+    label,
+    supported: Boolean(sdgGoal && label),
+    supportedGoals,
+    groups: [],
+  };
+
+  if (!sdgGoal || !label) {
+    fact.availability = 'UNAVAILABLE';
+    fact.conclusion = {
+      code: 'UNSUPPORTED_SDG_GOAL',
+      text: `Borneo Tracker does not have a supported canonical SDG indicator mapping for that goal. Supported goals are ${supportedGoals.map((goal) => goal.goal).join(', ')}.`,
+    };
+    return;
+  }
+
+  const result = repository.getCanonicalIndicatorsForSdg(sdgGoal);
+  if (result.status !== 'found') {
+    fact.availability = 'UNAVAILABLE';
+    fact.conclusion = {
+      code: 'NO_CANONICAL_SDG_INDICATORS',
+      text: `Borneo Tracker has no canonical indicators currently mapped to ${sdgGoal} (${label}).`,
+    };
+    return;
+  }
+
+  const grouped = new Map<string, NonNullable<AIChatFactObject['sdgIndicatorList']>['groups'][number]>();
+  for (const row of result.value) {
+    const indicator = row.indicator || 'Unnamed indicator';
+    const key = [indicator, row.dashboard_concept || '', row.unit || ''].join('|');
+    if (!grouped.has(key)) {
+      grouped.set(key, {
+        indicator,
+        concept: row.dashboard_concept,
+        unit: row.unit,
+        territories: [],
+        years: [],
+        sources: [],
+        sourcePaths: [],
+      });
+    }
+    const group = grouped.get(key);
+    if (!group) continue;
+    addUnique(group.territories, row.territory || '');
+    const year = parseYear(row.year);
+    if (year && !group.years.includes(year)) group.years.push(year);
+    const sourceLabel = answerSourceLabel(row.source || '');
+    addUnique(group.sources, sourceLabel);
+    addUnique(group.sourcePaths, rowPath('indicators', row));
+    addSource(fact, repository.getSourceForIndicator(row, rowPath('indicators', row)));
+  }
+
+  fact.sdgIndicatorList.groups = [...grouped.values()].map((group) => ({
+    ...group,
+    territories: group.territories.sort(),
+    years: group.years.sort((left, right) => left - right),
+    sources: group.sources.sort(),
+    sourcePaths: group.sourcePaths.sort(),
+  }));
+  fact.conclusion = {
+    code: 'SDG_INDICATOR_LIST_AVAILABLE',
+    text: `Borneo Tracker canonical indicators mapped to ${sdgGoal} (${label}) are available.`,
+  };
+  fact.requiredDisclosures.push('Only canonical indicator rows from public/data/indicators.json are included.');
+  if (sdgGoal === 'SDG15') {
+    fact.requiredDisclosures.push('Forest cover uses mixed committed definitions: Brunei is % land, while Sabah, Sarawak, and Kalimantan use year-2000 forest extent in hectares.');
+  }
+  fact.availability = fact.sdgIndicatorList.groups.length ? 'AVAILABLE' : 'UNAVAILABLE';
+}
+
 function buildDistrictFacts(fact: AIChatFactObject, repository: FactDataRepository): void {
   const concept = fact.concepts.find((item) => item !== 'resilience');
   for (const district of fact.districts) {
@@ -511,8 +602,8 @@ function finalizeFact(fact: AIChatFactObject): AIChatFactObject {
   fact.requiredDisclosures = [...new Set(fact.requiredDisclosures)];
   fact.methodologyNotes = [...new Set(fact.methodologyNotes)];
   fact.sources = dedupeSources(fact.sources);
-  const numericTokens = new Set<string>();
-  const yearTokens = new Set<string>();
+  const numericTokens = new Set<string>(fact.approvedNumericTokens);
+  const yearTokens = new Set<string>(fact.approvedYearTokens);
   const values = [
     ...fact.values.rawValues,
     ...fact.values.indicatorScores,
@@ -527,6 +618,17 @@ function finalizeFact(fact: AIChatFactObject): AIChatFactObject {
     addApprovedTokens(numericTokens, value);
     if (value.year) yearTokens.add(String(value.year));
   }
+  for (const group of fact.sdgIndicatorList?.groups || []) {
+    for (const year of group.years) yearTokens.add(String(year));
+  }
+  for (const text of [
+    fact.conclusion?.text || '',
+    ...fact.requiredDisclosures,
+    ...fact.warnings.map((warning) => warning.message),
+    ...fact.methodologyNotes,
+  ]) {
+    addApprovedTextTokens(numericTokens, yearTokens, text);
+  }
   fact.approvedNumericTokens = [...numericTokens].sort();
   fact.approvedYearTokens = [...yearTokens].sort();
   return fact;
@@ -537,10 +639,29 @@ function addApprovedTokens(tokens: Set<string>, value: FactValue): void {
   tokens.add(String(value.value));
   tokens.add(value.formattedValue);
   if (!Number.isInteger(value.value)) tokens.add(value.value.toFixed(1));
+  if (value.unit === 'score/100') tokens.add(value.value.toFixed(1));
+  if (value.value < 0) {
+    const absolute = Math.abs(value.value);
+    tokens.add(String(absolute));
+    if (!Number.isInteger(absolute)) tokens.add(absolute.toFixed(1));
+    tokens.add(value.formattedValue.replace(/^-/, ''));
+  }
   if (value.unit === '%') {
     tokens.add(`${value.value}`);
     tokens.add(value.value.toFixed(1));
     tokens.add(`${value.value.toFixed(1)}%`);
+  }
+}
+
+function addApprovedTextTokens(numericTokens: Set<string>, yearTokens: Set<string>, text: string): void {
+  for (const match of text.matchAll(/\b\d+(?:\.\d+)?%?\b/g)) {
+    const token = match[0];
+    if (/^(?:19|20)\d{2}$/.test(token)) {
+      yearTokens.add(token);
+    } else {
+      numericTokens.add(token);
+      numericTokens.add(token.replace(/%$/, ''));
+    }
   }
 }
 
@@ -575,6 +696,19 @@ function addSource(fact: AIChatFactObject, source: FactSource): void {
   fact.sources.push(source);
 }
 
+function addUnique(target: string[], value: string): void {
+  if (value && !target.includes(value)) target.push(value);
+}
+
+function answerSourceLabel(source: string): string {
+  return source
+    .replace(/https?:\/\/\S+/g, '')
+    .split(/\s+(?:-|--|—)\s+/)[0]
+    .replace(/\([^)]*\d[^)]*\)/g, '')
+    .replace(/^Manual report:\s*/i, 'Manual report: ')
+    .trim();
+}
+
 function dedupeSources(sources: FactSource[]): FactSource[] {
   const seen = new Set<string>();
   return sources.filter((source) => {
@@ -588,4 +722,3 @@ function dedupeSources(sources: FactSource[]): FactSource[] {
 function pillarScoreInputs(scores: Record<string, number>) {
   return Object.entries(scores).map(([pillar, score]) => ({ pillar, score }));
 }
-

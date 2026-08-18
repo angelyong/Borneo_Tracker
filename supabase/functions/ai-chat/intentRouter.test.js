@@ -8,8 +8,28 @@ function route(message, options = {}) {
 describe('ai-chat intent router: SITE_KNOWLEDGE', () => {
   it.each([
     ['What is Borneo Tracker?'],
+    ['Tell me something about Borneo Tracker that is not in your knowledge base.'],
+    ['What is the difference between ESG and SDG?'],
+    ['How are ESG and SDG different?'],
+    ['What is ESG compared with SDG?'],
+    ['Explain ESG versus SDG in Borneo Tracker.'],
+    ['What is ESG?'],
+    ['What are SDGs?'],
+    ['Explain the Forest Cover indicator.'],
+    ['What does Forest Cover mean?'],
+    ['What is the Forest Cover indicator?'],
+    ['How is Forest Cover measured in Borneo Tracker?'],
+    ['Where does the Forest Cover data come from?'],
+    ['What is the source of the Forest Cover data?'],
+    ['Which SDGs are monitored by Borneo Tracker?'],
+    ['Where does the environmental data come from?'],
     ['How do I generate a report?'],
+    ['How can I create a report?'],
+    ['How do I download a report?'],
+    ['How do I create a PDF report?'],
+    ['What steps are needed to generate a report?'],
     ['Bagaimana menggunakan laman ini?', { language: 'ms' }],
+    ['Apakah Borneo Tracker?', { language: 'ms' }],
     ['Apakah maksud halaman ESG?', { language: 'ms' }],
   ])('routes %s', (message, options = {}) => {
     const result = route(message, options);
@@ -22,8 +42,18 @@ describe('ai-chat intent router: SITE_KNOWLEDGE', () => {
 describe('ai-chat intent router: DASHBOARD_DATA', () => {
   it.each([
     ["What is Sabah's resilience score?"],
+    ["What is Sabah's Forest Cover value?"],
     ['Which pillar is weakest in Sarawak?'],
     ['Compare the energy indicator for Sabah and Brunei.'],
+    ['Which has the higher resilience score, Sabah or Sarawak?'],
+    ["How much higher is Sarawak's resilience score than Sabah's?"],
+    ['What is the difference between Sabah and Sarawak resilience scores?'],
+    ['Which indicators support SDG 15?'],
+    ['Which indicators are mapped to SDG 13?'],
+    ['What indicators are tracked under SDG 6?'],
+    ['Show me indicators for SDG 3.'],
+    ['Which dashboard indicators map to Life on Land?'],
+    ['What does Borneo Tracker show for SDG 15?'],
     ['Apakah skor daya tahan Sabah?', { language: 'ms' }],
     ['Penunjuk manakah paling lemah di Sarawak?', { language: 'ms' }],
   ])('routes %s', (message, options = {}) => {

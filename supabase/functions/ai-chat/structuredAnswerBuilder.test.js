@@ -57,6 +57,7 @@ function baseEntities(overrides = {}) {
     strongest: false,
     targetGap: false,
     sdgProgress: false,
+    sdgIndicatorList: false,
     districtLevel: false,
     latest: false,
     ...(overrides.operations || {}),
@@ -97,6 +98,7 @@ function baseFact(overrides = {}) {
     intent: 'DASHBOARD_DATA',
     territories: ['Sabah'],
     concepts: ['resilience'],
+    sdgGoals: [],
     indicators: [],
     pillars: [],
     districts: [],
@@ -165,6 +167,59 @@ describe('structured answer AVAILABLE layers', () => {
     expect(answer.approvedYearTokens).toContain('2024');
   });
 
+  it('builds a comparison-specific resilience answer with both territories', () => {
+    const { answer, factObject, entities } = buildFactAndAnswer('Compare Sabah and Sarawak resilience scores.');
+
+    expect(entities.operations.comparison).toBe(true);
+    expect(factObject.values.rawValues).toEqual(expect.arrayContaining([
+      expect.objectContaining({ territory: 'Sabah', value: 63.7 }),
+      expect.objectContaining({ territory: 'Sarawak', value: 72.5 }),
+    ]));
+    expect(answer.layers.conclusion.text).toContain('Sabah: 63.7');
+    expect(answer.layers.conclusion.text).toContain('Sarawak: 72.5');
+    expect(answer.layers.conclusion.text).toContain('Sarawak is higher');
+    expect(answer.layers.conclusion.text).toContain('8.8 points');
+    expect(answer.layers.conclusion.text).toContain('Resilience Index score');
+    expect(answer.layers.conclusion.text).not.toBe("Sabah's overall resilience score is 63.7.");
+    expect(answer.layers.diagnosis.status).toBe('NOT_APPLICABLE');
+    expect(answer.layers.gap.status).toBe('NOT_APPLICABLE');
+    expect(answer.layers.impact.status).toBe('NOT_APPLICABLE');
+    expect(answer.layers.lever.status).toBe('NOT_APPLICABLE');
+    expect(answer.summaryText).toContain('Sarawak: 72.5');
+    expect(answer.summaryText).not.toContain('Diagnosis:');
+    expect(answer.summaryText).not.toContain('Gap:');
+    expect(answer.summaryText).not.toContain('Impact:');
+    expect(answer.summaryText).not.toContain('Recommended action:');
+  });
+
+  it('answers higher wording directly', () => {
+    const { answer } = buildFactAndAnswer('Which has the higher resilience score, Sabah or Sarawak?');
+
+    expect(answer.layers.conclusion.text).toContain('Sarawak has the higher resilience score');
+    expect(answer.layers.conclusion.text).toContain('Sabah: 63.7');
+    expect(answer.layers.conclusion.text).toContain('Sarawak: 72.5');
+    expect(answer.layers.conclusion.text).toContain('8.8 points');
+  });
+
+  it('answers how-much-higher wording with the difference first', () => {
+    const { answer } = buildFactAndAnswer("How much higher is Sarawak's resilience score than Sabah's?");
+
+    expect(answer.layers.conclusion.text).toMatch(/^The difference is 8\.8 points\./);
+    expect(answer.layers.conclusion.text).toContain('Sarawak is higher than Sabah by 8.8 points');
+  });
+
+  it('handles negative raw differences as positive directional prose', () => {
+    const { answer, factObject } = buildFactAndAnswer('Compare Sarawak and Brunei resilience scores.');
+
+    expect(factObject.values.rawValues).toContainEqual(expect.objectContaining({
+      label: 'compatible difference',
+      value: -6.5,
+    }));
+    expect(answer.layers.conclusion.text).toContain('Brunei is higher than Sarawak by 6.5 points');
+    expect(answer.layers.conclusion.text).toContain('Brunei: 79.0');
+    expect(answer.layers.conclusion.text).not.toContain('-6.5');
+  });
+
   it('builds a target and gap layer', () => {
     const { answer } = buildFactAndAnswer('What is the target gap for Sabah clean water access?');
 
@@ -172,6 +227,19 @@ describe('structured answer AVAILABLE layers', () => {
       status: 'AVAILABLE',
       text: 'Clean water access for Sabah has current 80.5%, target 100%, and gap 19.5%.',
     });
+  });
+
+  it('builds a dedicated SDG indicator-list answer without the resilience diagnosis template', () => {
+    const { answer } = buildFactAndAnswer('Which indicators support SDG 15?');
+    expect(answer.availability).toBe('AVAILABLE');
+    expect(answer.layers.conclusion.text).toContain('Forest cover; Forest extent (2000); National parks (count)');
+    expect(answer.layers.diagnosis.text).toContain('Forest cover (forest_cover): Brunei. Unit: % land. Years: 2023. Sources: World Bank.');
+    expect(answer.layers.diagnosis.text).toContain('Forest extent (2000) (forest_cover): Kalimantan, Sabah, Sarawak. Unit: ha. Years: 2000. Sources: Global Forest Watch');
+    expect(answer.layers.gap.status).toBe('NOT_APPLICABLE');
+    expect(answer.layers.impact.status).toBe('NOT_APPLICABLE');
+    expect(answer.summaryText).not.toContain('No additional deterministic diagnosis');
+    expect(answer.summaryText).not.toContain('No verified compatible target');
+    expect(answer.summaryText).not.toMatch(/https?:\/\//);
   });
 });
 
@@ -191,6 +259,13 @@ describe('structured answer PARTIAL and unavailable layers', () => {
     expect(answer.availability).toBe('PARTIAL');
     expect(answer.layers.gap.text).toContain('SDG coverage or mapping only');
     expect(answer.layers.honesty.warnings.join(' ')).toContain('SDG progress-to-target cannot be calculated');
+  });
+
+  it('renders unsupported SDG goals as deterministic clarification', () => {
+    const { answer } = buildFactAndAnswer('Which indicators support SDG 5?');
+    expect(answer.availability).toBe('UNAVAILABLE');
+    expect(answer.layers.conclusion.text).toContain('Supported goals are SDG1, SDG2, SDG3, SDG4, SDG6, SDG7, SDG8, SDG9, SDG11, SDG13, SDG15, SDG16');
+    expect(answer.summaryText).not.toContain('Forest cover');
   });
 
   it('can represent an unsupported trend with descriptive facts only', () => {
@@ -278,6 +353,10 @@ describe('structured answer blocked and clarification behavior', () => {
     expect(answer.blocked).toBe(true);
     expect(answer.layers.conclusion.status).toBe('BLOCKED');
     expect(answer.layers.honesty.warnings[0]).toContain('Forest cover mixes');
+    expect(answer.summaryText).not.toContain('Diagnosis:');
+    expect(answer.summaryText).not.toContain('Gap:');
+    expect(answer.summaryText).not.toContain('Impact:');
+    expect(answer.summaryText).not.toContain('Recommended action:');
   });
 
   it('blocks governance comparison', () => {

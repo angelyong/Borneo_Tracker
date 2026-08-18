@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AIChatHttpError, MAX_MESSAGE_LENGTH, validateChatRequest } from './contracts.ts';
 import { generateGeminiAnswer } from './geminiClient.ts';
 import { createAiChatHandler, handleAiChatRequest, mapFallbackReason } from './index.ts';
+import { LocalNewsRepository } from './localNewsRepository.ts';
 import { FailingTelemetryAdapter, MemoryTelemetryAdapter, AIChatTelemetryService } from './telemetry.ts';
 
 const validPayload = {
@@ -34,7 +35,7 @@ function rawRequest(body, init = {}) {
   });
 }
 
-function geminiResponse(text) {
+function geminiResponse(text, finishReason = 'STOP') {
   return {
     ok: true,
     status: 200,
@@ -43,6 +44,7 @@ function geminiResponse(text) {
         content: {
           parts: [{ text }],
         },
+        finishReason,
       }],
     }),
   };
@@ -314,12 +316,60 @@ describe('Gemini client', () => {
       code: 'EMPTY_GEMINI_RESPONSE',
     });
   });
+
+  it('rejects provider MAX_TOKENS finish reason as truncated', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(geminiResponse('To generate a report, which', 'MAX_TOKENS'));
+
+    await expect(generateGeminiAnswer(validPayload, {
+      env: { AICHATBOTGEMINI_API_KEY: 'test-key' },
+      fetchImpl,
+    })).rejects.toMatchObject({
+      status: 502,
+      code: 'GEMINI_TRUNCATED',
+    });
+  });
+
+  it('rejects incomplete non-STOP candidates', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(geminiResponse('Blocked answer.', 'SAFETY'));
+
+    await expect(generateGeminiAnswer(validPayload, {
+      env: { AICHATBOTGEMINI_API_KEY: 'test-key' },
+      fetchImpl,
+    })).rejects.toMatchObject({
+      status: 502,
+      code: 'GEMINI_INCOMPLETE_SAFETY',
+    });
+  });
+
+  it('parses multipart completed Gemini responses fully', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({
+        candidates: [{
+          content: {
+            parts: [{ text: 'Part one. ' }, { text: 'Part two.' }],
+          },
+          finishReason: 'STOP',
+        }],
+      }),
+    });
+
+    const answer = await generateGeminiAnswer(validPayload, {
+      env: { AICHATBOTGEMINI_API_KEY: 'test-key' },
+      fetchImpl,
+    });
+
+    expect(answer).toBe('Part one. Part two.');
+  });
 });
 
 describe('Gemini fallback reason mapping', () => {
   it.each([
     ['GEMINI_TIMEOUT', 'GEMINI_TIMEOUT'],
     ['GEMINI_RATE_LIMITED', 'GEMINI_RATE_LIMIT'],
+    ['GEMINI_TRUNCATED', 'GEMINI_TRUNCATED'],
+    ['GEMINI_INCOMPLETE_SAFETY', 'GEMINI_TRUNCATED'],
     ['MISSING_GEMINI_API_KEY', 'GEMINI_NOT_CONFIGURED'],
     ['MALFORMED_GEMINI_RESPONSE', 'GEMINI_MALFORMED_RESPONSE'],
     ['EMPTY_GEMINI_RESPONSE', 'GEMINI_EMPTY_RESPONSE'],
@@ -970,6 +1020,27 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     expect(result.completed.comparability.decision).toBe('ALLOW');
   });
 
+  it('keeps Sabah Forest Cover value on the dashboard data path', async () => {
+    const result = await runIntegratedRequest({
+      ...validPayload,
+      message: "What is Sabah's Forest Cover value?",
+      currentPage: '/',
+      region: '',
+    });
+
+    expect(result.response.status).toBe(200);
+    const lifecycle = result.completed || result.fallbackLog;
+    expect(lifecycle.intent).toBe('DASHBOARD_DATA');
+    if (result.completed) {
+      expect(result.completed.entityCounts.territories).toBe(1);
+      expect(result.completed.entityCounts.concepts).toBe(1);
+      expect(result.completed.comparability.decision).toBe('ALLOW');
+    }
+    expect(result.body.answer).toContain('Forest extent (2000)');
+    expect(result.body.answer).toMatch(/6,684,138|6684138/);
+    expect(JSON.stringify(result.geminiClient.mock.calls)).not.toContain('indicator-forest-cover');
+  });
+
   it('routes Malay comparison wording into a comparability rejection', async () => {
     const result = await runIntegratedRequest({
       ...validPayload,
@@ -1148,6 +1219,68 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     }));
   });
 
+  it('grounds comparison answers with both values, direction, difference, and no advisory layers', async () => {
+    const result = await runIntegratedRequest({
+      ...validPayload,
+      message: 'Compare Sabah and Sarawak resilience scores.',
+      region: '',
+    });
+    const [, prompt] = result.geminiClient.mock.calls[0];
+
+    expect(result.response.status).toBe(200);
+    expect(prompt.groundingPayload.conclusion).toContain('Sabah');
+    expect(prompt.groundingPayload.conclusion).toContain('63.7');
+    expect(prompt.groundingPayload.conclusion).toContain('Sarawak');
+    expect(prompt.groundingPayload.conclusion).toContain('72.5');
+    expect(prompt.groundingPayload.conclusion).toContain('8.8 points');
+    expect(prompt.groundingPayload.conclusion).toContain('Sarawak is higher');
+    expect(prompt.groundingPayload.diagnosis).toBe('');
+    expect(prompt.groundingPayload.gap).toBe('');
+    expect(prompt.groundingPayload.impact).toBe('');
+    expect(prompt.groundingPayload.lever).toBe('');
+  });
+
+  it('falls back to comparison-specific text on provider truncation without a second Gemini call', async () => {
+    const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(502, 'GEMINI_TRUNCATED', 'truncated'));
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
+
+    const response = await handler(request({
+      ...validPayload,
+      message: 'Compare Sabah and Sarawak resilience scores.',
+      region: '',
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(geminiClient).toHaveBeenCalledTimes(1);
+    expect(body.mode).toBe('template-fallback');
+    expect(body.fallback.reason).toBe('GEMINI_TRUNCATED');
+    expect(body.answer).toContain('Sarawak is higher than Sabah by 8.8 points');
+    expect(body.answer).not.toContain('Diagnosis:');
+    expect(body.answer).not.toContain('Gap:');
+    expect(body.answer).not.toContain('Impact:');
+    expect(body.answer).not.toContain('Recommended action:');
+  });
+
+  it('falls back to comparison-specific text on validation rejection without a second Gemini call', async () => {
+    const geminiClient = vi.fn().mockResolvedValue('Sarawak should improve resilience to 99.');
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
+
+    const response = await handler(request({
+      ...validPayload,
+      message: 'Compare Sabah and Sarawak resilience scores.',
+      region: '',
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(geminiClient).toHaveBeenCalledTimes(1);
+    expect(body.mode).toBe('template-fallback');
+    expect(body.fallback.reason).toBe('GEMINI_RESPONSE_REJECTED');
+    expect(body.answer).toContain('Sarawak is higher than Sabah by 8.8 points');
+    expect(body.answer).not.toContain('Recommended action:');
+  });
+
   it('passes only the grounded prompt, not raw fact or structured answer objects, to Gemini', async () => {
     const structuredAnswerBuilder = vi.fn((input) => ({
       availability: input.factObject.availability,
@@ -1231,8 +1364,214 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     expect(response.status).toBe(200);
     expect(body.mode).toBe('template-fallback');
     expect(body.fallback.reason).toBe('KNOWLEDGE_GEMINI_UNAVAILABLE');
-    expect(body.answer.toLowerCase()).toContain('report');
+    expect(body.answer).toContain('Select a territory, or choose All Borneo.');
+    expect(body.answer).toContain('Click Generate & Download PDF.');
     expect(body.sources.length).toBeGreaterThan(0);
+  });
+
+  it('preserves selected site-overview content for Borneo Tracker identity when Gemini is unavailable', async () => {
+    const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(500, 'MISSING_GEMINI_API_KEY', 'missing'));
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
+
+    const response = await handler(request({ ...validPayload, message: 'What is Borneo Tracker?', currentPage: '/', region: '' }));
+    const body = await response.json();
+    const [, prompt] = geminiClient.mock.calls[0];
+
+    expect(response.status).toBe(200);
+    expect(body.mode).toBe('template-fallback');
+    expect(body.fallback.reason).toBe('KNOWLEDGE_GEMINI_UNAVAILABLE');
+    expect(body.answer).toContain('Borneo Tracker brings environmental, social and sustainability indicators together');
+    expect(body.answer).not.toBe('The Borneo Tracker assistant can answer verified questions about Borneo Tracker, dashboard data, and published Borneo news.');
+    expect(prompt.groundingPayload.recordIds).toContain('about-borneo-tracker-en');
+  });
+
+  it('prefers Malay site knowledge for Malay Borneo Tracker identity questions', async () => {
+    const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(500, 'MISSING_GEMINI_API_KEY', 'missing'));
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
+
+    const response = await handler(request({ ...validPayload, message: 'Apakah Borneo Tracker?', currentPage: '/', region: '', language: 'ms' }));
+    const body = await response.json();
+    const [, prompt] = geminiClient.mock.calls[0];
+
+    expect(response.status).toBe(200);
+    expect(body.mode).toBe('template-fallback');
+    expect(body.answer).toContain('Borneo Tracker menggabungkan penunjuk alam sekitar');
+    expect(prompt.groundingPayload.language).toBe('ms');
+    expect(prompt.groundingPayload.recordIds).toContain('about-borneo-tracker-ms');
+  });
+
+  it.each([
+    ['What is the difference between ESG and SDG?', ['esg-vs-sdg']],
+    ['Explain the Forest Cover indicator.', ['indicator-forest-cover']],
+    ['Which SDGs are monitored by Borneo Tracker?', ['sdg-monitored-goals']],
+    ['Where does the environmental data come from?', ['environmental-data-sources']],
+    ['How do I generate a report?', ['generate-report-how-to']],
+  ])('grounds suggested knowledge question through the live handler path: %s', async (message, expectedIds) => {
+    const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(500, 'MISSING_GEMINI_API_KEY', 'missing'));
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
+
+    const response = await handler(request({ ...validPayload, message, currentPage: '/', region: '' }));
+    const body = await response.json();
+    const [, prompt] = geminiClient.mock.calls[0];
+
+    expect(response.status).toBe(200);
+    expect(body.mode).toBe('template-fallback');
+    expect(body.fallback.reason).toBe('KNOWLEDGE_GEMINI_UNAVAILABLE');
+    expect(prompt.groundingPayload.answerStatus).toBe('FOUND');
+    expect(prompt.groundingPayload.recordIds).toEqual(expect.arrayContaining(expectedIds));
+    expect(body.answer).not.toBe('The Borneo Tracker assistant can answer verified questions about Borneo Tracker, dashboard data, and published Borneo news.');
+  });
+
+  it('returns the deterministic Forest Cover explanation when Gemini is unavailable', async () => {
+    const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(500, 'MISSING_GEMINI_API_KEY', 'missing'));
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
+
+    const response = await handler(request({ ...validPayload, message: 'Explain the Forest Cover indicator.', currentPage: '/', region: '' }));
+    const body = await response.json();
+    const [, prompt] = geminiClient.mock.calls[0];
+
+    expect(response.status).toBe(200);
+    expect(body.mode).toBe('template-fallback');
+    expect(body.fallback.reason).toBe('KNOWLEDGE_GEMINI_UNAVAILABLE');
+    expect(prompt.groundingPayload.recordIds).toEqual(['indicator-forest-cover']);
+    expect(body.answer).toContain('Forest Cover measures remaining forest');
+    expect(body.answer).toContain('ESG Environment');
+    expect(body.answer).toContain('SDG15 - Life on Land');
+    expect(body.answer).toContain('EUDR-style sourcing checks');
+    expect(body.answer).toContain('Brunei uses % land from World Bank');
+    expect(body.answer).toContain('Global Forest Watch');
+    expect(body.answer).toContain('should not be directly compared with the hectare baselines');
+    expect(body.answer).not.toContain('EUDR checks');
+    expect(body.answer).not.toContain('time series');
+    expect(body.answer).not.toContain('EUDR compliance');
+  });
+
+  it('uses source-aware Forest Cover knowledge for provenance questions', async () => {
+    const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(500, 'MISSING_GEMINI_API_KEY', 'missing'));
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
+
+    const response = await handler(request({ ...validPayload, message: 'Where does the Forest Cover data come from?', currentPage: '/', region: '' }));
+    const body = await response.json();
+    const [, prompt] = geminiClient.mock.calls[0];
+
+    expect(response.status).toBe(200);
+    expect(body.mode).toBe('template-fallback');
+    expect(prompt.groundingPayload.recordIds).toEqual(['indicator-forest-cover']);
+    expect(body.answer).toContain('Brunei uses % land from World Bank');
+    expect(body.answer).toContain('Sabah, Sarawak, and Kalimantan currently use year-2000 forest extent in hectares from Global Forest Watch');
+    expect(body.answer).toContain('should not be directly compared with the hectare baselines');
+  });
+
+  it('returns the deterministic ESG versus SDG comparison when Gemini is unavailable', async () => {
+    const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(500, 'MISSING_GEMINI_API_KEY', 'missing'));
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
+
+    const response = await handler(request({ ...validPayload, message: 'What is the difference between ESG and SDG?', currentPage: '/', region: '' }));
+    const body = await response.json();
+    const [, prompt] = geminiClient.mock.calls[0];
+
+    expect(response.status).toBe(200);
+    expect(body.mode).toBe('template-fallback');
+    expect(body.fallback.reason).toBe('KNOWLEDGE_GEMINI_UNAVAILABLE');
+    expect(prompt.groundingPayload.recordIds).toEqual(['esg-vs-sdg']);
+    expect(body.answer).toContain('ESG groups tracked indicators into the Environment, Social, and Governance pillars.');
+    expect(body.answer).toContain('SDG coverage maps the same tracked indicators to the UN Sustainable Development Goals they inform.');
+    expect(body.answer).toContain('ESG is the pillar-based view');
+    expect(body.answer).toContain('SDG is the goal-based view');
+    expect(body.answer).toContain('same tracked indicator dataset');
+    expect(body.answer).not.toContain('No canonical indicators are available for this pillar yet.');
+  });
+
+  it('returns deterministic knowledge no-match for explicit knowledge-base gaps without Gemini or quota', async () => {
+    const geminiClient = vi.fn();
+    const quotaService = allowAllQuotaService();
+    const handler = createAiChatHandler({ geminiClient, quotaService, logger: silentLogger });
+
+    const response = await handler(request({
+      ...validPayload,
+      message: 'Tell me something about Borneo Tracker that is not in your knowledge base.',
+      currentPage: '/',
+      region: '',
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body.mode).toBe('template-fallback');
+    expect(body.fallback.reason).toBe('KNOWLEDGE_NO_MATCH');
+    expect(body.answer).toBe('The current Borneo Tracker knowledge base does not contain a verified answer for this question.');
+    expect(geminiClient).not.toHaveBeenCalled();
+    expect(quotaService.reserveForModelCall).not.toHaveBeenCalled();
+  });
+
+  it('falls back to deterministic site knowledge when Gemini truncates output', async () => {
+    const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(502, 'GEMINI_TRUNCATED', 'truncated'));
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
+
+    const response = await handler(request({ ...validPayload, message: 'How do I generate a report?', currentPage: '/reports', region: '' }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(geminiClient).toHaveBeenCalledTimes(1);
+    expect(body.mode).toBe('template-fallback');
+    expect(body.fallback.reason).toBe('GEMINI_TRUNCATED');
+    expect(body.answer).toContain('Select a territory, or choose All Borneo.');
+    expect(body.answer).toContain('Choose the optional report sections you want to include');
+    expect(body.answer).toContain('Click Generate & Download PDF.');
+    expect(body.answer).toContain('reports that limitation instead of inventing unsupported content');
+    expect(body.answer).not.toContain('No indicators are available for this selection.');
+    expect(body.answer).not.toBe('To generate a report, which');
+  });
+
+  it('falls back to the full deterministic Forest Cover explanation when Gemini truncates output', async () => {
+    const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(502, 'GEMINI_TRUNCATED', 'truncated'));
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
+
+    const response = await handler(request({ ...validPayload, message: 'Explain the Forest Cover indicator.', currentPage: '/', region: '' }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(geminiClient).toHaveBeenCalledTimes(1);
+    expect(body.mode).toBe('template-fallback');
+    expect(body.fallback.reason).toBe('GEMINI_TRUNCATED');
+    expect(body.answer).toContain('Forest Cover measures remaining forest');
+    expect(body.answer).toContain('ESG Environment');
+    expect(body.answer).toContain('SDG15 - Life on Land');
+    expect(body.answer).toContain('EUDR-style sourcing checks');
+    expect(body.answer).toContain('Brunei uses % land from World Bank');
+    expect(body.answer).toContain('Global Forest Watch');
+    expect(body.answer).toContain('should not be directly compared with the hectare baselines');
+  });
+
+  it('falls back to deterministic dashboard answer when Gemini truncates output', async () => {
+    const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(502, 'GEMINI_TRUNCATED', 'truncated'));
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
+
+    const response = await handler(request({ ...validPayload, message: "What is Sabah's resilience score?", currentPage: '/dashboard', region: '' }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(geminiClient).toHaveBeenCalledTimes(1);
+    expect(body.mode).toBe('template-fallback');
+    expect(body.fallback.reason).toBe('GEMINI_TRUNCATED');
+    expect(body.answer).toContain("Sabah's overall resilience score is 63.7.");
+    expect(body.answer).not.toBe('To generate a report, which');
+  });
+
+  it('preserves both territories in live comparison grounding and deterministic fallback', async () => {
+    const geminiClient = vi.fn().mockRejectedValue(new AIChatHttpError(500, 'MISSING_GEMINI_API_KEY', 'missing'));
+    const handler = createAiChatHandler({ geminiClient, quotaService: allowAllQuotaService(), logger: silentLogger });
+
+    const response = await handler(request({ ...validPayload, message: 'Compare Sabah and Sarawak resilience scores.', currentPage: '/dashboard', region: '' }));
+    const body = await response.json();
+    const [, prompt] = geminiClient.mock.calls[0];
+
+    expect(response.status).toBe(200);
+    expect(body.mode).toBe('template-fallback');
+    expect(body.answer).toContain('Sabah: 63.7');
+    expect(body.answer).toContain('Sarawak: 72.5');
+    expect(body.answer).not.toContain("Sabah's overall resilience score is 63.7.");
+    expect(prompt.groundingPayload.conclusion).toContain('Sabah: 63.7');
+    expect(prompt.groundingPayload.conclusion).toContain('Sarawak: 72.5');
   });
 
   it('bypasses Gemini for knowledge no-match and ambiguity', async () => {
@@ -1303,8 +1642,13 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
       mode: 'template-fallback',
     });
     expect(body.answer).toContain('Safe published title');
+    expect(body.answer).toContain('2026-07-13');
+    expect(body.answer).toContain('Sabah');
+    expect(body.answer).toContain('Safe published summary.');
+    expect(JSON.stringify(body.sources)).not.toContain('sourceFile');
     expect(newsRepository.findPublished).toHaveBeenCalledWith(expect.objectContaining({
       territories: ['Sabah'],
+      topics: ['conservation'],
       latest: true,
       limit: 5,
     }));
@@ -1330,6 +1674,80 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
       pendingCount: 3,
       territoryCount: 1,
     });
+  });
+
+  it('answers news topic, territory, intersection, detail, no-match, and privacy requests deterministically', async () => {
+    const newsRepository = new LocalNewsRepository({
+      records: [
+        {
+          id: 'fire-kalimantan-new',
+          title: 'Kalimantan forest fire response',
+          summary: 'Published teams contained a forest fire near the monitoring area.',
+          status: 'published',
+          territories: ['Kalimantan'],
+          publishedAt: '2026-07-22T00:00:00Z',
+          originalLang: 'en',
+          sources: [{ name: 'Public Fire Source', url: 'https://example.com/fire' }],
+        },
+        {
+          id: 'fire-sabah-old',
+          title: 'Sabah land fire alert',
+          body: 'Published Sabah fire alert summary. Second sentence stays available.',
+          status: 'published',
+          territories: ['Sabah'],
+          publishedAt: '2026-07-20T00:00:00Z',
+          originalLang: 'en',
+        },
+        {
+          id: 'conservation-sabah',
+          title: 'Sabah conservation update',
+          summary: 'Published conservation summary.',
+          status: 'published',
+          territories: ['Sabah'],
+          publishedAt: '2026-07-21T00:00:00Z',
+          originalLang: 'en',
+        },
+        {
+          id: 'pending-fire-secret',
+          title: 'PENDING_SENTINEL_FIRE_TITLE forest fire',
+          summary: 'PENDING_SENTINEL_FIRE_SUMMARY',
+          body: 'PENDING_SENTINEL_FIRE_BODY',
+          publisher: 'PENDING_SENTINEL_FIRE_PUBLISHER',
+          url: 'https://pending-secret.example/fire',
+          status: 'pending',
+          territories: ['Kalimantan'],
+          publishedAt: '2026-07-23T00:00:00Z',
+        },
+      ],
+    });
+    const geminiClient = vi.fn();
+    const quotaService = allowAllQuotaService();
+    const handler = createAiChatHandler({ geminiClient, newsRepository, quotaService, logger: silentLogger });
+
+    const fire = await (await handler(request({ ...validPayload, message: 'Show me news about forest fires.', currentPage: '/news', region: '' }))).json();
+    const sabah = await (await handler(request({ ...validPayload, message: 'Show me news from Sabah.', currentPage: '/news', region: '' }))).json();
+    const kalimantanFire = await (await handler(request({ ...validPayload, message: 'Show me news about Kalimantan forest fires.', currentPage: '/news', region: '' }))).json();
+    const detail = await (await handler(request({ ...validPayload, message: 'What happened in the latest fire-related news?', currentPage: '/news', region: '' }))).json();
+    const pending = await (await handler(request({ ...validPayload, message: 'Show me pending news articles.', currentPage: '/news', region: '' }))).json();
+    const noMatch = await (await handler(request({ ...validPayload, message: 'Show me news about biodiversity.', currentPage: '/news', region: '' }))).json();
+
+    expect(fire.answer).toContain('for fire topic');
+    expect(fire.answer).toContain('Kalimantan forest fire response');
+    expect(fire.answer).toContain('Sabah land fire alert');
+    expect(fire.answer).not.toContain('Sabah conservation update');
+    expect(sabah.answer).toContain('for Sabah territory');
+    expect(sabah.answer).toContain('Sabah conservation update');
+    expect(sabah.answer).not.toContain('Kalimantan forest fire response');
+    expect(kalimantanFire.answer).toContain('for fire topic in Kalimantan territory');
+    expect(kalimantanFire.answer).toContain('Kalimantan forest fire response');
+    expect(kalimantanFire.answer).not.toContain('Sabah land fire alert');
+    expect(detail.answer).toContain('Here is what the latest published Borneo Tracker news says for fire topic');
+    expect(detail.answer).toContain('Published teams contained a forest fire near the monitoring area.');
+    expect(pending.answer).toBe('I can only show published Borneo Tracker news. There are 1 item(s) still pending review, but their titles, summaries, URLs, and other details are not shown.');
+    expect(noMatch.answer).toBe('No published Borneo Tracker news currently matches for biodiversity topic.');
+    expect(JSON.stringify({ fire, sabah, kalimantanFire, detail, pending, noMatch })).not.toContain('PENDING_SENTINEL');
+    expect(geminiClient).not.toHaveBeenCalled();
+    expect(quotaService.reserveForModelCall).not.toHaveBeenCalled();
   });
 
   it('does not invoke news repository for dashboard, site knowledge, or out-of-scope intents', async () => {

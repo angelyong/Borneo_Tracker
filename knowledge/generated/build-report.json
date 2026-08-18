@@ -17,6 +17,21 @@
       "path": "src/pages/reports/reportContent.js"
     },
     {
+      "id": "generate-report-page",
+      "type": "page",
+      "path": "src/pages/reports/GenerateReportPage.jsx"
+    },
+    {
+      "id": "report-sections",
+      "type": "page",
+      "path": "src/pages/reports/ReportSections.jsx"
+    },
+    {
+      "id": "indicator-config",
+      "type": "page",
+      "path": "src/data/useIndicators.js"
+    },
+    {
       "id": "policy-page",
       "type": "page",
       "path": "src/pages/policies/PolicyPage.jsx"
@@ -73,11 +88,23 @@
     },
     {
       "id": "report-content",
-      "recordsExtracted": 55
+      "recordsExtracted": 56
+    },
+    {
+      "id": "generate-report-page",
+      "recordsExtracted": 1
+    },
+    {
+      "id": "report-sections",
+      "recordsExtracted": 1
+    },
+    {
+      "id": "indicator-config",
+      "recordsExtracted": 1
     },
     {
       "id": "policy-page",
-      "recordsExtracted": 48
+      "recordsExtracted": 49
     },
     {
       "id": "resilience-methodology",
@@ -114,9 +141,9 @@
   ],
   "missingSources": [],
   "unsafeSources": [],
-  "recordsCreated": 83,
-  "recordsValidated": 141,
-  "runtimeRecords": 83,
+  "recordsCreated": 88,
+  "recordsValidated": 146,
+  "runtimeRecords": 88,
   "recordsSkipped": 0,
   "duplicateRecords": [],
   "invalidRecords": [],
@@ -446,7 +473,7 @@
       "sourceFile": "knowledge/data-sources.json"
     },
     {
-      "id": "environmental-data-sources",
+      "id": "environmental-data-sources-placeholder",
       "title": "Environmental Data Sources",
       "status": "placeholder",
       "sourceFile": "knowledge/data-sources.json"
@@ -473,27 +500,32 @@
   "countsBySource": {
     "site-copy-en": 10,
     "site-copy-ms": 10,
-    "report-content": 55,
+    "report-content": 56,
+    "generate-report-page": 1,
+    "report-sections": 1,
+    "indicator-config": 1,
+    "policy-page": 1,
     "resilience-methodology": 8
   },
   "countsByCategory": {
     "site-overview": 4,
     "dashboard": 4,
     "esg-indicators": 2,
-    "sdg-progress": 2,
+    "sdg-progress": 3,
     "regional": 2,
-    "generate-report": 2,
+    "generate-report": 3,
     "community": 2,
     "news": 2,
-    "reports": 55,
+    "reports": 57,
+    "data-sources": 1,
     "methodology": 8
   },
   "countsByLanguage": {
-    "en": 73,
+    "en": 78,
     "ms": 10
   },
   "countsByStatus": {
-    "verified": 83
+    "verified": 88
   },
   "outputFiles": [
     "knowledge/generated/site-overview.json",
@@ -505,6 +537,7 @@
     "knowledge/generated/community.json",
     "knowledge/generated/news.json",
     "knowledge/generated/reports.json",
+    "knowledge/generated/data-sources.json",
     "knowledge/generated/methodology.json",
     "knowledge/generated/knowledge-index.json",
     "supabase/functions/ai-chat/knowledge-index.json",

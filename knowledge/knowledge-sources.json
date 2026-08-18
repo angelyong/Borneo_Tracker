@@ -29,6 +29,36 @@
       "enabled": true
     },
     {
+      "id": "generate-report-page",
+      "type": "page",
+      "path": "src/pages/reports/GenerateReportPage.jsx",
+      "category": "generate-report",
+      "kind": "generate-report-page",
+      "language": "en",
+      "route": "/reports",
+      "enabled": true
+    },
+    {
+      "id": "report-sections",
+      "type": "page",
+      "path": "src/pages/reports/ReportSections.jsx",
+      "category": "reports",
+      "kind": "report-sections",
+      "language": "en",
+      "route": "/reports",
+      "enabled": true
+    },
+    {
+      "id": "indicator-config",
+      "type": "page",
+      "path": "src/data/useIndicators.js",
+      "category": "sdg-progress",
+      "kind": "indicator-config",
+      "language": "en",
+      "route": "/sdg",
+      "enabled": true
+    },
+    {
       "id": "policy-page",
       "type": "page",
       "path": "src/pages/policies/PolicyPage.jsx",

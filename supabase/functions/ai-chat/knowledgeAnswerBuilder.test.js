@@ -54,6 +54,121 @@ describe('knowledge answer builder', () => {
     expect(answer.answer).not.toContain('Community reports');
   });
 
+  it('combines complementary ESG and SDG page records for relationship questions', () => {
+    const answer = buildKnowledgeAnswer({
+      status: 'FOUND',
+      matches: [
+        match({ score: 24, record: { id: 'esg', category: 'esg-indicators', title: 'ESG Indicators', content: 'ESG groups indicators by Environment, Social and Governance.' } }),
+        match({ score: 23, record: { id: 'sdg', category: 'sdg-progress', title: 'SDG Progress', content: 'SDG Progress tracks Sustainable Development Goals.' } }),
+        match({ score: 12, record: { id: 'about', category: 'site-overview', title: 'About', content: 'About content.' } }),
+      ],
+      warnings: [],
+    }, 'en');
+
+    expect(answer.recordIds).toEqual(['esg', 'sdg']);
+    expect(answer.answer).toContain('ESG groups indicators');
+    expect(answer.answer).toContain('tracks Sustainable Development Goals');
+  });
+
+  it('uses the dedicated ESG versus SDG comparison record directly', () => {
+    const answer = buildKnowledgeAnswer({
+      status: 'FOUND',
+      matches: [
+        match({
+          score: 72,
+          record: {
+            id: 'esg-vs-sdg',
+            category: 'reports',
+            title: 'ESG and SDG in Borneo Tracker',
+            content: [
+              'ESG groups tracked indicators into the Environment, Social, and Governance pillars.',
+              'SDG coverage maps the same tracked indicators to the UN Sustainable Development Goals they inform.',
+              'The distinction is that ESG is the pillar-based view, while SDG is the goal-based view.',
+              'They overlap because the same tracked indicator dataset can be interpreted through both frameworks.',
+            ].join(' '),
+          },
+        }),
+        match({ score: 26, record: { id: 'esg', category: 'esg-indicators', title: 'ESG Indicators', content: 'Generic ESG page copy.' } }),
+        match({ score: 26, record: { id: 'sdg', category: 'sdg-progress', title: 'SDG Progress', content: 'Generic SDG page copy.' } }),
+      ],
+      warnings: [],
+    }, 'en');
+
+    expect(answer.recordIds).toEqual(['esg-vs-sdg']);
+    expect(answer.answer).toContain('ESG groups tracked indicators into the Environment, Social, and Governance pillars.');
+    expect(answer.answer).toContain('SDG coverage maps the same tracked indicators to the UN Sustainable Development Goals they inform.');
+    expect(answer.answer).toContain('ESG is the pillar-based view');
+    expect(answer.answer).toContain('SDG is the goal-based view');
+    expect(answer.answer).toContain('same tracked indicator dataset');
+    expect(answer.answer).not.toContain('Generic ESG page copy');
+    expect(answer.answer).not.toContain('Generic SDG page copy');
+  });
+
+  it('uses the dedicated Generate Report how-to record directly', () => {
+    const answer = buildKnowledgeAnswer({
+      status: 'FOUND',
+      matches: [
+        match({
+          score: 72,
+          record: {
+            id: 'generate-report-how-to',
+            category: 'generate-report',
+            title: 'How to Generate a Report',
+            content: [
+              'Open the Generate Report page.',
+              'Select a territory, or choose All Borneo.',
+              'Choose the optional report sections you want to include: Executive Summary, SDG Coverage, Coverage & Limitations, and Methodology & Sources.',
+              'Review the report content, including the ESG Indicators section.',
+              'Click Generate & Download PDF.',
+              'If no indicators are available for the selected territory or data combination, the page reports that limitation instead of inventing unsupported content.',
+            ].join(' '),
+          },
+        }),
+        match({ score: 26, record: { id: 'generate-report-page-en', category: 'generate-report', title: 'Generate Report', content: 'Generic Generate Report page overview.' } }),
+      ],
+      warnings: [],
+    }, 'en');
+
+    expect(answer.recordIds).toEqual(['generate-report-how-to']);
+    expect(answer.answer).toContain('Select a territory, or choose All Borneo.');
+    expect(answer.answer).toContain('Click Generate & Download PDF.');
+    expect(answer.answer).toContain('reports that limitation instead of inventing unsupported content');
+    expect(answer.answer).not.toContain('Generic Generate Report page overview');
+  });
+
+  it('uses the dedicated Forest Cover indicator record directly', () => {
+    const answer = buildKnowledgeAnswer({
+      status: 'FOUND',
+      matches: [
+        match({
+          score: 84,
+          record: {
+            id: 'indicator-forest-cover',
+            category: 'reports',
+            concept: 'forest_cover',
+            title: 'Forest Cover Indicator',
+            content: [
+              'Forest Cover measures remaining forest: the amount or share of land under forest.',
+              'Borneo Tracker treats it as an environmental conservation indicator, mapped to ESG Environment and SDG15 - Life on Land.',
+              'It is relevant to EUDR-style sourcing checks, and the current indicator configuration treats higher values as better.',
+              'Current data is not expressed in one uniform unit across all territories: Brunei uses % land from World Bank, while Sabah, Sarawak, and Kalimantan currently use year-2000 forest extent in hectares from Global Forest Watch.',
+              'Because the units differ, Brunei percentage-of-land values should not be directly compared with the hectare baselines.',
+            ].join(' '),
+          },
+        }),
+        match({ score: 61, record: { id: 'report-concept-forest-cover', category: 'reports', concept: 'forest_cover', title: 'forest_cover', content: 'A measure of remaining forest - central to SDG 15 and EUDR checks.' } }),
+      ],
+      warnings: [],
+    }, 'en');
+
+    expect(answer.recordIds).toEqual(['indicator-forest-cover']);
+    expect(answer.answer).toContain('Forest Cover measures remaining forest');
+    expect(answer.answer).toContain('EUDR-style sourcing checks');
+    expect(answer.answer).toContain('Brunei uses % land from World Bank');
+    expect(answer.answer).toContain('should not be directly compared with the hectare baselines');
+    expect(answer.answer).not.toContain('EUDR checks');
+  });
+
   it('returns localized no-match and ambiguous answers', () => {
     const noMatch = buildKnowledgeAnswer({ status: 'NO_MATCH', matches: [], warnings: [] }, 'en');
     const ambiguous = buildKnowledgeAnswer({ status: 'AMBIGUOUS', matches: [], warnings: ['KNOWLEDGE_AMBIGUOUS'] }, 'ms');
