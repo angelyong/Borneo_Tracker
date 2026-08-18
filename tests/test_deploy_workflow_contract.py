@@ -13,6 +13,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW = ROOT / ".github" / "workflows" / "deploy.yml"
+ROOT_HTACCESS = ROOT / "public" / ".htaccess"
+DATA_HTACCESS = ROOT / "public" / "data" / ".htaccess"
 
 
 def step_block(text: str, start: str, end: str) -> str:
@@ -26,6 +28,61 @@ class DeployWorkflowContractTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.text = WORKFLOW.read_text(encoding="utf-8")
+
+    def test_data_cache_policy_is_scoped_and_geojson_has_a_real_mime_type(self):
+        root_htaccess = ROOT_HTACCESS.read_text(encoding="utf-8")
+        data_htaccess = DATA_HTACCESS.read_text(encoding="utf-8")
+
+        self.assertIn("RewriteEngine On", root_htaccess)
+        self.assertIn("CacheDisable public /data/", root_htaccess)
+        self.assertIn("CacheDisable private /data/", root_htaccess)
+        self.assertIn("AddType application/geo+json .geojson", root_htaccess)
+        self.assertNotIn("CacheDisable public /assets/", root_htaccess)
+        self.assertNotIn("CacheDisable private /assets/", root_htaccess)
+
+        self.assertIn("Cache-Control \"no-store, no-cache, must-revalidate, max-age=0\"", data_htaccess)
+        self.assertIn('Header always set Pragma "no-cache"', data_htaccess)
+        self.assertIn('Header always set Expires "0"', data_htaccess)
+
+    def test_build_requires_the_scoped_data_cache_policy(self):
+        self.assertIn("dist/data/.htaccess", self.text)
+        self.assertIn("dist/data/.htaccess does not contain the required data cache policy", self.text)
+
+    def test_upload_plan_explicitly_publishes_both_htaccess_files(self):
+        upload = step_block(
+            self.text,
+            "- name: Upload dist/ to DirectAdmin (non-destructive)",
+            "- name: Keep the previous .htaccess files for rollback",
+        )
+        self.assertIn('mirror --reverse --verbose --exclude-glob index.html --exclude-glob .htaccess . .', upload)
+        self.assertIn('echo "put data/.htaccess -o data/.htaccess"', upload)
+        self.assertIn('echo "put .htaccess"', upload)
+        self.assertIn('echo "get \\"${REMOTE_DIR}/data/.htaccess\\" -o \\"${BACKUP_DIR}/data-htaccess.live\\""', upload)
+        self.assertIn("Server data/.htaccess replaced", upload)
+
+        rollback = step_block(
+            self.text,
+            "- name: Keep the previous .htaccess files for rollback",
+            "- name: Smoke-test production",
+        )
+        self.assertIn("predeploy/data-htaccess.live", rollback)
+
+    def test_smoke_test_distinguishes_mime_endpoints_from_stale_cache(self):
+        smoke = step_block(
+            self.text,
+            "- name: Smoke-test production",
+            "- name: Write deployment summary",
+        )
+        self.assertIn("data_content_type_ok()", smoke)
+        self.assertIn("*.geojson)", smoke)
+        self.assertIn("application/geo+json", smoke)
+        self.assertIn("application/json", smoke)
+        self.assertIn("Cache-busted /data/${filename}", smoke)
+        self.assertIn("Production data endpoint/MIME error", smoke)
+        self.assertIn("Production endpoint error", smoke)
+        self.assertIn("Production byte mismatch", smoke)
+        self.assertIn("Stale cache, not a failed upload", smoke)
+        self.assertIn("verify_manifest.py verify-remote \"$CACHE_OUT\" \"$EXPECTED\"", smoke)
 
     def test_explicit_ftps_port_21_uses_auth_tls_not_implicit_ftps(self):
         self.assertIn('echo "set ftp:ssl-auth TLS"', self.text)
@@ -58,20 +115,22 @@ class DeployWorkflowContractTests(unittest.TestCase):
         self.assertIn("Strict TLS is enabled", self.text)
 
     def test_dry_run_never_reaches_transport_steps(self):
-        for step in (
-            "Install lftp",
-            "Prepare credentials",
-            "Test DirectAdmin connection (read only)",
-            "Upload dist/ to DirectAdmin (non-destructive)",
+        for step in ("Install lftp", "Prepare credentials"):
+            block = self.text[self.text.index(f"- name: {step}"):]
+            first_lines = "\n".join(block.splitlines()[:4])
+            self.assertIn("steps.gate.outputs.mode != 'dry_run'", first_lines, step)
+        for step, condition in (
+            ("Test DirectAdmin connection (read only)", "mode == 'connection_test_only'"),
+            ("Upload dist/ to DirectAdmin (non-destructive)", "mode == 'production'"),
         ):
             block = self.text[self.text.index(f"- name: {step}"):]
             first_lines = "\n".join(block.splitlines()[:4])
-            self.assertIn("steps.gate.outputs.dry_run != 'true'", first_lines, step)
+            self.assertIn(condition, first_lines, step)
 
     def test_connection_test_is_manual_read_only_and_never_smokes(self):
-        self.assertIn("connection_test_only:", self.text)
-        self.assertIn("connection_test_only == 'true'", self.text)
-        self.assertIn("connection_test_only != 'true'", self.text)
+        self.assertIn("connection_test_only", self.text)
+        self.assertIn("mode == 'connection_test_only'", self.text)
+        self.assertIn("mode != 'connection_test_only'", self.text)
         connection = step_block(
             self.text,
             "- name: Test DirectAdmin connection (read only)",
@@ -84,14 +143,60 @@ class DeployWorkflowContractTests(unittest.TestCase):
         self.assertNotIn('echo "get ', connection)
         self.assertNotIn("Smoke-test production", connection)
 
-    def test_connection_test_and_dry_run_are_mutually_exclusive(self):
-        self.assertIn("Choose either dry_run or connection_test_only, not both.", self.text)
+    def test_release_modes_are_explicit_and_auto_dispatch_is_explicitly_enabled(self):
+        self.assertIn("release_mode:", self.text)
+        self.assertIn("dry_run|connection_test_only|production", self.text)
+        self.assertIn('case "${RELEASE_MODE}" in dry_run|connection_test_only|production) ;; *)', self.text)
+        self.assertIn('exit 1\n          esac\n          if ! [[ "${PROOF_COMMIT_SHA}"', self.text)
+        self.assertIn("proof_commit_sha:", self.text)
+        self.assertIn("^[0-9a-f]{40}$", self.text)
+        self.assertIn("confirm_production:", self.text)
+        self.assertIn('"${CONFIRM_PRODUCTION}" != "true"', self.text)
+        self.assertIn("Production confirmation required", self.text)
+        self.assertIn("repository_dispatch:", self.text)
+        self.assertIn("types: [deploy-proof]", self.text)
+        self.assertIn("DISPATCH_PROOF_COMMIT_SHA", self.text)
+        self.assertIn("DISPATCH_SENDER", self.text)
+        self.assertIn("AUTO_PRODUCTION_DEPLOY", self.text)
+        self.assertIn("Automatic production deployment disabled", self.text)
+        self.assertIn('case "${DISPATCH_SOURCE}" in anchor|upgrade)', self.text)
+
+    def test_exact_proof_sha_is_checked_out_and_must_belong_to_master(self):
+        self.assertIn("ref: ${{ steps.gate.outputs.proof_commit_sha }}", self.text)
+        self.assertIn("fetch-depth: 0", self.text)
+        self.assertIn("Verify requested proof commit is an immutable master release", self.text)
+        self.assertIn('git merge-base --is-ancestor "${PROOF_COMMIT_SHA}" origin/master', self.text)
+        self.assertIn('test "$(git rev-parse HEAD)" = "${PROOF_COMMIT_SHA}"', self.text)
+        self.assertIn('if [ "${EVENT_NAME}" = "repository_dispatch" ]; then', self.text)
+        self.assertIn('test "${PROOF_COMMIT_SHA}" = "$(git rev-parse origin/master)"', self.text)
+        self.assertIn('python verify_release_commit.py "${PROOF_COMMIT_SHA}" "${DISPATCH_SOURCE}" "${DISPATCH_SENDER}"', self.text)
+        self.assertIn("Reconfirm automatic proof immediately before upload", self.text)
+
+    def test_deploy_serializes_with_proof_publication(self):
+        self.assertIn("group: phase1-publication", self.text)
+        self.assertIn("queue: max", self.text)
+        self.assertIn("cancel-in-progress: false", self.text)
+
+    def test_missing_required_secrets_are_red_not_a_green_skip(self):
+        self.assertIn("Deployment prerequisites missing", self.text)
+        self.assertIn("exit 1", self.text)
+        self.assertNotIn("Deployment SKIPPED — not yet configured", self.text)
+        self.assertNotIn("This run finished green **on purpose**", self.text)
+
+    def test_modes_have_separate_build_and_transport_boundaries(self):
+        setup_python = step_block(self.text, "- name: Set up Python", "- name: Validate dashboard data (blocking gate)")
+        self.assertIn("mode != 'connection_test_only'", setup_python)
+        self.assertIn("if [ \"${RELEASE_MODE}\" != \"connection_test_only\" ]", self.text)
+        self.assertIn("if [ \"${RELEASE_MODE}\" != \"dry_run\" ]", self.text)
+        upload = step_block(self.text, "- name: Upload dist/ to DirectAdmin (non-destructive)", "- name: Keep the previous .htaccess files for rollback")
+        self.assertIn("mode == 'production'", upload)
+        self.assertIn("Verify exact proof release contract", self.text)
 
     def test_real_mirror_is_non_destructive_with_supported_lftp_flags(self):
         upload = step_block(
             self.text,
             "- name: Upload dist/ to DirectAdmin (non-destructive)",
-            "- name: Keep the previous .htaccess for rollback",
+            "- name: Keep the previous .htaccess files for rollback",
         )
         self.assertIn(
             'mirror --reverse --verbose --exclude-glob index.html --exclude-glob .htaccess . .',

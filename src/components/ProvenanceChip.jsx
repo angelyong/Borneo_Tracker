@@ -24,6 +24,8 @@ export default function ProvenanceChip({ confidence, source, year, showSource = 
         gap: 6,
         fontSize: 11,
         color: 'var(--color-muted)',
+        width: '100%',
+        maxWidth: '100%',
         minWidth: 0,
       }}
     >
@@ -37,15 +39,22 @@ export default function ProvenanceChip({ confidence, source, year, showSource = 
           fontWeight: 600,
           fontSize: 10,
           whiteSpace: 'nowrap',
+          flexShrink: 0,
         }}
       >
         {conf.label}
       </span>
-      {year ? <span style={{ fontVariantNumeric: 'tabular-nums' }}>{year}</span> : null}
+      {year ? <span style={{ fontVariantNumeric: 'tabular-nums', flexShrink: 0 }}>{year}</span> : null}
       {showSource && source ? (
         <span
           title={source}
-          style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+          style={{
+            flex: '1 1 auto',
+            minWidth: 0,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}
         >
           · {source}
         </span>

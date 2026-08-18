@@ -20,6 +20,7 @@ import { THEME_CHANGE_EVENT, cssVar } from '../../utils/theme';
 import DataFreshness from '../../components/DataFreshness';
 import ProvenanceChip from '../../components/ProvenanceChip';
 import HexRadar from '../../components/HexRadar';
+import IntegrityChip from '../../components/IntegrityChip';
 
 const RegionalDetails = () => {
   const { t, i18n } = useTranslation();
@@ -236,6 +237,7 @@ const RegionalDetails = () => {
             </div>
             <div style={styles.toolbarFreshness}>
               <DataFreshness generatedAt={generatedAt} loading={loading} />
+              <IntegrityChip scope="district" />
             </div>
           </div>
 
@@ -469,11 +471,11 @@ const styles = {
   footerLabel:     { fontWeight: '500', color: 'var(--color-ink)', marginRight: '4px' },
   footerItem:      { display: 'flex', alignItems: 'center', gap: '6px' },
 
-  metricsGrid:           { marginTop: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px' },
-  metricCard:            { borderRadius: '10px', border: '1px solid var(--color-border)', padding: '12px', backgroundColor: 'var(--color-grey-soft)' },
+  metricsGrid:           { marginTop: '16px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', minWidth: 0 },
+  metricCard:            { borderRadius: '10px', border: '1px solid var(--color-border)', padding: '12px', backgroundColor: 'var(--color-grey-soft)', minWidth: 0 },
   metricTitle:           { fontSize: '13px', fontWeight: '600', color: 'var(--color-ink)' },
   metricValue:           { fontSize: '18px', fontWeight: '700', color: 'var(--color-ink)', marginTop: '8px' },
-  metricMeta:            { marginTop: '6px', fontSize: '12px', color: 'var(--color-muted)' },
+  metricMeta:            { marginTop: '6px', fontSize: '12px', color: 'var(--color-muted)', minWidth: 0 },
   confidenceSummary:     { display: 'flex', gap: '12px', flexWrap: 'wrap', marginTop: '12px', color: 'var(--color-muted)', fontSize: '13px' },
   confidenceSummaryItem: { backgroundColor: 'var(--color-grey-soft)', border: '1px solid var(--color-border)', borderRadius: '999px', padding: '6px 10px' },
 

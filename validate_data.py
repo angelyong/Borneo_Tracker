@@ -26,17 +26,26 @@ WHAT IT CHECKS
     produced.
 
 USAGE
-    python validate_data.py            -> prints a PASS/FAIL line per check,
-                                          exits 0 (all good) or 1 (any failure)
+    python validate_data.py            -> compares with HEAD by default, prints a
+                                          PASS/FAIL line per check, exits 0 (all
+                                          good) or 1 (any failure)
+    python validate_data.py --baseline-ref <sha>
+                                       -> compares the working tree with an
+                                          explicit Git revision.  Use this in
+                                          refresh and PR workflows; do not let a
+                                          checked-out PR artifact compare with
+                                          itself.
     import validate_data; validate_data.main()   -> same, returns the exit code
 """
 
+import argparse
 import json
 import subprocess
 import sys
 from datetime import date
 from pathlib import Path
 
+from compute_resilience import PILLARS
 from data_model import DASHBOARD_TERRITORIES, KALIMANTAN_PROVINCES
 from project_time import project_today
 
@@ -115,8 +124,8 @@ def read_json(rel_path):
         return None, f"unreadable: {error}"
 
 
-def previous_json(rel_path):
-    """The version of the file in the last commit, via `git show HEAD:<path>`.
+def previous_json(rel_path, baseline_ref="HEAD"):
+    """Read ``rel_path`` from an explicit Git baseline.
 
     Returns (data, skip_reason). skip_reason is None on success; when it is set
     the caller must SKIP its baseline checks (new file / no git / detached repo),
@@ -124,7 +133,7 @@ def previous_json(rel_path):
     """
     try:
         result = subprocess.run(
-            ["git", "show", f"HEAD:{rel_path}"],
+            ["git", "show", f"{baseline_ref}:{rel_path}"],
             cwd=str(ROOT),
             capture_output=True,
             timeout=60,
@@ -132,11 +141,26 @@ def previous_json(rel_path):
     except (OSError, subprocess.SubprocessError) as error:
         return None, f"git unavailable ({error})"
     if result.returncode != 0:
-        return None, "not in HEAD (new file or no commits yet)"
+        return None, f"not in baseline {baseline_ref!r} (new file or unavailable ref)"
     try:
         return json.loads(result.stdout.decode("utf-8")), None
     except (json.JSONDecodeError, UnicodeDecodeError) as error:
         return None, f"committed version is not valid JSON ({error})"
+
+
+def baseline_file_json(path):
+    """Read a resilience baseline JSON file for hermetic/manual comparisons.
+
+    The normal release gate must use ``--baseline-ref`` so *all* artifacts are
+    compared against the same trusted commit.  This file option intentionally
+    applies only to resilience.json: it is for fixture-driven regression checks
+    and operator diagnosis, not a substitute for the release baseline.
+    """
+    path = Path(path)
+    try:
+        return json.loads(path.read_text(encoding="utf-8")), None
+    except (json.JSONDecodeError, UnicodeDecodeError, OSError) as error:
+        return None, f"baseline file unreadable ({error})"
 
 
 def parse_generated_at(value):
@@ -216,6 +240,121 @@ def scored_indicator_count(resilience):
     return total
 
 
+def _pillar_set(value):
+    """Return a pillar set only when the JSON field has the expected shape.
+
+    Keeping this deliberately strict prevents a malformed list/dict from being
+    treated as an empty set — an empty set would hide exactly the class of loss
+    this gate exists to catch.
+    """
+    if not isinstance(value, list) or not all(isinstance(pillar, str) for pillar in value):
+        return None
+    return set(value)
+
+
+def check_resilience_pillar_consistency(report, territories):
+    """Verify that every territory describes the same scored/unscored partition.
+
+    ``pillarScores``, ``scoredPillars`` and ``detail`` are three representations
+    of the scored True Wealth pillars.  They must name exactly the same pillars;
+    ``unscoredPillars`` must be their complete, disjoint complement in PILLARS.
+    This preserves the project's E (Ethics) rule: missing data is disclosed, not
+    silently excluded from a score.
+    """
+    expected = set(PILLARS)
+    for territory in DASHBOARD_TERRITORIES:
+        data = territories.get(territory)
+        if not isinstance(data, dict):
+            # Territory presence is reported separately. Avoid a duplicate
+            # structural failure whose detail would add no diagnostic value.
+            continue
+
+        scored_list = data.get("scoredPillars")
+        unscored_list = data.get("unscoredPillars")
+        scored = _pillar_set(scored_list)
+        unscored = _pillar_set(unscored_list)
+        score_map = data.get("pillarScores")
+        detail_map = data.get("detail")
+        score_keys = set(score_map) if isinstance(score_map, dict) else None
+        detail_keys = set(detail_map) if isinstance(detail_map, dict) else None
+        detail_entries_ok = (
+            isinstance(detail_map, dict)
+            and all(isinstance(entries, list) and entries for entries in detail_map.values())
+        )
+
+        representations_ok = (
+            scored is not None
+            and score_keys is not None
+            and detail_keys is not None
+            and scored == score_keys == detail_keys
+            and len(scored_list) == len(scored)
+            and detail_entries_ok
+        )
+        report.check(
+            "resilience.json",
+            f"{territory} scored pillar fields agree",
+            representations_ok,
+            (f"scoredPillars={sorted(scored) if scored is not None else scored_list!r}; "
+             f"pillarScores={sorted(score_keys) if score_keys is not None else score_map!r}; "
+             f"detail={sorted(detail_keys) if detail_keys is not None else detail_map!r}; "
+             f"all detail entries non-empty={detail_entries_ok}"),
+        )
+
+        partition_ok = (
+            scored is not None
+            and unscored is not None
+            and len(unscored_list) == len(unscored)
+            and scored.isdisjoint(unscored)
+            and scored | unscored == expected
+        )
+        report.check(
+            "resilience.json",
+            f"{territory} scored/unscored pillars form the True Wealth Hexagon",
+            partition_ok,
+            (f"scored={sorted(scored) if scored is not None else scored_list!r}; "
+             f"unscored={sorted(unscored) if unscored is not None else unscored_list!r}; "
+             f"expected={sorted(expected)}"),
+        )
+
+
+def check_no_lost_scored_pillars(report, current_territories, previous_territories,
+                                  previous_skip=None):
+    """Fail if a territory loses any previously scored True Wealth pillar.
+
+    A record-count floor is intentionally tolerant of ordinary source churn.
+    Pillar coverage is not: dropping Education changes the meaning of the
+    resilience average, even if only one indicator disappeared.  Newly scored
+    pillars are allowed; this gate only blocks loss and keeps "never imputed"
+    intact.
+    """
+    if previous_territories is None:
+        report.skip("resilience.json", "no territory lost a scored pillar", previous_skip)
+        return
+
+    territory_names = sorted(set(previous_territories) | set(current_territories))
+    for territory in territory_names:
+        previous = previous_territories.get(territory) or {}
+        current = current_territories.get(territory) or {}
+        previous_pillars = _pillar_set(previous.get("scoredPillars"))
+        current_pillars = _pillar_set(current.get("scoredPillars"))
+        if previous_pillars is None or current_pillars is None:
+            report.check(
+                "resilience.json",
+                f"{territory} scored pillar coverage is comparable to baseline",
+                False,
+                "missing or malformed scoredPillars in current or baseline artifact",
+            )
+            continue
+        lost = sorted(previous_pillars - current_pillars)
+        report.check(
+            "resilience.json",
+            f"{territory} did not lose a scored pillar",
+            not lost,
+            f"lost {lost} (baseline={sorted(previous_pillars)}, current={sorted(current_pillars)})"
+            if lost else f"retained {sorted(current_pillars)}",
+        )
+
+
 def is_stale(row):
     return "STALE" in str(row.get("source") or "")
 
@@ -272,12 +411,24 @@ def check_no_volatile_stale(report, scope, rows):
 
 
 # -------------------------------------------------------------- file checks
-def validate_indicators(report):
+def check_baseline_available(report, scope, previous, previous_skip, required):
+    """Fail closed for release workflows that supplied an explicit baseline."""
+    if required:
+        report.check(
+            scope,
+            "required baseline is readable",
+            previous is not None,
+            previous_skip or "available",
+        )
+
+
+def validate_indicators(report, baseline_ref="HEAD", require_baseline=False):
     scope = "indicators.json"
     current, error = read_json(INDICATORS_JSON)
     if not report.check(scope, "parses as JSON", current is not None, error or ""):
         return
-    previous, previous_skip = previous_json(INDICATORS_JSON)
+    previous, previous_skip = previous_json(INDICATORS_JSON, baseline_ref)
+    check_baseline_available(report, scope, previous, previous_skip, require_baseline)
 
     rows = current.get("rows") or []
     report.check(scope, "has rows", len(rows) > 0, f"{len(rows)} rows")
@@ -300,12 +451,16 @@ def validate_indicators(report):
     check_artifact_freshness(report, scope, current)
 
 
-def validate_resilience(report):
+def validate_resilience(report, baseline_ref="HEAD", baseline_file=None, require_baseline=False):
     scope = "resilience.json"
     current, error = read_json(RESILIENCE_JSON)
     if not report.check(scope, "parses as JSON", current is not None, error or ""):
         return
-    previous, previous_skip = previous_json(RESILIENCE_JSON)
+    if baseline_file:
+        previous, previous_skip = baseline_file_json(baseline_file)
+    else:
+        previous, previous_skip = previous_json(RESILIENCE_JSON, baseline_ref)
+    check_baseline_available(report, scope, previous, previous_skip, require_baseline)
 
     territories = current.get("territories") or {}
     missing = [t for t in DASHBOARD_TERRITORIES if t not in territories]
@@ -321,6 +476,13 @@ def validate_resilience(report):
                  ", ".join(f"{t}={territories[t]['index']}" for t in DASHBOARD_TERRITORIES
                            if t in territories))
 
+    check_resilience_pillar_consistency(report, territories)
+    check_no_lost_scored_pillars(
+        report,
+        territories,
+        (previous.get("territories") or {}) if previous else None,
+        previous_skip,
+    )
     check_count(report, scope, "scored indicator count", scored_indicator_count(current),
                 scored_indicator_count(previous) if previous else None, previous_skip)
     scored_entries = [
@@ -337,12 +499,13 @@ def validate_resilience(report):
     check_artifact_freshness(report, scope, current)
 
 
-def validate_districts(report):
+def validate_districts(report, baseline_ref="HEAD", require_baseline=False):
     scope = "districts.json"
     current, error = read_json(DISTRICTS_JSON)
     if not report.check(scope, "parses as JSON", current is not None, error or ""):
         return
-    previous, previous_skip = previous_json(DISTRICTS_JSON)
+    previous, previous_skip = previous_json(DISTRICTS_JSON, baseline_ref)
+    check_baseline_available(report, scope, previous, previous_skip, require_baseline)
 
     parents = current.get("parents") or {}
     rows = current.get("rows") or []
@@ -379,17 +542,39 @@ def validate_districts(report):
 
 
 # ------------------------------------------------------------------- entry point
-def main():
+def main(argv=None):
+    parser = argparse.ArgumentParser(
+        description="Validate generated public data before publication."
+    )
+    parser.add_argument(
+        "--baseline-ref",
+        default="HEAD",
+        help="Git revision containing the last approved artifacts (default: HEAD).",
+    )
+    parser.add_argument(
+        "--baseline-file",
+        help=("Path to a resilience.json baseline for a fixture/manual resilience "
+              "comparison. Normal release validation should use --baseline-ref."),
+    )
+    parser.add_argument(
+        "--require-baseline",
+        action="store_true",
+        help=("Fail instead of skipping baseline checks when the selected baseline "
+              "cannot be read. Required for controlled release workflows."),
+    )
+    args = parser.parse_args(argv)
     print("=" * 72)
     print("Borneo Tracker - data validation gate")
+    print(f"  baseline: {args.baseline_ref!r}"
+          + (f"; resilience fixture: {args.baseline_file}" if args.baseline_file else ""))
     print(f"  record-count floor: {int(MIN_COUNT_RATIO * 100)}% of the last committed count")
     print(f"  retained-data expiry: {MAX_STALE_AGE_DAYS} days")
     print(f"  scored stale ceiling: {int(MAX_SCORED_STALE_RATIO * 100)}%")
     print("=" * 72)
     report = Report()
-    validate_indicators(report)
-    validate_resilience(report)
-    validate_districts(report)
+    validate_indicators(report, args.baseline_ref, args.require_baseline)
+    validate_resilience(report, args.baseline_ref, args.baseline_file, args.require_baseline)
+    validate_districts(report, args.baseline_ref, args.require_baseline)
     return report.summary()
 
 

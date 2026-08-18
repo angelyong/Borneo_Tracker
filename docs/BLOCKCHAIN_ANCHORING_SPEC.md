@@ -1,157 +1,94 @@
-# Blockchain Anchoring — Build & Integration Spec
+# Blockchain Phase 1 — OTS Evidence Contract
 
-> **Handoff doc.** The **Blockchain workstream owns this**. **Base off `master`** (it already
-> has Phase 0 + the provenance ledger + the loop fixes). **Date:** 2026-08-01.
->
-> **⛔ SCOPE LINE — READ FIRST.** This is the **honest, bounded FIRST step of ABCDE's `B`**:
-> anchor the data-provenance ledger on-chain so anyone can verify the published data was not
-> tampered with. It is **NOT** tokenisation / RWA / carbon-credit issuance / self-sovereign
-> data / community-yield. That endgame is premature, and **faking `B` in a read-only dashboard
-> in front of an author-supervisor is the credibility trap the framework explicitly warns
-> about.** Narrate the endgame as *horizon*; build only the anchoring.
+Phase 1 is the bounded `D + E → B` bridge: publish dataset bytes with provenance,
+timestamp the exact Manifest bytes through OpenTimestamps, and make verification
+limits explicit. It serves researchers, regulators and ESG-data customers who
+need reproducible publication evidence. It does not implement tokens, wallets,
+smart contracts, RWA/carbon-credit issuance, DID, self-sovereign data, or
+community yield.
 
----
+## Published contract
 
-## 0. What / why (ABCDE)
+`manifest.json` is schema v2 and declares exactly these live dashboard inputs:
 
-The framework's value chain: **measure (D) → trustworthy *without institutions* (E → B)** →
-*[horizon: price/tokenise the real assets (B) → yield to the community]*.
+1. `indicators.json`
+2. `resilience.json`
+3. `resilience_model.json`
+4. `districts.json`
+5. `borneo_districts.geojson`
+6. `brunei.geojson`
 
-This step is the **E → B bridge**: the sha256 provenance hashes we already publish become
-**on-chain-verifiable**, so trust in the data stops depending on trusting *us*. It is the
-**first real `B`** (from 0%) — and in front of the supervisor who wrote the ABCDE book, one
-REAL small `B` is worth more than a faked big one.
+It contains canonical `dataVersion` plus a RFC6962 SHA-256 commitment to a
+specific `provenance.jsonl` prefix. Every schema-v2 stamp preserves the exact
+bytes at `public/data/versions/<full-manifest-sha256>/manifest.json`; its OTS
+proof is the paired `manifest.json.ots`. The latest aliases are convenience
+links only. Proof bytes may move monotonically pending → stronger proof; the
+Manifest snapshot never changes.
 
----
+`anchors.jsonl` is append-only witness discovery metadata. It is not an
+independent witness and must never be treated as Bitcoin verification. OTS and
+Sigstore events reduce independently; a later OTS update cannot remove
+Sigstore, and `--force` is prohibited.
 
-## 1. Architecture (the picture)
+## Verification boundary
 
-```mermaid
-flowchart LR
-  RP["run_pipeline.py<br/>(daily refresh)"] --> EM["emit_manifest.py"]
-  EM -->|append-only| PROV[("provenance.jsonl<br/>{ts,runId,file,sha256,bytes,generatedAt}")]
-  EM --> MAN[("manifest.json")]
-  PROV --> ANCH["anchor_provenance.py<br/>(NEW — Merkle root / OTS stamp)"]
-  MAN --> ANCH
-  ANCH -->|notarise| CHAIN["Bitcoin (OpenTimestamps)<br/>or L2/testnet contract"]
-  ANCH -->|append proof| ANCHORS[("anchors.jsonl (NEW)")]
-  ANCHORS --> UI["/data-sources page<br/>'verify integrity on-chain'"]
-  CHAIN -. verify .-> UI
+The browser verifies only: **published files match the downloaded Manifest**.
+It marks malformed metadata, unknown schema/events, unsafe paths, missing
+required entries and zero-file scopes invalid. It does not verify Bitcoin,
+Sigstore identity, history governance, or source-number correctness.
+
+`verify_anchor.py` checks binding and proof format. It returns
+`VERIFIED_CONFIRMED` only when invoked with `--verify-bitcoin-core` and the
+official `ots verify` command succeeds against configured Bitcoin Core. A
+Bitcoin-height claim in an OTS structure or a `confirmed` field in
+`anchors.jsonl` is only pending/recorded evidence.
+
+For Sigstore, use a connected release check such as:
+
+```sh
+gh attestation verify manifest.json --repo angelyong/Borneo_Tracker \
+  --signer-workflow angelyong/Borneo_Tracker/.github/workflows/anchor.yml \
+  --source-ref refs/heads/master
 ```
 
-Text: the pipeline already writes an **append-only hash ledger**; the new anchor step notarises
-those hashes (or a Merkle root of them) on a public chain and records the proof; the
-`/data-sources` page exposes a **verify-on-chain** surface.
+The witness event records the bundle digest and any action-provided attestation
+ID/URL for discovery; that is not signature verification.
 
----
+## Publication flow and gates
 
-## 2. The seam that ALREADY exists (build on this — do NOT rebuild it)
+`refresh (exact data SHA) → anchor (exact SHA) → proof commit SHA → deploy
+(exact proof SHA)`. Proof creation never uploads production content itself. When the
+repository variable `AUTO_PRODUCTION_DEPLOY=true`, anchor and proof-upgrade workflows dispatch
+the exact current-master proof commit to the separate deployment workflow; otherwise deployment
+remains manual. Manual dry-run and read-only connection test remain required before enabling the
+automatic switch, while manual production runs still require `confirm_production=true`. The
+Actions workflows share `phase1-publication` concurrency and never cancel an in-flight
+publication or deployment. Automatic dispatches are accepted only when the event sender is the
+GitHub Actions bot and the current-master commit has the exact bot identity, subject and proof-only
+path set produced by `anchor.yml` or `anchor-upgrade.yml`. The deploy workflow rechecks current
+master immediately before upload. The catch-up scanner only identifies
+committed version snapshots with no OTS event and dispatches each with both its
+Git commit SHA and Manifest SHA; the anchor workflow stamps that exact version,
+never an arbitrary branch tip. GitHub Actions `queue: max` retains up to 100
+pending runs; the catch-up scheduler is still required after capacity overflow
+or interrupted dispatches.
 
-Phase 0 built the ledger **specifically as the blockchain-anchoring seam** (see the
-`emit_manifest.py` docstring, "AUDIT TRAIL / BLOCKCHAIN SEAM, ABCDE letter B"):
+Deploy verifies the six Manifest datasets, the current aliases, anchor log and
+the matching full-SHA versioned Manifest/proof pair; HTML SPA fallbacks are
+rejected.
 
-- **`public/data/provenance.jsonl`** — append-only, **ONE JSON line per file per pipeline run**:
-  `{ts, runId, file, sha256, bytes, generatedAt}`. Written by `emit_manifest.py`, **only ever
-  appended, never rewritten**.
-- **`public/data/manifest.json`** — current snapshot:
-  `{generatedAt, runId, files:{"<repo-relative path>":{sha256, bytes, generatedAt}}}`.
-- The sha256 is of the **file bytes on disk** (streamed) — not embedded in the file it describes.
+## Migration and current repository condition
 
-**Rules already enforced — anchoring DEPENDS on them, do not break:**
-> Never truncate, reorder or rewrite `provenance.jsonl`; **only append**. Only **ADD** fields to
-> a line — never rename or remove one. (A rewritten log invalidates every anchor over it.)
+The migration tool recovers the three known v1 Manifest blobs from the recorded
+Git commits, validates each SHA-256 and OTS proof subject, creates immutable
+version pairs, and is idempotent. A v1 current Manifest is a migration input,
+not malformed v2.
 
-The daily refresh appends to the ledger and regenerates the manifest. **Your work sits on top.**
-
----
-
-## 3. The anchoring design
-
-Anchor either each run's per-file hashes, or — better — a **Merkle root** over the run's
-provenance entries, so **one on-chain write covers all files** of that version.
-
-Two honest, low-cost options — pick by goal:
-
-- **A. OpenTimestamps** *(recommended for "cheapest + honest + no keys")* — timestamp
-  `manifest.json` (or the Merkle root) → get a `.ots` proof → verifiable against **Bitcoin**.
-  **Free, no wallet / gas / private keys, decentralised.** Simplest and most defensible; the
-  proof is a small file you commit.
-- **B. Merkle root → smart contract on an L2 / testnet** *(recommended if you want a VISIBLE
-  on-chain tx to demo)* — compute the Merkle root → submit to a tiny contract → store the
-  `txid` + chain. More "blockchain-looking" (a contract and a transaction to point at), but
-  needs a wallet/key/gas and a chain choice. **If you use real keys, generate them OUTSIDE the
-  repo and store them as GitHub Actions secrets — never `git add` a private key.**
-
-**Record every anchor in a new append-only file** `public/data/anchors.jsonl`, e.g.:
-`{ts, method:"ots"|"chain", target:"manifest"|"merkle_root", root_or_hash, proof_ref, chain, txid?}`.
-Same append-only discipline as `provenance.jsonl`.
-
----
-
-## 4. The verify surface — pair it with `/data-sources`
-
-- Expose verification on the **`/data-sources`** page. It is a **placeholder today**; the real
-  transparency page (per-indicator source / year / confidence) lives on
-  **`feature/figma-redesign` (`DataSources.jsx`)** — **port it**, then add a
-  **"verify data integrity on-chain"** panel: each data file's sha256, when/how it was anchored,
-  and a documented one-click way to verify against the chain (OTS verify, or the tx on a block
-  explorer).
-- Honest wording: **"data integrity anchored on-chain"** — NOT "decentralised ownership" /
-  "tokenised" / "self-sovereign."
-
----
-
-## 5. ABCDE framing + the HARD LINE
-
-- ✅ **Do:** anchor provenance, provide verification, narrate as a *tamper-proof,
-  institution-independent audit trail* = a real, honest `B`.
-- 🚫 **Do NOT (this build):** tokens, RWA, carbon-credit issuance, self-sovereign / DID data,
-  community-yield. Those are the **endgame** — narrate as horizon, never claim as built. Faking
-  them is the credibility trap. `B` is still ~0%; this step is what honestly moves it off zero.
-
----
-
-## 6. Build checklist (in order)
-
-1. [ ] Decide method — **OpenTimestamps** (no keys) vs **Merkle-root → L2/testnet** (visible tx).
-2. [ ] `anchor_provenance.py` — read `provenance.jsonl` / `manifest.json` → per-file hashes or a
-       Merkle root → anchor (OTS stamp / chain tx) → **append** the proof to `public/data/anchors.jsonl`.
-3. [ ] `.github/workflows/anchor.yml` — run **after** "Refresh dashboard data" (`workflow_run`,
-       `branches: [master]`), same pattern as `resilience-watch.yml` / `deploy.yml`. Daily or weekly.
-4. [ ] `verify_anchor.py` + the `/data-sources` panel — given a served data file, recompute its
-       hash and verify it against the recorded anchor/proof.
-5. [ ] Honest labels; if you must touch `emit_manifest.py`/the ledger, **add fields only**.
-6. [ ] Tests + `npm run lint` + `npm run build` green → merge (one branch merges at a time).
-
----
-
-## 7. Coordination / conflict-avoidance
-
-- **Base off current `master`** (has Phase 0 + provenance ledger + Food fix + news fix +
-  resilience-watch). `git merge origin/master` first if your branch is behind.
-- **Files this touches:** new `anchor_provenance.py`, new `.github/workflows/anchor.yml`, new
-  `public/data/anchors.jsonl`, the `/data-sources` route in `src/App.jsx` + a real DataSources
-  page (ported from `feature/figma-redesign`), maybe `verify_anchor.py`.
-- ⚠️ **`emit_manifest.py` / `provenance.jsonl` format is the anchoring CONTRACT** — prefer NOT to
-  change it; if unavoidable, **ADD fields only** (never rename / remove / reorder) or past
-  anchors break.
-- ⚠️ **`src/App.jsx`** — additive route only; `/data-sources` real page is on
-  `feature/figma-redesign` — expect a small port + merge.
-- Does **NOT** need `compute_resilience.py` / `run_pipeline.py` / `resilienceModel.js` →
-  **no clash with the Impact Simulator build** (aichatbot workstream).
-- Anchor **after** the daily refresh (it appends provenance + regenerates the manifest first).
-
----
-
-## 8. Reference facts (verified in the repo, 2026-08-01)
-
-- **The ledger:** `emit_manifest.py` writes `public/data/manifest.json` (overwrite) +
-  `public/data/provenance.jsonl` (append-only). Line schema:
-  `{ts, runId, file, sha256, bytes, generatedAt}`. This is loop-engineering item **"D13"** and
-  is explicitly the blockchain seam.
-- **ABCDE `B` row:** "trust without institutions; tokenise Real-World Assets; self-sovereign
-  data" — but **only the immutable-audit-trail / anchoring part is in scope now.**
-- **Value chain + endgame warning:** `.claude/skills/borneo-abcde-framework` §2 (value chain)
-  and §3 ("Faking B … is a credibility trap in front of an academic/author supervisor").
-- **`/data-sources` real page:** `feature/figma-redesign` → `DataSources.jsx`.
-- **Sister handoff / house style:** `docs/IMPACT_SIMULATOR_SPEC.md`, `docs/LOOP_ENGINEERING_PLAN.md`.
+The former merge-marker conflict in `public/data/provenance.jsonl` was reconciled
+under the authorised record in
+`docs/PROVENANCE_LEDGER_RECONCILIATION_2026-08-09.md`. The current ledger has no
+merge delimiters and Manifest v2 validation passes locally. That reconciliation
+does **not** create an external witness. That was the pre-release state; the connected master
+gate has since created the current proof, and the official OpenTimestamps browser verifier bound
+Manifest `bda87804…b2b8e` to Bitcoin block `961779` on 2026-08-10. The repository verifier still
+reports only what it can prove without independently validating Bitcoin headers.

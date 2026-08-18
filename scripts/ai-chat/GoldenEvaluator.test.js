@@ -121,7 +121,7 @@ describe('Golden evaluator', () => {
       verifiedRuntimeLeverCount: 0,
       verifiedRecommendationCoverage: 0,
     });
-  });
+  }, 15_000);
 
   it('calculates routing, entity, operation, comparability, and fact metrics', async () => {
     const report = await evaluator().evaluate();

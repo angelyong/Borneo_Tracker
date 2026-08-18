@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Borneo Tracker — Data Verification 设计稿</title>
+<style>
+  :root {
+    /* Palette lifted from src/theme.css — the product's own tokens, not a new system. */
+    --bg: #f5f5f2;
+    --card: #ffffff;
+    --sunk: #faf9f6;
+    --ink: #1f2937;
+    --muted: #6b7280;
+    --faint: #9ca3af;
+    --border: #e5e7eb;
+    --rule: #ece9e2;
+
+    --teal: #003641;
+    --forest: #1b4532;
+    --accent: #003641;
+    --accent-ink: #ffffff;
+
+    --green: #16a34a;   --green-soft: #d9f2e2;
+    --amber: #e3a32c;   --amber-soft: #fbf3ce;
+    --red: #dc2626;     --red-soft: #fbdddd;
+    --grey: #6b7280;    --grey-soft: #e5e7eb;
+    --blue: #2b7de9;    --blue-soft: #dbeafe;
+
+    /* Annotation band — neutral biased toward the forest accent, so it reads as chosen. */
+    --note-bg: #eceee9;
+    --note-ink: #46514a;
+    --note-rule: #d5dad3;
+
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+    --shadow: 0 1px 2px rgba(16, 32, 24, .05), 0 8px 24px rgba(16, 32, 24, .06);
+    --radius: 12px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0d2118;
+      --card: #143526;
+      --sunk: #102b1f;
+      --ink: #f3f6f1;
+      --muted: #9bb3a6;
+      --faint: #6c8577;
+      --border: #23412f;
+      --rule: #1d3728;
+
+      --accent: #9cbf88;
+      --accent-ink: #0d2118;
+
+      --green: #4ade80;   --green-soft: #173425;
+      --amber: #f4c542;   --amber-soft: #34290f;
+      --red: #f87171;     --red-soft: #3a1e1e;
+      --grey: #9bb3a6;    --grey-soft: #1c3327;
+      --blue: #6fa9e0;    --blue-soft: #1a2a3c;
+
+      --note-bg: #11291d;
+      --note-ink: #9bb3a6;
+      --note-rule: #23412f;
+
+      --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .25);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #0d2118;
+    --card: #143526;
+    --sunk: #102b1f;
+    --ink: #f3f6f1;
+    --muted: #9bb3a6;
+    --faint: #6c8577;
+    --border: #23412f;
+    --rule: #1d3728;
+    --accent: #9cbf88;
+    --accent-ink: #0d2118;
+    --green: #4ade80;   --green-soft: #173425;
+    --amber: #f4c542;   --amber-soft: #34290f;
+    --red: #f87171;     --red-soft: #3a1e1e;
+    --grey: #9bb3a6;    --grey-soft: #1c3327;
+    --blue: #6fa9e0;    --blue-soft: #1a2a3c;
+    --note-bg: #11291d;
+    --note-ink: #9bb3a6;
+    --note-rule: #23412f;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .25);
+  }
+
+  :root[data-theme="light"] {
+    --bg: #f5f5f2;
+    --card: #ffffff;
+    --sunk: #faf9f6;
+    --ink: #1f2937;
+    --muted: #6b7280;
+    --faint: #9ca3af;
+    --border: #e5e7eb;
+    --rule: #ece9e2;
+    --accent: #003641;
+    --accent-ink: #ffffff;
+    --green: #16a34a;   --green-soft: #d9f2e2;
+    --amber: #e3a32c;   --amber-soft: #fbf3ce;
+    --red: #dc2626;     --red-soft: #fbdddd;
+    --grey: #6b7280;    --grey-soft: #e5e7eb;
+    --blue: #2b7de9;    --blue-soft: #dbeafe;
+    --note-bg: #eceee9;
+    --note-ink: #46514a;
+    --note-rule: #d5dad3;
+    --shadow: 0 1px 2px rgba(16, 32, 24, .05), 0 8px 24px rgba(16, 32, 24, .06);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  code { font-family: var(--mono); font-size: .92em; }
+
+  .page {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 24px 88px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  /* ---------- mockup chrome ---------- */
+
+  .mockbar {
+    background: var(--amber-soft);
+    border-bottom: 1px solid var(--amber);
+    color: var(--ink);
+    text-align: center;
+    padding: 9px 24px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .02em;
+  }
+  .mockbar span { font-weight: 400; color: var(--muted); }
+
+  header.masthead {
+    padding-top: 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  h1 {
+    margin: 0;
+    font-size: 32px;
+    line-height: 1.2;
+    font-weight: 600;
+    letter-spacing: -.02em;
+    text-wrap: balance;
+  }
+  .lede {
+    margin: 0;
+    max-width: 62ch;
+    color: var(--muted);
+    font-size: 15.5px;
+  }
+
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    padding: 14px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .toolbar .lab {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-right: 2px;
+  }
+  .segs { display: flex; gap: 4px; flex-wrap: wrap; }
+  button {
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 7px 13px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--sunk);
+    color: var(--muted);
+    cursor: pointer;
+    transition: background .12s, color .12s, border-color .12s;
+  }
+  button:hover { color: var(--ink); border-color: var(--faint); }
+  button[aria-pressed="true"] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+  }
+  button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .toolbar .spacer { margin-left: auto; }
+
+  /* ---------- annotation ---------- */
+
+  .note {
+    background: var(--note-bg);
+    border-left: 3px solid var(--note-rule);
+    color: var(--note-ink);
+    padding: 14px 18px;
+    border-radius: 0 8px 8px 0;
+    font-size: 14px;
+  }
+  .note b { color: var(--ink); }
+  .note p { margin: 0; }
+  .note p + p { margin-top: 8px; }
+
+  .screen-label {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: -22px;
+  }
+  .screen-label h2 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: .01em;
+  }
+  .screen-label .path {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    background: var(--grey-soft);
+    padding: 2px 8px;
+    border-radius: 6px;
+  }
+
+  section { display: flex; flex-direction: column; gap: 22px; }
+
+  /* ---------- product surfaces ---------- */
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .card-pad { padding: 22px 24px; }
+  .card-pad + .card-pad { border-top: 1px solid var(--rule); }
+
+  .kicker {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin: 0 0 10px;
+  }
+  h3 { margin: 0 0 6px; font-size: 17px; font-weight: 600; letter-spacing: -.01em; }
+  h4 { margin: 0 0 4px; font-size: 13.5px; font-weight: 600; }
+  .sub { margin: 0; color: var(--muted); font-size: 13.5px; }
+
+  /* ---------- the chip itself ---------- */
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .chip .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 10px;
+    letter-spacing: .01em;
+  }
+  .chip .dot { width: 6px; height: 6px; border-radius: 50%; flex: none; }
+  .chip .hash { font-family: var(--mono); font-size: 10.5px; }
+
+  .is-verified  .pill { background: var(--green-soft); color: var(--green); }
+  .is-verified  .dot  { background: var(--green); }
+  .is-pending   .pill { background: var(--amber-soft); color: var(--amber); }
+  .is-pending   .dot  { background: var(--amber); }
+  .is-failed    .pill { background: var(--red-soft); color: var(--red); }
+  .is-failed    .dot  { background: var(--red); }
+  .is-unknown   .pill { background: var(--grey-soft); color: var(--grey); }
+  .is-unknown   .dot  { background: var(--grey); }
+
+  .is-pending .dot { animation: blink 1.6s ease-in-out infinite; }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
+  @media (prefers-reduced-motion: reduce) {
+    .is-pending .dot { animation: none; }
+    * { transition: none !important; }
+  }
+
+  .chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 26px;
+    align-items: center;
+  }
+
+  /* indicator card, to show the chip in real context */
+  .stat { display: flex; flex-direction: column; gap: 3px; }
+  .stat .name { font-size: 13px; color: var(--muted); }
+  .stat .val {
+    font-size: 27px;
+    font-weight: 650;
+    letter-spacing: -.02em;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+  }
+  .stat .val small { font-size: 14px; font-weight: 500; color: var(--muted); }
+  .stat-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 14px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--rule);
+  }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 780px) { .grid-3 { grid-template-columns: 1fr; } }
+
+  /* ---------- the ledger ---------- */
+
+  .rootline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 8px 14px;
+  }
+  .rootline .root {
+    font-family: var(--mono);
+    font-size: 19px;
+    letter-spacing: -.01em;
+    word-break: break-all;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 22px;
+    margin-top: 14px;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  .meta b {
+    color: var(--ink);
+    font-weight: 500;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+
+  .tablewrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td {
+    text-align: left;
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--rule);
+    white-space: nowrap;
+  }
+  thead th {
+    font-size: 10.5px;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--faint);
+    font-weight: 700;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.file { font-family: var(--mono); font-size: 12.5px; }
+  td.hash { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  td.num { font-variant-numeric: tabular-nums; text-align: right; color: var(--muted); }
+
+  /* ---------- witnesses ---------- */
+
+  .witness {
+    background: var(--sunk);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .witness.off { opacity: .58; }
+  .witness .top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .witness dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 12px; }
+  .witness dt { color: var(--faint); }
+  .witness dd { margin: 0; font-family: var(--mono); font-size: 11.5px; word-break: break-all; }
+  .witness a { color: var(--accent); text-decoration: none; font-weight: 600; font-size: 12px; }
+  .witness a:hover { text-decoration: underline; }
+  .witness a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+
+  /* ---------- proves / doesn't ---------- */
+
+  .claims { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+  @media (max-width: 780px) { .claims { grid-template-columns: 1fr; } }
+  .claim { padding: 20px 24px; }
+  .claim + .claim { border-left: 1px solid var(--rule); }
+  @media (max-width: 780px) {
+    .claim + .claim { border-left: none; border-top: 1px solid var(--rule); }
+  }
+  .claim h4 { display: flex; align-items: center; gap: 7px; margin-bottom: 8px; }
+  .claim .mark { font-size: 14px; }
+  .claim.yes h4 { color: var(--green); }
+  .claim.no  h4 { color: var(--red); }
+  .claim p { margin: 0; font-size: 13.5px; color: var(--muted); }
+  .claim p + p { margin-top: 8px; }
+
+  /* ---------- code ---------- */
+
+  pre {
+    margin: 0;
+    background: var(--sunk);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 13px 15px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: var(--ink);
+  }
+  pre .c { color: var(--faint); }
+  pre .o { color: var(--green); }
+  .stack { display: flex; flex-direction: column; gap: 10px; }
+
+  /* ---------- history ---------- */
+
+  .hist { display: flex; flex-direction: column; }
+  .hrow {
+    display: grid;
+    grid-template-columns: 96px 1fr auto;
+    gap: 14px;
+    align-items: center;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--rule);
+    font-size: 12.5px;
+  }
+  .hrow:last-child { border-bottom: none; }
+  .hrow .d { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .hrow .h { font-family: var(--mono); font-size: 11.5px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; }
+
+  footer {
+    color: var(--faint);
+    font-size: 12.5px;
+    border-top: 1px solid var(--border);
+    padding-top: 18px;
+  }
+</style>
+</head>
+<body>
+
+<div class="mockbar">
+  设计稿 · MOCKUP <span>— 画面为示意，hash / 区块高度并非实际锚定结果</span>
+</div>
+
+<div class="page">
+
+  <header class="masthead">
+    <span class="eyebrow">ABCDE · B — Blockchain</span>
+    <h1>Data Verification</h1>
+    <p class="lede">
+      把 <b>E</b>（我们宣称资料没被改过）变成 <b>B</b>（任何人自己算得出来）。
+      下面是两个界面：每一页角落的<b>小徽章</b>，和点进去之后的<b>验证页</b>。
+    </p>
+  </header>
+
+  <div class="toolbar">
+    <span class="lab">徽章状态</span>
+    <div class="segs" role="group" aria-label="Integrity state">
+      <button type="button" data-state="verified" aria-pressed="true">🟢 Verified</button>
+      <button type="button" data-state="pending"  aria-pressed="false">🟡 Timestamping</button>
+      <button type="button" data-state="failed"   aria-pressed="false">🔴 Mismatch</button>
+      <button type="button" data-state="unknown"  aria-pressed="false">⚪ Unverified</button>
+    </div>
+    <span class="spacer"></span>
+    <button type="button" id="themeBtn">切换深色</button>
+  </div>
+
+  <div class="note">
+    <p><b>为什么四态都要有：</b>会红的徽章才是真徽章。ODSF 那个站的 API 回传 <code>status:"error"</code>，
+    UI 照样显示绿色 —— 那就变成装饰。我们的必须真的会变。</p>
+    <p>色彩只是辅助，<b>状态一律用文字写出来</b> —— 这跟 <code>DataFreshness.jsx</code> 的既有规则一致，不依赖颜色传达资讯。</p>
+  </div>
+
+  <!-- ============ SCREEN 1 ============ -->
+  <section>
+    <div class="screen-label">
+      <h2>① 徽章出现在既有页面上</h2>
+      <span class="path">Overview / ESG / SDG / Regions</span>
+    </div>
+
+    <div class="card card-pad">
+      <p class="kicker">Overview — 摘录</p>
+      <div class="grid-3">
+        <div class="stat">
+          <span class="name">Resilience Index · Sabah</span>
+          <span class="val">61.4<small> / 100</small></span>
+          <div class="stat-foot">
+            <span class="chip"><span class="pill" style="background:var(--green-soft);color:var(--green)">High</span> 2024 · GFW</span>
+          </div>
+        </div>
+        <div class="stat">
+          <span class="name">Forest cover · Sarawak</span>
+          <span class="val">62.0<small> %</small></span>
+          <div class="stat-foot">
+            <span class="chip"><span class="pill" style="background:var(--amber-soft);color:var(--amber)">Medium</span> 2023 · GFW</span>
+          </div>
+        </div>
+        <div class="stat">
+          <span class="name">Food self-sufficiency · Brunei</span>
+          <span class="val">8.4<small> %</small></span>
+          <div class="stat-foot">
+            <span class="chip"><span class="pill" style="background:var(--blue-soft);color:var(--blue)">Manual</span> 2022 · FAO</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card card-pad">
+      <p class="kicker">页面底部 · 与 Data-freshness 并排</p>
+      <div class="chip-row">
+        <span class="chip"><span class="pill" style="background:var(--green-soft);color:var(--green)">Data as of 28 Jul 2026</span> up to date</span>
+
+        <span class="chip integrity is-verified" id="chipDemo">
+          <span class="pill"><span class="dot"></span><span class="state">Integrity verified</span></span>
+          <span class="hash" id="chipHash">sha256 470b09…</span>
+        </span>
+      </div>
+      <p class="sub" style="margin-top:12px" id="chipNote">
+        资料指纹与链上纪录相符。点击可查看验证详情。
+      </p>
+    </div>
+  </section>
+
+  <div class="note">
+    <p><b>注意这里的克制：</b>没有钱包按钮、没有 Connect Wallet、没有加密货币字样。
+    使用者<b>不需要装任何东西、不需要付费、不需要登入</b> —— 读取区块链是免费且公开的。</p>
+  </div>
+
+  <!-- ============ SCREEN 2 ============ -->
+  <section>
+    <div class="screen-label">
+      <h2>② 点进去之后的验证页</h2>
+      <span class="path">/data-sources</span>
+    </div>
+
+    <div class="card">
+      <div class="card-pad">
+        <p class="kicker">Currently published version</p>
+        <div class="rootline">
+          <span class="root">d12725ad3f0c81b4e6a97ff2c05d8b13a4e77c9012fd6b8ea3c5104b7e29d8af</span>
+        </div>
+        <div class="meta">
+          <span>Merkle root over <b>provenance.jsonl</b></span>
+          <span>Built <b>2026-07-28T02:23:10Z</b></span>
+          <span>Run <b>#1849207731</b></span>
+        </div>
+      </div>
+
+      <div class="card-pad">
+        <h3>Published files</h3>
+        <p class="sub" style="margin-bottom:14px">每个档案的 SHA-256 取自档案本身的 bytes。你在自己的电脑上重算，应该得到同一串。</p>
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr><th>File</th><th>SHA-256</th><th style="text-align:right">Size</th><th>Data date</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="file">indicators.json</td>
+                <td class="hash">470b0914b081e979…d190264f7</td>
+                <td class="num">103,450 B</td>
+                <td class="num" style="text-align:left">2026-07-27</td>
+                <td><span class="chip is-verified"><span class="pill"><span class="dot"></span><span class="state">Verified</span></span></span></td>
+              </tr>
+              <tr>
+                <td class="file">resilience.json</td>
+                <td class="hash">1bfc2bf16996b728…494749486</td>
+                <td class="num">11,277 B</td>
+                <td class="num" style="text-align:left">2026-07-27</td>
+                <td><span class="chip is-verified"><span class="pill"><span class="dot"></span><span class="state">Verified</span></span></span></td>
+              </tr>
+              <tr>
+                <td class="file">districts.json</td>
+                <td class="hash">c95251311f022603…fbae968df8cf</td>
+                <td class="num">487,665 B</td>
+                <td class="num" style="text-align:left">2026-07-10</td>
+                <td><span class="chip is-verified"><span class="pill"><span class="dot"></span><span class="state">Verified</span></span></span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card-pad">
+        <h3>Independent witnesses</h3>
+        <p class="sub" style="margin-bottom:16px">三个各自独立。任何一个无法连线，其余照常验证。</p>
+        <div class="grid-3">
+
+          <div class="witness">
+            <div class="top">
+              <div>
+                <h4>Bitcoin</h4>
+                <p class="sub" style="font-size:12px">via OpenTimestamps</p>
+              </div>
+              <span class="chip is-verified"><span class="pill"><span class="dot"></span><span class="state">Confirmed</span></span></span>
+            </div>
+            <dl>
+              <dt>Block</dt><dd>960,214</dd>
+              <dt>Proof</dt><dd>manifest.json.ots</dd>
+            </dl>
+            <a href="#" onclick="return false">在区块浏览器查看 ↗</a>
+          </div>
+
+          <div class="witness">
+            <div class="top">
+              <div>
+                <h4>Sigstore</h4>
+                <p class="sub" style="font-size:12px">Rekor transparency log</p>
+              </div>
+              <span class="chip is-verified"><span class="pill"><span class="dot"></span><span class="state">Logged</span></span></span>
+            </div>
+            <dl>
+              <dt>Entry</dt><dd>2269541266</dd>
+              <dt>Signer</dt><dd>refresh-data.yml</dd>
+            </dl>
+            <a href="#" onclick="return false">验证指令 ↗</a>
+          </div>
+
+          <div class="witness off">
+            <div class="top">
+              <div>
+                <h4>Polygon</h4>
+                <p class="sub" style="font-size:12px">Smart-contract anchor</p>
+              </div>
+              <span class="chip is-unknown"><span class="pill"><span class="dot"></span><span class="state">Not enabled</span></span></span>
+            </div>
+            <dl>
+              <dt>Status</dt><dd>—</dd>
+              <dt>Cost</dt><dd>~$0.33 / yr</dd>
+            </dl>
+            <a href="#" onclick="return false">为什么还没启用 ↗</a>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="claims">
+        <div class="claim yes">
+          <h4><span class="mark">✓</span> 这证明什么</h4>
+          <p>这些档案的内容自 <b>2026-07-28</b> 起没有被任何人修改过 —— <b>包括我们自己</b>。</p>
+          <p>你不需要相信这句话。往下复制那两行指令，在你自己的电脑上算一次。</p>
+        </div>
+        <div class="claim no">
+          <h4><span class="mark">✕</span> 这不证明什么</h4>
+          <p><b>这不代表数据是对的。</b>如果原始来源本身有误，我们只是把那个错误也一并保存了下来。</p>
+          <p>资料品质另有标注 —— 请看每一列的 <b>confidence</b> 与 <b>source</b>，以及方法学说明。</p>
+        </div>
+      </div>
+
+      <div class="card-pad">
+        <h3>Verify it yourself</h3>
+        <p class="sub" style="margin-bottom:14px">两行指令，不需要安装我们的任何东西。</p>
+        <div class="stack">
+          <pre><span class="c"># 1 · 重算线上档案的指纹</span>
+curl -s https://borneotracker.rentsmartprop.com.my/data/indicators.json | sha256sum
+<span class="o">470b0914b081e979b034b542ccde3ce003422f78e40b1733d427346d190264f7</span>
+
+<span class="c"># 2 · 对照 Bitcoin 时戳证明</span>
+ots verify manifest.json.ots
+<span class="o">Success! Bitcoin block 960214 attests existence as of 2026-07-28</span></pre>
+        </div>
+      </div>
+
+      <div class="card-pad">
+        <h3>Publication history</h3>
+        <p class="sub" style="margin-bottom:12px">每一个曾经发布过的资料版本。这份纪录只会追加，不会重写。</p>
+        <div class="hist">
+          <div class="hrow"><span class="d">2026-07-28</span><span class="h">d12725ad3f0c81b4e6a97ff2c05d8b13a4e77c90…</span><span class="chip is-verified"><span class="pill"><span class="dot"></span><span class="state">Verified</span></span></span></div>
+          <div class="hrow"><span class="d">2026-07-23</span><span class="h">a31f8c04b7e29d8af6b1c05d8b13a4e77c9012fd…</span><span class="chip is-verified"><span class="pill"><span class="dot"></span><span class="state">Verified</span></span></span></div>
+          <div class="hrow"><span class="d">2026-07-19</span><span class="h">9d02b4e6a97ff2c05d8b13a4e77c9012fd6b8ea3…</span><span class="chip is-verified"><span class="pill"><span class="dot"></span><span class="state">Verified</span></span></span></div>
+          <div class="hrow"><span class="d">2026-07-16</span><span class="h">7c9012fd6b8ea3c5104b7e29d8af3f0c81b4e6a9…</span><span class="chip is-verified"><span class="pill"><span class="dot"></span><span class="state">Verified</span></span></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="note">
+    <p><b>版面为什么这样排：</b>把它当成<b>一本帐本</b>，不是行销页 —— 等宽字体、数字靠右对齐、细横线分隔。
+    叙述用 sans、证据用 mono，这个字体配对本身就是主题。</p>
+    <p><b>Merkle root 放在最上面当主角</b>，因为它就是这一页真正的内容；「Polygon 尚未启用」也照实显示，
+    因为诚实标注比满屏绿勾更有说服力。</p>
+  </div>
+
+  <footer>
+    Borneo Tracker · Data Verification 设计稿 · 色彩与元件语汇沿用 <code>src/theme.css</code> 与 <code>ProvenanceChip.jsx</code>
+  </footer>
+</div>
+
+<script>
+  const STATES = {
+    verified: {
+      cls: 'is-verified',
+      label: 'Integrity verified',
+      hash: 'sha256 470b09…',
+      note: '资料指纹与链上纪录相符。点击可查看验证详情。',
+    },
+    pending: {
+      cls: 'is-pending',
+      label: 'Timestamping…',
+      hash: '等待 Bitcoin 区块确认',
+      note: 'Sigstore 已签署；Bitcoin 时戳约需数小时才会写入区块。这是正常状态，不是错误。',
+    },
+    failed: {
+      cls: 'is-failed',
+      label: 'Integrity mismatch',
+      hash: 'sha256 8c41ff… ≠ 470b09…',
+      note: '线上档案与已锚定的指纹不符。可能是部署未完成、快取过期，或档案遭到修改 —— 请勿引用此版本数据。',
+    },
+    unknown: {
+      cls: 'is-unknown',
+      label: 'Not verified',
+      hash: '无法连线至验证纪录',
+      note: '目前无法取得锚定纪录（离线或本机开发环境）。此处不会假设通过 —— 无法验证就显示无法验证。',
+    },
+  };
+
+  const chip = document.getElementById('chipDemo');
+  const chipHash = document.getElementById('chipHash');
+  const chipNote = document.getElementById('chipNote');
+  const buttons = document.querySelectorAll('[data-state]');
+
+  function apply(key) {
+    const s = STATES[key];
+    chip.className = 'chip integrity ' + s.cls;
+    chip.querySelector('.state').textContent = s.label;
+    chipHash.textContent = s.hash;
+    chipNote.textContent = s.note;
+    buttons.forEach(function (b) {
+      b.setAttribute('aria-pressed', String(b.dataset.state === key));
+    });
+  }
+
+  buttons.forEach(function (b) {
+    b.addEventListener('click', function () { apply(b.dataset.state); });
+  });
+
+  const themeBtn = document.getElementById('themeBtn');
+  themeBtn.addEventListener('click', function () {
+    const root = document.documentElement;
+    const dark = root.getAttribute('data-theme') === 'dark'
+      || (!root.hasAttribute('data-theme') && matchMedia('(prefers-color-scheme: dark)').matches);
+    root.setAttribute('data-theme', dark ? 'light' : 'dark');
+    themeBtn.textContent = dark ? '切换深色' : '切换浅色';
+  });
+</script>
+</body>
+</html>

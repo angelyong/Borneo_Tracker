@@ -1,0 +1,17 @@
+{
+  "generatedAt": "2026-08-02",
+  "territories": {
+    "Sabah": {
+      "pillarScores": {"Food": 28.6, "Energy": 98.5, "Education": 45.0, "Shelter": 61.0, "Healthcare": 76.5, "Entertainment": 96.0},
+      "scoredPillars": ["Food", "Energy", "Education", "Shelter", "Healthcare", "Entertainment"],
+      "unscoredPillars": [],
+      "detail": {"Food": [{"indicator": "fixture"}], "Energy": [{"indicator": "fixture"}], "Education": [{"indicator": "fixture"}], "Shelter": [{"indicator": "fixture"}], "Healthcare": [{"indicator": "fixture"}], "Entertainment": [{"indicator": "fixture"}]}
+    },
+    "Sarawak": {
+      "pillarScores": {"Food": 58.0, "Energy": 98.1, "Education": 45.0, "Shelter": 67.4, "Healthcare": 77.0, "Entertainment": 96.0},
+      "scoredPillars": ["Food", "Energy", "Education", "Shelter", "Healthcare", "Entertainment"],
+      "unscoredPillars": [],
+      "detail": {"Food": [{"indicator": "fixture"}], "Energy": [{"indicator": "fixture"}], "Education": [{"indicator": "fixture"}], "Shelter": [{"indicator": "fixture"}], "Healthcare": [{"indicator": "fixture"}], "Entertainment": [{"indicator": "fixture"}]}
+    }
+  }
+}

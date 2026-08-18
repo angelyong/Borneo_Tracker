@@ -1,0 +1,112 @@
+name: Upgrade pending anchors
+
+# An OpenTimestamps stamp is a calendar's PROMISE at the moment it is made, not a
+# Bitcoin proof. Confirmation takes hours — measured here, still pending after 24
+# minutes — so stamping and confirming cannot happen in the same run. This job
+# comes back later and asks the calendars whether their promise reached a block.
+#
+# "Nothing to upgrade" is the normal outcome and is a success, not a warning.
+
+on:
+  schedule:
+    # Every six hours. A Bitcoin block is ~10 minutes and calendars aggregate over
+    # roughly an hour, so four attempts a day confirms same-day without polling
+    # the public calendars harder than we need to.
+    - cron: "20 */6 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: phase1-publication
+  queue: max
+  cancel-in-progress: false
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: master
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+
+      - name: Ask the calendars whether the promise reached a block
+        run: python upgrade_anchors.py
+
+      - name: Verify
+        run: python verify_anchor.py --allow-pending
+
+      - name: Commit any confirmed proofs
+        id: proof_commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/data/anchors.jsonl public/data/versions public/data/manifest.json.ots
+          if git diff --cached --quiet; then
+            echo "Still pending — no Bitcoin block yet. This is expected for a few hours."
+          else
+            git commit -m "chore: confirm anchor in a Bitcoin block"
+            git push
+            echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Dispatch exact upgraded proof commit to automatic deployment
+        id: deploy_dispatch
+        if: steps.proof_commit.outputs.sha != '' && vars.AUTO_PRODUCTION_DEPLOY == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PROOF_COMMIT_SHA: ${{ steps.proof_commit.outputs.sha }}
+        run: |
+          set -euo pipefail
+          git fetch origin master
+          test "${PROOF_COMMIT_SHA}" = "$(git rev-parse origin/master)"
+          dispatched=false
+          for attempt in 1 2 3 4; do
+            if gh api repos/${{ github.repository }}/dispatches \
+              -f event_type=deploy-proof \
+              -f client_payload[proof_commit_sha]="${PROOF_COMMIT_SHA}" \
+              -f client_payload[source]=upgrade; then
+              dispatched=true
+              break
+            fi
+            echo "Dispatch attempt ${attempt} failed."
+            if [ "${attempt}" -lt 4 ]; then sleep "$((attempt * 5))"; fi
+          done
+          if [ "${dispatched}" != "true" ]; then
+            echo "::error title=Automatic deployment dispatch failed::The proof is committed, but no deployment was requested. Recover with a manual production run for ${PROOF_COMMIT_SHA}."
+            exit 1
+          fi
+          echo "dispatched=true" >> "$GITHUB_OUTPUT"
+
+      - name: Summary
+        if: always()
+        env:
+          AUTO_PRODUCTION_DEPLOY: ${{ vars.AUTO_PRODUCTION_DEPLOY || 'false' }}
+        run: |
+          {
+            echo "### Anchor status"
+            echo
+            echo '```'
+            python verify_anchor.py || true
+            echo '```'
+            echo
+            if [ -n "${{ steps.proof_commit.outputs.sha }}" ]; then
+              echo "Proof commit: \`${{ steps.proof_commit.outputs.sha }}\`"
+              echo
+              if [ "${{ steps.deploy_dispatch.outputs.dispatched }}" = "true" ]; then
+                echo "Automatic production deployment was dispatched for this exact proof commit."
+              elif [ "${AUTO_PRODUCTION_DEPLOY}" = "true" ]; then
+                echo "Automatic deployment did not dispatch. The proof commit is safe; recover by manually running Deploy to DirectAdmin in production mode for the exact Proof commit above."
+              else
+                echo "Automatic production deployment is disabled (AUTO_PRODUCTION_DEPLOY is not true)."
+              fi
+              echo
+            fi
+            echo "This workflow upgrades proof evidence; when explicitly enabled, it dispatches the exact proof commit to the separate deployment workflow."
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -34,19 +34,13 @@ INTERNET_USE = {
     "Kalimantan": (76.1, "BPS — Kalimantan region internet access, 2024", "national"),
 }
 
-# Sourced state indicators filling scoreable gaps with valid official figures
-# (Phase 1). Sabah/Sarawak previously had Energy as a household COUNT and Education
-# as an enrolment COUNT — neither comparable. These add the %/years equivalents so
-# the pillars score, using the SAME indicators as the other territories.
+# Curated snapshot additions use this extension point only when the observation
+# is not already delivered by an ingestion source.  Sabah and Sarawak's Mean
+# years schooling observations are now supplied by the Global Data Lab CSV;
+# keeping a second hard-coded copy here previously let a later non-canonical
+# row replace the selected CSV row in SQLite.
 # (territory, indicator, value, unit, year, source, data_level)
-SOURCED_ROWS = [
-    # Sarawak electrification (99.4%) already lives in manual_overrides.csv; it becomes
-    # canonical via the CONCEPT_PRIORITY reorder + canonical_sort_key fix below.
-    ("Sabah", "Mean years schooling (RLS)", 8.7, "years", "2023",
-     "Global Data Lab — Subnational HDI, mean years schooling, 2023", "modeled"),
-    ("Sarawak", "Mean years schooling (RLS)", 8.7, "years", "2023",
-     "Global Data Lab — Subnational HDI, mean years schooling, 2023", "modeled"),
-]
+SOURCED_ROWS = []
 
 SUM_INDICATORS = {
     "Crop production (paddy)",

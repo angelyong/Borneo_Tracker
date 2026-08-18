@@ -90,12 +90,12 @@ describe('fact object builder availability', () => {
     expect(resilienceData.territories.Sabah.index).toBe(63.7);
     expect(fact.availability).toBe('AVAILABLE');
     expect(fact.values.overallResilience).toMatchObject({
-      value: 63.7,
-      formattedValue: '63.7',
+      value: 72.1,
+      formattedValue: '72.1',
       status: 'calculated',
       territory: 'Sabah',
     });
-    expect(fact.approvedNumericTokens).toContain('63.7');
+    expect(fact.approvedNumericTokens).toContain('72.1');
   });
 
   it('marks Borneo-wide numerical resilience unavailable when no committed aggregate exists', () => {
@@ -168,10 +168,10 @@ describe('fact object builder availability', () => {
 
 describe('territory and pillar facts', () => {
   it.each([
-    ['Sabah', 63.7],
-    ['Sarawak', 72.5],
-    ['Brunei', 79.0],
-    ['Kalimantan', 68.5],
+    ['Sabah', 72.1],
+    ['Sarawak', 79.3],
+    ['Brunei', 78.0],
+    ['Kalimantan', 67.7],
   ])('builds overall resilience for %s where supported', (territory, score) => {
     const fact = buildFact(`What is ${territory}'s resilience score?`);
     expect(fact.values.overallResilience?.value).toBe(score);
@@ -180,7 +180,7 @@ describe('territory and pillar facts', () => {
   it('builds weakest pillar facts without Gemini ranking', () => {
     const fact = buildFact('Which pillar is weakest in Sarawak?');
     expect(fact.availability).toBe('AVAILABLE');
-    expect(fact.diagnosis?.weakestPillar).toBe('Education');
+    expect(fact.diagnosis?.weakestPillar).toBe('Food');
     expect(fact.values.pillarScores.length).toBeGreaterThan(0);
   });
 
@@ -193,12 +193,12 @@ describe('territory and pillar facts', () => {
     const fact = buildFact("What is Sabah's Food score?");
     expect(fact.values.pillarScores).toContainEqual(expect.objectContaining({
       pillar: 'Food',
-      value: 28.7,
+      value: 28.6,
       status: 'calculated',
     }));
     expect(fact.values.rawValues).toContainEqual(expect.objectContaining({
       indicator: 'Paddy production per capita',
-      value: 28.7,
+      value: 28.6,
       status: 'derived',
     }));
   });
@@ -404,7 +404,7 @@ describe('indicator, target, comparison, trend, SDG, and district facts', () => 
 
   it('downgrades SDG progress to coverage facts', () => {
     const fact = buildFact('What is the SDG progress for Sabah education?');
-    expect(fact.availability).toBe('PARTIAL');
+    expect(fact.availability).toBe('UNAVAILABLE');
     expect(fact.conclusion?.code).toBe('SDG_PROGRESS_DOWNGRADED');
     expect(fact.requiredDisclosures.join(' ')).toContain('cannot be calculated');
   });
@@ -459,10 +459,10 @@ describe('indicator, target, comparison, trend, SDG, and district facts', () => 
     expect(fact.values.districtValues?.some((value) => value.territory === 'Kota Kinabalu')).toBe(true);
   });
 
-  it('includes stale district freshness warning from Stage 3C', () => {
+  it('includes current district freshness metadata without a stale warning', () => {
     const fact = buildFact('Show district data for Kota Kinabalu.');
-    expect(fact.warnings.some((warning) => warning.message.includes('District metadata is stale'))).toBe(true);
-    expect(fact.requiredDisclosures).toContain('District metadata freshness date: 2026-07-10.');
+    expect(fact.warnings.some((warning) => warning.message.includes('District metadata is stale'))).toBe(false);
+    expect(fact.requiredDisclosures).toContain(`District metadata freshness date: ${districtsData.generatedAt}.`);
   });
 
   it('blocks unknown district facts', () => {

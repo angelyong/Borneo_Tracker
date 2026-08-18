@@ -131,17 +131,17 @@ describe('structured answer AVAILABLE layers', () => {
     expect(answer.layers.conclusion).toMatchObject({
       status: 'AVAILABLE',
       heading: 'Conclusion',
-      text: "Sabah's overall resilience score is 63.7.",
+      text: "Sabah's overall resilience score is 72.1.",
     });
     expect(answer.layers.conclusion.factReferences).toContain('values.overallResilience');
-    expect(answer.summaryText).toContain("Sabah's overall resilience score is 63.7.");
+    expect(answer.summaryText).toContain("Sabah's overall resilience score is 72.1.");
   });
 
   it('builds a weakest pillar answer without invented causes', () => {
     const { answer } = buildFactAndAnswer('Which pillar is weakest in Sarawak?');
 
-    expect(answer.layers.conclusion.text).toBe('Education is the weakest resilience pillar in Sarawak.');
-    expect(answer.layers.diagnosis.text).toContain('Weakest pillar: Education.');
+    expect(answer.layers.conclusion.text).toBe('Food is the weakest resilience pillar in Sarawak.');
+    expect(answer.layers.diagnosis.text).toContain('Weakest pillar: Food.');
     expect(answer.layers.diagnosis.text).not.toMatch(/because|caused/i);
   });
 
@@ -155,8 +155,8 @@ describe('structured answer AVAILABLE layers', () => {
   it('builds a pillar score answer', () => {
     const { answer } = buildFactAndAnswer("What is Sabah's Food score?");
 
-    expect(answer.layers.conclusion.text).toBe("Sabah's Food score is 28.7.");
-    expect(answer.approvedNumericTokens).toContain('28.7');
+    expect(answer.layers.conclusion.text).toBe("Sabah's Food score is 28.6.");
+    expect(answer.approvedNumericTokens).toContain('28.6');
   });
 
   it('builds an indicator value answer with year token handling', () => {
@@ -256,7 +256,7 @@ describe('structured answer PARTIAL and unavailable layers', () => {
   it('downgrades SDG progress to coverage or mapping only', () => {
     const { answer } = buildFactAndAnswer('What is the SDG progress for Sabah education?');
 
-    expect(answer.availability).toBe('PARTIAL');
+    expect(answer.availability).toBe('UNAVAILABLE');
     expect(answer.layers.gap.text).toContain('SDG coverage or mapping only');
     expect(answer.layers.honesty.warnings.join(' ')).toContain('SDG progress-to-target cannot be calculated');
   });
@@ -641,9 +641,10 @@ describe('structured answer honesty, sources, and numeric integrity', () => {
     expect(answer.layers.honesty.warnings.filter((item) => item === 'Warning reason.')).toHaveLength(1);
   });
 
-  it('includes stale district warning', () => {
+  it('includes current district freshness metadata without a stale warning', () => {
     const { answer } = buildFactAndAnswer('Show district data for Kota Kinabalu.');
-    expect(answer.layers.honesty.warnings.join(' ')).toContain('District metadata is stale');
+    expect(answer.layers.honesty.warnings.join(' ')).not.toContain('District metadata is stale');
+    expect(answer.layers.honesty.warnings.join(' ')).toContain(`District metadata freshness date: ${districtsData.generatedAt}.`);
   });
 
   it('includes Kalimantan derived disclosure', () => {

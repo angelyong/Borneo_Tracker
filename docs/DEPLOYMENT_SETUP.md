@@ -10,18 +10,18 @@ This is the implementation of **Option A** in
 
 ---
 
-## 0. Why the workflow is green but does nothing right now
+## 0. Release boundary: proof-gated automatic deployment is opt-in
 
-`deploy.yml` is already merged, but none of the SFTP secrets exist yet. Its first step checks
-for them, prints a loud "DEPLOY SKIPPED" banner with the list of missing secret names, writes
-an explanation into the run summary, and **exits 0**.
+Manual runs remain available through **Actions → Deploy to DirectAdmin → Run workflow**. When
+the repository variable `AUTO_PRODUCTION_DEPLOY` is exactly `true`, a new current-master proof
+commit from `anchor.yml` or `anchor-upgrade.yml` dispatches an automatic production release.
+Refresh itself, a bare push, and historical catch-up never deploy directly.
 
-That is deliberate. A permanently red Actions tab is a red light everyone learns to ignore —
-which is exactly the failure mode this whole exercise exists to kill. The run is green because
-"we correctly did nothing"; the summary says loudly that production was not updated.
-
-**The site keeps serving the hand-uploaded 2026-07-23 build until Step 1 and Step 2 below are
-done.**
+Every run resolves an exact, lowercase 40-character `proof_commit_sha`. An automatic dispatch
+must be the current `master` HEAD; a manual run may use an older master ancestor for a deliberate
+rollback. A missing prerequisite is a **red failure** with secret names only; a green run is never
+used to mean “credentials were absent”. Automatic deployment must remain disabled until the
+hosting cache policy has been verified for `/data/*` and proof files.
 
 ---
 
@@ -144,15 +144,44 @@ carry **FTPS** values. Concrete settings for `borneotracker.rentsmartprop.com.my
 | `PRODUCTION_URL` | `https://borneotracker.rentsmartprop.com.my` | The URL the smoke test checks. |
 | `DEPLOY_PROTOCOL` | `sftp` | Set to `ftps` if the host only offers FTPS. (FTPS requires `SFTP_PASSWORD`; it cannot use a key.) |
 | `FTPS_VERIFY_CERT` | `yes` | FTPS only. Keep `yes` for every routine deployment. `no` is an emergency, temporary diagnostic override only; fix the hostname/certificate and restore `yes` before any normal deployment. |
+| `AUTO_PRODUCTION_DEPLOY` | `false` | **Safety switch.** Set to `true` only after cache bypass/revalidation for `/data/*`, Manifest, anchor log, and `.ots` proof files is verified. When true, a newly committed current-master proof automatically deploys and smoke-tests production. |
 
 ---
 
-## 3. First run — do it manually
+### Cache-readiness acceptance gate
 
-Do **not** wait for the 05:00 MYT schedule to find out whether it works.
+Do not infer durable cache safety from one successful browser refresh. Before changing
+`AUTO_PRODUCTION_DEPLOY` to `true`, retain evidence for all of the following:
 
-1. **Actions → "Deploy to DirectAdmin" → Run workflow.**
-2. Tick **`dry_run`** and run it. This does everything *except* touch the server: it validates
+1. Hosting support confirms that `/data/*` (including `manifest.json`, `anchors.jsonl`, `.ots`,
+   versioned proof pairs and the six declared datasets) bypasses shared stale caching or is always
+   revalidated. If a purge API is the chosen control, it must be limited to this domain and tested.
+2. A manual production run for the latest proof SHA finishes with the ordinary, non-cache-busted
+   smoke requests matching the uploaded build. A cache-busted match by itself is a failure.
+3. A second ordinary request after the agreed cache window still returns the same Manifest SHA,
+   proof bytes and data hashes. Record the workflow URL, proof SHA, time and hosting confirmation.
+
+The DirectAdmin user interface currently exposes no LiteSpeed purge control. Cache policy or
+purging therefore belongs to the hosting administrator unless a limited API is provided.
+
+### One-time bootstrap before enabling automatic deployment
+
+Enabling the variable does not emit an event for proof commits that already exist. Before the
+first switch-on, manually deploy the latest proof-bearing master ancestor using the normal
+`dry_run` → `connection_test_only` → `production` sequence. Confirm that production
+`anchors.jsonl` and `manifest.json.ots` match that exact commit. Only future proof commits are
+automatic.
+
+---
+
+## 3. First run — do the preflight manually
+
+The two preflight modes are manual and never change the hosted site. Keep
+`AUTO_PRODUCTION_DEPLOY=false` while proving the hosting path and cache policy.
+
+1. **Actions → "Deploy to DirectAdmin" → Run workflow.** Enter the exact proof-bearing
+   `proof_commit_sha` from the verified master anchor run.
+2. Select **`release_mode=dry_run`** and leave `confirm_production=false`. This does everything *except* touch the server: it validates
    the data, builds the site, and runs every pre-upload assertion. If this is red, the problem
    is in the repo, not in the hosting — fix it before going near production.
 
@@ -171,8 +200,11 @@ Do **not** wait for the 05:00 MYT schedule to find out whether it works.
    - `dist/.htaccess is missing or empty` — `public/.htaccess` was deleted or emptied. It is a
      tracked file and carries the SPA rewrite; restore it. The workflow refuses to upload
      without it precisely because losing it 404s every deep link on the live site.
-3. After a green Dry Run, run the workflow again with **only**
-   **`connection_test_only`** ticked. Do not tick it together with `dry_run`.
+   - `dist/data/.htaccess is missing or does not contain the required data cache policy` — do
+     not deploy. `public/data/.htaccess` is tracked evidence-delivery policy: it tells clients
+     and shared caches not to retain a stale Manifest, anchor log, or OpenTimestamps proof.
+3. After a green Dry Run, run the workflow again with
+   **`release_mode=connection_test_only`** and the same exact SHA.
 
    This authenticates through FTPS, verifies the FTPS certificate according to
    `FTPS_VERIFY_CERT`, changes into `SFTP_REMOTE_DIR`, and lists the directory. It does **not**
@@ -181,28 +213,30 @@ Do **not** wait for the 05:00 MYT schedule to find out whether it works.
    wrong username/password, a certificate problem, a chroot/path mistake, or an FTP connectivity
    problem before Production is touched.
 
-4. Only after both checks are green, run again with **both options unticked**. Watch these steps:
+4. Only after both checks are green, run again with **`release_mode=production`**,
+   the same exact SHA, and **`confirm_production=true`**. Watch these steps:
    - **Prepare credentials** — validates only safe hostname/port/path forms before connecting.
    - **Upload dist/ to DirectAdmin** — uses Explicit FTPS on port 21 and prints a credentials-free
      transfer plan.
    - **Smoke-test production** — see Step 4.
-5. Repeat for at least three consecutive scheduled runs before trusting it, per §8 of the
-   DirectAdmin options doc.
+5. A GitHub `production` environment approval, if configured, is an additional guard; it does
+   not replace the exact SHA and explicit confirmation in the workflow.
 
 ### What triggers a deploy afterwards
 
-| Trigger | When |
-|---|---|
-| `workflow_run` | Every time **"Refresh dashboard data"** finishes **successfully**. This is how the daily 05:00 MYT data reaches production. |
-| `push` to `master` | Any code change. |
-| `workflow_dispatch` | Manually, any time, on any branch — including an old one, which is how you roll back. |
-
-> The `workflow_run` trigger is not decoration. `refresh-data.yml` commits with `GITHUB_TOKEN`,
-> and pushes made with `GITHUB_TOKEN` do **not** fire `push` events. Without `workflow_run` the
-> fresh data would never trigger anything.
+Manual `workflow_dispatch` supports preflight, approved production releases, and rollback. With
+`AUTO_PRODUCTION_DEPLOY=true`, `anchor.yml` and `anchor-upgrade.yml` may also send a
+`deploy-proof` repository dispatch after they push a new proof commit. The automatic request must
+contain a full SHA that still equals current `origin/master`; it cannot deploy an arbitrary branch,
+a moving branch tip, or a historical catch-up proof.
 
 Deploys **queue**; they never cancel each other. Killing an upload halfway would leave
 `public_html` in a mixed state.
+
+Anchor and upgrade retry the dispatch four times. If the proof push succeeds but every dispatch
+attempt fails, the proof remains valid and the workflow turns red. Recover by manually running
+`Deploy to DirectAdmin` in `production` mode with that exact proof commit SHA; do not restamp or
+rewrite the proof merely to create another event.
 
 ---
 
@@ -211,6 +245,12 @@ Deploys **queue**; they never cancel each other. Killing an upload halfway would
 The smoke test is the point of the whole workflow. Uploading without verifying is still an open
 loop — the last four days of "green" runs that shipped nothing are the proof.
 
+Before a deployment change reaches `master`, the read-only **Validate deployment cache policy**
+workflow runs on pull requests that change deployment, `.htaccess`, data/proof, or their contract
+tests. It validates and builds the publishable artifact but has no deployment secrets and never
+contacts DirectAdmin. A green PR check is required evidence for code correctness; it is not a
+production deployment or a substitute for the controlled release steps below.
+
 It asserts four things:
 
 | # | Assertion | Why |
@@ -218,7 +258,7 @@ It asserts four things:
 | 1 | `GET /` returns **200**, `text/html`, and the body contains the app shell (`id="root"`). | The site is up and is actually our app. |
 | 2 | `GET /news` returns **200** `text/html` with the app shell. | `/news` is a client-side route with no file behind it. If `.htaccess` did not survive the upload, this 404s — and so does every other deep link. |
 | 3 | `GET /data/manifest.json` parses as JSON, and every declared **SHA-256 and byte count** equals this build. | The manifest claim itself is complete and current. |
-| 4 | `GET` each of `indicators.json`, `resilience.json` and `districts.json`; its downloaded SHA-256 and byte count must equal the manifest. | This proves the actual Production bytes match the build, not merely the manifest. |
+| 4 | `GET` every Manifest-declared data file; JSON must return `application/json`, GeoJSON must return `application/geo+json` (or compatible `application/json`), and each downloaded SHA-256 and byte count must equal the manifest. | This proves the actual Production bytes match the build, not merely the manifest, and that a data URL did not fall through to the SPA or an untyped binary response. |
 
 Every JSON check verifies the **content type**, not just the status code. This matters: the
 SPA rewrite in `.htaccess` answers *any* missing path with `index.html` and HTTP **200**, so a
@@ -237,7 +277,9 @@ Read the annotation. It is written to tell you which of these it is:
 | `... returned HTTP 000 / 5xx` | The site is down or unreachable. | Check DirectAdmin. |
 | `manifest.json -> 200 text/html` | The file is **not on the server** — the SPA rewrite answered instead. The upload did not land where you think. | `SFTP_REMOTE_DIR` is almost certainly wrong (chroot). |
 | `production 'indicators.json' is <hash>, we built <hash>` | Old data still being served. | Usually a cache — see the next row. |
-| `Stale cache, not a failed upload` | The new bytes **are** on the server (they match when fetched with a cache-buster) but the plain URL serves an old copy. | Flush LiteSpeed/LSCache for the domain in DirectAdmin. |
+| `Stale cache, not a failed upload` | The new bytes **are** on the server (they match when fetched with a cache-buster) but the plain URL serves an old copy. | Confirm that `public/.htaccess` and `public/data/.htaccess` deployed, then ask the hosting administrator to inspect any remaining server-level cache for this domain. This DirectAdmin account has no LiteSpeed purge control. |
+| `Production data endpoint/MIME error` | A cache-busted data URL itself is missing, is the SPA HTML fallback, or has the wrong content type. | This is not a cache-only failure. Check the remote path and deployed `.htaccess` files; GeoJSON must be served as `application/geo+json` or `application/json`. |
+| `Production byte mismatch` | Cache-busted public data endpoints are reachable, but their bytes or proof contract differ from this exact build. | Check the upload target and remote files. Do not treat this as a cache purge issue. |
 | `deep link /news returned HTTP 404` | `.htaccess` is missing or was overwritten on the server. | Restore it (see rollback) and check the "Server .htaccess replaced" warning in the previous run. |
 | `Strict TLS is enabled ... certificate ... is not valid` | The certificate expired, was issued for the wrong host, or otherwise regressed. | Do **not** normalize the error by leaving TLS disabled. Ask the hosting admin to fix the certificate. A temporary `SMOKE_ALLOW_INSECURE_TLS=true` diagnostic override needs explicit approval and must be removed immediately. |
 
@@ -273,18 +315,21 @@ rollback cheap: the previous build's files are still sitting there.
 **To roll back the site:** re-deploy the last known-good commit.
 
 1. Find the last green deploy run and note its commit SHA (it is in the run summary).
-2. **Actions → "Deploy to DirectAdmin" → Run workflow →** pick the branch or tag containing that
-   commit and run it.
+2. **Actions → "Deploy to DirectAdmin" → Run workflow →** enter that proof-bearing master
+   commit as `proof_commit_sha`, select `production`, and deliberately set
+   `confirm_production=true`.
 3. Confirm the smoke test passes and that the `generatedAt` in the summary is the one you
    expected.
 
-If the bad commit is on `master`, `git revert` it first and let the `push` trigger redeploy;
-that keeps the repo and production telling the same story.
+If the bad commit is on `master`, `git revert` it first, produce and independently verify a new
+proof for the reverted master state, then deploy that resulting exact proof commit. This keeps
+the repository, proof, and production telling the same story.
 
-**To roll back only `.htaccess`** (the file whose loss breaks every deep link): every deploy
-attaches the *pre-deploy* copy of the live `.htaccess` to the run as an artifact named
-**`predeploy-htaccess`** (kept 30 days). Download it and put it back with the DirectAdmin File
-Manager.
+**To roll back either `.htaccess` policy:** every deploy attaches best-effort *pre-deploy*
+copies of both the root `.htaccess` and `data/.htaccess` to the run as an artifact named
+**`predeploy-htaccess`** (kept 30 days). Restore the root file only for an SPA routing rollback;
+restore `data/.htaccess` only for the data/proof cache-policy rollback. Download the appropriate
+file and put it back with the DirectAdmin File Manager.
 
 **Last resort:** build locally (`npm run build`) and upload `dist/` as a ZIP through the
 DirectAdmin File Manager, exactly as was done on 2026-07-23. The workflow does not remove that
@@ -302,7 +347,6 @@ option.
   `/domains/borneotracker.rentsmartprop.com.my/public_html`. Until then these credentials can
   reach other projects on the shared account.
 - **Failure notifications.** A red deploy is only visible if someone looks. GitHub emails the
-  actor on failure; the daily `workflow_run`-triggered deploys have no human actor, so consider
-  watching the repo or adding a notification step.
+  manual actor on failure; consider watching the repository or adding a notification step.
 - **Optional hardening:** the job targets a GitHub *environment* named `production`. You can add
   required reviewers to it (Settings → Environments) if you want a human to approve every deploy.
