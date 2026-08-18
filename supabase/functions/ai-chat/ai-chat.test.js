@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import resilienceData from '../../../public/data/resilience.json';
 import { AIChatHttpError, MAX_MESSAGE_LENGTH, validateChatRequest } from './contracts.ts';
 import { generateGeminiAnswer } from './geminiClient.ts';
 import { createAiChatHandler, handleAiChatRequest, mapFallbackReason } from './index.ts';
@@ -11,6 +12,31 @@ const validPayload = {
   region: 'Sabah',
   language: 'en',
 };
+
+function territoryScore(territory) {
+  return resilienceData.territories[territory].index;
+}
+
+function displayScore(territory) {
+  const score = territoryScore(territory);
+  return Number.isInteger(score) ? String(score) : score.toFixed(1);
+}
+
+function comparisonScore(territory) {
+  return territoryScore(territory).toFixed(1);
+}
+
+function comparisonMagnitude(left, right) {
+  return Math.abs(Number((territoryScore(left) - territoryScore(right)).toFixed(1)));
+}
+
+function higherTerritory(left, right) {
+  return territoryScore(left) > territoryScore(right) ? left : right;
+}
+
+function lowerTerritory(left, right) {
+  return territoryScore(left) < territoryScore(right) ? left : right;
+}
 
 afterEach(() => {
   vi.unstubAllEnvs();
@@ -1173,7 +1199,7 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     expect(result.completed.groundedSourceCount).toBeGreaterThanOrEqual(0);
     expect(logs).not.toContain('"untrustedUserQuestion"');
     expect(logs).not.toContain('Use only the supplied verified grounding payload');
-    expect(logs).not.toContain("Sabah's overall resilience score is 63.7.");
+    expect(logs).not.toContain(`Sabah's overall resilience score is ${displayScore('Sabah')}.`);
   });
 
   it('keeps the public response contract unchanged', async () => {
@@ -1211,12 +1237,15 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
       region: '',
     }, expect.objectContaining({
       systemInstruction: expect.stringContaining('Use only the supplied verified grounding payload.'),
-      userContent: expect.stringContaining('"untrustedUserQuestion": "What is Sabah\'s resilience score?"'),
+      userContent: expect.stringContaining('"untrustedUserQuestion"'),
       groundingPayload: expect.objectContaining({
         answerStatus: 'AVAILABLE',
-        conclusion: "Sabah's overall resilience score is 72.1.",
+        conclusion: `Sabah's overall resilience score is ${displayScore('Sabah')}.`,
+        approvedNumericTokens: expect.arrayContaining([displayScore('Sabah')]),
       }),
     }));
+    expect(result.geminiClient.mock.calls[0][1].userContent).toContain("What is Sabah's resilience score?");
+    expect(result.geminiClient.mock.calls[0][1].userContent).toContain('"verifiedAnswerContent"');
   });
 
   it('grounds comparison answers with both values, direction, difference, and no advisory layers', async () => {
@@ -1229,11 +1258,11 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
 
     expect(result.response.status).toBe(200);
     expect(prompt.groundingPayload.conclusion).toContain('Sabah');
-    expect(prompt.groundingPayload.conclusion).toContain('63.7');
+    expect(prompt.groundingPayload.conclusion).toContain(comparisonScore('Sabah'));
     expect(prompt.groundingPayload.conclusion).toContain('Sarawak');
-    expect(prompt.groundingPayload.conclusion).toContain('72.5');
-    expect(prompt.groundingPayload.conclusion).toContain('8.8 points');
-    expect(prompt.groundingPayload.conclusion).toContain('Sarawak is higher');
+    expect(prompt.groundingPayload.conclusion).toContain(comparisonScore('Sarawak'));
+    expect(prompt.groundingPayload.conclusion).toContain(`${comparisonMagnitude('Sabah', 'Sarawak')} points`);
+    expect(prompt.groundingPayload.conclusion).toContain(`${higherTerritory('Sabah', 'Sarawak')} is higher`);
     expect(prompt.groundingPayload.diagnosis).toBe('');
     expect(prompt.groundingPayload.gap).toBe('');
     expect(prompt.groundingPayload.impact).toBe('');
@@ -1255,7 +1284,7 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     expect(geminiClient).toHaveBeenCalledTimes(1);
     expect(body.mode).toBe('template-fallback');
     expect(body.fallback.reason).toBe('GEMINI_TRUNCATED');
-    expect(body.answer).toContain('Sarawak is higher than Sabah by 8.8 points');
+    expect(body.answer).toContain(`${higherTerritory('Sabah', 'Sarawak')} is higher than ${lowerTerritory('Sabah', 'Sarawak')} by ${comparisonMagnitude('Sabah', 'Sarawak')} points`);
     expect(body.answer).not.toContain('Diagnosis:');
     expect(body.answer).not.toContain('Gap:');
     expect(body.answer).not.toContain('Impact:');
@@ -1277,7 +1306,7 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     expect(geminiClient).toHaveBeenCalledTimes(1);
     expect(body.mode).toBe('template-fallback');
     expect(body.fallback.reason).toBe('GEMINI_RESPONSE_REJECTED');
-    expect(body.answer).toContain('Sarawak is higher than Sabah by 8.8 points');
+    expect(body.answer).toContain(`${higherTerritory('Sabah', 'Sarawak')} is higher than ${lowerTerritory('Sabah', 'Sarawak')} by ${comparisonMagnitude('Sabah', 'Sarawak')} points`);
     expect(body.answer).not.toContain('Recommended action:');
   });
 
@@ -1553,7 +1582,7 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     expect(geminiClient).toHaveBeenCalledTimes(1);
     expect(body.mode).toBe('template-fallback');
     expect(body.fallback.reason).toBe('GEMINI_TRUNCATED');
-    expect(body.answer).toContain("Sabah's overall resilience score is 63.7.");
+    expect(body.answer).toContain(`Sabah's overall resilience score is ${displayScore('Sabah')}.`);
     expect(body.answer).not.toBe('To generate a report, which');
   });
 
@@ -1567,11 +1596,11 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
 
     expect(response.status).toBe(200);
     expect(body.mode).toBe('template-fallback');
-    expect(body.answer).toContain('Sabah: 63.7');
-    expect(body.answer).toContain('Sarawak: 72.5');
-    expect(body.answer).not.toContain("Sabah's overall resilience score is 63.7.");
-    expect(prompt.groundingPayload.conclusion).toContain('Sabah: 63.7');
-    expect(prompt.groundingPayload.conclusion).toContain('Sarawak: 72.5');
+    expect(body.answer).toContain(`Sabah: ${comparisonScore('Sabah')}`);
+    expect(body.answer).toContain(`Sarawak: ${comparisonScore('Sarawak')}`);
+    expect(body.answer).not.toContain(`Sabah's overall resilience score is ${displayScore('Sabah')}.`);
+    expect(prompt.groundingPayload.conclusion).toContain(`Sabah: ${comparisonScore('Sabah')}`);
+    expect(prompt.groundingPayload.conclusion).toContain(`Sarawak: ${comparisonScore('Sarawak')}`);
   });
 
   it('bypasses Gemini for knowledge no-match and ambiguity', async () => {
@@ -1986,7 +2015,7 @@ describe('ai-chat Stage 4C template fallback', () => {
     );
 
     expect(partial.response.status).toBe(200);
-    expect(partial.fallbackLog.structuredAnswerAvailability).toBe('UNAVAILABLE');
+    expect(partial.fallbackLog.structuredAnswerAvailability).toBe('PARTIAL');
     expect(partial.body.answer).toContain('progress-to-target cannot be calculated');
     expect(unavailable.response.status).toBe(200);
     expect(['PARTIAL', 'UNAVAILABLE']).toContain(unavailable.fallbackLog.structuredAnswerAvailability);

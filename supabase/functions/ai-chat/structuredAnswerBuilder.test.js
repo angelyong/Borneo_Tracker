@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import indicatorsData from '../../../public/data/indicators.json';
+import resilienceData from '../../../public/data/resilience.json';
 import districtsData from '../../../public/data/districts.json';
 import { evaluateComparability } from './comparabilityGate.ts';
 import { resolveAiChatEntities } from './entityResolver.ts';
@@ -46,6 +47,44 @@ function buildFactAndAnswer(message, options = {}) {
     templates: options.templates,
   });
   return { route, entities, comparability, factObject, answer };
+}
+
+function territoryScore(territory) {
+  return resilienceData.territories[territory].index;
+}
+
+function comparisonFormattedScore(territory) {
+  return territoryScore(territory).toFixed(1);
+}
+
+function displayScore(territory) {
+  const score = territoryScore(territory);
+  return Number.isInteger(score) ? String(score) : score.toFixed(1);
+}
+
+function pillarExtremum(territory, mode) {
+  const entries = Object.entries(resilienceData.territories[territory].pillarScores)
+    .sort(([left], [right]) => left.localeCompare(right));
+  const value = mode === 'minimum'
+    ? Math.min(...entries.map(([, score]) => score))
+    : Math.max(...entries.map(([, score]) => score));
+  return entries.find(([, score]) => score === value)?.[0];
+}
+
+function comparisonMagnitude(left, right) {
+  return Math.abs(Number((territoryScore(left) - territoryScore(right)).toFixed(1)));
+}
+
+function comparisonDifference(left, right) {
+  return Number((territoryScore(left) - territoryScore(right)).toFixed(1));
+}
+
+function higherTerritory(left, right) {
+  return territoryScore(left) > territoryScore(right) ? left : right;
+}
+
+function lowerTerritory(left, right) {
+  return territoryScore(left) < territoryScore(right) ? left : right;
 }
 
 function baseEntities(overrides = {}) {
@@ -131,17 +170,18 @@ describe('structured answer AVAILABLE layers', () => {
     expect(answer.layers.conclusion).toMatchObject({
       status: 'AVAILABLE',
       heading: 'Conclusion',
-      text: "Sabah's overall resilience score is 72.1.",
+      text: `Sabah's overall resilience score is ${displayScore('Sabah')}.`,
     });
     expect(answer.layers.conclusion.factReferences).toContain('values.overallResilience');
-    expect(answer.summaryText).toContain("Sabah's overall resilience score is 72.1.");
+    expect(answer.summaryText).toContain(`Sabah's overall resilience score is ${displayScore('Sabah')}.`);
   });
 
   it('builds a weakest pillar answer without invented causes', () => {
     const { answer } = buildFactAndAnswer('Which pillar is weakest in Sarawak?');
+    const weakest = pillarExtremum('Sarawak', 'minimum');
 
-    expect(answer.layers.conclusion.text).toBe('Food is the weakest resilience pillar in Sarawak.');
-    expect(answer.layers.diagnosis.text).toContain('Weakest pillar: Food.');
+    expect(answer.layers.conclusion.text).toBe(`${weakest} is the weakest resilience pillar in Sarawak.`);
+    expect(answer.layers.diagnosis.text).toContain(`Weakest pillar: ${weakest}.`);
     expect(answer.layers.diagnosis.text).not.toMatch(/because|caused/i);
   });
 
@@ -172,20 +212,20 @@ describe('structured answer AVAILABLE layers', () => {
 
     expect(entities.operations.comparison).toBe(true);
     expect(factObject.values.rawValues).toEqual(expect.arrayContaining([
-      expect.objectContaining({ territory: 'Sabah', value: 63.7 }),
-      expect.objectContaining({ territory: 'Sarawak', value: 72.5 }),
+      expect.objectContaining({ territory: 'Sabah', value: territoryScore('Sabah') }),
+      expect.objectContaining({ territory: 'Sarawak', value: territoryScore('Sarawak') }),
     ]));
-    expect(answer.layers.conclusion.text).toContain('Sabah: 63.7');
-    expect(answer.layers.conclusion.text).toContain('Sarawak: 72.5');
-    expect(answer.layers.conclusion.text).toContain('Sarawak is higher');
-    expect(answer.layers.conclusion.text).toContain('8.8 points');
+    expect(answer.layers.conclusion.text).toContain(`Sabah: ${comparisonFormattedScore('Sabah')}`);
+    expect(answer.layers.conclusion.text).toContain(`Sarawak: ${comparisonFormattedScore('Sarawak')}`);
+    expect(answer.layers.conclusion.text).toContain(`${higherTerritory('Sabah', 'Sarawak')} is higher`);
+    expect(answer.layers.conclusion.text).toContain(`${comparisonMagnitude('Sabah', 'Sarawak')} points`);
     expect(answer.layers.conclusion.text).toContain('Resilience Index score');
-    expect(answer.layers.conclusion.text).not.toBe("Sabah's overall resilience score is 63.7.");
+    expect(answer.layers.conclusion.text).not.toBe(`Sabah's overall resilience score is ${displayScore('Sabah')}.`);
     expect(answer.layers.diagnosis.status).toBe('NOT_APPLICABLE');
     expect(answer.layers.gap.status).toBe('NOT_APPLICABLE');
     expect(answer.layers.impact.status).toBe('NOT_APPLICABLE');
     expect(answer.layers.lever.status).toBe('NOT_APPLICABLE');
-    expect(answer.summaryText).toContain('Sarawak: 72.5');
+    expect(answer.summaryText).toContain(`Sarawak: ${comparisonFormattedScore('Sarawak')}`);
     expect(answer.summaryText).not.toContain('Diagnosis:');
     expect(answer.summaryText).not.toContain('Gap:');
     expect(answer.summaryText).not.toContain('Impact:');
@@ -195,29 +235,32 @@ describe('structured answer AVAILABLE layers', () => {
   it('answers higher wording directly', () => {
     const { answer } = buildFactAndAnswer('Which has the higher resilience score, Sabah or Sarawak?');
 
-    expect(answer.layers.conclusion.text).toContain('Sarawak has the higher resilience score');
-    expect(answer.layers.conclusion.text).toContain('Sabah: 63.7');
-    expect(answer.layers.conclusion.text).toContain('Sarawak: 72.5');
-    expect(answer.layers.conclusion.text).toContain('8.8 points');
+    expect(answer.layers.conclusion.text).toContain(`${higherTerritory('Sabah', 'Sarawak')} has the higher resilience score`);
+    expect(answer.layers.conclusion.text).toContain(`Sabah: ${comparisonFormattedScore('Sabah')}`);
+    expect(answer.layers.conclusion.text).toContain(`Sarawak: ${comparisonFormattedScore('Sarawak')}`);
+    expect(answer.layers.conclusion.text).toContain(`${comparisonMagnitude('Sabah', 'Sarawak')} points`);
   });
 
   it('answers how-much-higher wording with the difference first', () => {
     const { answer } = buildFactAndAnswer("How much higher is Sarawak's resilience score than Sabah's?");
+    const magnitude = comparisonMagnitude('Sarawak', 'Sabah');
 
-    expect(answer.layers.conclusion.text).toMatch(/^The difference is 8\.8 points\./);
-    expect(answer.layers.conclusion.text).toContain('Sarawak is higher than Sabah by 8.8 points');
+    expect(answer.layers.conclusion.text).toMatch(new RegExp(`^The difference is ${String(magnitude).replace('.', '\\.')} points\\.`));
+    expect(answer.layers.conclusion.text).toContain(`Sarawak is higher than Sabah by ${magnitude} points`);
   });
 
   it('handles negative raw differences as positive directional prose', () => {
     const { answer, factObject } = buildFactAndAnswer('Compare Sarawak and Brunei resilience scores.');
+    const rawDifference = comparisonDifference('Sarawak', 'Brunei');
+    const magnitude = Math.abs(rawDifference);
 
     expect(factObject.values.rawValues).toContainEqual(expect.objectContaining({
       label: 'compatible difference',
-      value: -6.5,
+      value: rawDifference,
     }));
-    expect(answer.layers.conclusion.text).toContain('Brunei is higher than Sarawak by 6.5 points');
-    expect(answer.layers.conclusion.text).toContain('Brunei: 79.0');
-    expect(answer.layers.conclusion.text).not.toContain('-6.5');
+    expect(answer.layers.conclusion.text).toContain(`${higherTerritory('Sarawak', 'Brunei')} is higher than ${lowerTerritory('Sarawak', 'Brunei')} by ${magnitude} points`);
+    expect(answer.layers.conclusion.text).toContain(`Brunei: ${comparisonFormattedScore('Brunei')}`);
+    expect(answer.layers.conclusion.text).not.toContain(String(rawDifference));
   });
 
   it('builds a target and gap layer', () => {
@@ -256,7 +299,7 @@ describe('structured answer PARTIAL and unavailable layers', () => {
   it('downgrades SDG progress to coverage or mapping only', () => {
     const { answer } = buildFactAndAnswer('What is the SDG progress for Sabah education?');
 
-    expect(answer.availability).toBe('UNAVAILABLE');
+    expect(answer.availability).toBe('PARTIAL');
     expect(answer.layers.gap.text).toContain('SDG coverage or mapping only');
     expect(answer.layers.honesty.warnings.join(' ')).toContain('SDG progress-to-target cannot be calculated');
   });

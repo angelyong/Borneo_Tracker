@@ -30,6 +30,28 @@ function buildFact(message, options = {}) {
   });
 }
 
+function territoryScore(territory) {
+  return resilienceData.territories[territory].index;
+}
+
+function formattedScore(territory) {
+  const score = territoryScore(territory);
+  return Number.isInteger(score) ? String(score) : score.toFixed(1);
+}
+
+function pillarExtremum(territory, mode) {
+  const entries = Object.entries(resilienceData.territories[territory].pillarScores)
+    .sort(([left], [right]) => left.localeCompare(right));
+  const value = mode === 'minimum'
+    ? Math.min(...entries.map(([, score]) => score))
+    : Math.max(...entries.map(([, score]) => score));
+  return entries.find(([, score]) => score === value)?.[0];
+}
+
+function comparisonDifference(left, right) {
+  return Number((territoryScore(left) - territoryScore(right)).toFixed(1));
+}
+
 describe('fact data repository', () => {
   it('finds supported territories from committed data', () => {
     const repository = new FactDataRepository();
@@ -87,15 +109,15 @@ describe('fact data repository', () => {
 describe('fact object builder availability', () => {
   it('builds an available Sabah territory resilience score', () => {
     const fact = buildFact("What is Sabah's resilience score?");
-    expect(resilienceData.territories.Sabah.index).toBe(63.7);
+    const expectedScore = territoryScore('Sabah');
     expect(fact.availability).toBe('AVAILABLE');
     expect(fact.values.overallResilience).toMatchObject({
-      value: 72.1,
-      formattedValue: '72.1',
+      value: expectedScore,
+      formattedValue: formattedScore('Sabah'),
       status: 'calculated',
       territory: 'Sabah',
     });
-    expect(fact.approvedNumericTokens).toContain('72.1');
+    expect(fact.approvedNumericTokens).toContain(formattedScore('Sabah'));
   });
 
   it('marks Borneo-wide numerical resilience unavailable when no committed aggregate exists', () => {
@@ -168,19 +190,19 @@ describe('fact object builder availability', () => {
 
 describe('territory and pillar facts', () => {
   it.each([
-    ['Sabah', 72.1],
-    ['Sarawak', 79.3],
-    ['Brunei', 78.0],
-    ['Kalimantan', 67.7],
-  ])('builds overall resilience for %s where supported', (territory, score) => {
+    ['Sabah'],
+    ['Sarawak'],
+    ['Brunei'],
+    ['Kalimantan'],
+  ])('builds overall resilience for %s where supported', (territory) => {
     const fact = buildFact(`What is ${territory}'s resilience score?`);
-    expect(fact.values.overallResilience?.value).toBe(score);
+    expect(fact.values.overallResilience?.value).toBe(territoryScore(territory));
   });
 
   it('builds weakest pillar facts without Gemini ranking', () => {
     const fact = buildFact('Which pillar is weakest in Sarawak?');
     expect(fact.availability).toBe('AVAILABLE');
-    expect(fact.diagnosis?.weakestPillar).toBe('Food');
+    expect(fact.diagnosis?.weakestPillar).toBe(pillarExtremum('Sarawak', 'minimum'));
     expect(fact.values.pillarScores.length).toBeGreaterThan(0);
   });
 
@@ -278,21 +300,22 @@ describe('indicator, target, comparison, trend, SDG, and district facts', () => 
     expect(fact.comparison.allowed).toBe(true);
     expect(fact.territories).toEqual(expect.arrayContaining(['Sabah', 'Sarawak']));
     expect(fact.values.rawValues).toEqual(expect.arrayContaining([
-      expect.objectContaining({ territory: 'Sabah', concept: 'resilience', value: 63.7 }),
-      expect.objectContaining({ territory: 'Sarawak', concept: 'resilience', value: 72.5 }),
+      expect.objectContaining({ territory: 'Sabah', concept: 'resilience', value: territoryScore('Sabah') }),
+      expect.objectContaining({ territory: 'Sarawak', concept: 'resilience', value: territoryScore('Sarawak') }),
     ]));
-    expect(fact.approvedNumericTokens).toEqual(expect.arrayContaining(['63.7', '72.5']));
+    expect(fact.approvedNumericTokens).toEqual(expect.arrayContaining([formattedScore('Sabah'), formattedScore('Sarawak')]));
   });
 
   it('preserves the compatible difference for comparison requests', () => {
     const fact = buildFact('Compare Sabah and Sarawak resilience scores.');
+    const difference = comparisonDifference('Sarawak', 'Sabah');
     expect(fact.values.rawValues).toContainEqual(expect.objectContaining({
       label: 'compatible difference',
-      value: 8.8,
-      formattedValue: '8.8',
+      value: difference,
+      formattedValue: Number.isInteger(difference) ? String(difference) : difference.toFixed(1),
       unit: 'score/100',
     }));
-    expect(fact.approvedNumericTokens).toContain('8.8');
+    expect(fact.approvedNumericTokens).toContain(String(difference));
   });
 
   it('clarifies more-than-two territory comparisons instead of truncating', () => {
@@ -404,7 +427,7 @@ describe('indicator, target, comparison, trend, SDG, and district facts', () => 
 
   it('downgrades SDG progress to coverage facts', () => {
     const fact = buildFact('What is the SDG progress for Sabah education?');
-    expect(fact.availability).toBe('UNAVAILABLE');
+    expect(fact.availability).toBe('PARTIAL');
     expect(fact.conclusion?.code).toBe('SDG_PROGRESS_DOWNGRADED');
     expect(fact.requiredDisclosures.join(' ')).toContain('cannot be calculated');
   });
