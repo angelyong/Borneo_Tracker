@@ -87,6 +87,17 @@ function lowerTerritory(left, right) {
   return territoryScore(left) < territoryScore(right) ? left : right;
 }
 
+function expectedSdgAvailability(factObject) {
+  const requestedConcepts = factObject.concepts.filter((concept) => concept !== 'resilience');
+  const hasCommittedCoverage = indicatorsData.rows.some((row) =>
+    factObject.territories.includes(row.territory) &&
+    requestedConcepts.includes(row.dashboard_concept) &&
+    (row.canonical === 1 || row.canonical === '1' || row.canonical === true) &&
+    row.sdg_goal
+  );
+  return hasCommittedCoverage ? 'PARTIAL' : 'UNAVAILABLE';
+}
+
 function baseEntities(overrides = {}) {
   const operations = {
     comparison: false,
@@ -164,9 +175,11 @@ function baseFact(overrides = {}) {
 
 describe('structured answer AVAILABLE layers', () => {
   it('builds an overall resilience answer', () => {
-    const { answer } = buildFactAndAnswer("What is Sabah's resilience score?");
+    const { answer, factObject } = buildFactAndAnswer("What is Sabah's resilience score?");
+    const expected = resilienceData.territories.Sabah.index;
 
     expect(answer.availability).toBe('AVAILABLE');
+    expect(factObject.values.overallResilience?.value).toBe(expected);
     expect(answer.layers.conclusion).toMatchObject({
       status: 'AVAILABLE',
       heading: 'Conclusion',
@@ -179,7 +192,6 @@ describe('structured answer AVAILABLE layers', () => {
   it('builds a weakest pillar answer without invented causes', () => {
     const { answer } = buildFactAndAnswer('Which pillar is weakest in Sarawak?');
     const weakest = pillarExtremum('Sarawak', 'minimum');
-
     expect(answer.layers.conclusion.text).toBe(`${weakest} is the weakest resilience pillar in Sarawak.`);
     expect(answer.layers.diagnosis.text).toContain(`Weakest pillar: ${weakest}.`);
     expect(answer.layers.diagnosis.text).not.toMatch(/because|caused/i);
@@ -297,9 +309,9 @@ describe('structured answer PARTIAL and unavailable layers', () => {
   });
 
   it('downgrades SDG progress to coverage or mapping only', () => {
-    const { answer } = buildFactAndAnswer('What is the SDG progress for Sabah education?');
+    const { answer, factObject } = buildFactAndAnswer('What is the SDG progress for Sabah education?');
 
-    expect(answer.availability).toBe('PARTIAL');
+    expect(answer.availability).toBe(expectedSdgAvailability(factObject));
     expect(answer.layers.gap.text).toContain('SDG coverage or mapping only');
     expect(answer.layers.honesty.warnings.join(' ')).toContain('SDG progress-to-target cannot be calculated');
   });

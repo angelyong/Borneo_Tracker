@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import indicatorsData from '../../../public/data/indicators.json';
 import resilienceData from '../../../public/data/resilience.json';
 import { AIChatHttpError, MAX_MESSAGE_LENGTH, validateChatRequest } from './contracts.ts';
 import { generateGeminiAnswer } from './geminiClient.ts';
@@ -36,6 +37,16 @@ function higherTerritory(left, right) {
 
 function lowerTerritory(left, right) {
   return territoryScore(left) < territoryScore(right) ? left : right;
+}
+
+function expectedSdgAvailability(territory, concept) {
+  const hasCommittedCoverage = indicatorsData.rows.some((row) =>
+    row.territory === territory &&
+    row.dashboard_concept === concept &&
+    (row.canonical === 1 || row.canonical === '1' || row.canonical === true) &&
+    row.sdg_goal
+  );
+  return hasCommittedCoverage ? 'PARTIAL' : 'UNAVAILABLE';
 }
 
 afterEach(() => {
@@ -1231,7 +1242,9 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
       region: '',
     });
 
-    expect(result.geminiClient).toHaveBeenCalledWith({
+    expect(result.geminiClient).toHaveBeenCalledTimes(1);
+    const [submittedRequest, prompt] = result.geminiClient.mock.calls[0];
+    expect(submittedRequest).toEqual({
       ...validPayload,
       message: "What is Sabah's resilience score?",
       region: '',
@@ -1244,8 +1257,8 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
         approvedNumericTokens: expect.arrayContaining([displayScore('Sabah')]),
       }),
     }));
-    expect(result.geminiClient.mock.calls[0][1].userContent).toContain("What is Sabah's resilience score?");
-    expect(result.geminiClient.mock.calls[0][1].userContent).toContain('"verifiedAnswerContent"');
+    expect(prompt.userContent).toContain("What is Sabah's resilience score?");
+    expect(prompt.userContent).toContain('"verifiedAnswerContent"');
   });
 
   it('grounds comparison answers with both values, direction, difference, and no advisory layers', async () => {
@@ -2004,7 +2017,7 @@ describe('ai-chat Stage 4C template fallback', () => {
     });
   });
 
-  it('returns partial and unavailable dashboard fallbacks safely', async () => {
+  it('returns SDG coverage and unavailable dashboard fallbacks safely', async () => {
     const partial = await runFallbackRequest(
       { ...validPayload, message: 'What is the dashboard data for Sabah education SDG progress?', region: '' },
       new AIChatHttpError(429, 'GEMINI_RATE_LIMITED', 'rate limit')
@@ -2015,7 +2028,7 @@ describe('ai-chat Stage 4C template fallback', () => {
     );
 
     expect(partial.response.status).toBe(200);
-    expect(partial.fallbackLog.structuredAnswerAvailability).toBe('PARTIAL');
+    expect(partial.fallbackLog.structuredAnswerAvailability).toBe(expectedSdgAvailability('Sabah', 'education'));
     expect(partial.body.answer).toContain('progress-to-target cannot be calculated');
     expect(unavailable.response.status).toBe(200);
     expect(['PARTIAL', 'UNAVAILABLE']).toContain(unavailable.fallbackLog.structuredAnswerAvailability);

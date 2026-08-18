@@ -52,6 +52,17 @@ function comparisonDifference(left, right) {
   return Number((territoryScore(left) - territoryScore(right)).toFixed(1));
 }
 
+function expectedSdgAvailability(fact) {
+  const requestedConcepts = fact.concepts.filter((concept) => concept !== 'resilience');
+  const hasCommittedCoverage = indicatorsData.rows.some((row) =>
+    fact.territories.includes(row.territory) &&
+    requestedConcepts.includes(row.dashboard_concept) &&
+    (row.canonical === 1 || row.canonical === '1' || row.canonical === true) &&
+    row.sdg_goal
+  );
+  return hasCommittedCoverage ? 'PARTIAL' : 'UNAVAILABLE';
+}
+
 describe('fact data repository', () => {
   it('finds supported territories from committed data', () => {
     const repository = new FactDataRepository();
@@ -189,15 +200,13 @@ describe('fact object builder availability', () => {
 });
 
 describe('territory and pillar facts', () => {
-  it.each([
-    ['Sabah'],
-    ['Sarawak'],
-    ['Brunei'],
-    ['Kalimantan'],
-  ])('builds overall resilience for %s where supported', (territory) => {
-    const fact = buildFact(`What is ${territory}'s resilience score?`);
-    expect(fact.values.overallResilience?.value).toBe(territoryScore(territory));
-  });
+  it.each(Object.entries(resilienceData.territories).map(([territory, record]) => [territory, record.index]))(
+    'builds overall resilience for %s where supported',
+    (territory, score) => {
+      const fact = buildFact(`What is ${territory}'s resilience score?`);
+      expect(fact.values.overallResilience?.value).toBe(score);
+    }
+  );
 
   it('builds weakest pillar facts without Gemini ranking', () => {
     const fact = buildFact('Which pillar is weakest in Sarawak?');
@@ -427,7 +436,7 @@ describe('indicator, target, comparison, trend, SDG, and district facts', () => 
 
   it('downgrades SDG progress to coverage facts', () => {
     const fact = buildFact('What is the SDG progress for Sabah education?');
-    expect(fact.availability).toBe('PARTIAL');
+    expect(fact.availability).toBe(expectedSdgAvailability(fact));
     expect(fact.conclusion?.code).toBe('SDG_PROGRESS_DOWNGRADED');
     expect(fact.requiredDisclosures.join(' ')).toContain('cannot be calculated');
   });

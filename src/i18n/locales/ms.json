@@ -157,6 +157,10 @@
     "moderate": "Sederhana ({{low}}–{{high}})",
     "good": "Baik (≥{{value}})",
     "resilienceIndexCaption": "Indeks Daya Tahan (0–100)",
+    "indexStatus": "Status daya tahan: {{band}}",
+    "ragBand_green": "Hijau — Dalam landasan",
+    "ragBand_amber": "Kuning — Perlu perhatian",
+    "ragBand_red": "Merah — Kritikal",
     "strictTrueResilience": "Ketat (Daya Tahan Sebenar):",
     "fragilityGap": "jurang kerapuhan",
     "loadingResilienceScores": "Memuatkan skor daya tahan…",
@@ -179,7 +183,22 @@
     "thisDistrict": "daerah ini",
     "weakestLinkFirst": "Pautan terlemah dahulu",
     "pillarProvenance": "Liputan tunjang · {{count}}/6 berskor",
-    "noComparableData": "Tiada data setanding — tidak pernah dianggarkan"
+    "noComparableData": "Tiada data setanding — tidak pernah dianggarkan",
+    "territoryCoverageFull": "{{scored}}/6 tunjang diberi skor.",
+    "territoryCoveragePartial": "{{scored}}/6 tunjang diberi skor. Tidak diberi skor: {{pillars}} — tiada data setanding dianggarkan.",
+    "aggregateCoverageByPillar": "Penyumbang tunjang (wilayah diberi skor): {{coverage}}.",
+    "aggregateCoverageFull": "Keenam-enam skor tunjang merangkumi semua {{count}} wilayah diberi skor.",
+    "aggregateCoveragePartialContributors": "Liputan penyumbang separa: {{partialPillars}} menggunakan kurang daripada semua {{count}} wilayah diberi skor; data wilayah yang hilang tidak dianggarkan.",
+    "aggregateCoverageUnscored": "Tidak diberi skor: {{unscoredPillars}} — data wilayah yang hilang tidak dianggarkan.",
+    "aggregateCoveragePartialContributorsAndUnscored": "Liputan penyumbang separa: {{partialPillars}} menggunakan kurang daripada semua {{count}} wilayah diberi skor. Tidak diberi skor: {{unscoredPillars}} — data wilayah yang hilang tidak dianggarkan.",
+    "aggregateResilienceByPillarBody": "Enam skor tunjang dipaparkan sebagai agregat seluruh Borneo dan senarai terlemah-dahulu, supaya liputan wilayah penyumbang kekal kelihatan.",
+    "radarIncomplete": "Radar skor tidak tersedia sehingga semua tunjang diberi skor. Tidak diberi skor: {{pillars}} — tiada data setanding dianggarkan.",
+    "headline": {
+      "unavailable": "Tiada skor daya tahan tersedia untuk skop ini.",
+      "scoreOnly": "Skor daya tahan semasa: {{index}}. Tafsiran status tidak tersedia.",
+      "complete": "Skor daya tahan semasa: {{index}} — {{rag}}. {{weakestPillar}} ialah tunjang yang paling lemah dalam skor.",
+      "incomplete": "Skor daya tahan semasa: {{index}} — {{rag}}. {{weakestPillar}} ialah tunjang yang paling lemah dalam skor; liputan tidak lengkap, jadi data yang hilang tidak dianggarkan."
+    }
   },
   "esg": {
     "title": "Penunjuk ESG",

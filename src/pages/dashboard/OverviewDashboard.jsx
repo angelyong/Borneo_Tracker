@@ -39,6 +39,9 @@ import WeakestLinkBars from '../../components/WeakestLinkBars';
 import RagGauge from '../../components/RagGauge';
 import MoneyVsResilience from '../../components/MoneyVsResilience';
 import HexRadar from '../../components/HexRadar';
+import { HEXAGON_PILLARS } from '../../components/hexagonPillars';
+import { buildHeadline } from '../../utils/headline';
+import { buildAggregateResilience, RESILIENCE_PILLARS } from '../../utils/resiliencePresentation';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -586,46 +589,22 @@ const OverviewDashboard = () => {
         ragStrict: territory.ragStrict,
         weakestPillar: territory.weakestPillar,
         pillarScores: territory.pillarScores,
+        scoredPillars: territory.scoredPillars || Object.keys(territory.pillarScores || {}),
+        unscoredPillars: territory.unscoredPillars || [],
         thresholds,
-        note: `Weakest pillar: ${territory.weakestPillar} · ${territory.scoredPillars.length}/6 pillars scored`,
+        isAggregate: false,
       };
     }
 
-    const scored = Object.values(resilience.territories).filter((t) => Number.isFinite(t.index));
-
-    if (!scored.length) return null;
-
-    const avg = scored.reduce((sum, t) => sum + t.index, 0) / scored.length;
-    const index = Math.round(avg * 10) / 10;
-    const rag = index >= thresholds.green ? 'green' : index >= thresholds.amber ? 'amber' : 'red';
-
-    // All-Borneo hexagon = the per-pillar average across territories; strict = its
-    // geometric mean; weakest = the lowest averaged pillar.
-    const PILL = ['Food', 'Energy', 'Education', 'Shelter', 'Healthcare', 'Entertainment'];
-    const pillarScores = {};
-    PILL.forEach((p) => {
-      const vals = scored.map((t) => t.pillarScores?.[p]).filter(Number.isFinite);
-      if (vals.length) pillarScores[p] = Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10;
-    });
-    const pv = Object.values(pillarScores);
-    const strict = pv.length ? Math.round(Math.pow(pv.reduce((a, b) => a * b, 1), 1 / pv.length) * 10) / 10 : null;
-    const ragStrict =
-      strict == null ? null : strict >= thresholds.green ? 'green' : strict >= thresholds.amber ? 'amber' : 'red';
-    const weakestPillar = pv.length
-      ? Object.keys(pillarScores).reduce((m, p) => (pillarScores[p] < pillarScores[m] ? p : m), Object.keys(pillarScores)[0])
-      : null;
-
-    return {
-      index,
-      rag,
-      indexStrict: strict,
-      ragStrict,
-      weakestPillar,
-      pillarScores,
-      thresholds,
-      note: `Average of ${scored.length} territories${weakestPillar ? ` · weakest: ${weakestPillar}` : ''}`,
-    };
+    return buildAggregateResilience(resilience.territories, thresholds);
   }, [isDistrict, isOverall, panelTerritory, resilience]);
+
+  // BT-07 consumes the exact scope presentation already prepared above. It
+  // must not duplicate index, RAG, or aggregate calculation in the headline.
+  const headline = useMemo(
+    () => (resilienceView?.unavailable ? null : buildHeadline(resilienceView)),
+    [resilienceView]
+  );
 
   const hexCoverage = useMemo(() => {
     if (isDistrict) {
@@ -656,15 +635,16 @@ const OverviewDashboard = () => {
     return totals;
   }, [data, isDistrict, isOverall, panelTerritory, scopeRows, scopeName]);
 
-  // Real 0-100 pillar SCORES for the radar (territory level). Falls back to 0 for any
-  // unscored pillar so the hexagon keeps all six vertices. Districts have no scores.
+  // Real 0-100 pillar scores for the territory radar. Missing scores deliberately
+  // remain null: HexRadar keeps all six axes and labels the gap rather than
+  // inventing a zero. Districts have no resilience scores.
   const hexScores = useMemo(() => {
     if (isDistrict) return null;
     const ps = resilienceView?.pillarScores;
     if (!ps) return null;
     const out = {};
-    ['Food', 'Energy', 'Education', 'Shelter', 'Healthcare', 'Entertainment'].forEach((p) => {
-      out[p] = Number.isFinite(ps[p]) ? ps[p] : 0;
+    HEXAGON_PILLARS.forEach((pillar) => {
+      out[pillar] = Number.isFinite(ps[pillar]) ? ps[pillar] : null;
     });
     return out;
   }, [isDistrict, resilienceView]);
@@ -1019,8 +999,27 @@ const OverviewDashboard = () => {
                 <span style={{ ...styles.scoreBig, color: RAG_COLORS[resilienceView.rag] || '#1f2937' }}>
                   {resilienceView.index}
                 </span>
-                <span style={styles.scoreCaption}>{t('dashboard.resilienceIndexCaption')}</span>
+                <span style={styles.scoreMeta}>
+                  <span style={styles.scoreCaption}>{t('dashboard.resilienceIndexCaption')}</span>
+                  {resilienceView.rag && (
+                    <span
+                      style={{ ...styles.ragStatus, color: RAG_COLORS[resilienceView.rag] }}
+                      aria-label={t('dashboard.indexStatus', { band: t(`dashboard.ragBand_${resilienceView.rag}`) })}
+                    >
+                      <span aria-hidden="true">●</span> {t(`dashboard.ragBand_${resilienceView.rag}`)}
+                    </span>
+                  )}
+                </span>
               </div>
+
+              {headline && (
+                <p style={styles.resilienceHeadline}>
+                  {t(headline.key, {
+                    ...headline.values,
+                    rag: headline.values.rag ? t(`dashboard.ragBand_${headline.values.rag}`) : undefined,
+                  })}
+                </p>
+              )}
 
               {Number.isFinite(resilienceView.indexStrict) && (
                 <div style={styles.trendRow}>
@@ -1029,6 +1028,11 @@ const OverviewDashboard = () => {
                     <b style={{ color: RAG_COLORS[resilienceView.ragStrict] || 'inherit' }}>
                       {resilienceView.indexStrict}
                     </b>{' '}
+                    {resilienceView.ragStrict && (
+                      <span style={{ ...styles.ragStatusInline, color: RAG_COLORS[resilienceView.ragStrict] }}>
+                        <span aria-hidden="true">●</span> {t(`dashboard.ragBand_${resilienceView.ragStrict}`)}
+                      </span>
+                    )}{' '}
                     · {t('dashboard.fragilityGap')} {resilienceView.index >= resilienceView.indexStrict ? '−' : '+'}
                     {Math.abs(Math.round((resilienceView.index - resilienceView.indexStrict) * 10) / 10)}
                   </span>
@@ -1036,7 +1040,31 @@ const OverviewDashboard = () => {
               )}
 
               <div style={styles.trendRow}>
-                <span style={styles.trendLabel}>{resilienceView.note}</span>
+                {resilienceView.isAggregate ? (
+                  <span style={styles.trendLabel}>
+                    {t('dashboard.aggregateCoverageByPillar', {
+                      coverage: RESILIENCE_PILLARS.map(
+                        (pillar) => `${pillar} ${resilienceView.pillarCoverage[pillar]?.contributorCount || 0}/${resilienceView.pillarCoverage[pillar]?.denominator || 0}`
+                      ).join(' · '),
+                    })}{' '}
+                    {t(`dashboard.${resilienceView.aggregateCoverageStatus}`, {
+                      count: resilienceView.scoredTerritoryCount,
+                      partialPillars: resilienceView.partialContributorPillars.join(', '),
+                      unscoredPillars: resilienceView.unscoredPillars.join(', '),
+                    })}
+                  </span>
+                ) : resilienceView.unscoredPillars.length ? (
+                  <span style={styles.trendLabel}>
+                    {t('dashboard.territoryCoveragePartial', {
+                      scored: resilienceView.scoredPillars.length,
+                      pillars: resilienceView.unscoredPillars.join(', '),
+                    })}
+                  </span>
+                ) : (
+                  <span style={styles.trendLabel}>
+                    {t('dashboard.territoryCoverageFull', { scored: resilienceView.scoredPillars.length })}
+                  </span>
+                )}
               </div>
             </>
           ) : (
@@ -1061,14 +1089,34 @@ const OverviewDashboard = () => {
               </div>
             )
           ) : hexScores ? (
-            <HexRadar pillars={hexScores} max={100} weakest={resilienceView?.weakestPillar} />
+            <HexRadar
+              pillars={hexScores}
+              max={100}
+              weakest={resilienceView?.weakestPillar}
+              missingLabel={t('dashboard.noComparableData')}
+              incompleteLabel={t('regional.scoredPillarsTitle', {
+                count: resilienceView?.scoredPillars?.length || Object.values(hexScores).filter(Number.isFinite).length,
+              })}
+              ariaLabel={t('regional.scoredPillarsTitle', {
+                count: resilienceView?.scoredPillars?.length || Object.values(hexScores).filter(Number.isFinite).length,
+              })}
+            />
           ) : (
             <div style={styles.stateText}>{t('dashboard.loadingResilienceScores')}</div>
           )}
 
           {!isDistrict && resilienceView?.pillarScores && (
             <div style={{ marginTop: 14, borderTop: '1px solid var(--color-border)', paddingTop: 12 }}>
-              <WeakestLinkBars territory={resilienceView} title={t('dashboard.weakestLinkFirst')} />
+              <WeakestLinkBars
+                territory={resilienceView}
+                title={t('dashboard.weakestLinkFirst')}
+                explanation={t(
+                  resilienceView.isAggregate
+                    ? 'dashboard.aggregateResilienceByPillarBody'
+                    : 'about.resilienceByPillarBody'
+                )}
+                missingLabel={t('dashboard.noComparableData')}
+              />
             </div>
           )}
 
@@ -1622,6 +1670,35 @@ const styles = {
     fontSize: '11px',
     color: 'var(--color-muted)',
     marginTop: '-2px',
+  },
+
+  scoreMeta: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 3,
+  },
+
+  resilienceHeadline: {
+    margin: '8px 0 0',
+    fontSize: '13px',
+    lineHeight: 1.45,
+    fontWeight: '600',
+    color: 'var(--color-ink)',
+    textAlign: 'center',
+  },
+
+  ragStatus: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 4,
+    fontSize: 12,
+    fontWeight: 700,
+  },
+
+  ragStatusInline: {
+    fontSize: 12,
+    fontWeight: 700,
   },
 
   trendRow: {
