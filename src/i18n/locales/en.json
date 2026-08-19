@@ -110,6 +110,9 @@
     "terminalHint": "Run these anywhere. Neither tool is ours."
   },
   "sidebar": {
+    "groupExplore": "Explore",
+    "groupAnalyse": "Analyse",
+    "groupAct": "Act",
     "dashboard": "Dashboard",
     "regionalDetails": "Regional Details",
     "esgIndicators": "ESG Indicators",

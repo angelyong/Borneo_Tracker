@@ -109,6 +109,9 @@
     "terminalHint": "Jalankan di mana-mana. Kedua-dua alat ini bukan milik kami."
   },
   "sidebar": {
+    "groupExplore": "Terokai",
+    "groupAnalyse": "Analisis",
+    "groupAct": "Tindakan",
     "dashboard": "Papan Pemuka",
     "regionalDetails": "Butiran Wilayah",
     "esgIndicators": "Penunjuk ESG",
