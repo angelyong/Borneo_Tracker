@@ -5,13 +5,14 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import logoImg from '../assets/logo.png';
 import { useAuth } from '../auth/useAuth';
 import AIbotButton from './AIbotButton';
 import LanguageSwitcher from './LanguageSwitcher';
 import ThemeToggle from './ThemeToggle';
 import { isMuted, setMuted } from '../utils/notifications';
+import './miniTopBar.css';
 
 // Only these two pages have a "new items" sidebar badge, so only these two
 // get a mute control — everywhere else the button just doesn't render.
@@ -86,8 +87,9 @@ const MiniTopBar = ({ isSidebarOpen = false, isChatbotOpen = false, onMenuClick,
 
       <AIbotButton isOpen={isChatbotOpen} onToggle={onChatbotToggle} />
 
-      <div style={styles.logoCenter} onClick={() => navigate('/')}>
-        <img src={logoImg} alt="Borneo Tracker Logo" style={styles.logoImage} />
+      <div className="mini-topbar-brand" onClick={() => navigate('/')}>
+        <img src={logoImg} alt="Borneo Tracker Logo" className="mini-topbar-logo" />
+        <span className="mini-topbar-descriptor">{t('topbar.platformDescriptor')}</span>
       </div>
 
       {/* ── Spacer ── */}
@@ -96,6 +98,9 @@ const MiniTopBar = ({ isSidebarOpen = false, isChatbotOpen = false, onMenuClick,
 
       {/* ── Right: mute (News/Community only) + language + theme + account ── */}
       <div style={styles.rightGroup}>
+        <Link className="mini-topbar-nav-link" to="/about#how-it-works">
+          {t('topbar.howItWorks')}
+        </Link>
 
         {/* Mute — only visible on News & Insights and Community */}
         {mutePage && (
@@ -245,13 +250,13 @@ const styles = {
     color:           '#ffffff',
     cursor:          'pointer',
     boxShadow:       '0 6px 12px rgba(13,33,24,0.12)',
-    marginLeft:      '12px',
+    marginLeft:      0,
   },
 
 rightGroup: {
   display: 'flex',
   alignItems: 'center',
-  gap: '16px',
+  gap: '8px',
   marginLeft: 'auto',
 },
 
@@ -350,24 +355,6 @@ avatarCircle: {
     cursor:          'pointer',
   },
 
-  // Logo in the center
-  logoImage: {
-  width: '42px',
-  height: '42px',
-  objectFit: 'contain',
-},
-
-logoCenter: {
-  position: 'absolute',
-  left: '50%',
-  top: '50%',
-  transform: 'translate(-50%, -50%)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  cursor: 'pointer',
-  zIndex: 301,
-},
 };
 
 export default MiniTopBar;

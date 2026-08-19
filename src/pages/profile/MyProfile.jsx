@@ -4,7 +4,6 @@
 
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import MiniTopBar from '../../components/MiniTopBar';
 import { useAuth } from '../../auth/useAuth';
 
 const INITIAL_USER = {
@@ -22,7 +21,6 @@ const INITIAL_USER = {
 export default function MyProfile() {
   const { t } = useTranslation();
   const { user: authUser, profile } = useAuth();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [user, setUser] = useState(() => ({
     ...INITIAL_USER,
     firstName: profile?.first_name || INITIAL_USER.firstName,
@@ -69,8 +67,6 @@ export default function MyProfile() {
 
       {/* Right column */}
       <div style={s.rightCol}>
-        <MiniTopBar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} notifCount={2} />
-
         {/* Scrollable content */}
         <div style={s.content}>
           <h1 style={s.pageTitle}>{t('profile.title')}</h1>
