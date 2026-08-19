@@ -26,6 +26,7 @@ describe('AIChatService Stage 7 contract', () => {
   afterEach(() => {
     vi.unstubAllEnvs();
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
     vi.useRealTimers();
   });
 
@@ -118,6 +119,15 @@ describe('AIChatService Stage 7 contract', () => {
 
   it('handles missing endpoint safely', async () => {
     vi.stubEnv('VITE_AI_CHAT_ENDPOINT', '');
+    await expect(sendAIChatMessage({ message: 'Hi' })).rejects.toMatchObject({
+      code: 'AI_CHAT_ENDPOINT_MISSING',
+      retryable: false,
+    });
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('treats whitespace endpoint as missing before fetch', async () => {
+    vi.stubEnv('VITE_AI_CHAT_ENDPOINT', '   ');
     await expect(sendAIChatMessage({ message: 'Hi' })).rejects.toMatchObject({
       code: 'AI_CHAT_ENDPOINT_MISSING',
       retryable: false,

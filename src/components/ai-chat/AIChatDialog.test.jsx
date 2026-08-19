@@ -44,6 +44,14 @@ async function submitMessage(text) {
   });
 }
 
+async function findAlert() {
+  return vi.waitFor(() => {
+    const alert = document.querySelector('[role="alert"]');
+    if (!alert) throw new Error('Alert not found');
+    return alert;
+  });
+}
+
 const successResponse = (body) => ({
   ok: true,
   status: 200,
@@ -90,6 +98,7 @@ describe('AI chat dialog', () => {
     await i18n.changeLanguage('en');
     vi.unstubAllGlobals();
     vi.unstubAllEnvs();
+    vi.restoreAllMocks();
     act(() => {
       root?.unmount();
     });
@@ -264,13 +273,16 @@ describe('AI chat dialog', () => {
     click(document.querySelector('[aria-label="AI Assistant"]'));
 
     await submitMessage('What is Borneo Tracker?');
-    expect(document.querySelector('[role="alert"]')?.textContent).toContain('not configured yet');
+    const missingEndpointAlert = await findAlert();
+    expect(missingEndpointAlert.textContent).toContain('not configured yet');
     expect(document.body.textContent).not.toContain('fake Borneo Tracker answer');
+    expect(fetch).not.toHaveBeenCalled();
 
     vi.stubEnv('VITE_AI_CHAT_ENDPOINT', 'https://example.test/ai-chat');
     fetch.mockResolvedValueOnce(successResponse({ answer: '<b>bad</b>', mode: 'old-mode', sources: [] }));
     await submitMessage('Malformed');
-    expect(document.querySelector('[role="alert"]')?.textContent).toContain('invalid response');
+    const malformedAlert = await findAlert();
+    expect(malformedAlert.textContent).toContain('invalid response');
     expect(document.body.textContent).not.toContain('<b>bad</b>');
   });
 });
