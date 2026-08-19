@@ -1056,6 +1056,11 @@ const OverviewDashboard = () => {
               ? t('dashboard.hexagonSubDistrict')
               : t('dashboard.hexagonSubRegion')}
           </div>
+          {!isDistrict && (
+            <p style={styles.pillarExplanation}>
+              {t('about.resilienceByPillarBody')}
+            </p>
+          )}
 
           {isDistrict ? (
             hasHexCoverage ? (
@@ -1584,6 +1589,13 @@ const styles = {
     fontSize: '11px',
     color: 'var(--color-muted)',
     marginBottom: '8px',
+  },
+
+  pillarExplanation: {
+    margin: '0 0 10px',
+    color: 'var(--color-muted)',
+    fontSize: '11.5px',
+    lineHeight: 1.45,
   },
 
   gaugeSvg: {
