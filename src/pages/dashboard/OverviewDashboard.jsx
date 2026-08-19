@@ -657,15 +657,15 @@ const OverviewDashboard = () => {
     return totals;
   }, [data, isDistrict, isOverall, panelTerritory, scopeRows, scopeName]);
 
-  // Real 0-100 pillar SCORES for the radar (territory level). Falls back to 0 for any
-  // unscored pillar so the hexagon keeps all six vertices. Districts have no scores.
+  // Real 0-100 pillar SCORES for the radar (territory level). Unscored pillars
+  // stay null so the radar can render an explicit no-data gap instead of a fake 0.
   const hexScores = useMemo(() => {
     if (isDistrict) return null;
     const ps = resilienceView?.pillarScores;
     if (!ps) return null;
     const out = {};
     ['Food', 'Energy', 'Education', 'Shelter', 'Healthcare', 'Entertainment'].forEach((p) => {
-      out[p] = Number.isFinite(ps[p]) ? ps[p] : 0;
+      out[p] = Number.isFinite(ps[p]) ? ps[p] : null;
     });
     return out;
   }, [isDistrict, resilienceView]);

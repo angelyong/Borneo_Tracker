@@ -191,9 +191,7 @@ export default function AboutPage() {
             <InfoCard key={item.title} item={item} />
           ))}
         </div>
-        <a className="about-inline-link" href="#resilience-score">
-          {t('about.howItWorksScoreLink')}
-        </a>
+        
       </Section>
 
       <Section id="resilience-score" title={t('about.theResilienceScore')}>

@@ -1,8 +1,9 @@
-// Weakest-link-first pillar bars — the honest hero of the resilience view.
-// The thesis is "resilience = the weakest link", so we rank pillars ASCENDING
-// (weakest on top) instead of hiding them in a symmetric average. Each bar fills
-// toward the 100 target; the unfilled remainder IS the gap to self-sufficiency.
-// Theme-aware via CSS vars (src/theme.css).
+// Weakest-link-first pillar bars.
+// Scored pillars rank ascending so the weakest real score appears first.
+// Unscored pillars stay visible as no-data rows rather than disappearing or
+// masquerading as zero.
+
+import { useTranslation } from 'react-i18next';
 
 const PILLARS = ['Food', 'Energy', 'Education', 'Shelter', 'Healthcare', 'Entertainment'];
 
@@ -14,14 +15,23 @@ function ragColor(score) {
 }
 
 export default function WeakestLinkBars({ territory, title = 'Weakest link first' }) {
+  const { t } = useTranslation();
   if (!territory?.pillarScores) return null;
   const { pillarScores, weakestPillar } = territory;
 
-  const rows = PILLARS.filter((p) => Number.isFinite(pillarScores[p]))
-    .map((p) => ({ pillar: p, score: pillarScores[p] }))
-    .sort((a, b) => a.score - b.score);
+  const rows = PILLARS
+    .map((pillar) => ({
+      pillar,
+      score: pillarScores[pillar],
+      scored: Number.isFinite(pillarScores[pillar]),
+    }))
+    .sort((a, b) => {
+      if (a.scored !== b.scored) return a.scored ? -1 : 1;
+      if (!a.scored) return PILLARS.indexOf(a.pillar) - PILLARS.indexOf(b.pillar);
+      return a.score - b.score;
+    });
 
-  if (!rows.length) return null;
+  if (!rows.some((row) => row.scored)) return null;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
@@ -37,9 +47,9 @@ export default function WeakestLinkBars({ territory, title = 'Weakest link first
         {title}
       </div>
 
-      {rows.map(({ pillar, score }) => {
+      {rows.map(({ pillar, score, scored }) => {
         const color = ragColor(score);
-        const isWeakest = pillar === weakestPillar;
+        const isWeakest = scored && pillar === weakestPillar;
         return (
           <div key={pillar} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span
@@ -48,45 +58,48 @@ export default function WeakestLinkBars({ territory, title = 'Weakest link first
                 flexShrink: 0,
                 fontSize: 12,
                 fontWeight: isWeakest ? 700 : 600,
-                color: isWeakest ? 'var(--color-red)' : 'var(--color-ink)',
+                color: scored ? (isWeakest ? 'var(--color-red)' : 'var(--color-ink)') : 'var(--color-faint)',
               }}
             >
               {pillar}
-              {isWeakest ? <span title="The limiting factor"> ⚠</span> : null}
+              {isWeakest ? <span title="The limiting factor"> !</span> : null}
             </span>
 
             <div
-              title={`${score} / 100 — gap to target: ${Math.round((100 - score) * 10) / 10}`}
+              title={scored ? `${score} / 100 - gap to target: ${Math.round((100 - score) * 10) / 10}` : t('common.noData')}
               style={{
                 flex: 1,
                 height: 8,
                 background: 'var(--color-grey-soft)',
                 borderRadius: 999,
                 overflow: 'hidden',
+                border: scored ? 'none' : '1px dashed var(--color-faint)',
               }}
             >
-              <div
-                style={{
-                  width: `${Math.max(0, Math.min(100, score))}%`,
-                  height: '100%',
-                  background: color,
-                  borderRadius: 999,
-                }}
-              />
+              {scored && (
+                <div
+                  style={{
+                    width: `${Math.max(0, Math.min(100, score))}%`,
+                    height: '100%',
+                    background: color,
+                    borderRadius: 999,
+                  }}
+                />
+              )}
             </div>
 
             <span
               style={{
-                width: 30,
+                width: scored ? 30 : 48,
                 flexShrink: 0,
                 textAlign: 'right',
-                fontSize: 13,
+                fontSize: scored ? 13 : 11,
                 fontWeight: 700,
                 fontVariantNumeric: 'tabular-nums',
                 color,
               }}
             >
-              {score}
+              {scored ? score : t('common.noData')}
             </span>
           </div>
         );
