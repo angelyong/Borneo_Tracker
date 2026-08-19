@@ -21,6 +21,7 @@ import DataFreshness from '../../components/DataFreshness';
 import ProvenanceChip from '../../components/ProvenanceChip';
 import HexRadar from '../../components/HexRadar';
 import IntegrityChip from '../../components/IntegrityChip';
+import ScoreExplainer from '../../components/ScoreExplainer';
 
 const RegionalDetails = () => {
   const { t, i18n } = useTranslation();
@@ -79,6 +80,9 @@ const RegionalDetails = () => {
   const activeChartMode     = chartMode === 'trend' && trendSeries ? 'trend' : 'snapshot';
   const trendReadyCount     = countTrendReadyConcepts(data, selectedTerritory);
   const territoryResilience = resilience?.territories?.[selectedTerritory] || null;
+  const territoryFragilityGap = Number.isFinite(territoryResilience?.index) && Number.isFinite(territoryResilience?.indexStrict)
+    ? Math.abs(Math.round((territoryResilience.index - territoryResilience.indexStrict) * 10) / 10)
+    : null;
   // Real 0–100 resilience scores per hexagon pillar (only exists for the four
   // territories). Null for unsupported scopes or while loading — the radar card
   // falls back to an honest note in that case.
@@ -258,11 +262,22 @@ const RegionalDetails = () => {
                     <strong style={{ color: ragColor[territoryResilience.rag] || 'var(--color-ink)' }}>
                       {territoryResilience.index}
                     </strong>
-                    <span style={{ fontSize: '11px', color: 'var(--color-muted)' }}>
-                      {t('regional.weakestPillarsScored', {
-                        pillar: territoryResilience.weakestPillar,
-                        count: territoryResilience.scoredPillars.length,
-                      })}
+                    <ScoreExplainer />
+                    <span style={styles.summaryChipDetail}>
+                      <span>
+                        {t('regional.weakestPillarsScored', {
+                          pillar: territoryResilience.weakestPillar,
+                          count: territoryResilience.scoredPillars.length,
+                        })}
+                      </span>
+                      {Number.isFinite(territoryResilience.indexStrict) && (
+                        <span>
+                          {t('dashboard.strictTrueResilience')} <strong>{territoryResilience.indexStrict}</strong>
+                          {territoryFragilityGap !== null && (
+                            <> · {t('dashboard.fragilityGap')} {territoryFragilityGap}</>
+                          )}
+                        </span>
+                      )}
                     </span>
                   </div>
                 )}
@@ -454,6 +469,7 @@ const styles = {
   summaryStrip:     { display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '12px' },
   summaryChip:      { backgroundColor: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: '999px', padding: '10px 14px', display: 'flex', gap: '8px', alignItems: 'center', color: 'var(--color-ink)' },
   summaryChipLabel: { fontSize: '12px', color: 'var(--color-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' },
+  summaryChipDetail: { display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '11px', color: 'var(--color-muted)', lineHeight: 1.25 },
 
   chartRow: { display: 'flex', gap: '20px', flexWrap: 'wrap' },
   barRow:   { marginTop: '20px', width: '100%' },

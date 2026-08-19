@@ -24,6 +24,17 @@
     "tooltip": "This dashboard is rebuilt from a daily pipeline; the date shown is when the data was generated, not when the page was loaded.",
     "tooltipUnknown": "This dashboard is rebuilt from a daily pipeline, but this dataset did not record when it was generated."
   },
+  "scoreExplainer": {
+    "openLabel": "Explain Resilience Index, Strict score and fragility gap",
+    "strictOpenLabel": "Explain why the Index and Strict scores differ",
+    "title": "Why the scores differ",
+    "indexLabel": "Index:",
+    "indexBody": " the arithmetic mean of the scored pillar scores.",
+    "strictLabel": "Strict:",
+    "strictBody": " a geometric mean that punishes one weak pillar more strongly.",
+    "gapLabel": "Gap:",
+    "gapBody": " the imbalance between the Index and Strict scores. A wider gap means one or more essentials are pulling resilience down."
+  },
   "integrity": {
     "verified": {
       "label": "Integrity verified",

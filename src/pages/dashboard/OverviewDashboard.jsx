@@ -39,6 +39,7 @@ import WeakestLinkBars from '../../components/WeakestLinkBars';
 import RagGauge from '../../components/RagGauge';
 import MoneyVsResilience from '../../components/MoneyVsResilience';
 import HexRadar from '../../components/HexRadar';
+import ScoreExplainer from '../../components/ScoreExplainer';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -980,7 +981,10 @@ const OverviewDashboard = () => {
         </div>
 
         <div style={styles.card}>
-          <div style={styles.sectionTitle}>{t('dashboard.overallResilienceStatus')}</div>
+          <div style={styles.sectionTitleRow}>
+            <div style={styles.sectionTitle}>{t('dashboard.overallResilienceStatus')}</div>
+            {!isDistrict && <ScoreExplainer />}
+          </div>
 
           {resilienceView?.unavailable ? (
             <div style={styles.stateText}>
@@ -1032,6 +1036,7 @@ const OverviewDashboard = () => {
                     · {t('dashboard.fragilityGap')} {resilienceView.index >= resilienceView.indexStrict ? '−' : '+'}
                     {Math.abs(Math.round((resilienceView.index - resilienceView.indexStrict) * 10) / 10)}
                   </span>
+                  <ScoreExplainer labelKey="scoreExplainer.strictOpenLabel" />
                 </div>
               )}
 
@@ -1564,6 +1569,14 @@ const styles = {
     fontSize: '13px',
     fontWeight: '700',
     color: 'var(--color-ink)',
+    marginBottom: '2px',
+  },
+
+  sectionTitleRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: '8px',
     marginBottom: '2px',
   },
 

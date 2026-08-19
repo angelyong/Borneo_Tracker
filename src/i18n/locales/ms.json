@@ -23,6 +23,17 @@
     "tooltip": "Papan pemuka ini dibina semula daripada saluran data harian; tarikh yang dipaparkan ialah masa data dijana, bukan masa halaman dimuatkan.",
     "tooltipUnknown": "Papan pemuka ini dibina semula daripada saluran data harian, tetapi set data ini tidak merekodkan masa ia dijana."
   },
+  "scoreExplainer": {
+    "openLabel": "Terangkan Indeks Daya Tahan, skor Ketat dan jurang kerapuhan",
+    "strictOpenLabel": "Terangkan mengapa skor Indeks dan Ketat berbeza",
+    "title": "Mengapa skor berbeza",
+    "indexLabel": "Indeks:",
+    "indexBody": " min aritmetik bagi skor tunjang yang diberi skor.",
+    "strictLabel": "Ketat:",
+    "strictBody": " min geometri yang menghukum satu tunjang lemah dengan lebih kuat.",
+    "gapLabel": "Jurang:",
+    "gapBody": " ketidakseimbangan antara skor Indeks dan Ketat. Jurang yang lebih besar bermaksud satu atau lebih keperluan asas sedang menurunkan daya tahan."
+  },
   "integrity": {
     "verified": {
       "label": "Integriti disahkan",
