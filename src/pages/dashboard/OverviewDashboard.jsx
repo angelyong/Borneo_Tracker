@@ -40,6 +40,7 @@ import RagGauge from '../../components/RagGauge';
 import MoneyVsResilience from '../../components/MoneyVsResilience';
 import HexRadar from '../../components/HexRadar';
 import ScoreExplainer from '../../components/ScoreExplainer';
+import { bandLabelKeyForRag } from '../../utils/resilienceBand';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -628,6 +629,10 @@ const OverviewDashboard = () => {
     };
   }, [isDistrict, isOverall, panelTerritory, resilience]);
 
+  const resilienceBandLabelKey = Number.isFinite(resilienceView?.index)
+    ? bandLabelKeyForRag(resilienceView?.rag)
+    : null;
+
   const hexCoverage = useMemo(() => {
     if (isDistrict) {
       return scopeName ? getHexagonCoverage(scopeRows, scopeName) : null;
@@ -1020,9 +1025,21 @@ const OverviewDashboard = () => {
               </div>
 
               <div style={styles.scoreRow}>
-                <span style={{ ...styles.scoreBig, color: RAG_COLORS[resilienceView.rag] || '#1f2937' }}>
-                  {resilienceView.index}
-                </span>
+                <div style={styles.scoreValueRow}>
+                  <span style={{ ...styles.scoreBig, color: RAG_COLORS[resilienceView.rag] || '#1f2937' }}>
+                    {resilienceView.index}
+                  </span>
+                  {resilienceBandLabelKey && (
+                    <span
+                      style={{
+                        ...styles.scoreBand,
+                        ...(styles[`scoreBand${resilienceView.rag}`] || {}),
+                      }}
+                    >
+                      {t(resilienceBandLabelKey)}
+                    </span>
+                  )}
+                </div>
                 <span style={styles.scoreCaption}>{t('dashboard.resilienceIndexCaption')}</span>
               </div>
 
@@ -1636,10 +1653,53 @@ const styles = {
     margin: '4px 0 2px',
   },
 
+  scoreValueRow: {
+    display: 'inline-flex',
+    alignItems: 'baseline',
+    justifyContent: 'center',
+    gap: '8px',
+    flexWrap: 'wrap',
+  },
+
   scoreBig: {
     fontSize: '32px',
     fontWeight: '800',
     color: 'var(--color-ink)',
+  },
+
+  scoreBand: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: '20px',
+    padding: '3px 8px',
+    borderRadius: '999px',
+    border: '1px solid var(--color-border)',
+    backgroundColor: 'var(--color-grey-soft)',
+    color: 'var(--color-ink)',
+    fontSize: '11px',
+    fontWeight: '800',
+    lineHeight: 1,
+    letterSpacing: '0.04em',
+    textTransform: 'uppercase',
+  },
+
+  scoreBandgreen: {
+    color: '#166534',
+    backgroundColor: '#dcfce7',
+    borderColor: '#86efac',
+  },
+
+  scoreBandamber: {
+    color: '#92400e',
+    backgroundColor: '#fef3c7',
+    borderColor: '#fcd34d',
+  },
+
+  scoreBandred: {
+    color: '#991b1b',
+    backgroundColor: '#fee2e2',
+    borderColor: '#fca5a5',
   },
 
   scoreCaption: {

@@ -22,6 +22,7 @@ import ProvenanceChip from '../../components/ProvenanceChip';
 import HexRadar from '../../components/HexRadar';
 import IntegrityChip from '../../components/IntegrityChip';
 import ScoreExplainer from '../../components/ScoreExplainer';
+import { bandLabelKeyForRag } from '../../utils/resilienceBand';
 
 const RegionalDetails = () => {
   const { t, i18n } = useTranslation();
@@ -82,6 +83,9 @@ const RegionalDetails = () => {
   const territoryResilience = resilience?.territories?.[selectedTerritory] || null;
   const territoryFragilityGap = Number.isFinite(territoryResilience?.index) && Number.isFinite(territoryResilience?.indexStrict)
     ? Math.abs(Math.round((territoryResilience.index - territoryResilience.indexStrict) * 10) / 10)
+    : null;
+  const territoryBandLabelKey = Number.isFinite(territoryResilience?.index)
+    ? bandLabelKeyForRag(territoryResilience?.rag)
     : null;
   // Real 0–100 resilience scores per hexagon pillar (only exists for the four
   // territories). Null for unsupported scopes or while loading — the radar card
@@ -262,6 +266,16 @@ const RegionalDetails = () => {
                     <strong style={{ color: ragColor[territoryResilience.rag] || 'var(--color-ink)' }}>
                       {territoryResilience.index}
                     </strong>
+                    {territoryBandLabelKey && (
+                      <span
+                        style={{
+                          ...styles.summaryBand,
+                          ...(styles[`summaryBand${territoryResilience.rag}`] || {}),
+                        }}
+                      >
+                        {t(territoryBandLabelKey)}
+                      </span>
+                    )}
                     <ScoreExplainer />
                     <span style={styles.summaryChipDetail}>
                       <span>
@@ -469,6 +483,10 @@ const styles = {
   summaryStrip:     { display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '12px' },
   summaryChip:      { backgroundColor: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: '999px', padding: '10px 14px', display: 'flex', gap: '8px', alignItems: 'center', color: 'var(--color-ink)' },
   summaryChipLabel: { fontSize: '12px', color: 'var(--color-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' },
+  summaryBand:      { display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minHeight: '19px', padding: '3px 7px', borderRadius: '999px', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-grey-soft)', color: 'var(--color-ink)', fontSize: '10.5px', fontWeight: '800', lineHeight: 1, textTransform: 'uppercase', letterSpacing: '0.04em' },
+  summaryBandgreen: { color: '#166534', backgroundColor: '#dcfce7', borderColor: '#86efac' },
+  summaryBandamber: { color: '#92400e', backgroundColor: '#fef3c7', borderColor: '#fcd34d' },
+  summaryBandred:   { color: '#991b1b', backgroundColor: '#fee2e2', borderColor: '#fca5a5' },
   summaryChipDetail: { display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '11px', color: 'var(--color-muted)', lineHeight: 1.25 },
 
   chartRow: { display: 'flex', gap: '20px', flexWrap: 'wrap' },
