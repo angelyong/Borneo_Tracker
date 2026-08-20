@@ -620,6 +620,12 @@ function finalizeFact(fact: AIChatFactObject): AIChatFactObject {
   }
   for (const group of fact.sdgIndicatorList?.groups || []) {
     for (const year of group.years) yearTokens.add(String(year));
+    // SDG indicator-list answers render these committed source labels in the
+    // diagnosis layer. Approve only the numeric tokens carried by that exact
+    // fact field; arbitrary model prose remains outside the allowlist.
+    for (const source of group.sources) {
+      addApprovedTextTokens(numericTokens, yearTokens, source);
+    }
   }
   for (const text of [
     fact.conclusion?.text || '',

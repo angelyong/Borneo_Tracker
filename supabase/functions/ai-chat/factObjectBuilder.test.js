@@ -464,11 +464,14 @@ describe('indicator, target, comparison, trend, SDG, and district facts', () => 
   });
 
   it('builds canonical SDG13, SDG6, and SDG3 indicator-list identities', () => {
-    expect(buildFact('Which indicators are mapped to SDG 13?').sdgIndicatorList?.groups.map((group) => group.indicator)).toEqual([
+    const sdg13 = buildFact('Which indicators are mapped to SDG 13?');
+    expect(sdg13.sdgIndicatorList?.groups.map((group) => group.indicator)).toEqual([
+      'Active fire hotspots (24h)',
       'Air quality (AQI, live)',
       'Fire alerts (VIIRS, annual)',
       'Tree cover loss (cumulative)',
     ]);
+    expect(sdg13.approvedNumericTokens).toEqual(expect.arrayContaining(['3836', '3864']));
     expect(buildFact('What indicators are tracked under SDG 6?').sdgIndicatorList?.groups.map((group) => group.indicator)).toEqual([
       'Clean water access',
     ]);

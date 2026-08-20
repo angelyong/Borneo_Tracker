@@ -360,7 +360,7 @@
     "question": "Which indicators are mapped to SDG 13?",
     "context": { "currentPage": "/", "language": "en" },
     "implementationStatus": "IMPLEMENTED",
-    "expected": { "intent": "DASHBOARD_DATA", "sdgGoals": ["SDG13"], "sdgIndicators": ["Air quality (AQI, live)", "Fire alerts (VIIRS, annual)", "Tree cover loss (cumulative)"], "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": true, "sdgIndicatorList": true, "districtLevel": false, "latest": false }, "factAvailability": "AVAILABLE", "blocked": false, "clarificationRequired": false },
+    "expected": { "intent": "DASHBOARD_DATA", "sdgGoals": ["SDG13"], "sdgIndicators": ["Active fire hotspots (24h)", "Air quality (AQI, live)", "Fire alerts (VIIRS, annual)", "Tree cover loss (cumulative)"], "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": true, "sdgIndicatorList": true, "districtLevel": false, "latest": false }, "factAvailability": "AVAILABLE", "blocked": false, "clarificationRequired": false },
     "tags": ["dashboard", "sdg"]
   },
   {
