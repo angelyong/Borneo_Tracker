@@ -7,6 +7,7 @@ import 'leaflet/dist/leaflet.css';
 import {
   CATEGORY_TO_PILLAR,
   LAYER_CONFIG,
+  LAYER_GROUPS,
   TERRITORIES,
   buildDistrictChoropleth,
   formatValue,
@@ -18,6 +19,7 @@ import {
   getHexagonCoverage,
   getLayerRows,
   getRowsForPillar,
+  hasDistrictFallbackLayer,
   isScoreLayer,
   layerColorScale,
   summarizeRows,
@@ -238,6 +240,14 @@ const OverviewDashboard = () => {
   const { data: bruneiGeo } = useBruneiGeo();
 
   const isDistrict = level === 'district';
+  const activeLayerConfig = LAYER_CONFIG[activeLayer] || {};
+  const activeLayerLabel = activeLayerConfig.labelKey
+    ? t(activeLayerConfig.labelKey)
+    : activeLayerConfig.label || t('dashboard.layer');
+  const activeLayerCaption = activeLayerConfig.captionKey ? t(activeLayerConfig.captionKey) : '';
+  const activeLayerUsesDistrictFallback = isDistrict && hasDistrictFallbackLayer(activeLayer);
+  const activeLayerUnavailableInDistrict =
+    isDistrict && isScoreLayer(activeLayer) && !activeLayerUsesDistrictFallback;
   const districtParents = useMemo(() => getDistrictParents(districtData), [districtData]);
   const districtOptions = useMemo(
     () => getDistrictsForParent(districtData, districtParent),
@@ -360,12 +370,14 @@ const OverviewDashboard = () => {
       const territory = territoryForParent(feature.properties?.parent);
       const entry = territoryFill[territory];
       const valueText = entry?.row ? formatValue(entry.row) : 'No data for this layer';
+      const config = LAYER_CONFIG[activeLayer] || {};
+      const label = config.labelKey ? t(config.labelKey) : config.label || '';
       layer.bindTooltip(
-        `<strong>${territory}</strong><br/>${LAYER_CONFIG[activeLayer]?.label || ''}<br/>${valueText}`,
+        `<strong>${territory}</strong><br/>${label}<br/>${valueText}`,
         { direction: 'top', sticky: true }
       );
     },
-    [territoryFill, activeLayer]
+    [territoryFill, activeLayer, t]
   );
 
   // Floating value labels pinned at each territory centre (the demo's "pills").
@@ -392,32 +404,44 @@ const OverviewDashboard = () => {
   // On-map legend scale for the active layer (green = better end, red = worse).
   const legendScale = useMemo(() => {
     const config = LAYER_CONFIG[activeLayer];
-    if (config?.scale === 'absolute') {
+    if (isDistrict && isScoreLayer(activeLayer) && !hasDistrictFallbackLayer(activeLayer)) {
+      return [{ label: t('dashboard.noDistrictScoreData'), color: '#94a3b8' }];
+    }
+    if (config?.scale === 'absolute' && !(isDistrict && hasDistrictFallbackLayer(activeLayer))) {
       return [
-        { label: '70-100 score', color: RAG_COLORS.green },
-        { label: '40-69.9 score', color: RAG_COLORS.amber },
-        { label: '0-39.9 score', color: RAG_COLORS.red },
-        { label: 'No data', color: '#94a3b8' },
+        { label: t('dashboard.scoreBandGood'), color: RAG_COLORS.green },
+        { label: t('dashboard.scoreBandModerate'), color: RAG_COLORS.amber },
+        { label: t('dashboard.scoreBandPoor'), color: RAG_COLORS.red },
+        { label: t('dashboard.noData'), color: '#94a3b8' },
       ];
     }
     const better = config?.better;
     return [
-      { label: better === 'higher' ? 'Higher (better)' : 'Lower (better)', color: RAG_COLORS.green },
-      { label: 'Middle', color: RAG_COLORS.amber },
-      { label: better === 'higher' ? 'Lower (worse)' : 'Higher (worse)', color: RAG_COLORS.red },
+      {
+        label: better === 'higher' ? t('dashboard.legendHigherBetter') : t('dashboard.legendLowerBetter'),
+        color: RAG_COLORS.green,
+      },
+      { label: t('dashboard.legendMiddle'), color: RAG_COLORS.amber },
+      {
+        label: better === 'higher' ? t('dashboard.legendLowerWorse') : t('dashboard.legendHigherWorse'),
+        color: RAG_COLORS.red,
+      },
     ];
-  }, [activeLayer]);
+  }, [activeLayer, isDistrict, t]);
 
   // District choropleth/list entries for the active layer, under the current parent.
   const districtLayerEntries = useMemo(() => {
-    if (!isDistrict || isScoreLayer(activeLayer) || !districtData?.rows) return [];
+    if (!isDistrict || activeLayerUnavailableInDistrict || !districtData?.rows) return [];
     return getDistrictLayerRows(districtData.rows, districtParent, activeLayer);
-  }, [isDistrict, districtData, districtParent, activeLayer]);
+  }, [isDistrict, activeLayerUnavailableInDistrict, districtData, districtParent, activeLayer]);
 
   // Choropleth colouring for the district polygons, by the active layer.
   const choropleth = useMemo(
-    () => (districtData?.rows && !isScoreLayer(activeLayer) ? buildDistrictChoropleth(districtData.rows, activeLayer) : null),
-    [districtData, activeLayer]
+    () =>
+      districtData?.rows && !activeLayerUnavailableInDistrict
+        ? buildDistrictChoropleth(districtData.rows, activeLayer)
+        : null,
+    [districtData, activeLayer, activeLayerUnavailableInDistrict]
   );
 
   // The join key of the currently-selected district — used to highlight it and to
@@ -897,13 +921,23 @@ const OverviewDashboard = () => {
         </div>
 
         <div style={styles.mapLegend}>
-          <div style={styles.mapLegendTitle}>{LAYER_CONFIG[activeLayer]?.label || t('dashboard.layer')}</div>
+          <div style={styles.mapLegendTitle}>{activeLayerLabel}</div>
           <div style={styles.mapLegendSub}>
-            {LAYER_CONFIG[activeLayer]?.scale === 'absolute'
-              ? t('dashboard.scoreScaleAbsolute')
-              : isDistrict
-                ? t('dashboard.acrossDistricts', { parent: districtParent })
-                : t('dashboard.colouredAcrossRegions')}
+            {activeLayerUnavailableInDistrict
+              ? t('dashboard.scoreLayerDistrictLegend')
+              : activeLayerUsesDistrictFallback
+                ? t(activeLayerConfig.districtFallbackKey)
+                : activeLayerConfig.scale === 'absolute'
+                  ? t('dashboard.scoreScaleAbsolute')
+                  : isDistrict
+                    ? t('dashboard.acrossDistricts', { parent: districtParent })
+                    : t('dashboard.colouredAcrossRegions')}
+          </div>
+          <div style={styles.mapLegendMeta}>
+            {t('dashboard.legendUnitDirection', {
+              unit: t(activeLayerUsesDistrictFallback ? activeLayerConfig.districtUnitKey : activeLayerConfig.unitKey),
+              direction: t(activeLayerConfig.directionKey),
+            })}
           </div>
           {legendScale.map((item) => (
             <div key={item.label} style={styles.mapLegendRow}>
@@ -1007,7 +1041,7 @@ const OverviewDashboard = () => {
 
           {resilienceView?.unavailable ? (
             <div style={styles.stateText}>
-              {t('dashboard.resilienceDistrictNotice', { district: districtParent })}
+              {t('dashboard.resilienceDistrictNotice', { district: district || districtParent })}
             </div>
           ) : resilienceView ? (
             <>
@@ -1170,21 +1204,33 @@ const OverviewDashboard = () => {
 
         <div style={styles.card}>
           <div style={styles.mapLayerSectionTitle}>
-            {t('dashboard.mapLayer', { layer: activeLayer ? LAYER_CONFIG[activeLayer]?.label : t('dashboard.none') })}
+            {t('dashboard.mapLayer', { layer: activeLayer ? activeLayerLabel : t('dashboard.none') })}
           </div>
+          {activeLayerCaption && <div style={styles.layerActiveCaption}>{activeLayerCaption}</div>}
 
           <div style={styles.layerRadioGroup}>
-            {Object.keys(LAYER_CONFIG).map((key) => (
-              <label key={key} style={styles.radioLabel}>
-                <input
-                  type="radio"
-                  name="active-layer"
-                  checked={activeLayer === key}
-                  onChange={() => setActiveLayer(key)}
-                  style={styles.radioInput}
-                />
-                {LAYER_CONFIG[key]?.label || key.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase())}
-              </label>
+            {LAYER_GROUPS.map((group) => (
+              <div key={group.key} style={styles.layerGroup}>
+                <div style={styles.layerGroupTitle}>{t(group.labelKey)}</div>
+                <div style={styles.layerButtonGrid}>
+                  {group.layers.map((key) => {
+                    const config = LAYER_CONFIG[key];
+                    const checked = activeLayer === key;
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => setActiveLayer(key)}
+                        style={{ ...styles.layerButton, ...(checked ? styles.layerButtonActive : {}) }}
+                        aria-pressed={checked}
+                      >
+                        <span style={styles.layerButtonLabel}>{t(config.labelKey)}</span>
+                        <span style={styles.layerButtonCaption}>{t(config.captionKey)}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             ))}
           </div>
 
@@ -1192,10 +1238,16 @@ const OverviewDashboard = () => {
           {error && <div style={{ ...styles.stateText, color: 'var(--color-red)' }}>{error}</div>}
 
           {isDistrict ? (
-            isScoreLayer(activeLayer) ? (
-              <div style={styles.stateText}>{t('dashboard.scoreLayerDistrictUnavailable')}</div>
+            activeLayerUnavailableInDistrict ? (
+              <div style={styles.stateText}>
+                {t('dashboard.scoreLayerDistrictUnavailable', { district: district || districtParent })}
+              </div>
             ) : districtLayerEntries.length ? (
-              districtLayerEntries.map(({ territory, row }) => (
+              <>
+                {activeLayerUsesDistrictFallback && (
+                  <div style={styles.layerFallbackNote}>{t(activeLayerConfig.districtFallbackKey)}</div>
+                )}
+                {districtLayerEntries.map(({ territory, row }) => (
                 <div key={territory} style={styles.summaryRow}>
                   <div>
                     <div style={styles.summaryTerritory}>{territory}</div>
@@ -1214,12 +1266,14 @@ const OverviewDashboard = () => {
 
                   <div style={styles.summaryValue}>{row ? formatValue(row) : '—'}</div>
                 </div>
-              ))
+                ))}
+              </>
             ) : (
               <div style={styles.stateText}>
                 {t('dashboard.noDistrictDataForLayer', {
-                  layer: LAYER_CONFIG[activeLayer]?.label,
+                  layer: activeLayerLabel,
                   parent: districtParent,
+                  district: district || districtParent,
                 })}
               </div>
             )
@@ -1334,7 +1388,13 @@ const styles = {
   mapLegendSub: {
     fontSize: '10.5px',
     color: 'var(--color-muted)',
-    marginBottom: '5px',
+    marginBottom: '2px',
+  },
+
+  mapLegendMeta: {
+    fontSize: '10px',
+    color: 'var(--color-muted)',
+    marginBottom: '6px',
   },
 
   mapLegendRow: {
@@ -1817,14 +1877,82 @@ const styles = {
     fontSize: '12px',
     fontWeight: '600',
     color: 'var(--color-ink)',
-    marginBottom: '8px',
+    marginBottom: '3px',
+  },
+
+  layerActiveCaption: {
+    fontSize: '11px',
+    lineHeight: 1.35,
+    color: 'var(--color-muted)',
+    marginBottom: '10px',
   },
 
   layerRadioGroup: {
     display: 'flex',
     flexDirection: 'column',
+    gap: '10px',
+    marginBottom: '12px',
+  },
+
+  layerGroup: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '5px',
+  },
+
+  layerGroupTitle: {
+    fontSize: '10px',
+    fontWeight: 800,
+    color: 'var(--color-muted)',
+    letterSpacing: '0.04em',
+    textTransform: 'uppercase',
+  },
+
+  layerButtonGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(118px, 1fr))',
     gap: '6px',
-    marginBottom: '10px',
+  },
+
+  layerButton: {
+    minHeight: 58,
+    border: '1px solid var(--color-border)',
+    borderRadius: '8px',
+    backgroundColor: 'var(--color-card)',
+    color: 'var(--color-ink)',
+    cursor: 'pointer',
+    padding: '7px 8px',
+    textAlign: 'left',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '3px',
+  },
+
+  layerButtonActive: {
+    borderColor: 'var(--color-green)',
+    backgroundColor: 'var(--color-green-soft)',
+  },
+
+  layerButtonLabel: {
+    fontSize: '11.5px',
+    fontWeight: 800,
+    lineHeight: 1.15,
+  },
+
+  layerButtonCaption: {
+    fontSize: '10.5px',
+    lineHeight: 1.25,
+    color: 'var(--color-muted)',
+  },
+
+  layerFallbackNote: {
+    fontSize: '11px',
+    lineHeight: 1.35,
+    color: 'var(--color-muted)',
+    backgroundColor: 'var(--color-grey-soft)',
+    borderRadius: '8px',
+    padding: '7px 8px',
+    marginBottom: '6px',
   },
 
   radioLabel: {
