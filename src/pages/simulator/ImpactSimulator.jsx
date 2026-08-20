@@ -14,10 +14,12 @@
 // as a 3rd argument since IS-2A/IS-2B, precisely for a caller like this one
 // that fetches its own copy.
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useLocation } from 'react-router-dom';
 import { TERRITORIES, useResilienceModel } from '../../data/useIndicators';
 import { recompute } from '../../utils/resilienceModel';
+import { parseSimulatorRoute, resolveSliderIndicator } from '../../utils/simulatorRoute';
 import HexRadar from '../../components/HexRadar';
 import RagGauge from '../../components/RagGauge';
 import WeakestLinkBars from '../../components/WeakestLinkBars';
@@ -33,20 +35,6 @@ const RAG_COLORS = { green: '#16a34a', amber: '#f59e0b', red: '#dc2626' };
 // from the loaded model, never invented here. Not every territory has every
 // candidate scored (e.g. Sabah/Sarawak have no scored Education indicator
 // at all this run) — resolved per-territory below, never guessed.
-const PILLAR_INDICATOR_CANDIDATES = {
-  Food: ['Paddy production per capita', 'Agricultural land'],
-  Energy: ['Electricity access', 'Electrification ratio', 'Domestic electrification ratio', 'Renewable electricity (% output)'],
-  Education: ['Adult literacy', 'Mean years schooling (RLS)', 'School enrolment (primary, gross)', 'School enrolment (secondary, gross)'],
-  Shelter: ['Clean water access', 'Basic sanitation access'],
-  Healthcare: ['Life expectancy', 'Hospital beds (per 1k)'],
-  Entertainment: ['Internet use'],
-};
-
-function resolveSliderIndicator(pillar, inputs) {
-  const candidates = PILLAR_INDICATOR_CANDIDATES[pillar] || [];
-  return candidates.find((name) => inputs[name]) || null;
-}
-
 function RagStatus({ rag, t }) {
   if (!rag) return null;
   const color = RAG_COLORS[rag] || 'var(--color-muted)';
@@ -61,9 +49,29 @@ function RagStatus({ rag, t }) {
 
 const ImpactSimulator = () => {
   const { t } = useTranslation();
+  const location = useLocation();
   const { data: model, loading, error } = useResilienceModel();
   const [selectedTerritory, setSelectedTerritory] = useState('Sabah');
   const [overrides, setOverrides] = useState({});
+  const [focusedPillar, setFocusedPillar] = useState(null);
+  const routeSignatureRef = useRef(null);
+  const sliderRefs = useRef({});
+
+  useEffect(() => {
+    if (!model) return;
+    const signature = `${location.pathname}${location.search}`;
+    if (routeSignatureRef.current === signature) return;
+    routeSignatureRef.current = signature;
+    const route = parseSimulatorRoute(location.search, model);
+    const id = window.setTimeout(() => {
+      if (route.territory) {
+        setSelectedTerritory(route.territory);
+        setOverrides({});
+      }
+      setFocusedPillar(route.pillar);
+    }, 0);
+    return () => window.clearTimeout(id);
+  }, [location.pathname, location.search, model]);
 
   const baselineInputs = useMemo(
     () => model?.baseline?.[selectedTerritory]?.inputs || {},
@@ -91,6 +99,16 @@ const ImpactSimulator = () => {
       };
     });
   }, [model, baselineInputs]);
+
+  useEffect(() => {
+    if (!focusedPillar) return undefined;
+    const id = window.setTimeout(() => {
+      const target = sliderRefs.current[focusedPillar];
+      target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      target?.focus();
+    }, 0);
+    return () => window.clearTimeout(id);
+  }, [focusedPillar, selectedTerritory, sliders]);
 
   const handleTerritoryChange = (territory) => {
     setSelectedTerritory(territory);
@@ -199,9 +217,15 @@ const ImpactSimulator = () => {
             {sliders.map(({ pillar, indicator, unit, min, max, baselineValue, confidence, source, year }) => {
               if (!indicator) {
                 return (
-                  <div key={pillar} style={styles.sliderRow}>
+                  <div
+                    key={pillar}
+                    ref={(node) => { sliderRefs.current[pillar] = node; }}
+                    tabIndex={focusedPillar === pillar ? -1 : undefined}
+                    style={{ ...styles.sliderRow, ...(focusedPillar === pillar ? styles.focusedSliderRow : {}) }}
+                  >
                     <div style={styles.sliderLabel}>{pillar}</div>
                     <div style={styles.noIndicator}>{t('simulator.noInputsForPillar')}</div>
+                    {focusedPillar === pillar && <div style={styles.focusedNoInput}>{t('simulator.focusedPillarUnavailable')}</div>}
                   </div>
                 );
               }
@@ -209,7 +233,12 @@ const ImpactSimulator = () => {
               const step = (max - min) / 100 || 1;
               const ariaLabel = t('simulator.sliderAriaLabel', { pillar, indicator, value: current, unit });
               return (
-                <div key={pillar} style={styles.sliderRow}>
+                <div
+                  key={pillar}
+                  ref={(node) => { sliderRefs.current[pillar] = node; }}
+                  tabIndex={focusedPillar === pillar ? -1 : undefined}
+                  style={{ ...styles.sliderRow, ...(focusedPillar === pillar ? styles.focusedSliderRow : {}) }}
+                >
                   <div style={styles.sliderLabelRow}>
                     <span style={styles.sliderLabel}>
                       {pillar} — {indicator}
@@ -385,12 +414,14 @@ const styles = {
   sectionTitle: { fontSize: '13px', fontWeight: '700', color: 'var(--color-ink)', marginBottom: '2px' },
   sectionSubtitle: { fontSize: '11px', color: 'var(--color-muted)', marginBottom: '12px' },
   sliderRow: { marginBottom: '16px' },
+  focusedSliderRow: { outline: '3px solid var(--color-focus, #2563eb)', outlineOffset: '5px', borderRadius: '6px' },
   sliderLabelRow: { display: 'flex', justifyContent: 'space-between', gap: '8px', marginBottom: '4px' },
   sliderLabel: { fontSize: '12.5px', fontWeight: '600', color: 'var(--color-ink)' },
   yearNote: { fontWeight: '400', color: 'var(--color-muted)' },
   sliderValue: { fontSize: '12.5px', fontWeight: '700', color: 'var(--color-ink)', fontVariantNumeric: 'tabular-nums' },
   slider: { width: '100%', marginBottom: '4px' },
   noIndicator: { fontSize: '12px', color: 'var(--color-muted)' },
+  focusedNoInput: { fontSize: '11px', color: 'var(--color-muted)', marginTop: '4px' },
 };
 
 export default ImpactSimulator;

@@ -250,6 +250,21 @@
     "weakestLinkFirst": "Pautan terlemah dahulu",
     "pillarProvenance": "Liputan tunjang · {{count}}/6 berskor",
     "noComparableData": "Tiada data setanding — tidak pernah dianggarkan",
+    "pillars": {
+      "Food": "Makanan",
+      "Energy": "Tenaga",
+      "Education": "Pendidikan",
+      "Shelter": "Perlindungan",
+      "Healthcare": "Penjagaan kesihatan",
+      "Entertainment": "Hiburan"
+    },
+    "whatNextCta": "Teroka senario ilustrasi {{territory}} untuk {{pillar}}",
+    "headline": {
+      "unavailable": "Tiada skor daya tahan tersedia untuk skop ini.",
+      "scoreOnly": "Skor daya tahan semasa: {{index}}. Tafsiran status tidak tersedia.",
+      "complete": "Skor daya tahan semasa: {{index}} — {{rag}}. {{weakestPillar}} ialah tunjang yang paling lemah dalam skor.",
+      "incomplete": "Skor daya tahan semasa: {{index}} — {{rag}}. {{weakestPillar}} ialah tunjang yang paling lemah dalam skor; liputan tidak lengkap, jadi data yang hilang tidak dianggarkan."
+    },
     "layerGroupScores": "Skor",
     "layerGroupEnvironment": "Alam Sekitar",
     "layerGroupSociety": "Masyarakat",
@@ -329,6 +344,7 @@
     "slidersTitle": "Laraskan penunjuk",
     "slidersSubtitle": "Hanya penunjuk yang benar-benar diberi skor oleh saluran data boleh disimulasikan — tiada apa di sini direka.",
     "noInputsForPillar": "Tiada penunjuk berskor untuk tunjang ini di wilayah ini.",
+    "focusedPillarUnavailable": "Pautan mendalam ini menunjuk ke sini, tetapi wilayah ini tiada input simulator berskor untuk tunjang ini.",
     "dataYear": "data {{year}}",
     "sliderAriaLabel": "{{pillar}}: {{indicator}}, kini {{value}} {{unit}}",
     "ragStatus_green": "Hijau — Dalam landasan",

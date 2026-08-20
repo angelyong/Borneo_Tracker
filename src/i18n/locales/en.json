@@ -251,6 +251,21 @@
     "weakestLinkFirst": "Weakest link first",
     "pillarProvenance": "Pillar provenance · {{count}}/6 scored",
     "noComparableData": "No comparable data — never imputed",
+    "pillars": {
+      "Food": "Food",
+      "Energy": "Energy",
+      "Education": "Education",
+      "Shelter": "Shelter",
+      "Healthcare": "Healthcare",
+      "Entertainment": "Entertainment"
+    },
+    "whatNextCta": "Explore an illustrative {{territory}} scenario for {{pillar}}",
+    "headline": {
+      "unavailable": "No resilience score is available for this scope.",
+      "scoreOnly": "Current resilience score: {{index}}. An interpretation band is not available.",
+      "complete": "Current resilience score: {{index}} — {{rag}}. {{weakestPillar}} is the weakest scored pillar.",
+      "incomplete": "Current resilience score: {{index}} — {{rag}}. {{weakestPillar}} is the weakest scored pillar; coverage is incomplete, so missing data is not imputed."
+    },
     "layerGroupScores": "Scores",
     "layerGroupEnvironment": "Environment",
     "layerGroupSociety": "Society",
@@ -330,6 +345,7 @@
     "slidersTitle": "Adjust indicators",
     "slidersSubtitle": "Only indicators the pipeline actually scored can be simulated — nothing here is invented.",
     "noInputsForPillar": "No scored indicator for this pillar in this territory.",
+    "focusedPillarUnavailable": "This deep link points here, but this territory has no scored simulator input for this pillar.",
     "dataYear": "{{year}} data",
     "sliderAriaLabel": "{{pillar}}: {{indicator}}, currently {{value}} {{unit}}",
     "ragStatus_green": "Green — On track",

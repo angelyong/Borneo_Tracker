@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useOutletContext } from 'react-router-dom';
+import { Link, useOutletContext } from 'react-router-dom';
 import { GeoJSON, MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -44,6 +44,8 @@ import MoneyVsResilience from '../../components/MoneyVsResilience';
 import HexRadar from '../../components/HexRadar';
 import ScoreExplainer from '../../components/ScoreExplainer';
 import { bandLabelKeyForRag } from '../../utils/resilienceBand';
+import { buildHeadline } from '../../utils/headline';
+import { makeSimulatorHref } from '../../utils/simulatorRoute';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -622,6 +624,8 @@ const OverviewDashboard = () => {
         ragStrict: territory.ragStrict,
         weakestPillar: territory.weakestPillar,
         pillarScores: territory.pillarScores,
+        scoredPillars: territory.scoredPillars || Object.keys(territory.pillarScores || {}),
+        unscoredPillars: territory.unscoredPillars || [],
         thresholds,
         note: `Weakest pillar: ${territory.weakestPillar} · ${territory.scoredPillars.length}/6 pillars scored`,
       };
@@ -658,6 +662,8 @@ const OverviewDashboard = () => {
       ragStrict,
       weakestPillar,
       pillarScores,
+      scoredPillars: Object.keys(pillarScores),
+      unscoredPillars: ['Food', 'Energy', 'Education', 'Shelter', 'Healthcare', 'Entertainment'].filter((pillar) => !Number.isFinite(pillarScores[pillar])),
       thresholds,
       note: `Average of ${scored.length} territories${weakestPillar ? ` · weakest: ${weakestPillar}` : ''}`,
     };
@@ -666,6 +672,15 @@ const OverviewDashboard = () => {
   const resilienceBandLabelKey = Number.isFinite(resilienceView?.index)
     ? bandLabelKeyForRag(resilienceView?.rag)
     : null;
+
+  const headline = useMemo(
+    () => (resilienceView?.unavailable ? null : buildHeadline(resilienceView)),
+    [resilienceView]
+  );
+  const simulatorHref = useMemo(() => {
+    if (isDistrict || isOverall || !Number.isFinite(resilienceView?.index)) return null;
+    return makeSimulatorHref(panelTerritory, resilienceView?.weakestPillar);
+  }, [isDistrict, isOverall, panelTerritory, resilienceView]);
 
   const hexCoverage = useMemo(() => {
     if (isDistrict) {
@@ -1091,6 +1106,26 @@ const OverviewDashboard = () => {
                 </div>
                 <span style={styles.scoreCaption}>{t('dashboard.resilienceIndexCaption')}</span>
               </div>
+
+              {headline && (
+                <p style={styles.resilienceHeadline}>
+                  {t(headline.key, {
+                    ...headline.values,
+                    rag: headline.values.rag ? t(`dashboard.ragBand_${headline.values.rag}`) : undefined,
+                    weakestPillar: headline.values.weakestPillar
+                      ? t(`dashboard.pillars.${headline.values.weakestPillar}`, { defaultValue: headline.values.weakestPillar })
+                      : undefined,
+                  })}
+                </p>
+              )}
+              {simulatorHref && (
+                <Link to={simulatorHref} style={styles.whatNextCta}>
+                  {t('dashboard.whatNextCta', {
+                    territory: panelTerritory,
+                    pillar: t(`dashboard.pillars.${resilienceView.weakestPillar}`, { defaultValue: resilienceView.weakestPillar }),
+                  })}
+                </Link>
+              )}
 
               {Number.isFinite(resilienceView.indexStrict) && (
                 <div style={styles.trendRow}>
@@ -1850,6 +1885,25 @@ const styles = {
   esgScoreLabel: {
     fontSize: '12px',
     color: 'var(--color-muted)',
+  },
+
+  resilienceHeadline: {
+    margin: '8px 0 0',
+    fontSize: '12px',
+    lineHeight: 1.45,
+    color: 'var(--color-muted)',
+  },
+
+  whatNextCta: {
+    display: 'inline-flex',
+    marginTop: '8px',
+    borderRadius: '7px',
+    padding: '8px 10px',
+    backgroundColor: 'var(--color-blue-soft, #eff6ff)',
+    color: 'var(--color-blue, #1d4ed8)',
+    fontSize: '12px',
+    fontWeight: '700',
+    textDecoration: 'none',
   },
 
   esgScoreValue: {
