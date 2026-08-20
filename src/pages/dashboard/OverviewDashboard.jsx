@@ -1029,6 +1029,7 @@ const OverviewDashboard = () => {
           <DataFreshness
             generatedAt={isDistrict ? districtGeneratedAt : generatedAt}
             loading={isDistrict ? districtLoading : loading}
+            artifact={isDistrict ? districtData : data}
           />
           <IntegrityChip />
         </div>
