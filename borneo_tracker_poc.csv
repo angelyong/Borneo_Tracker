@@ -225,18 +225,13 @@ Kalimantan Barat,"Fire alerts (VIIRS, annual)",2025,21611,count,Global Forest Wa
 Kalimantan Selatan,"Fire alerts (VIIRS, annual)",2025,1987,count,Global Forest Watch (VIIRS),satellite,2026-08-21
 Kalimantan Tengah,"Fire alerts (VIIRS, annual)",2025,3895,count,Global Forest Watch (VIIRS),satellite,2026-08-21
 Kalimantan Utara,"Fire alerts (VIIRS, annual)",2025,159,count,Global Forest Watch (VIIRS),satellite,2026-08-21
-Sabah,Active fire hotspots (24h),2026-08-20,4,detections,NASA FIRMS (VIIRS); 1835/1856 bbox detections spatially matched,satellite,2026-08-21
-Sarawak,Active fire hotspots (24h),2026-08-20,12,detections,NASA FIRMS (VIIRS); 1835/1856 bbox detections spatially matched,satellite,2026-08-21
-Brunei,Active fire hotspots (24h),2026-08-20,0,detections,NASA FIRMS (VIIRS); 1835/1856 bbox detections spatially matched,satellite,2026-08-21
-Kalimantan,Active fire hotspots (24h),2026-08-20,1819,detections,NASA FIRMS (VIIRS); 1835/1856 bbox detections spatially matched,satellite,2026-08-21
-Borneo (all),Active fire hotspots (24h),2026-08-20,1856,detections,NASA FIRMS (VIIRS); 1835/1856 bbox detections spatially matched,satellite,2026-08-21
-Sabah,"Air quality (AQI, live)",2026,71,AQI,WAQI / aqicn,city,2026-08-21
+Sabah,"Air quality (AQI, live)",2026,72,AQI,WAQI / aqicn,city,2026-08-21
 Sarawak,"Air quality (AQI, live)",2026,192,AQI,WAQI / aqicn,city,2026-08-21
 Brunei,"Air quality (AQI, live)",2026,35,AQI,WAQI / aqicn,city,2026-08-21
 Kalimantan Barat,"Air quality (AQI, live)",2023,62,AQI,WAQI / aqicn,city,2026-08-21
-Kalimantan Timur,"Air quality (AQI, live)",2026,50,AQI,WAQI / aqicn,city,2026-08-21
-Kalimantan Tengah,"Air quality (AQI, live)",2026,151,AQI,WAQI / aqicn,city,2026-08-21
-Kalimantan,"Air quality (AQI, live)",2026,88,AQI,WAQI / aqicn (mean of 3 Kalimantan cities),city,2026-08-21
+Kalimantan Timur,"Air quality (AQI, live)",2026,84,AQI,WAQI / aqicn,city,2026-08-21
+Kalimantan Tengah,"Air quality (AQI, live)",2026,142,AQI,WAQI / aqicn,city,2026-08-21
+Kalimantan,"Air quality (AQI, live)",2026,96,AQI,WAQI / aqicn (mean of 3 Kalimantan cities),city,2026-08-21
 Sabah,UNESCO World Heritage Sites,2026,1,count,UNESCO World Heritage List (whc.unesco.org),state,2026-08-21
 Sarawak,UNESCO World Heritage Sites,2026,2,count,UNESCO World Heritage List (whc.unesco.org),state,2026-08-21
 Brunei,UNESCO World Heritage Sites,2026,0,count,UNESCO World Heritage List (whc.unesco.org),national,2026-08-21

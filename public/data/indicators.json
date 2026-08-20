@@ -3,36 +3,36 @@
   "meta": {
     "schemaVersion": 1,
     "updateCadence": "mixed",
-    "sourceCount": 40,
+    "sourceCount": 39,
     "coverage": {
       "territories": {
         "Sabah": {
-          "rows": 25,
-          "canonicalRows": 21,
-          "concepts": 21,
-          "latestYear": 2026
-        },
-        "Sarawak": {
-          "rows": 26,
-          "canonicalRows": 21,
-          "concepts": 21,
-          "latestYear": 2026
-        },
-        "Brunei": {
-          "rows": 29,
+          "rows": 24,
           "canonicalRows": 20,
           "concepts": 20,
           "latestYear": 2026
         },
+        "Sarawak": {
+          "rows": 25,
+          "canonicalRows": 20,
+          "concepts": 20,
+          "latestYear": 2026
+        },
+        "Brunei": {
+          "rows": 28,
+          "canonicalRows": 19,
+          "concepts": 19,
+          "latestYear": 2026
+        },
         "Kalimantan": {
-          "rows": 22,
-          "canonicalRows": 21,
-          "concepts": 21,
+          "rows": 21,
+          "canonicalRows": 20,
+          "concepts": 20,
           "latestYear": 2026
         }
       },
-      "totalRows": 102,
-      "canonicalRows": 83,
+      "totalRows": 98,
+      "canonicalRows": 79,
       "trendSeries": 27
     }
   },
@@ -45,26 +45,6 @@
   "trendReady": true,
   "trendMinPoints": 3,
   "rows": [
-    {
-      "territory": "Brunei",
-      "source_territory": "Brunei",
-      "indicator": "Active fire hotspots (24h)",
-      "dashboard_concept": "active_fire_hotspots_24h",
-      "year": "2026-08-20",
-      "value": 0.0,
-      "unit": "detections",
-      "source": "NASA FIRMS (VIIRS); 1835/1856 bbox detections spatially matched",
-      "data_level": "satellite",
-      "esg_pillar": "E",
-      "sdg_goal": "SDG13",
-      "hexagon_pillar": "",
-      "confidence": "high",
-      "last_updated": "2026-08-21",
-      "canonical": 1,
-      "is_derived": 0,
-      "derived_from": "",
-      "source_count": 1
-    },
     {
       "territory": "Brunei",
       "source_territory": "Brunei",
@@ -628,30 +608,10 @@
     {
       "territory": "Kalimantan",
       "source_territory": "Kalimantan",
-      "indicator": "Active fire hotspots (24h)",
-      "dashboard_concept": "active_fire_hotspots_24h",
-      "year": "2026-08-20",
-      "value": 1819.0,
-      "unit": "detections",
-      "source": "NASA FIRMS (VIIRS); 1835/1856 bbox detections spatially matched",
-      "data_level": "satellite",
-      "esg_pillar": "E",
-      "sdg_goal": "SDG13",
-      "hexagon_pillar": "",
-      "confidence": "high",
-      "last_updated": "2026-08-21",
-      "canonical": 1,
-      "is_derived": 0,
-      "derived_from": "",
-      "source_count": 1
-    },
-    {
-      "territory": "Kalimantan",
-      "source_territory": "Kalimantan",
       "indicator": "Air quality (AQI, live)",
       "dashboard_concept": "air_quality",
       "year": "2026",
-      "value": 88.0,
+      "value": 96.0,
       "unit": "AQI",
       "source": "WAQI / aqicn (mean of 3 Kalimantan cities)",
       "data_level": "city",
@@ -1068,30 +1028,10 @@
     {
       "territory": "Sabah",
       "source_territory": "Sabah",
-      "indicator": "Active fire hotspots (24h)",
-      "dashboard_concept": "active_fire_hotspots_24h",
-      "year": "2026-08-20",
-      "value": 4.0,
-      "unit": "detections",
-      "source": "NASA FIRMS (VIIRS); 1835/1856 bbox detections spatially matched",
-      "data_level": "satellite",
-      "esg_pillar": "E",
-      "sdg_goal": "SDG13",
-      "hexagon_pillar": "",
-      "confidence": "high",
-      "last_updated": "2026-08-21",
-      "canonical": 1,
-      "is_derived": 0,
-      "derived_from": "",
-      "source_count": 1
-    },
-    {
-      "territory": "Sabah",
-      "source_territory": "Sabah",
       "indicator": "Air quality (AQI, live)",
       "dashboard_concept": "air_quality",
       "year": "2026",
-      "value": 71.0,
+      "value": 72.0,
       "unit": "AQI",
       "source": "WAQI / aqicn",
       "data_level": "city",
@@ -1557,26 +1497,6 @@
       "data_level": "state",
       "esg_pillar": "S",
       "sdg_goal": "SDG8",
-      "hexagon_pillar": "",
-      "confidence": "high",
-      "last_updated": "2026-08-21",
-      "canonical": 1,
-      "is_derived": 0,
-      "derived_from": "",
-      "source_count": 1
-    },
-    {
-      "territory": "Sarawak",
-      "source_territory": "Sarawak",
-      "indicator": "Active fire hotspots (24h)",
-      "dashboard_concept": "active_fire_hotspots_24h",
-      "year": "2026-08-20",
-      "value": 12.0,
-      "unit": "detections",
-      "source": "NASA FIRMS (VIIRS); 1835/1856 bbox detections spatially matched",
-      "data_level": "satellite",
-      "esg_pillar": "E",
-      "sdg_goal": "SDG13",
       "hexagon_pillar": "",
       "confidence": "high",
       "last_updated": "2026-08-21",

@@ -1,12 +1,12 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-08-20T18:31:38Z",
-  "runId": "32402701298",
-  "dataVersion": "f2c8b91c6d1257eee67cf3cbb1c0277c4001bf95fca9a6f59566c3cf5ff53ac2",
+  "generatedAt": "2026-08-20T19:40:14Z",
+  "runId": "32408670130",
+  "dataVersion": "6448d1b857e7a66d1281206e79b9f5f035ff78f2d44234c013231b346d893fe0",
   "files": {
     "public/data/indicators.json": {
-      "sha256": "3f39434ab9ec31a8b77d26104e808a87d465d9e5f9f162a25f1d2133d5bc5739",
-      "bytes": 111412,
+      "sha256": "5aa0d13afd4bd23cd1e45b7fdb7b5522ad6cd36f836f04a41ebd3a91de632e7c",
+      "bytes": 108947,
       "generatedAt": "2026-08-21"
     },
     "public/data/resilience.json": {
@@ -20,8 +20,8 @@
       "generatedAt": "2026-08-17"
     },
     "public/data/districts.json": {
-      "sha256": "40628168699fa515ee580de81468f1395b946fb76fc3fc6c6b7b19ef9fb85068",
-      "bytes": 598244,
+      "sha256": "4b4211a23961aa39afbb324c457123bf58061fc2eab766332c67bf774adbc0ce",
+      "bytes": 568623,
       "generatedAt": "2026-08-21"
     },
     "public/data/borneo_districts.geojson": {
@@ -37,7 +37,7 @@
   },
   "provenance": {
     "algorithm": "rfc6962-sha256-jsonl-v1",
-    "root": "05a3630467fd1d9bb1779b134adbd5cc9b8eeacd55b1459c2da36ca347a2f097",
-    "entries": 122
+    "root": "db2a0d9b12f2278a4a78118e3a9bea32dd60b2815b6a90efc6b7c45b419780b7",
+    "entries": 128
   }
 }
