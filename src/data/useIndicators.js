@@ -28,11 +28,18 @@ export const CATEGORY_TO_PILLAR = {
 };
 
 export const LAYER_CONFIG = {
-  forestCover: { label: 'Forest Cover', concept: 'forest_cover', better: 'higher' },
-  deforestation: { label: 'Deforestation', concept: 'deforestation', better: 'lower' },
-  airQuality: { label: 'Air Quality', concept: 'air_quality', better: 'lower' },
-  fireHotspots: { label: 'Fire Hotspots', concept: 'fire_hotspots', better: 'lower' },
-  poverty: { label: 'Poverty', concept: 'poverty', better: 'lower' },
+  resilience: { label: 'Resilience', source: 'resilience', scoreKey: 'index', better: 'higher', scale: 'absolute' },
+  food: { label: 'Food', source: 'resilience', pillar: 'Food', better: 'higher', scale: 'absolute' },
+  energy: { label: 'Energy', source: 'resilience', pillar: 'Energy', better: 'higher', scale: 'absolute' },
+  healthcare: { label: 'Healthcare', source: 'resilience', pillar: 'Healthcare', better: 'higher', scale: 'absolute' },
+  education: { label: 'Education', source: 'resilience', pillar: 'Education', better: 'higher', scale: 'absolute' },
+  shelter: { label: 'Shelter', source: 'resilience', pillar: 'Shelter', better: 'higher', scale: 'absolute' },
+  entertainment: { label: 'Entertainment', source: 'resilience', pillar: 'Entertainment', better: 'higher', scale: 'absolute' },
+  forestCover: { label: 'Forest Cover', source: 'indicators', concept: 'forest_cover', better: 'higher', scale: 'relative' },
+  deforestation: { label: 'Deforestation', source: 'indicators', concept: 'deforestation', better: 'lower', scale: 'relative' },
+  airQuality: { label: 'Air Quality', source: 'indicators', concept: 'air_quality', better: 'lower', scale: 'relative' },
+  fireHotspots: { label: 'Fire Hotspots', source: 'indicators', concept: 'fire_hotspots', better: 'lower', scale: 'relative' },
+  poverty: { label: 'Poverty', source: 'indicators', concept: 'poverty', better: 'lower', scale: 'relative' },
 };
 
 // `generatedAt` is the top-level date the daily rebuild pipeline stamps into
@@ -401,14 +408,48 @@ export function formatValue(row) {
   return formatted;
 }
 
+export function isScoreLayer(layerKey) {
+  return LAYER_CONFIG[layerKey]?.source === 'resilience';
+}
+
 export function titleCaseConfidence(value) {
   if (!value) return 'Unknown';
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
-export function getLayerRows(rows, layerKey) {
+function buildScoreLayerRow(territoryName, territory, config, generatedAt) {
+  const value = config.scoreKey === 'index' ? territory?.index : territory?.pillarScores?.[config.pillar];
+  if (!Number.isFinite(value)) return null;
+  return {
+    territory: territoryName,
+    indicator: config.label,
+    value,
+    unit: '/100',
+    source: 'resilience.json',
+    confidence: 'score',
+    year: generatedAt || null,
+    dashboard_concept: config.scoreKey || config.pillar,
+    canonical: 1,
+  };
+}
+
+export function getLayerRows(rows, layerKey, resilienceData = null) {
   const config = LAYER_CONFIG[layerKey];
   if (!config) return [];
+  if (config.source === 'resilience') {
+    return TERRITORIES.map((territory) => {
+      const scoreRow = buildScoreLayerRow(
+        territory,
+        resilienceData?.territories?.[territory],
+        config,
+        resilienceData?.generatedAt
+      );
+      return {
+        territory,
+        row: scoreRow,
+      };
+    });
+  }
   return TERRITORIES.map((territory) => {
     const row = getCanonicalRows(rows, territory).find((item) => item.dashboard_concept === config.concept);
     return {
@@ -420,6 +461,14 @@ export function getLayerRows(rows, layerKey) {
 
 export function layerColorScale(entries, layerKey) {
   const config = LAYER_CONFIG[layerKey];
+  if (config?.scale === 'absolute') {
+    return (value) => {
+      if (!Number.isFinite(value)) return '#cbd5e1';
+      if (value >= 70) return '#16a34a';
+      if (value >= 40) return '#f59e0b';
+      return '#dc2626';
+    };
+  }
   const values = entries.map((entry) => entry.row?.value).filter((value) => Number.isFinite(value));
   if (!config || values.length === 0) {
     return () => '#94a3b8';

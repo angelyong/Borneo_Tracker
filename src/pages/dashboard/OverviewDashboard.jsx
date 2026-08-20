@@ -18,6 +18,7 @@ import {
   getHexagonCoverage,
   getLayerRows,
   getRowsForPillar,
+  isScoreLayer,
   layerColorScale,
   summarizeRows,
   territoryForParent,
@@ -314,9 +315,9 @@ const OverviewDashboard = () => {
   );
 
   const layerEntries = useMemo(() => {
-    if (!data?.rows || !activeLayer) return [];
-    return getLayerRows(data.rows, activeLayer);
-  }, [activeLayer, data]);
+    if (!activeLayer) return [];
+    return getLayerRows(data?.rows || [], activeLayer, resilience);
+  }, [activeLayer, data, resilience]);
 
   const colorForValue = useMemo(() => layerColorScale(layerEntries, activeLayer), [activeLayer, layerEntries]);
 
@@ -390,7 +391,16 @@ const OverviewDashboard = () => {
 
   // On-map legend scale for the active layer (green = better end, red = worse).
   const legendScale = useMemo(() => {
-    const better = LAYER_CONFIG[activeLayer]?.better;
+    const config = LAYER_CONFIG[activeLayer];
+    if (config?.scale === 'absolute') {
+      return [
+        { label: '70-100 score', color: RAG_COLORS.green },
+        { label: '40-69.9 score', color: RAG_COLORS.amber },
+        { label: '0-39.9 score', color: RAG_COLORS.red },
+        { label: 'No data', color: '#94a3b8' },
+      ];
+    }
+    const better = config?.better;
     return [
       { label: better === 'higher' ? 'Higher (better)' : 'Lower (better)', color: RAG_COLORS.green },
       { label: 'Middle', color: RAG_COLORS.amber },
@@ -400,13 +410,13 @@ const OverviewDashboard = () => {
 
   // District choropleth/list entries for the active layer, under the current parent.
   const districtLayerEntries = useMemo(() => {
-    if (!isDistrict || !districtData?.rows) return [];
+    if (!isDistrict || isScoreLayer(activeLayer) || !districtData?.rows) return [];
     return getDistrictLayerRows(districtData.rows, districtParent, activeLayer);
   }, [isDistrict, districtData, districtParent, activeLayer]);
 
   // Choropleth colouring for the district polygons, by the active layer.
   const choropleth = useMemo(
-    () => (districtData?.rows ? buildDistrictChoropleth(districtData.rows, activeLayer) : null),
+    () => (districtData?.rows && !isScoreLayer(activeLayer) ? buildDistrictChoropleth(districtData.rows, activeLayer) : null),
     [districtData, activeLayer]
   );
 
@@ -889,7 +899,11 @@ const OverviewDashboard = () => {
         <div style={styles.mapLegend}>
           <div style={styles.mapLegendTitle}>{LAYER_CONFIG[activeLayer]?.label || t('dashboard.layer')}</div>
           <div style={styles.mapLegendSub}>
-            {isDistrict ? t('dashboard.acrossDistricts', { parent: districtParent }) : t('dashboard.colouredAcrossRegions')}
+            {LAYER_CONFIG[activeLayer]?.scale === 'absolute'
+              ? t('dashboard.scoreScaleAbsolute')
+              : isDistrict
+                ? t('dashboard.acrossDistricts', { parent: districtParent })
+                : t('dashboard.colouredAcrossRegions')}
           </div>
           {legendScale.map((item) => (
             <div key={item.label} style={styles.mapLegendRow}>
@@ -1169,7 +1183,7 @@ const OverviewDashboard = () => {
                   onChange={() => setActiveLayer(key)}
                   style={styles.radioInput}
                 />
-                {key.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase())}
+                {LAYER_CONFIG[key]?.label || key.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase())}
               </label>
             ))}
           </div>
@@ -1178,7 +1192,9 @@ const OverviewDashboard = () => {
           {error && <div style={{ ...styles.stateText, color: 'var(--color-red)' }}>{error}</div>}
 
           {isDistrict ? (
-            districtLayerEntries.length ? (
+            isScoreLayer(activeLayer) ? (
+              <div style={styles.stateText}>{t('dashboard.scoreLayerDistrictUnavailable')}</div>
+            ) : districtLayerEntries.length ? (
               districtLayerEntries.map(({ territory, row }) => (
                 <div key={territory} style={styles.summaryRow}>
                   <div>
