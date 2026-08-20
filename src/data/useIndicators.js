@@ -397,26 +397,43 @@ export function useBruneiGeo() {
   return state;
 }
 
-// value-by-join-key for one layer's concept, plus a RAG color function over the
-// spread of those values — powers the district choropleth. Mirrors layerColorScale.
+// A district key is only unique inside its parent state/province. Keep the two
+// fields together at the UI boundary too: a future shared BPS/GADM-style key in
+// different parents must never colour or select the wrong district.
+export function districtIdentity(parent, key) {
+  return `${String(parent ?? '')}\u0000${String(key ?? '')}`;
+}
+
+// Selecting a no-geometry district within the same parent must not pretend to
+// focus a polygon, so the map keeps its current context. A parent switch is
+// different: retaining the old parent's zoom would be misleading, therefore it
+// must return to the Borneo overview.
+export function shouldPreserveMapForNoBoundary({ boundaryUnavailable, enteringDistrict, parentChanged }) {
+  return Boolean(boundaryUnavailable && !enteringDistrict && !parentChanged);
+}
+
+// Value-by-(parent, join-key) for one layer's concept, plus a RAG colour
+// function over the spread of those values — powers the district choropleth.
+// Mirrors layerColorScale.
 export function buildDistrictChoropleth(rows, layerKey) {
   const config = LAYER_CONFIG[layerKey];
   const concept = config?.districtFallbackConcept || config?.concept;
-  const valueByKey = {};
+  const valueByDistrict = {};
   if (config && concept) {
     rows
       .filter((row) => row.canonical === 1 && row.dashboard_concept === concept)
       .forEach((row) => {
-        valueByKey[row.key] = row;
+        valueByDistrict[districtIdentity(row.parent, row.key)] = row;
       });
   }
-  const values = Object.values(valueByKey)
+  const values = Object.values(valueByDistrict)
     .map((row) => row.value)
     .filter((value) => Number.isFinite(value));
   const min = values.length ? Math.min(...values) : 0;
   const max = values.length ? Math.max(...values) : 0;
-  const colorForKey = (key) => {
-    const row = valueByKey[key];
+  const rowFor = (parent, key) => valueByDistrict[districtIdentity(parent, key)] || null;
+  const colorFor = (parent, key) => {
+    const row = rowFor(parent, key);
     if (!row || !Number.isFinite(row.value)) return null; // no data -> caller greys it
     const ratio = max === min ? 0.5 : (row.value - min) / (max - min);
     const adjusted = config.better === 'higher' ? ratio : 1 - ratio;
@@ -424,7 +441,7 @@ export function buildDistrictChoropleth(rows, layerKey) {
     if (adjusted > 0.33) return '#f59e0b';
     return '#dc2626';
   };
-  return { valueByKey, colorForKey };
+  return { valueByDistrict, rowFor, colorFor };
 }
 
 // Parents (states/provinces) that actually have district rows, in display order.

@@ -4,10 +4,12 @@ import {
   LAYER_CONFIG,
   LAYER_GROUPS,
   buildDistrictChoropleth,
+  districtIdentity,
   getDistrictLayerRows,
   getLayerRows,
   hasDistrictFallbackLayer,
   layerColorScale,
+  shouldPreserveMapForNoBoundary,
 } from './useIndicators';
 
 describe('map layer score rows', () => {
@@ -152,6 +154,65 @@ describe('map layer grouping and district fallbacks', () => {
       'food'
     );
 
-    expect(choropleth.colorForKey('sambas')).toBeNull();
+    expect(choropleth.colorFor('Kalimantan Barat', 'sambas')).toBeNull();
+  });
+
+  it('keeps same district keys in different parents separate in the choropleth', () => {
+    const choropleth = buildDistrictChoropleth(
+      [
+        {
+          parent: 'Sabah',
+          key: 'shared-key',
+          territory: 'Sabah district',
+          canonical: 1,
+          dashboard_concept: 'deforestation',
+          value: 10,
+        },
+        {
+          parent: 'Sarawak',
+          key: 'shared-key',
+          territory: 'Sarawak district',
+          canonical: 1,
+          dashboard_concept: 'deforestation',
+          value: 90,
+        },
+      ],
+      'deforestation'
+    );
+
+    expect(districtIdentity('Sabah', 'shared-key')).not.toBe(districtIdentity('Sarawak', 'shared-key'));
+    expect(choropleth.rowFor('Sabah', 'shared-key')?.territory).toBe('Sabah district');
+    expect(choropleth.rowFor('Sarawak', 'shared-key')?.territory).toBe('Sarawak district');
+    expect(choropleth.colorFor('Sabah', 'shared-key')).toBe('#16a34a');
+    expect(choropleth.colorFor('Sarawak', 'shared-key')).toBe('#dc2626');
+  });
+});
+
+describe('district boundary map focus', () => {
+  it('preserves the current view only for a no-boundary selection in the same parent', () => {
+    expect(
+      shouldPreserveMapForNoBoundary({
+        boundaryUnavailable: true,
+        enteringDistrict: false,
+        parentChanged: false,
+      })
+    ).toBe(true);
+  });
+
+  it('returns to the Borneo overview when a no-boundary selection changes parent', () => {
+    expect(
+      shouldPreserveMapForNoBoundary({
+        boundaryUnavailable: true,
+        enteringDistrict: false,
+        parentChanged: true,
+      })
+    ).toBe(false);
+    expect(
+      shouldPreserveMapForNoBoundary({
+        boundaryUnavailable: true,
+        enteringDistrict: true,
+        parentChanged: false,
+      })
+    ).toBe(false);
   });
 });

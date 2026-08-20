@@ -24,7 +24,12 @@ import zipfile
 from pathlib import Path
 import urllib.request
 
-from district_keys import geometry_join_key, normalize_name_key
+from district_keys import (
+    district_identity,
+    geometry_join_key,
+    normalize_name_key,
+    usable_polygon_geometry,
+)
 
 ROOT = Path(__file__).parent
 OUTPUT = ROOT / "public" / "data" / "borneo_districts.geojson"
@@ -70,6 +75,29 @@ def fetch_gadm(iso):
         return json.loads(zf.read(name))
 
 
+def assert_unique_geometry_identities(features):
+    """Fail closed when two polygons claim the same dashboard identity.
+
+    Choosing one polygon arbitrarily would hide a boundary/source defect and
+    makes choropleth interaction non-deterministic.
+    """
+    seen = {}
+    for feature in features:
+        props = feature.get("properties", {})
+        identity = district_identity(props.get("parent"), props.get("key"))
+        if not all(identity):
+            raise ValueError(f"geometry feature has incomplete district identity: {props!r}")
+        geometry_ok, geometry_error = usable_polygon_geometry(feature.get("geometry"))
+        if not geometry_ok:
+            raise ValueError(f"geometry feature {identity!r} is not renderable: {geometry_error}")
+        if identity in seen:
+            raise ValueError(
+                f"duplicate geometry identity {identity!r}: "
+                f"{seen[identity]!r} and {props.get('name')!r}"
+            )
+        seen[identity] = props.get("name")
+
+
 def main():
     features = []
     for iso in ISOS:
@@ -100,6 +128,7 @@ def main():
             kept += 1
         print(f"  {iso}: kept {kept} Borneo ADM2 features")
 
+    assert_unique_geometry_identities(features)
     out = {"type": "FeatureCollection", "features": features}
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT.write_text(json.dumps(out), encoding="utf-8")

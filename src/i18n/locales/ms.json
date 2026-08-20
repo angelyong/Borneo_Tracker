@@ -247,6 +247,8 @@
     "loadingMapData": "Memuatkan data peta…",
     "noData": "Tiada data",
     "noDistrictDataForLayer": "Tiada data daerah untuk “{{layer}}” di {{district}} ({{parent}}). Pilih lapisan lain atau tukar ke paparan Wilayah untuk data peringkat wilayah.",
+    "boundaryUnavailableOption": "sempadan tidak tersedia pada peta",
+    "districtBoundaryUnavailable": "Sempadan peta tidak tersedia untuk {{district}} ({{parent}}). Data daerah masih tersedia; tiada poligon atau tumpuan peta dipaparkan.",
     "scoreLayerDistrictUnavailable": "Tiada skor peringkat daerah dikira untuk {{district}}. Tukar ke paparan Wilayah untuk membandingkan skor wilayah 0-100.",
     "districtFallbackEducation": "Paparan Daerah menunjukkan purata tahun persekolahan sebagai penunjuk pendidikan mentah, bukan skor daya tahan Pendidikan wilayah.",
     "districtFallbackHealthcare": "Paparan Daerah menunjukkan jangka hayat sebagai penunjuk penjagaan kesihatan mentah, bukan skor daya tahan Penjagaan Kesihatan wilayah.",

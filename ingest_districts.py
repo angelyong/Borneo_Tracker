@@ -311,10 +311,15 @@ def main():
     }
     retained = 0
     for old in previous_rows:
-        key = (old.get("parent"), old.get("key"), old.get("indicator"))
+        canonical_key = str(row_join_key(old))
+        key = (old.get("parent"), canonical_key, old.get("indicator"))
         if key in current_keys:
             continue
         old = dict(old)
+        # Previous artifacts are an input to continuity, not a trusted source of
+        # identity. Recompute their join key so an earlier serialized key cannot
+        # survive a refreshed build after the canonicalisation rules change.
+        old["key"] = canonical_key
         source = old.get("source", "")
         if not source.startswith("STALE —"):
             old["source"] = f"STALE — retained from previous successful run; {source}"
@@ -323,6 +328,11 @@ def main():
         current_keys.add(key)
         retained += 1
     print(f"  [districts:last-good] retained {retained} stale rows")
+    # Recompute every emitted key immediately before dedupe/stamping. This is
+    # intentionally redundant with reconcile_names: it closes the stale-row path
+    # and makes the serialized key contract deterministic.
+    for row in rows:
+        row["key"] = str(row_join_key(row))
     rows = dedupe_rows(rows)  # one row per (parent, key, indicator)
     if GEOJSON.exists():
         stamp_geometry_status(rows, load_geometry_key_set(GEOJSON))

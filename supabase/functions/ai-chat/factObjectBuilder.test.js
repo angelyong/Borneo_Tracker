@@ -471,7 +471,14 @@ describe('indicator, target, comparison, trend, SDG, and district facts', () => 
       'Fire alerts (VIIRS, annual)',
       'Tree cover loss (cumulative)',
     ]);
-    expect(sdg13.approvedNumericTokens).toEqual(expect.arrayContaining(['3836', '3864']));
+    // FIRMS bbox counts are refreshed observations. The integrity allowlist must
+    // carry the numeric tokens that the committed source label actually renders,
+    // without freezing a volatile source snapshot into this unit test.
+    const hotspotSources = sdg13.sdgIndicatorList?.groups
+      .find((group) => group.indicator === 'Active fire hotspots (24h)')?.sources || [];
+    const hotspotSourceNumbers = hotspotSources.flatMap((source) => source.match(/\d+/g) || []);
+    expect(hotspotSourceNumbers.length).toBeGreaterThan(0);
+    expect(sdg13.approvedNumericTokens).toEqual(expect.arrayContaining(hotspotSourceNumbers));
     expect(buildFact('What indicators are tracked under SDG 6?').sdgIndicatorList?.groups.map((group) => group.indicator)).toEqual([
       'Clean water access',
     ]);
