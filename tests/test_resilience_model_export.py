@@ -219,15 +219,21 @@ class ResilienceModelExportTests(unittest.TestCase):
 
     # write_json_lf integration -----------------------------------------------------------
     def test_write_json_lf_round_trips_the_model(self):
-        import tempfile
         from json_artifacts import write_json_lf
 
-        with tempfile.TemporaryDirectory() as temp_dir:
-            output = Path(temp_dir) / "resilience_model.json"
+        scratch = ROOT / ".tmp_tests" / "test_resilience_model_export"
+        scratch.mkdir(parents=True, exist_ok=True)
+        output = scratch / "resilience_model.json"
+        if output.exists():
+            output.unlink()
+        try:
             write_json_lf(output, self.model)
             raw = output.read_bytes()
             self.assertNotIn(b"\r\n", raw)
             self.assertEqual(json.loads(raw.decode("utf-8")), self.model)
+        finally:
+            if output.exists():
+                output.unlink()
 
 
 if __name__ == "__main__":

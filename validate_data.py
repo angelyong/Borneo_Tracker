@@ -47,6 +47,7 @@ from pathlib import Path
 
 from compute_resilience import PILLARS
 from data_model import DASHBOARD_TERRITORIES, KALIMANTAN_PROVINCES
+from district_keys import load_geometry_key_set, row_join_key
 from project_time import project_today
 
 ROOT = Path(__file__).parent
@@ -72,6 +73,7 @@ REQUIRED_DISTRICT_PARENTS = ["Sabah", "Sarawak"]
 INDICATORS_JSON = "public/data/indicators.json"
 RESILIENCE_JSON = "public/data/resilience.json"
 DISTRICTS_JSON = "public/data/districts.json"
+DISTRICT_GEOJSON = "public/data/borneo_districts.geojson"
 
 
 # ------------------------------------------------------------------ reporting
@@ -410,6 +412,95 @@ def check_no_volatile_stale(report, scope, rows):
     )
 
 
+def district_geometry_identity(row):
+    return (
+        row.get("parent"),
+        row_join_key(row),
+        row.get("territory"),
+        row.get("indicator"),
+    )
+
+
+def district_key_identity(row):
+    return (row.get("parent"), row_join_key(row))
+
+
+def unlabeled_no_geometry_rows(rows, geometry_keys):
+    offenders = []
+    for row in rows:
+        key = district_key_identity(row)
+        if key in geometry_keys:
+            continue
+        if row.get("geometry_status") == "no_geometry" and row.get("has_geometry") is False:
+            continue
+        offenders.append(row)
+    return offenders
+
+
+def check_district_join_coverage(report, rows, previous=None):
+    scope = "districts.json"
+    geo, error = read_json(DISTRICT_GEOJSON)
+    if not report.check("borneo_districts.geojson", "parses as JSON", geo is not None, error or ""):
+        return
+    try:
+        geometry_keys = load_geometry_key_set(ROOT / DISTRICT_GEOJSON)
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        report.check("borneo_districts.geojson", "join keys are readable", False, str(exc))
+        return
+
+    district_keys = {district_key_identity(row) for row in rows}
+    matched = district_keys & geometry_keys
+    missing = district_keys - geometry_keys
+    explicit_no_geometry = {
+        district_key_identity(row)
+        for row in rows
+        if district_key_identity(row) in missing
+        and row.get("geometry_status") == "no_geometry"
+        and row.get("has_geometry") is False
+    }
+    report.check(
+        scope,
+        "district join keys match geometry or are labelled no-geometry",
+        matched or not district_keys,
+        f"{len(matched)}/{len(district_keys)} district key(s) join; "
+        f"{len(explicit_no_geometry)} labelled no-geometry",
+    )
+
+    offenders = unlabeled_no_geometry_rows(rows, geometry_keys)
+    if previous:
+        previous_geo, _ = previous_json(DISTRICT_GEOJSON)
+        previous_geometry_keys = geometry_keys
+        if previous_geo is not None:
+            previous_geometry_keys = {
+                (feature.get("properties", {}).get("parent"), str(feature.get("properties", {}).get("key")))
+                for feature in previous_geo.get("features", [])
+                if feature.get("properties", {}).get("parent") and feature.get("properties", {}).get("key")
+            }
+        baseline_unlabelled = {
+            district_geometry_identity(row)
+            for row in unlabeled_no_geometry_rows(previous.get("rows") or [], previous_geometry_keys)
+        }
+        offenders = [
+            row for row in offenders
+            if district_geometry_identity(row) not in baseline_unlabelled
+        ]
+    detail = (
+        "; ".join(
+            f"{row.get('parent')} / {row.get('territory')} / {row.get('indicator')}"
+            for row in offenders[:5]
+        )
+        + (f"; +{len(offenders) - 5} more" if len(offenders) > 5 else "")
+        if offenders else
+        "all new unmatched rows are explicitly labelled"
+    )
+    report.check(
+        scope,
+        "new no-geometry districts are explicitly labelled",
+        not offenders,
+        detail,
+    )
+
+
 # -------------------------------------------------------------- file checks
 def check_baseline_available(report, scope, previous, previous_skip, required):
     """Fail closed for release workflows that supplied an explicit baseline."""
@@ -536,6 +627,7 @@ def validate_districts(report, baseline_ref="HEAD", require_baseline=False):
     check_count(report, scope, "district count", district_count, previous_districts, previous_skip)
     check_count(report, scope, "row count", len(rows),
                 len(previous.get("rows") or []) if previous else None, previous_skip)
+    check_district_join_coverage(report, rows, previous)
     check_stale_freshness(report, scope, rows)
     check_generated_at(report, scope, current, previous, previous_skip)
     check_artifact_freshness(report, scope, current)

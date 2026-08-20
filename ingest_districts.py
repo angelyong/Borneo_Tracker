@@ -35,10 +35,12 @@ import urllib.request
 import urllib.error
 
 from project_time import project_today_iso
-from json_artifacts import write_json_lf
+from json_artifacts import build_districts_meta, write_json_lf
+from district_keys import load_geometry_key_set, row_join_key, stamp_geometry_status
 
 ROOT = Path(__file__).parent
 OUTPUT = ROOT / "public" / "data" / "districts.json"
+GEOJSON = ROOT / "public" / "data" / "borneo_districts.geojson"
 TODAY = project_today_iso()
 UA = "Mozilla/5.0 (Borneo-Tracker-Districts)"
 
@@ -209,14 +211,16 @@ def norm_key(name):
     ('Kota Kinabalu' -> 'kotakinabalu' on both sides). We deliberately do NOT strip a
     'Kota' prefix — in Indonesia a 'Kota X' city and an 'X' regency are DIFFERENT units,
     so stripping would wrongly merge them (e.g. Kota Pontianak vs Pontianak)."""
-    return re.sub(r"[^a-z0-9]", "", str(name).lower())
+    from district_keys import normalize_name_key
+
+    return normalize_name_key(name)
 
 
 def join_key(row):
     """The cross-source district identity. Indonesia rows carry a BPS/GADM numeric
     `code` (BPS vervar val == GADM CC_2), which is unambiguous and immune to the
     Kota/regency naming mismatch. Malaysia rows fall back to the normalized name."""
-    return str(row["code"]) if row.get("code") else norm_key(row["territory"])
+    return row_join_key(row)
 
 
 # Prefer the official statistics-office name (DOSM/BPS) over GADM's geometry name
@@ -320,10 +324,17 @@ def main():
         retained += 1
     print(f"  [districts:last-good] retained {retained} stale rows")
     rows = dedupe_rows(rows)  # one row per (parent, key, indicator)
+    if GEOJSON.exists():
+        stamp_geometry_status(rows, load_geometry_key_set(GEOJSON))
+    else:
+        for row in rows:
+            row.setdefault("geometry_status", "unknown")
+            row.setdefault("has_geometry", None)
 
     parents = build_parents(rows)
     payload = {
         "generatedAt": TODAY,
+        "meta": build_districts_meta(rows, parents),
         "parents": parents,
         "rows": rows,
     }

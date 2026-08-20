@@ -24,6 +24,8 @@ import zipfile
 from pathlib import Path
 import urllib.request
 
+from district_keys import geometry_join_key, normalize_name_key
+
 ROOT = Path(__file__).parent
 OUTPUT = ROOT / "public" / "data" / "borneo_districts.geojson"
 GADM = "https://geodata.ucdavis.edu/gadm/gadm4.1/json/gadm41_{iso}_2.json.zip"
@@ -45,9 +47,7 @@ ISOS = ["MYS", "IDN"]
 
 def norm_key(name):
     # Must match ingest_districts.norm_key so map polygons join to district data.
-    s = str(name).lower().strip()
-    s = re.sub(r"^(kota administrasi|kota|kabupaten|kab\.?)\s+", "", s)
-    return re.sub(r"[^a-z0-9]", "", s)
+    return normalize_name_key(name)
 
 
 def de_camel(name):
@@ -85,7 +85,7 @@ def main():
             cc2 = props.get("CC_2")
             # Unified frontend join key: Indonesia joins by BPS/GADM code (immune to
             # the Kota/regency naming mismatch); Malaysia joins by normalized name.
-            key = str(cc2) if iso == "IDN" and cc2 not in (None, "NA", "") else norm_key(name)
+            key = geometry_join_key(parent, name, iso=iso, cc2=cc2)
             feat["properties"] = {
                 "parent": parent,
                 "name": name,

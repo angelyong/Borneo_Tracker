@@ -28,7 +28,7 @@ import sqlite3
 from pathlib import Path
 
 from data_model import DASHBOARD_TERRITORIES, TODAY, hexagon_pillar
-from json_artifacts import write_json_lf
+from json_artifacts import build_resilience_meta, write_json_lf
 
 ROOT = Path(__file__).parent
 DB = ROOT / "borneo_tracker.db"
@@ -322,6 +322,7 @@ def main():
     scores = compute(rows)
     payload = {
         "generatedAt": TODAY,
+        "meta": build_resilience_meta(scores, PILLARS),
         "method": "linear 0-100 vs documented bounds; pillar = mean of scored indicators; "
                   "index = mean of scored pillars; indexStrict = geometric mean (weakest-link "
                   "strict mode); unscored pillars excluded, never imputed",
