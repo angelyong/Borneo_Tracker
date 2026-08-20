@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { JsonContentExtractor } from './JsonContentExtractor.js';
 import { MarkdownContentExtractor } from './MarkdownContentExtractor.js';
@@ -20,6 +21,38 @@ const source = {
   repoPath: 'knowledge/faq.json',
   fullPath: path.resolve('knowledge/faq.json'),
 };
+
+function stableHash(value) {
+  return crypto.createHash('sha256').update(JSON.stringify(value)).digest('hex');
+}
+
+function runtimeKnowledgeSummary(index) {
+  const normalizeRecord = (record) => ({
+    id: record.id,
+    title: record.title,
+    category: record.category,
+    content: record.content,
+    language: record.language,
+    pageUrl: record.pageUrl,
+    region: record.region,
+    regions: record.regions,
+    concept: record.concept,
+    sdgTags: record.sdgTags,
+    relatedSdgs: record.relatedSdgs,
+    keywords: record.keywords,
+    searchableText: record.searchableText,
+    sourceName: record.sourceName,
+    sourceUrl: record.sourceUrl,
+    status: record.status,
+    placeholder: record.placeholder,
+    runtimeIncluded: record.runtimeIncluded,
+  });
+  return {
+    schemaVersion: index.schemaVersion,
+    recordCount: index.recordCount,
+    records: [...(index.records || [])].map(normalizeRecord).sort((a, b) => a.id.localeCompare(b.id)),
+  };
+}
 
 describe('knowledge extraction', () => {
   it('extracts valid JSON source records', () => {
@@ -43,6 +76,109 @@ describe('knowledge extraction', () => {
     const records = new PageContentExtractor().extract(sourceText, { kind: 'report-content' });
     expect(records.map((record) => record.title)).toContain('Forest cover');
     expect(records.map((record) => record.concept)).toContain('food');
+  });
+
+  it('extracts the verified Forest Cover indicator record from report content with data-source support', () => {
+    const sourceText = [
+      "export const INDICATOR_EXPLANATIONS = {",
+      "  'Forest cover': 'Share of land still under forest - a headline conservation indicator (SDG 15) and a key input to EUDR-style sourcing checks.',",
+      '};',
+      'const CONCEPT_EXPLANATIONS = {',
+      "  forest_cover: 'A measure of remaining forest - central to SDG 15 and EUDR checks.',",
+      '};',
+    ].join('\n');
+    const records = new PageContentExtractor().extract(sourceText, { kind: 'report-content' });
+    const forestCover = records.find((record) => record.id === 'indicator-forest-cover');
+
+    expect(forestCover).toMatchObject({
+      id: 'indicator-forest-cover',
+      title: 'Forest Cover Indicator',
+      category: 'reports',
+      pageUrl: '/reports',
+      concept: 'forest_cover',
+      sdgTags: ['SDG15'],
+      relatedSdgs: ['SDG15'],
+      sourcePath: 'INDICATOR_EXPLANATIONS.Forest cover',
+      sourceName: 'Borneo Tracker report content',
+      status: 'verified',
+      language: 'en',
+    });
+    expect(forestCover.content).toContain('measures remaining forest');
+    expect(forestCover.content).toContain('ESG Environment');
+    expect(forestCover.content).toContain('SDG15 - Life on Land');
+    expect(forestCover.content).toContain('EUDR-style sourcing checks');
+    expect(forestCover.content).toContain('Brunei uses % land from World Bank');
+    expect(forestCover.content).toContain('Sabah, Sarawak, and Kalimantan currently use year-2000 forest extent in hectares from Global Forest Watch');
+    expect(forestCover.content).toContain('should not be directly compared with the hectare baselines');
+    expect(forestCover.keywords).toEqual(expect.arrayContaining(['World Bank', 'Global Forest Watch', 'mixed units']));
+  });
+
+  it('extracts the monitored SDG coverage record from indicator configuration', () => {
+    const sourceText = "export const SDG_GOALS = [\n  { goal: 'SDG1', label: 'No Poverty' },\n  { goal: 'SDG15', label: 'Life on Land' },\n];";
+    const records = new PageContentExtractor().extract(sourceText, { kind: 'indicator-config' });
+
+    expect(records).toEqual([expect.objectContaining({
+      id: 'sdg-monitored-goals',
+      title: 'SDGs Monitored by Borneo Tracker',
+      category: 'sdg-progress',
+      pageUrl: '/sdg',
+      sourcePath: 'SDG_GOALS',
+      sourceName: 'Borneo Tracker indicator configuration',
+      status: 'verified',
+    })]);
+    expect(records[0].content).toContain('SDG1 - No Poverty');
+    expect(records[0].content).toContain('SDG15 - Life on Land');
+    expect(records[0].keywords).toEqual(expect.arrayContaining(['monitored SDGs', 'SDG coverage']));
+  });
+
+  it('extracts the ESG versus SDG comparison record from report sections', () => {
+    const sourceText = [
+      '<h2>ESG Indicators</h2>',
+      'All tracked indicators, grouped Environment · Social · Governance.',
+      '<h2>SDG Coverage</h2>',
+      'The same indicators mapped to the UN Sustainable Development Goals they inform — for readers working from SDGs, not ESG pillars.',
+    ].join('\n');
+    const records = new PageContentExtractor().extract(sourceText, { kind: 'report-sections' });
+
+    expect(records).toEqual([expect.objectContaining({
+      id: 'esg-vs-sdg',
+      title: 'ESG and SDG in Borneo Tracker',
+      category: 'reports',
+      pageUrl: '/reports',
+      sourcePath: 'EsgIndicatorSection/SdgCoverageSection',
+      sourceName: 'Borneo Tracker report sections',
+      status: 'verified',
+    })]);
+    expect(records[0].content).toContain('ESG groups tracked indicators into the Environment, Social, and Governance pillars.');
+    expect(records[0].content).toContain('SDG coverage maps the same tracked indicators to the UN Sustainable Development Goals they inform.');
+    expect(records[0].keywords).toEqual(expect.arrayContaining(['ESG vs SDG', 'pillar-based', 'goal-based']));
+  });
+
+  it('extracts the Generate Report how-to record from the page workflow', () => {
+    const sourceText = [
+      "const TERRITORY_OPTIONS = [...TERRITORIES, ALL_BORNEO];",
+      'const DEFAULT_SECTIONS = { summary: true, sdg: true, coverage: true, methodology: true };',
+      'const esgRef = useRef(null);',
+      'const handleGenerate = async () => { await generatePdfFromSections(orderedSections, `${filename}.pdf`); };',
+      '<EsgIndicatorSection pillars={profile.pillars} />',
+      "{generating ? t('reports.generatingPdf') : t('reports.generateDownloadPdf')}",
+      "t('reports.noIndicatorsAvailable')",
+    ].join('\n');
+    const records = new PageContentExtractor().extract(sourceText, { kind: 'generate-report-page' });
+
+    expect(records).toEqual([expect.objectContaining({
+      id: 'generate-report-how-to',
+      title: 'How to Generate a Report',
+      category: 'generate-report',
+      pageUrl: '/reports',
+      sourcePath: 'GenerateReportPage',
+      sourceName: 'Borneo Tracker Generate Report page',
+      status: 'verified',
+    })]);
+    expect(records[0].content).toContain('Select a territory, or choose All Borneo.');
+    expect(records[0].content).toContain('Executive Summary, SDG Coverage, Coverage & Limitations, and Methodology & Sources.');
+    expect(records[0].content).toContain('Click Generate & Download PDF.');
+    expect(records[0].keywords).toEqual(expect.arrayContaining(['how to generate a report', 'create a PDF report', 'report sections']));
   });
 
   it('extracts policy sections as incomplete records', () => {
@@ -191,6 +327,197 @@ describe('knowledge build output', () => {
     const first = fs.readFileSync(path.join(tmp, 'a', 'knowledge-index.json'), 'utf8');
     const second = fs.readFileSync(path.join(tmp, 'b', 'knowledge-index.json'), 'utf8');
     expect(first).toBe(second);
+  });
+
+  it('keeps the packaged Edge Function knowledge index in parity with the generated index', () => {
+    const canonical = JSON.parse(fs.readFileSync(path.resolve('knowledge/generated/knowledge-index.json'), 'utf8'));
+    const packaged = JSON.parse(fs.readFileSync(path.resolve('supabase/functions/ai-chat/knowledge-index.json'), 'utf8'));
+    const canonicalSummary = runtimeKnowledgeSummary(canonical);
+    const packagedSummary = runtimeKnowledgeSummary(packaged);
+
+    expect(packagedSummary).toEqual(canonicalSummary);
+
+    const stalePackagedSummary = {
+      ...packagedSummary,
+      records: packagedSummary.records.map((record, index) => index === 0 ? { ...record, content: `${record.content} stale` } : record),
+    };
+    expect(stableHash(stalePackagedSummary)).not.toBe(stableHash(canonicalSummary));
+  });
+
+  it('includes the verified environmental data source record in generated and packaged indexes', () => {
+    const canonical = JSON.parse(fs.readFileSync(path.resolve('knowledge/generated/knowledge-index.json'), 'utf8'));
+    const packaged = JSON.parse(fs.readFileSync(path.resolve('supabase/functions/ai-chat/knowledge-index.json'), 'utf8'));
+    const canonicalRecord = canonical.records.find((record) => record.id === 'environmental-data-sources');
+    const packagedRecord = packaged.records.find((record) => record.id === 'environmental-data-sources');
+
+    expect(canonicalRecord).toMatchObject({
+      id: 'environmental-data-sources',
+      title: 'Environmental Data Sources',
+      category: 'data-sources',
+      language: 'en',
+      pageUrl: '/data-policy',
+      status: 'verified',
+      placeholder: false,
+      runtimeIncluded: true,
+      sourceFile: 'src/pages/policies/PolicyPage.jsx',
+      sourceType: 'page',
+      sourceId: 'policy-page',
+      sourcePath: 'data-sources',
+      sourceName: 'Borneo Tracker policy page',
+    });
+    expect(canonicalRecord.content).toContain('World Bank');
+    expect(canonicalRecord.content).toContain('Global Forest Watch');
+    expect(canonicalRecord.content).toContain('WAQI / aqicn');
+    expect(canonicalRecord.keywords).toEqual(expect.arrayContaining([
+      'environmental data',
+      'data sources',
+      'provenance',
+      'source attribution',
+    ]));
+    expect(packagedRecord).toEqual(canonicalRecord);
+  });
+
+  it('includes the verified monitored SDG record and keeps generic SDG page copy clean', () => {
+    const canonical = JSON.parse(fs.readFileSync(path.resolve('knowledge/generated/knowledge-index.json'), 'utf8'));
+    const packaged = JSON.parse(fs.readFileSync(path.resolve('supabase/functions/ai-chat/knowledge-index.json'), 'utf8'));
+    const canonicalRecord = canonical.records.find((record) => record.id === 'sdg-monitored-goals');
+    const packagedRecord = packaged.records.find((record) => record.id === 'sdg-monitored-goals');
+    const sdgPageRecord = canonical.records.find((record) => record.id === 'sdg-progress-page-en');
+
+    expect(canonicalRecord).toMatchObject({
+      id: 'sdg-monitored-goals',
+      title: 'SDGs Monitored by Borneo Tracker',
+      category: 'sdg-progress',
+      language: 'en',
+      pageUrl: '/sdg',
+      status: 'verified',
+      placeholder: false,
+      runtimeIncluded: true,
+      sourceFile: 'src/data/useIndicators.js',
+      sourceType: 'page',
+      sourceId: 'indicator-config',
+      sourcePath: 'SDG_GOALS',
+      sourceName: 'Borneo Tracker indicator configuration',
+    });
+    for (const goal of [
+      'SDG1 - No Poverty',
+      'SDG2 - Zero Hunger',
+      'SDG3 - Good Health',
+      'SDG4 - Quality Education',
+      'SDG6 - Clean Water',
+      'SDG7 - Clean Energy',
+      'SDG8 - Economic Growth',
+      'SDG9 - Industry & Innovation',
+      'SDG11 - Sustainable Cities',
+      'SDG13 - Climate Action',
+      'SDG15 - Life on Land',
+      'SDG16 - Peace & Justice',
+    ]) {
+      expect(canonicalRecord.content).toContain(goal);
+    }
+    expect(canonicalRecord.content).not.toContain('No canonical indicators are available for this goal');
+    expect(sdgPageRecord.content).not.toContain('No canonical indicators are available for this goal');
+    expect(packagedRecord).toEqual(canonicalRecord);
+  });
+
+  it('includes the verified ESG versus SDG record and keeps generic ESG page copy clean', () => {
+    const canonical = JSON.parse(fs.readFileSync(path.resolve('knowledge/generated/knowledge-index.json'), 'utf8'));
+    const packaged = JSON.parse(fs.readFileSync(path.resolve('supabase/functions/ai-chat/knowledge-index.json'), 'utf8'));
+    const canonicalRecord = canonical.records.find((record) => record.id === 'esg-vs-sdg');
+    const packagedRecord = packaged.records.find((record) => record.id === 'esg-vs-sdg');
+    const esgPageRecord = canonical.records.find((record) => record.id === 'esg-indicators-page-en');
+
+    expect(canonicalRecord).toMatchObject({
+      id: 'esg-vs-sdg',
+      title: 'ESG and SDG in Borneo Tracker',
+      category: 'reports',
+      language: 'en',
+      pageUrl: '/reports',
+      status: 'verified',
+      placeholder: false,
+      runtimeIncluded: true,
+      sourceFile: 'src/pages/reports/ReportSections.jsx',
+      sourceType: 'page',
+      sourceId: 'report-sections',
+      sourcePath: 'EsgIndicatorSection/SdgCoverageSection',
+      sourceName: 'Borneo Tracker report sections',
+    });
+    expect(canonicalRecord.content).toContain('ESG groups tracked indicators into the Environment, Social, and Governance pillars.');
+    expect(canonicalRecord.content).toContain('SDG coverage maps the same tracked indicators to the UN Sustainable Development Goals they inform.');
+    expect(canonicalRecord.content).toContain('pillar-based view');
+    expect(canonicalRecord.content).toContain('goal-based view');
+    expect(canonicalRecord.content).toContain('same tracked indicator dataset');
+    expect(esgPageRecord.content).not.toContain('No canonical indicators are available for this pillar yet.');
+    expect(packagedRecord).toEqual(canonicalRecord);
+  });
+
+  it('includes the verified Forest Cover indicator record in generated and packaged indexes', () => {
+    const canonical = JSON.parse(fs.readFileSync(path.resolve('knowledge/generated/knowledge-index.json'), 'utf8'));
+    const packaged = JSON.parse(fs.readFileSync(path.resolve('supabase/functions/ai-chat/knowledge-index.json'), 'utf8'));
+    const canonicalRecord = canonical.records.find((record) => record.id === 'indicator-forest-cover');
+    const packagedRecord = packaged.records.find((record) => record.id === 'indicator-forest-cover');
+
+    expect(canonicalRecord).toMatchObject({
+      id: 'indicator-forest-cover',
+      title: 'Forest Cover Indicator',
+      category: 'reports',
+      language: 'en',
+      pageUrl: '/reports',
+      concept: 'forest_cover',
+      status: 'verified',
+      placeholder: false,
+      runtimeIncluded: true,
+      sourceFile: 'src/pages/reports/reportContent.js',
+      sourceType: 'page',
+      sourceId: 'report-content',
+      sourcePath: 'INDICATOR_EXPLANATIONS.Forest cover',
+      sourceName: 'Borneo Tracker report content',
+    });
+    expect(canonicalRecord.content).toContain('Forest Cover measures remaining forest');
+    expect(canonicalRecord.content).toContain('ESG Environment');
+    expect(canonicalRecord.content).toContain('SDG15 - Life on Land');
+    expect(canonicalRecord.content).toContain('EUDR-style sourcing checks');
+    expect(canonicalRecord.content).toContain('Brunei uses % land from World Bank');
+    expect(canonicalRecord.content).toContain('Global Forest Watch');
+    expect(canonicalRecord.content).toContain('not expressed in one uniform unit');
+    expect(canonicalRecord.content).toContain('should not be directly compared with the hectare baselines');
+    expect(canonicalRecord.content).not.toContain('time series');
+    expect(canonicalRecord.content).not.toContain('EUDR compliance');
+    expect(packagedRecord).toEqual(canonicalRecord);
+  });
+
+  it('includes the verified Generate Report how-to record and keeps page overview copy clean', () => {
+    const canonical = JSON.parse(fs.readFileSync(path.resolve('knowledge/generated/knowledge-index.json'), 'utf8'));
+    const packaged = JSON.parse(fs.readFileSync(path.resolve('supabase/functions/ai-chat/knowledge-index.json'), 'utf8'));
+    const canonicalRecord = canonical.records.find((record) => record.id === 'generate-report-how-to');
+    const packagedRecord = packaged.records.find((record) => record.id === 'generate-report-how-to');
+    const pageRecord = canonical.records.find((record) => record.id === 'generate-report-page-en');
+
+    expect(canonicalRecord).toMatchObject({
+      id: 'generate-report-how-to',
+      title: 'How to Generate a Report',
+      category: 'generate-report',
+      language: 'en',
+      pageUrl: '/reports',
+      status: 'verified',
+      placeholder: false,
+      runtimeIncluded: true,
+      sourceFile: 'src/pages/reports/GenerateReportPage.jsx',
+      sourceType: 'page',
+      sourceId: 'generate-report-page',
+      sourcePath: 'GenerateReportPage',
+      sourceName: 'Borneo Tracker Generate Report page',
+    });
+    expect(canonicalRecord.content).toContain('Select a territory, or choose All Borneo.');
+    expect(canonicalRecord.content).toContain('Executive Summary, SDG Coverage, Coverage & Limitations, and Methodology & Sources.');
+    expect(canonicalRecord.content).toContain('Review the report content, including the ESG Indicators section.');
+    expect(canonicalRecord.content).toContain('Click Generate & Download PDF.');
+    expect(canonicalRecord.content).toContain('reports that limitation instead of inventing unsupported content');
+    expect(pageRecord.content).not.toContain('No indicators are available for this selection.');
+    expect(pageRecord.content).not.toContain('All Borneo');
+    expect(pageRecord.content).not.toContain('1. Select Territory');
+    expect(pageRecord.content).not.toContain('2. Include Sections');
+    expect(packagedRecord).toEqual(canonicalRecord);
   });
 
   it('handles missing sources as a critical validation failure', () => {

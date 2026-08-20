@@ -1,4 +1,5 @@
 import {
+  CHAT_ENDPOINT,
   MAX_CHAT_MESSAGE_LENGTH,
   SUGGESTED_QUESTIONS,
   SUPPORTED_CHAT_LANGUAGES,
@@ -42,7 +43,7 @@ function getTimeoutMs() {
 }
 
 function getChatEndpoint() {
-  return String(import.meta.env.VITE_AI_CHAT_ENDPOINT || '').trim();
+  return import.meta.env.VITE_AI_CHAT_ENDPOINT?.trim() ?? CHAT_ENDPOINT;
 }
 
 function createRequestBody({ message, currentPage, region, language }) {

@@ -4,6 +4,7 @@
 // Consumes the shared HexRadar (fixed 0-100 scale, weakest axis highlighted).
 // Theme-aware via CSS vars (src/theme.css); no hardcoded text/bg hex.
 
+import { useTranslation } from 'react-i18next';
 import HexRadar from './HexRadar';
 
 // Fixed display order — the four Borneo territories.
@@ -17,6 +18,7 @@ function bandColor(score) {
 }
 
 export default function SmallMultiples({ territories }) {
+  const { t: translate } = useTranslation();
   if (!territories) return null;
 
   return (
@@ -73,6 +75,13 @@ export default function SmallMultiples({ territories }) {
                 max={100}
                 weakest={t.weakestPillar}
                 maxWidth={130}
+                missingLabel={translate('dashboard.noComparableData')}
+                incompleteLabel={translate('regional.scoredPillarsTitle', {
+                  count: Object.values(t.pillarScores || {}).filter(Number.isFinite).length,
+                })}
+                ariaLabel={translate('regional.scoredPillarsTitle', {
+                  count: Object.values(t.pillarScores || {}).filter(Number.isFinite).length,
+                })}
               />
             </div>
           );

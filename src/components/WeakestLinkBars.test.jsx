@@ -50,12 +50,15 @@ describe('WeakestLinkBars', () => {
     expect(document.body.textContent).toContain('Food');
     expect(document.body.textContent).toContain('0');
     expect(document.body.textContent).toContain('Education');
-    expect(document.body.textContent).toContain('No data');
+    expect(document.body.textContent).toContain('No comparable data — never imputed');
   });
 
-  it('does not render when no pillars are scored', () => {
+  it('keeps every unscored pillar visible as no data instead of treating it as zero', () => {
     render(<WeakestLinkBars territory={{ pillarScores: {} }} />);
 
-    expect(document.body.textContent).toBe('');
+    expect(document.body.textContent).toContain('Food');
+    expect(document.body.textContent).toContain('Entertainment');
+    expect(document.body.textContent).toContain('No comparable data — never imputed');
+    expect(document.querySelectorAll('div[title="No comparable data — never imputed"]')).toHaveLength(0);
   });
 });

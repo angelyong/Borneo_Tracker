@@ -3,7 +3,7 @@
     "id": "sdg-progress-page-ms",
     "title": "Kemajuan SDG",
     "category": "sdg-progress",
-    "content": "Matlamat Pembangunan Mampan (SDG) PBB dijejaki dengan data gambaran sebenar dan tanda keyakinan yang jelas Belum ada penunjuk kanonik untuk matlamat ini di .",
+    "content": "Matlamat Pembangunan Mampan (SDG) PBB dijejaki dengan data gambaran sebenar dan tanda keyakinan yang jelas",
     "language": "ms",
     "pageUrl": "/sdg",
     "region": null,
@@ -26,13 +26,7 @@
       "tanda",
       "keyakinan",
       "yang",
-      "jelas",
-      "belum",
-      "ada",
-      "penunjuk",
-      "kanonik",
-      "untuk",
-      "ini"
+      "jelas"
     ],
     "regions": [],
     "relatedSdgs": [],
@@ -60,13 +54,13 @@
       "sourcePath": "sdg.overview",
       "extractedAt": null
     },
-    "searchableText": "kemajuan sdg sdg-progress matlamat pembangunan mampan sdg pbb dijejaki dengan data gambaran sebenar dan tanda keyakinan yang jelas belum ada penunjuk kanonik untuk matlamat ini di kemajuan sdg sdg-progress matlamat pembangunan mampan pbb dijejaki dengan data gambaran sebenar dan tanda keyakinan yang jelas belum ada penunjuk kanonik untuk ini"
+    "searchableText": "kemajuan sdg sdg-progress matlamat pembangunan mampan sdg pbb dijejaki dengan data gambaran sebenar dan tanda keyakinan yang jelas kemajuan sdg sdg-progress matlamat pembangunan mampan pbb dijejaki dengan data gambaran sebenar dan tanda keyakinan yang jelas"
   },
   {
     "id": "sdg-progress-page-en",
     "title": "SDG Progress",
     "category": "sdg-progress",
-    "content": "UN Sustainable Development Goals tracked with real snapshot data and visible confidence tags No canonical indicators are available for this goal in yet.",
+    "content": "UN Sustainable Development Goals tracked with real snapshot data and visible confidence tags",
     "language": "en",
     "pageUrl": "/sdg",
     "region": null,
@@ -87,15 +81,7 @@
       "and",
       "visible",
       "confidence",
-      "tags",
-      "canonical",
-      "indicators",
-      "are",
-      "available",
-      "for",
-      "this",
-      "goal",
-      "yet"
+      "tags"
     ],
     "regions": [],
     "relatedSdgs": [],
@@ -123,6 +109,80 @@
       "sourcePath": "sdg.overview",
       "extractedAt": null
     },
-    "searchableText": "sdg progress sdg-progress un sustainable development goals tracked with real snapshot data and visible confidence tags no canonical indicators are available for this goal in yet sdg progress sdg-progress sustainable development goals tracked with real snapshot data and visible confidence tags canonical indicators are available for this goal yet"
+    "searchableText": "sdg progress sdg-progress un sustainable development goals tracked with real snapshot data and visible confidence tags sdg progress sdg-progress sustainable development goals tracked with real snapshot data and visible confidence tags"
+  },
+  {
+    "id": "sdg-monitored-goals",
+    "title": "SDGs Monitored by Borneo Tracker",
+    "category": "sdg-progress",
+    "content": "Borneo Tracker currently represents these repository-supported SDGs: SDG1 - No Poverty; SDG2 - Zero Hunger; SDG3 - Good Health; SDG4 - Quality Education; SDG6 - Clean Water; SDG7 - Clean Energy; SDG8 - Economic Growth; SDG9 - Industry & Innovation; SDG11 - Sustainable Cities; SDG13 - Climate Action; SDG15 - Life on Land; SDG16 - Peace & Justice. This is the supported repository list, not a claim that all 17 UN SDGs are covered.",
+    "language": "en",
+    "pageUrl": "/sdg",
+    "region": null,
+    "concept": null,
+    "sdgTags": [
+      "SDG1",
+      "SDG2",
+      "SDG3",
+      "SDG4",
+      "SDG6",
+      "SDG7",
+      "SDG8",
+      "SDG9",
+      "SDG11",
+      "SDG13",
+      "SDG15",
+      "SDG16"
+    ],
+    "keywords": [
+      "monitored SDGs",
+      "which SDGs",
+      "SDGs monitored",
+      "tracked SDGs",
+      "SDG coverage",
+      "Sustainable Development Goals tracked",
+      "goals monitored",
+      "Borneo Tracker SDGs"
+    ],
+    "regions": [],
+    "relatedSdgs": [
+      "SDG1",
+      "SDG2",
+      "SDG3",
+      "SDG4",
+      "SDG6",
+      "SDG7",
+      "SDG8",
+      "SDG9",
+      "SDG11",
+      "SDG13",
+      "SDG15",
+      "SDG16"
+    ],
+    "unit": null,
+    "sourceName": "Borneo Tracker indicator configuration",
+    "sourceUrl": "",
+    "sourceFile": "src/data/useIndicators.js",
+    "sourceType": "page",
+    "sourceId": "indicator-config",
+    "sourcePath": "SDG_GOALS",
+    "sourceTypeDetail": null,
+    "updatedAt": null,
+    "status": "verified",
+    "placeholder": false,
+    "runtimeIncluded": true,
+    "provenance": {
+      "sourceFile": "src/data/useIndicators.js",
+      "sourceType": "page",
+      "sourceId": "indicator-config",
+      "sourceName": "Borneo Tracker indicator configuration",
+      "sourceUrl": "",
+      "pageUrl": "/sdg",
+      "route": "/sdg",
+      "language": "en",
+      "sourcePath": "SDG_GOALS",
+      "extractedAt": null
+    },
+    "searchableText": "sdgs monitored by borneo tracker sdg-progress borneo tracker currently represents these repository-supported sdgs sdg1 - no poverty sdg2 - zero hunger sdg3 - good health sdg4 - quality education sdg6 - clean water sdg7 - clean energy sdg8 - economic growth sdg9 - industry innovation sdg11 - sustainable cities sdg13 - climate action sdg15 - life on land sdg16 - peace justice this is the supported repository list not a claim that all 17 un sdgs are covered monitored sdgs which sdgs sdgs monitored tracked sdgs sdg coverage sustainable development goals tracked goals monitored borneo tracker sdgs sdg1 sdg2 sdg3 sdg4 sdg6 sdg7 sdg8 sdg9 sdg11 sdg13 sdg15 sdg16"
   }
 ]

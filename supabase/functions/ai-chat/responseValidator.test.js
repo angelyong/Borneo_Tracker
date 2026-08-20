@@ -108,6 +108,7 @@ describe('Gemini response validator basic behavior', () => {
     [{ text: 'not plain text' }, 'MALFORMED_OUTPUT'],
     ['{"answer":"plain text was required"}', 'MALFORMED_OUTPUT'],
     ['safe\u0001unsafe', 'MALFORMED_OUTPUT'],
+    ['To generate a report, which', 'TRUNCATED_OUTPUT'],
   ])('rejects malformed answer %s', (answer, code) => {
     expect(codes(validateGeminiResponse(baseInput({ answer })))).toContain(code);
   });
@@ -375,6 +376,14 @@ describe('site knowledge Gemini response validator', () => {
 
   it('accepts a valid grounded site-knowledge answer', () => {
     expect(validateSiteKnowledgeGeminiResponse(siteInput()).valid).toBe(true);
+  });
+
+  it('rejects truncated site-knowledge answers', () => {
+    const result = validateSiteKnowledgeGeminiResponse(siteInput({
+      answer: 'To generate a report, which',
+    }));
+
+    expect(codes(result)).toContain('TRUNCATED_OUTPUT');
   });
 
   it.each([

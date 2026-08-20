@@ -20,6 +20,7 @@ import { THEME_CHANGE_EVENT, cssVar } from '../../utils/theme';
 import DataFreshness from '../../components/DataFreshness';
 import ProvenanceChip from '../../components/ProvenanceChip';
 import HexRadar from '../../components/HexRadar';
+import { HEXAGON_PILLARS } from '../../components/hexagonPillars';
 import IntegrityChip from '../../components/IntegrityChip';
 import ScoreExplainer from '../../components/ScoreExplainer';
 import { bandLabelKeyForRag } from '../../utils/resilienceBand';
@@ -398,6 +399,13 @@ const RegionalDetails = () => {
                         max={100}
                         weakest={territoryResilience.weakestPillar}
                         maxWidth={230}
+                        missingLabel={t('dashboard.noComparableData')}
+                        incompleteLabel={t('regional.scoredPillarsTitle', {
+                          count: territoryResilience.scoredPillars?.length || Object.values(pillarScores).filter(Number.isFinite).length,
+                        })}
+                        ariaLabel={t('regional.scoredPillarsTitle', {
+                          count: territoryResilience.scoredPillars?.length || Object.values(pillarScores).filter(Number.isFinite).length,
+                        })}
                       />
                     ) : (
                       <div style={{ textAlign: 'center', fontSize: '13px', color: 'var(--color-muted)', padding: '0 16px' }}>
@@ -407,12 +415,17 @@ const RegionalDetails = () => {
                   </div>
                   <div style={styles.cardFooter}>
                     {pillarScores ? (
-                      Object.entries(pillarScores).map(([name, value]) => (
-                        <span key={name} style={styles.footerItem}>
-                          <span style={{ width: 8, height: 8, borderRadius: '50%', background: name === territoryResilience.weakestPillar ? 'var(--color-red)' : theme.primary, display: 'inline-block' }} />
-                          {name}: <strong>{value}</strong>
-                        </span>
-                      ))
+                      HEXAGON_PILLARS.map((name) => {
+                        const value = pillarScores[name];
+                        const scored = Number.isFinite(value);
+                        const isWeakest = scored && name === territoryResilience.weakestPillar;
+                        return (
+                          <span key={name} style={{ ...styles.footerItem, opacity: scored ? 1 : 0.75 }}>
+                            <span style={{ width: 8, height: 8, borderRadius: '50%', background: isWeakest ? 'var(--color-red)' : scored ? theme.primary : 'var(--color-faint)', display: 'inline-block' }} />
+                            {name}: <strong>{scored ? value : t('dashboard.noComparableData')}</strong>
+                          </span>
+                        );
+                      })
                     ) : (
                       <span style={styles.footerItem}>{t('regional.noTerritoryResilienceScores')}</span>
                     )}

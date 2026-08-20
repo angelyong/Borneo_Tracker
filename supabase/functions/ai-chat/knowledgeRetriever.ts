@@ -41,6 +41,10 @@ export function retrieveStaticKnowledge(
   query: AIChatKnowledgeQuery,
   repository = new KnowledgeRepository()
 ): AIChatKnowledgeRetrievalResult {
+  if (requestsContentOutsideKnowledgeBase(query.question)) {
+    return { matches: [], status: 'NO_MATCH', warnings: ['KNOWLEDGE_NO_MATCH_REQUESTED'] };
+  }
+
   const records = repository.getAllRuntimeRecords();
   const scored = records
     .map((record) => scoreRecord(record, query))
@@ -160,6 +164,13 @@ function scoreRecord(record: AIChatKnowledgeRecord, query: AIChatKnowledgeQuery)
     matchedBy.push(`language-mismatch:${record.language}`);
   }
 
+  const hint = queryHintBoost(record, question, questionTokens);
+  if (hint.score) {
+    score += hint.score;
+    matchedBy.push(...hint.matchedBy);
+    strongSignal = true;
+  }
+
   const titleTokens = tokens(title, record.language);
   const titleOverlap = overlap(questionTokens, titleTokens);
   if (titleOverlap.length) {
@@ -202,7 +213,14 @@ function normalizeText(value: string): string {
 
 function tokens(value: string, language: string): string[] {
   const stopwords = language === 'ms' ? MS_STOPWORDS : EN_STOPWORDS;
-  return [...new Set(value.split(/\s+/).filter((token) => token.length >= 2 && !stopwords.has(token)))];
+  const result: string[] = [];
+  for (const token of value.split(/\s+/)) {
+    if (token.length < 2 || stopwords.has(token)) continue;
+    result.push(token);
+    if (token === 'sdgs') result.push('sdg');
+    if (token.length > 4 && token.endsWith('s')) result.push(token.slice(0, -1));
+  }
+  return [...new Set(result)];
 }
 
 function isStopwordPhrase(value: string, language: string): boolean {
@@ -249,6 +267,7 @@ function compareMatches(a: Scored, b: Scored): number {
 function isAmbiguous(top: Scored, matches: Scored[]): boolean {
   const close = matches.filter((match) => top.score - match.score <= KNOWLEDGE_AMBIGUITY_MARGIN);
   if (close.length < 2) return false;
+  if (isComplementaryEsgSdg(close)) return false;
   if (top.matchedBy.some((item) => /^exact-title|^concept:/.test(item))) return false;
   if (top.matchedBy.some((item) => /^keyword:.+\s/.test(item))) return false;
   if (top.matchedBy.includes('product-identity') || top.matchedBy.includes('page')) return false;
@@ -256,6 +275,162 @@ function isAmbiguous(top: Scored, matches: Scored[]): boolean {
   return close.some((match) => match.topicKey !== top.topicKey);
 }
 
+function queryHintBoost(record: AIChatKnowledgeRecord, question: string, questionTokens: string[]): { score: number; matchedBy: string[] } {
+  const matchedBy: string[] = [];
+  let score = 0;
+  const has = (token: string) => questionTokens.includes(token);
+  const category = record.category;
+  const concept = record.concept || '';
+
+  if (has('esg') && has('sdg') && (category === 'esg-indicators' || category === 'sdg-progress')) {
+    score += 12;
+    matchedBy.push(`query-hint:${category}`);
+  }
+  if (isEsgSdgComparisonQuestion(question, questionTokens) && record.id === 'esg-vs-sdg') {
+    score += 36;
+    matchedBy.push('query-hint:esg-vs-sdg');
+  }
+  if (isSingleEsgQuestion(question, questionTokens) && record.id === 'esg-indicators-page-en') {
+    score += 24;
+    matchedBy.push('query-hint:esg-overview');
+  }
+  if (isSingleSdgQuestion(question, questionTokens) && record.id === 'sdg-progress-page-en') {
+    score += 24;
+    matchedBy.push('query-hint:sdg-overview');
+  }
+  if (isForestCoverKnowledgeQuestion(question, questionTokens) && record.id === 'indicator-forest-cover') {
+    score += 44;
+    matchedBy.push('query-hint:forest-cover-indicator');
+  }
+  if (isSdgCoverageListQuestion(question, questionTokens) && record.id === 'sdg-monitored-goals') {
+    score += 32;
+    matchedBy.push('query-hint:sdg-monitored-goals');
+  }
+  if (isEnvironmentalSourceQuestion(question, questionTokens) && record.id === 'environmental-data-sources') {
+    score += 24;
+    matchedBy.push('query-hint:environmental-data-sources');
+  }
+  if (isGenerateReportHowToQuestion(question, questionTokens) && record.id === 'generate-report-how-to') {
+    score += 36;
+    matchedBy.push('query-hint:generate-report-how-to');
+  }
+  if (isGenerateReportOverviewQuestion(question) && record.id === 'generate-report-page-en') {
+    score += 24;
+    matchedBy.push('query-hint:generate-report-overview');
+  }
+  if (phraseAppears(question, 'data sources') && category === 'site-overview') {
+    score += 8;
+    matchedBy.push('query-hint:data-sources');
+  }
+
+  return { score, matchedBy };
+}
+
+function isSingleEsgQuestion(question: string, questionTokens: string[]): boolean {
+  const has = (token: string) => questionTokens.includes(token);
+  if (!has('esg') || has('sdg')) return false;
+  return phraseAppears(question, 'what is esg') ||
+    /\b(?:explain|define|meaning)\b.{0,20}\besg\b/.test(question) ||
+    /\besg\b.{0,20}\b(?:mean|means)\b/.test(question);
+}
+
+function isSingleSdgQuestion(question: string, questionTokens: string[]): boolean {
+  const has = (token: string) => questionTokens.includes(token);
+  if (!has('sdg') || has('esg')) return false;
+  const isSpecificGoal = /\bsdgs?\s*\d+\b/i.test(question) ||
+    /\bsustainable development goals?\s*\d+\b/i.test(question);
+  if (isSpecificGoal || isSdgCoverageListQuestion(question, questionTokens)) return false;
+  return phraseAppears(question, 'what are sdgs') ||
+    phraseAppears(question, 'what is sdg') ||
+    phraseAppears(question, 'what are sustainable development goals') ||
+    /\b(?:explain|define|meaning)\b.{0,40}\b(?:sdgs?|sustainable development goals?)\b/.test(question) ||
+    /\b(?:sdgs?|sustainable development goals?)\b.{0,20}\b(?:mean|means)\b/.test(question);
+}
+
+function isEsgSdgComparisonQuestion(question: string, questionTokens: string[]): boolean {
+  const has = (token: string) => questionTokens.includes(token);
+  if (!has('esg') || !has('sdg')) return false;
+  return /\b(?:difference|different|compared|compare|versus|vs|between)\b/.test(question) ||
+    phraseAppears(question, 'esg and sdg') ||
+    phraseAppears(question, 'esg vs sdg') ||
+    phraseAppears(question, 'esg versus sdg') ||
+    phraseAppears(question, 'esg compared with sdg');
+}
+
+function isSdgCoverageListQuestion(question: string, questionTokens: string[]): boolean {
+  const has = (token: string) => questionTokens.includes(token);
+  const hasSdg = has('sdg') || has('sdgs') ||
+    phraseAppears(question, 'sustainable development goal') ||
+    phraseAppears(question, 'sustainable development goals');
+  if (!hasSdg) return false;
+  const asksList = /\b(?:show|list|covered|coverage|monitored|monitor|tracked|tracks)\b/.test(question) ||
+    phraseAppears(question, 'which sdgs') ||
+    phraseAppears(question, 'what sdgs') ||
+    phraseAppears(question, 'sdg coverage') ||
+    phraseAppears(question, 'sustainable development goals tracked') ||
+    (phraseAppears(question, 'sustainable development goals') && /\b(?:which|what|tracked|covered|monitored)\b/.test(question));
+  const isSpecificGoal = /\bsdgs?\s*\d+\b/i.test(question) ||
+    /\bsustainable development goals?\s*\d+\b/i.test(question);
+  return asksList && !isSpecificGoal;
+}
+
+function isEnvironmentalSourceQuestion(question: string, questionTokens: string[]): boolean {
+  const has = (token: string) => questionTokens.includes(token);
+  const asksSource = /\b(?:source|sources|from|come|comes|get|gets|originate|provenance)\b/.test(question) ||
+    phraseAppears(question, 'data source') ||
+    phraseAppears(question, 'data sources') ||
+    phraseAppears(question, 'where data comes from');
+  const asksEnvironmental = phraseAppears(question, 'environmental data') ||
+    phraseAppears(question, 'environmental indicators') ||
+    (has('environmental') && (has('data') || has('indicator') || has('indicators')));
+  return asksSource && asksEnvironmental;
+}
+
+function isForestCoverKnowledgeQuestion(question: string, questionTokens: string[]): boolean {
+  const has = (token: string) => questionTokens.includes(token);
+  if (!phraseAppears(question, 'forest cover')) return false;
+  const asksDashboardValue = /\b(?:value|score|number|amount|rate|percentage|percent)\b/.test(question) &&
+    /\b(?:sabah|sarawak|brunei|kalimantan|borneo)\b/.test(question);
+  if (asksDashboardValue) return false;
+  return /\b(?:explain|indicator|mean|meaning|measure|measured|definition|source|sources|from|come|comes|provenance)\b/.test(question) ||
+    phraseAppears(question, 'what is forest cover') ||
+    phraseAppears(question, 'what does forest cover') ||
+    (has('data') && (has('source') || has('sources') || has('from')));
+}
+
+function isGenerateReportHowToQuestion(question: string, questionTokens: string[]): boolean {
+  const has = (token: string) => questionTokens.includes(token);
+  const hasReportContext = has('report') || phraseAppears(question, 'pdf report') || phraseAppears(question, 'generate report');
+  if (!hasReportContext || isGenerateReportOverviewQuestion(question)) return false;
+  return phraseAppears(question, 'how do i generate a report') ||
+    phraseAppears(question, 'how can i create a report') ||
+    phraseAppears(question, 'how do i download a report') ||
+    phraseAppears(question, 'how do i create a pdf report') ||
+    phraseAppears(question, 'what steps are needed to generate a report') ||
+    (/\b(?:how|steps|step|create|generate|download)\b/.test(question) && (has('report') || has('pdf')));
+}
+
+function isGenerateReportOverviewQuestion(question: string): boolean {
+  return phraseAppears(question, 'what is the generate report page') ||
+    phraseAppears(question, 'what is generate report page') ||
+    phraseAppears(question, 'what does the generate report page do') ||
+    phraseAppears(question, 'what does generate report page do') ||
+    phraseAppears(question, 'describe the generate report page');
+}
+
+function isComplementaryEsgSdg(matches: Scored[]): boolean {
+  const categories = new Set(matches.map((match) => match.record.category));
+  return categories.has('esg-indicators') && categories.has('sdg-progress') &&
+    matches.every((match) => ['esg-indicators', 'sdg-progress'].includes(match.record.category));
+}
+
 function normalizeLanguage(language: string): string {
   return language === 'ms' ? 'ms' : 'en';
+}
+
+function requestsContentOutsideKnowledgeBase(question: string): boolean {
+  const normalized = normalizeText(question);
+  return /\b(?:not|isn t|is not|isnt|outside|beyond|tiada|bukan)\b.{0,40}\bknowledge base\b/i.test(normalized) ||
+    /\bknowledge base\b.{0,40}\b(?:not|outside|beyond)\b/i.test(normalized) ||
+    /\bpangkalan pengetahuan\b.{0,40}\b(?:tiada|bukan|di luar)\b/i.test(normalized);
 }

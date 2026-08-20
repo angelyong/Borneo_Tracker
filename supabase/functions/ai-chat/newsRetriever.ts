@@ -7,6 +7,7 @@ import type {
   AIChatPublishedNewsItem,
 } from './contracts.ts';
 import type { AIChatNewsRepository } from './newsRepository.ts';
+import { extractNewsTopics, normalizeNewsTopics } from './newsTopics.ts';
 
 export const DEFAULT_NEWS_LIMIT = 5;
 export const MAX_NEWS_LIMIT = 10;
@@ -16,6 +17,7 @@ type NewsRetrieverInput = {
   entities: AIChatEntityResult;
   language: string;
   repository: AIChatNewsRepository;
+  userQuestion?: string;
   query?: Partial<AIChatNewsQuery>;
 };
 
@@ -39,8 +41,10 @@ export async function retrieveAIChatNews(input: NewsRetrieverInput): Promise<AIC
     warnings: dedupe(warnings),
     queryApplied: {
       territories: safeQuery.territories,
+      topics: safeQuery.topics || [],
       ...(safeQuery.fromDate ? { fromDate: safeQuery.fromDate } : {}),
       ...(safeQuery.toDate ? { toDate: safeQuery.toDate } : {}),
+      latest: Boolean(safeQuery.latest),
       limit: safeQuery.limit || DEFAULT_NEWS_LIMIT,
     },
   };
@@ -48,6 +52,11 @@ export async function retrieveAIChatNews(input: NewsRetrieverInput): Promise<AIC
 
 export function buildNewsQuery(input: Omit<NewsRetrieverInput, 'repository'>, warnings: string[] = []): AIChatNewsQuery {
   const territories = normalizeTerritories(input.query?.territories || input.entities.territories, warnings);
+  const topics = normalizeNewsTopics(input.query?.topics || [
+    ...(input.userQuestion ? extractNewsTopics(input.userQuestion) : []),
+    ...input.intent.matchedTerms,
+    ...input.entities.matchedTerms,
+  ]);
   const dateRange = input.query?.fromDate || input.query?.toDate
     ? { fromDate: input.query.fromDate, toDate: input.query.toDate }
     : datesFromEntities(input.entities);
@@ -56,6 +65,7 @@ export function buildNewsQuery(input: Omit<NewsRetrieverInput, 'repository'>, wa
 
   return {
     territories,
+    ...(topics.length ? { topics } : {}),
     ...(dateRange.fromDate ? { fromDate: dateRange.fromDate } : {}),
     ...(dateRange.toDate ? { toDate: dateRange.toDate } : {}),
     latest: input.query?.latest ?? input.entities.operations.latest,

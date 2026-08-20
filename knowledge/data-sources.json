@@ -14,7 +14,7 @@
     "status": "placeholder"
   },
   {
-    "id": "environmental-data-sources",
+    "id": "environmental-data-sources-placeholder",
     "title": "Environmental Data Sources",
     "category": "data-sources",
     "content": "Environmental indicators may reference sources shown in the dashboard rows, such as satellite, air quality or fire alert providers. This record does not assert completeness or live availability.",

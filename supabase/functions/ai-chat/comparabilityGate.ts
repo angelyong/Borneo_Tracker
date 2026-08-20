@@ -175,6 +175,14 @@ export const CONCEPT_RULE_REGISTRY: Record<string, ConceptComparabilityRule> = {
     trendAvailable: false,
     disclosures: ['Protected-area count comparisons are misleading; use percentage-of-land basis.'],
   },
+  resilience: {
+    concept: 'resilience',
+    crossTerritoryComparable: true,
+    comparableBasis: 'Resilience Index score',
+    requiresSameUnit: true,
+    trendAvailable: false,
+    disclosures: ['Resilience comparisons use committed territory-level index scores from the same resilience methodology.'],
+  },
   shelter: {
     concept: 'shelter',
     crossTerritoryComparable: false,
@@ -236,6 +244,11 @@ export function evaluateComparability(input: ComparabilityInput): ComparabilityR
 
   evaluateDistricts(resolvedInput, result);
   if (result.decision === 'NEEDS_CLARIFICATION' || result.decision === 'REJECT') return finalize(result);
+
+  if (operations.includes('compare') && territories.length > 2) {
+    requireClarification(result, 'Borneo Tracker currently supports two territories at a time for deterministic comparisons. Please choose exactly two territories.', ['compare']);
+    return finalize(result);
+  }
 
   if (operations.includes('sdg_progress')) {
     downgrade(result, 'Repository metadata has SDG mappings but no target fields, so progress-to-target cannot be calculated.', 'sdg_progress');

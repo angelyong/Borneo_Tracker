@@ -7,7 +7,6 @@ import 'leaflet/dist/leaflet.css';
 import {
   CATEGORY_TO_PILLAR,
   LAYER_CONFIG,
-  LAYER_GROUPS,
   TERRITORIES,
   buildDistrictChoropleth,
   formatValue,
@@ -19,8 +18,6 @@ import {
   getHexagonCoverage,
   getLayerRows,
   getRowsForPillar,
-  hasDistrictFallbackLayer,
-  isScoreLayer,
   layerColorScale,
   summarizeRows,
   territoryForParent,
@@ -42,9 +39,9 @@ import WeakestLinkBars from '../../components/WeakestLinkBars';
 import RagGauge from '../../components/RagGauge';
 import MoneyVsResilience from '../../components/MoneyVsResilience';
 import HexRadar from '../../components/HexRadar';
-import ScoreExplainer from '../../components/ScoreExplainer';
-import { bandLabelKeyForRag } from '../../utils/resilienceBand';
+import { HEXAGON_PILLARS } from '../../components/hexagonPillars';
 import { buildHeadline } from '../../utils/headline';
+import { buildAggregateResilience, RESILIENCE_PILLARS } from '../../utils/resiliencePresentation';
 import { makeSimulatorHref } from '../../utils/simulatorRoute';
 
 delete L.Icon.Default.prototype._getIconUrl;
@@ -242,14 +239,6 @@ const OverviewDashboard = () => {
   const { data: bruneiGeo } = useBruneiGeo();
 
   const isDistrict = level === 'district';
-  const activeLayerConfig = LAYER_CONFIG[activeLayer] || {};
-  const activeLayerLabel = activeLayerConfig.labelKey
-    ? t(activeLayerConfig.labelKey)
-    : activeLayerConfig.label || t('dashboard.layer');
-  const activeLayerCaption = activeLayerConfig.captionKey ? t(activeLayerConfig.captionKey) : '';
-  const activeLayerUsesDistrictFallback = isDistrict && hasDistrictFallbackLayer(activeLayer);
-  const activeLayerUnavailableInDistrict =
-    isDistrict && isScoreLayer(activeLayer) && !activeLayerUsesDistrictFallback;
   const districtParents = useMemo(() => getDistrictParents(districtData), [districtData]);
   const districtOptions = useMemo(
     () => getDistrictsForParent(districtData, districtParent),
@@ -327,9 +316,9 @@ const OverviewDashboard = () => {
   );
 
   const layerEntries = useMemo(() => {
-    if (!activeLayer) return [];
-    return getLayerRows(data?.rows || [], activeLayer, resilience);
-  }, [activeLayer, data, resilience]);
+    if (!data?.rows || !activeLayer) return [];
+    return getLayerRows(data.rows, activeLayer);
+  }, [activeLayer, data]);
 
   const colorForValue = useMemo(() => layerColorScale(layerEntries, activeLayer), [activeLayer, layerEntries]);
 
@@ -372,14 +361,12 @@ const OverviewDashboard = () => {
       const territory = territoryForParent(feature.properties?.parent);
       const entry = territoryFill[territory];
       const valueText = entry?.row ? formatValue(entry.row) : 'No data for this layer';
-      const config = LAYER_CONFIG[activeLayer] || {};
-      const label = config.labelKey ? t(config.labelKey) : config.label || '';
       layer.bindTooltip(
-        `<strong>${territory}</strong><br/>${label}<br/>${valueText}`,
+        `<strong>${territory}</strong><br/>${LAYER_CONFIG[activeLayer]?.label || ''}<br/>${valueText}`,
         { direction: 'top', sticky: true }
       );
     },
-    [territoryFill, activeLayer, t]
+    [territoryFill, activeLayer]
   );
 
   // Floating value labels pinned at each territory centre (the demo's "pills").
@@ -405,45 +392,24 @@ const OverviewDashboard = () => {
 
   // On-map legend scale for the active layer (green = better end, red = worse).
   const legendScale = useMemo(() => {
-    const config = LAYER_CONFIG[activeLayer];
-    if (isDistrict && isScoreLayer(activeLayer) && !hasDistrictFallbackLayer(activeLayer)) {
-      return [{ label: t('dashboard.noDistrictScoreData'), color: '#94a3b8' }];
-    }
-    if (config?.scale === 'absolute' && !(isDistrict && hasDistrictFallbackLayer(activeLayer))) {
-      return [
-        { label: t('dashboard.scoreBandGood'), color: RAG_COLORS.green },
-        { label: t('dashboard.scoreBandModerate'), color: RAG_COLORS.amber },
-        { label: t('dashboard.scoreBandPoor'), color: RAG_COLORS.red },
-        { label: t('dashboard.noData'), color: '#94a3b8' },
-      ];
-    }
-    const better = config?.better;
+    const better = LAYER_CONFIG[activeLayer]?.better;
     return [
-      {
-        label: better === 'higher' ? t('dashboard.legendHigherBetter') : t('dashboard.legendLowerBetter'),
-        color: RAG_COLORS.green,
-      },
-      { label: t('dashboard.legendMiddle'), color: RAG_COLORS.amber },
-      {
-        label: better === 'higher' ? t('dashboard.legendLowerWorse') : t('dashboard.legendHigherWorse'),
-        color: RAG_COLORS.red,
-      },
+      { label: better === 'higher' ? 'Higher (better)' : 'Lower (better)', color: RAG_COLORS.green },
+      { label: 'Middle', color: RAG_COLORS.amber },
+      { label: better === 'higher' ? 'Lower (worse)' : 'Higher (worse)', color: RAG_COLORS.red },
     ];
-  }, [activeLayer, isDistrict, t]);
+  }, [activeLayer]);
 
   // District choropleth/list entries for the active layer, under the current parent.
   const districtLayerEntries = useMemo(() => {
-    if (!isDistrict || activeLayerUnavailableInDistrict || !districtData?.rows) return [];
+    if (!isDistrict || !districtData?.rows) return [];
     return getDistrictLayerRows(districtData.rows, districtParent, activeLayer);
-  }, [isDistrict, activeLayerUnavailableInDistrict, districtData, districtParent, activeLayer]);
+  }, [isDistrict, districtData, districtParent, activeLayer]);
 
   // Choropleth colouring for the district polygons, by the active layer.
   const choropleth = useMemo(
-    () =>
-      districtData?.rows && !activeLayerUnavailableInDistrict
-        ? buildDistrictChoropleth(districtData.rows, activeLayer)
-        : null,
-    [districtData, activeLayer, activeLayerUnavailableInDistrict]
+    () => (districtData?.rows ? buildDistrictChoropleth(districtData.rows, activeLayer) : null),
+    [districtData, activeLayer]
   );
 
   // The join key of the currently-selected district — used to highlight it and to
@@ -627,56 +593,22 @@ const OverviewDashboard = () => {
         scoredPillars: territory.scoredPillars || Object.keys(territory.pillarScores || {}),
         unscoredPillars: territory.unscoredPillars || [],
         thresholds,
-        note: `Weakest pillar: ${territory.weakestPillar} · ${territory.scoredPillars.length}/6 pillars scored`,
+        isAggregate: false,
       };
     }
 
-    const scored = Object.values(resilience.territories).filter((t) => Number.isFinite(t.index));
-
-    if (!scored.length) return null;
-
-    const avg = scored.reduce((sum, t) => sum + t.index, 0) / scored.length;
-    const index = Math.round(avg * 10) / 10;
-    const rag = index >= thresholds.green ? 'green' : index >= thresholds.amber ? 'amber' : 'red';
-
-    // All-Borneo hexagon = the per-pillar average across territories; strict = its
-    // geometric mean; weakest = the lowest averaged pillar.
-    const PILL = ['Food', 'Energy', 'Education', 'Shelter', 'Healthcare', 'Entertainment'];
-    const pillarScores = {};
-    PILL.forEach((p) => {
-      const vals = scored.map((t) => t.pillarScores?.[p]).filter(Number.isFinite);
-      if (vals.length) pillarScores[p] = Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10;
-    });
-    const pv = Object.values(pillarScores);
-    const strict = pv.length ? Math.round(Math.pow(pv.reduce((a, b) => a * b, 1), 1 / pv.length) * 10) / 10 : null;
-    const ragStrict =
-      strict == null ? null : strict >= thresholds.green ? 'green' : strict >= thresholds.amber ? 'amber' : 'red';
-    const weakestPillar = pv.length
-      ? Object.keys(pillarScores).reduce((m, p) => (pillarScores[p] < pillarScores[m] ? p : m), Object.keys(pillarScores)[0])
-      : null;
-
-    return {
-      index,
-      rag,
-      indexStrict: strict,
-      ragStrict,
-      weakestPillar,
-      pillarScores,
-      scoredPillars: Object.keys(pillarScores),
-      unscoredPillars: ['Food', 'Energy', 'Education', 'Shelter', 'Healthcare', 'Entertainment'].filter((pillar) => !Number.isFinite(pillarScores[pillar])),
-      thresholds,
-      note: `Average of ${scored.length} territories${weakestPillar ? ` · weakest: ${weakestPillar}` : ''}`,
-    };
+    return buildAggregateResilience(resilience.territories, thresholds);
   }, [isDistrict, isOverall, panelTerritory, resilience]);
 
-  const resilienceBandLabelKey = Number.isFinite(resilienceView?.index)
-    ? bandLabelKeyForRag(resilienceView?.rag)
-    : null;
-
+  // BT-07 consumes the exact scope presentation already prepared above. It
+  // must not duplicate index, RAG, or aggregate calculation in the headline.
   const headline = useMemo(
     () => (resilienceView?.unavailable ? null : buildHeadline(resilienceView)),
     [resilienceView]
   );
+
+  // Districts have no comparable resilience score and Overall Borneo is an
+  // aggregate, so neither can truthfully become a simulator scenario.
   const simulatorHref = useMemo(() => {
     if (isDistrict || isOverall || !Number.isFinite(resilienceView?.index)) return null;
     return makeSimulatorHref(panelTerritory, resilienceView?.weakestPillar);
@@ -711,15 +643,16 @@ const OverviewDashboard = () => {
     return totals;
   }, [data, isDistrict, isOverall, panelTerritory, scopeRows, scopeName]);
 
-  // Real 0-100 pillar SCORES for the radar (territory level). Unscored pillars
-  // stay null so the radar can render an explicit no-data gap instead of a fake 0.
+  // Real 0-100 pillar scores for the territory radar. Missing scores deliberately
+  // remain null: HexRadar keeps all six axes and labels the gap rather than
+  // inventing a zero. Districts have no resilience scores.
   const hexScores = useMemo(() => {
     if (isDistrict) return null;
     const ps = resilienceView?.pillarScores;
     if (!ps) return null;
     const out = {};
-    ['Food', 'Energy', 'Education', 'Shelter', 'Healthcare', 'Entertainment'].forEach((p) => {
-      out[p] = Number.isFinite(ps[p]) ? ps[p] : null;
+    HEXAGON_PILLARS.forEach((pillar) => {
+      out[pillar] = Number.isFinite(ps[pillar]) ? ps[pillar] : null;
     });
     return out;
   }, [isDistrict, resilienceView]);
@@ -936,23 +869,9 @@ const OverviewDashboard = () => {
         </div>
 
         <div style={styles.mapLegend}>
-          <div style={styles.mapLegendTitle}>{activeLayerLabel}</div>
+          <div style={styles.mapLegendTitle}>{LAYER_CONFIG[activeLayer]?.label || t('dashboard.layer')}</div>
           <div style={styles.mapLegendSub}>
-            {activeLayerUnavailableInDistrict
-              ? t('dashboard.scoreLayerDistrictLegend')
-              : activeLayerUsesDistrictFallback
-                ? t(activeLayerConfig.districtFallbackKey)
-                : activeLayerConfig.scale === 'absolute'
-                  ? t('dashboard.scoreScaleAbsolute')
-                  : isDistrict
-                    ? t('dashboard.acrossDistricts', { parent: districtParent })
-                    : t('dashboard.colouredAcrossRegions')}
-          </div>
-          <div style={styles.mapLegendMeta}>
-            {t('dashboard.legendUnitDirection', {
-              unit: t(activeLayerUsesDistrictFallback ? activeLayerConfig.districtUnitKey : activeLayerConfig.unitKey),
-              direction: t(activeLayerConfig.directionKey),
-            })}
+            {isDistrict ? t('dashboard.acrossDistricts', { parent: districtParent }) : t('dashboard.colouredAcrossRegions')}
           </div>
           {legendScale.map((item) => (
             <div key={item.label} style={styles.mapLegendRow}>
@@ -1044,20 +963,16 @@ const OverviewDashboard = () => {
           <DataFreshness
             generatedAt={isDistrict ? districtGeneratedAt : generatedAt}
             loading={isDistrict ? districtLoading : loading}
-            artifact={isDistrict ? districtData : data}
           />
           <IntegrityChip />
         </div>
 
         <div style={styles.card}>
-          <div style={styles.sectionTitleRow}>
-            <div style={styles.sectionTitle}>{t('dashboard.overallResilienceStatus')}</div>
-            {!isDistrict && <ScoreExplainer />}
-          </div>
+          <div style={styles.sectionTitle}>{t('dashboard.overallResilienceStatus')}</div>
 
           {resilienceView?.unavailable ? (
             <div style={styles.stateText}>
-              {t('dashboard.resilienceDistrictNotice', { district: district || districtParent })}
+              {t('dashboard.resilienceDistrictNotice', { district: districtParent })}
             </div>
           ) : resilienceView ? (
             <>
@@ -1089,22 +1004,20 @@ const OverviewDashboard = () => {
               </div>
 
               <div style={styles.scoreRow}>
-                <div style={styles.scoreValueRow}>
-                  <span style={{ ...styles.scoreBig, color: RAG_COLORS[resilienceView.rag] || '#1f2937' }}>
-                    {resilienceView.index}
-                  </span>
-                  {resilienceBandLabelKey && (
+                <span style={{ ...styles.scoreBig, color: RAG_COLORS[resilienceView.rag] || '#1f2937' }}>
+                  {resilienceView.index}
+                </span>
+                <span style={styles.scoreMeta}>
+                  <span style={styles.scoreCaption}>{t('dashboard.resilienceIndexCaption')}</span>
+                  {resilienceView.rag && (
                     <span
-                      style={{
-                        ...styles.scoreBand,
-                        ...(styles[`scoreBand${resilienceView.rag}`] || {}),
-                      }}
+                      style={{ ...styles.ragStatus, color: RAG_COLORS[resilienceView.rag] }}
+                      aria-label={t('dashboard.indexStatus', { band: t(`dashboard.ragBand_${resilienceView.rag}`) })}
                     >
-                      {t(resilienceBandLabelKey)}
+                      <span aria-hidden="true">●</span> {t(`dashboard.ragBand_${resilienceView.rag}`)}
                     </span>
                   )}
-                </div>
-                <span style={styles.scoreCaption}>{t('dashboard.resilienceIndexCaption')}</span>
+                </span>
               </div>
 
               {headline && (
@@ -1113,16 +1026,21 @@ const OverviewDashboard = () => {
                     ...headline.values,
                     rag: headline.values.rag ? t(`dashboard.ragBand_${headline.values.rag}`) : undefined,
                     weakestPillar: headline.values.weakestPillar
-                      ? t(`dashboard.pillars.${headline.values.weakestPillar}`, { defaultValue: headline.values.weakestPillar })
+                      ? t(`dashboard.pillars.${headline.values.weakestPillar}`, {
+                        defaultValue: headline.values.weakestPillar,
+                      })
                       : undefined,
                   })}
                 </p>
               )}
+
               {simulatorHref && (
                 <Link to={simulatorHref} style={styles.whatNextCta}>
                   {t('dashboard.whatNextCta', {
                     territory: panelTerritory,
-                    pillar: t(`dashboard.pillars.${resilienceView.weakestPillar}`, { defaultValue: resilienceView.weakestPillar }),
+                    pillar: t(`dashboard.pillars.${resilienceView.weakestPillar}`, {
+                      defaultValue: resilienceView.weakestPillar,
+                    }),
                   })}
                 </Link>
               )}
@@ -1134,15 +1052,43 @@ const OverviewDashboard = () => {
                     <b style={{ color: RAG_COLORS[resilienceView.ragStrict] || 'inherit' }}>
                       {resilienceView.indexStrict}
                     </b>{' '}
+                    {resilienceView.ragStrict && (
+                      <span style={{ ...styles.ragStatusInline, color: RAG_COLORS[resilienceView.ragStrict] }}>
+                        <span aria-hidden="true">●</span> {t(`dashboard.ragBand_${resilienceView.ragStrict}`)}
+                      </span>
+                    )}{' '}
                     · {t('dashboard.fragilityGap')} {resilienceView.index >= resilienceView.indexStrict ? '−' : '+'}
                     {Math.abs(Math.round((resilienceView.index - resilienceView.indexStrict) * 10) / 10)}
                   </span>
-                  <ScoreExplainer labelKey="scoreExplainer.strictOpenLabel" />
                 </div>
               )}
 
               <div style={styles.trendRow}>
-                <span style={styles.trendLabel}>{resilienceView.note}</span>
+                {resilienceView.isAggregate ? (
+                  <span style={styles.trendLabel}>
+                    {t('dashboard.aggregateCoverageByPillar', {
+                      coverage: RESILIENCE_PILLARS.map(
+                        (pillar) => `${pillar} ${resilienceView.pillarCoverage[pillar]?.contributorCount || 0}/${resilienceView.pillarCoverage[pillar]?.denominator || 0}`
+                      ).join(' · '),
+                    })}{' '}
+                    {t(`dashboard.${resilienceView.aggregateCoverageStatus}`, {
+                      count: resilienceView.scoredTerritoryCount,
+                      partialPillars: resilienceView.partialContributorPillars.join(', '),
+                      unscoredPillars: resilienceView.unscoredPillars.join(', '),
+                    })}
+                  </span>
+                ) : resilienceView.unscoredPillars.length ? (
+                  <span style={styles.trendLabel}>
+                    {t('dashboard.territoryCoveragePartial', {
+                      scored: resilienceView.scoredPillars.length,
+                      pillars: resilienceView.unscoredPillars.join(', '),
+                    })}
+                  </span>
+                ) : (
+                  <span style={styles.trendLabel}>
+                    {t('dashboard.territoryCoverageFull', { scored: resilienceView.scoredPillars.length })}
+                  </span>
+                )}
               </div>
             </>
           ) : (
@@ -1157,11 +1103,6 @@ const OverviewDashboard = () => {
               ? t('dashboard.hexagonSubDistrict')
               : t('dashboard.hexagonSubRegion')}
           </div>
-          {!isDistrict && (
-            <p style={styles.pillarExplanation}>
-              {t('about.resilienceByPillarBody')}
-            </p>
-          )}
 
           {isDistrict ? (
             hasHexCoverage ? (
@@ -1172,14 +1113,34 @@ const OverviewDashboard = () => {
               </div>
             )
           ) : hexScores ? (
-            <HexRadar pillars={hexScores} max={100} weakest={resilienceView?.weakestPillar} />
+            <HexRadar
+              pillars={hexScores}
+              max={100}
+              weakest={resilienceView?.weakestPillar}
+              missingLabel={t('dashboard.noComparableData')}
+              incompleteLabel={t('regional.scoredPillarsTitle', {
+                count: resilienceView?.scoredPillars?.length || Object.values(hexScores).filter(Number.isFinite).length,
+              })}
+              ariaLabel={t('regional.scoredPillarsTitle', {
+                count: resilienceView?.scoredPillars?.length || Object.values(hexScores).filter(Number.isFinite).length,
+              })}
+            />
           ) : (
             <div style={styles.stateText}>{t('dashboard.loadingResilienceScores')}</div>
           )}
 
           {!isDistrict && resilienceView?.pillarScores && (
             <div style={{ marginTop: 14, borderTop: '1px solid var(--color-border)', paddingTop: 12 }}>
-              <WeakestLinkBars territory={resilienceView} title={t('dashboard.weakestLinkFirst')} />
+              <WeakestLinkBars
+                territory={resilienceView}
+                title={t('dashboard.weakestLinkFirst')}
+                explanation={t(
+                  resilienceView.isAggregate
+                    ? 'dashboard.aggregateResilienceByPillarBody'
+                    : 'about.resilienceByPillarBody'
+                )}
+                missingLabel={t('dashboard.noComparableData')}
+              />
             </div>
           )}
 
@@ -1240,33 +1201,21 @@ const OverviewDashboard = () => {
 
         <div style={styles.card}>
           <div style={styles.mapLayerSectionTitle}>
-            {t('dashboard.mapLayer', { layer: activeLayer ? activeLayerLabel : t('dashboard.none') })}
+            {t('dashboard.mapLayer', { layer: activeLayer ? LAYER_CONFIG[activeLayer]?.label : t('dashboard.none') })}
           </div>
-          {activeLayerCaption && <div style={styles.layerActiveCaption}>{activeLayerCaption}</div>}
 
           <div style={styles.layerRadioGroup}>
-            {LAYER_GROUPS.map((group) => (
-              <div key={group.key} style={styles.layerGroup}>
-                <div style={styles.layerGroupTitle}>{t(group.labelKey)}</div>
-                <div style={styles.layerButtonGrid}>
-                  {group.layers.map((key) => {
-                    const config = LAYER_CONFIG[key];
-                    const checked = activeLayer === key;
-                    return (
-                      <button
-                        key={key}
-                        type="button"
-                        onClick={() => setActiveLayer(key)}
-                        style={{ ...styles.layerButton, ...(checked ? styles.layerButtonActive : {}) }}
-                        aria-pressed={checked}
-                      >
-                        <span style={styles.layerButtonLabel}>{t(config.labelKey)}</span>
-                        <span style={styles.layerButtonCaption}>{t(config.captionKey)}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+            {Object.keys(LAYER_CONFIG).map((key) => (
+              <label key={key} style={styles.radioLabel}>
+                <input
+                  type="radio"
+                  name="active-layer"
+                  checked={activeLayer === key}
+                  onChange={() => setActiveLayer(key)}
+                  style={styles.radioInput}
+                />
+                {key.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase())}
+              </label>
             ))}
           </div>
 
@@ -1274,16 +1223,8 @@ const OverviewDashboard = () => {
           {error && <div style={{ ...styles.stateText, color: 'var(--color-red)' }}>{error}</div>}
 
           {isDistrict ? (
-            activeLayerUnavailableInDistrict ? (
-              <div style={styles.stateText}>
-                {t('dashboard.scoreLayerDistrictUnavailable', { district: district || districtParent })}
-              </div>
-            ) : districtLayerEntries.length ? (
-              <>
-                {activeLayerUsesDistrictFallback && (
-                  <div style={styles.layerFallbackNote}>{t(activeLayerConfig.districtFallbackKey)}</div>
-                )}
-                {districtLayerEntries.map(({ territory, row }) => (
+            districtLayerEntries.length ? (
+              districtLayerEntries.map(({ territory, row }) => (
                 <div key={territory} style={styles.summaryRow}>
                   <div>
                     <div style={styles.summaryTerritory}>{territory}</div>
@@ -1302,14 +1243,12 @@ const OverviewDashboard = () => {
 
                   <div style={styles.summaryValue}>{row ? formatValue(row) : '—'}</div>
                 </div>
-                ))}
-              </>
+              ))
             ) : (
               <div style={styles.stateText}>
                 {t('dashboard.noDistrictDataForLayer', {
-                  layer: activeLayerLabel,
+                  layer: LAYER_CONFIG[activeLayer]?.label,
                   parent: districtParent,
-                  district: district || districtParent,
                 })}
               </div>
             )
@@ -1424,13 +1363,7 @@ const styles = {
   mapLegendSub: {
     fontSize: '10.5px',
     color: 'var(--color-muted)',
-    marginBottom: '2px',
-  },
-
-  mapLegendMeta: {
-    fontSize: '10px',
-    color: 'var(--color-muted)',
-    marginBottom: '6px',
+    marginBottom: '5px',
   },
 
   mapLegendRow: {
@@ -1706,25 +1639,10 @@ const styles = {
     marginBottom: '2px',
   },
 
-  sectionTitleRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    gap: '8px',
-    marginBottom: '2px',
-  },
-
   sectionSubtitle: {
     fontSize: '11px',
     color: 'var(--color-muted)',
     marginBottom: '8px',
-  },
-
-  pillarExplanation: {
-    margin: '0 0 10px',
-    color: 'var(--color-muted)',
-    fontSize: '11.5px',
-    lineHeight: 1.45,
   },
 
   gaugeSvg: {
@@ -1765,53 +1683,10 @@ const styles = {
     margin: '4px 0 2px',
   },
 
-  scoreValueRow: {
-    display: 'inline-flex',
-    alignItems: 'baseline',
-    justifyContent: 'center',
-    gap: '8px',
-    flexWrap: 'wrap',
-  },
-
   scoreBig: {
     fontSize: '32px',
     fontWeight: '800',
     color: 'var(--color-ink)',
-  },
-
-  scoreBand: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '20px',
-    padding: '3px 8px',
-    borderRadius: '999px',
-    border: '1px solid var(--color-border)',
-    backgroundColor: 'var(--color-grey-soft)',
-    color: 'var(--color-ink)',
-    fontSize: '11px',
-    fontWeight: '800',
-    lineHeight: 1,
-    letterSpacing: '0.04em',
-    textTransform: 'uppercase',
-  },
-
-  scoreBandgreen: {
-    color: '#166534',
-    backgroundColor: '#dcfce7',
-    borderColor: '#86efac',
-  },
-
-  scoreBandamber: {
-    color: '#92400e',
-    backgroundColor: '#fef3c7',
-    borderColor: '#fcd34d',
-  },
-
-  scoreBandred: {
-    color: '#991b1b',
-    backgroundColor: '#fee2e2',
-    borderColor: '#fca5a5',
   },
 
   scoreCaption: {
@@ -1819,6 +1694,49 @@ const styles = {
     fontSize: '11px',
     color: 'var(--color-muted)',
     marginTop: '-2px',
+  },
+
+  scoreMeta: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: 3,
+  },
+
+  resilienceHeadline: {
+    margin: '8px 0 0',
+    fontSize: '13px',
+    lineHeight: 1.45,
+    fontWeight: '600',
+    color: 'var(--color-ink)',
+    textAlign: 'center',
+  },
+
+  whatNextCta: {
+    display: 'block',
+    margin: '10px 0 0',
+    padding: '9px 11px',
+    borderRadius: '8px',
+    background: 'var(--color-grey-soft)',
+    color: 'var(--color-ink)',
+    fontSize: '12px',
+    fontWeight: 700,
+    lineHeight: 1.4,
+    textAlign: 'center',
+    textDecoration: 'none',
+  },
+
+  ragStatus: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: 4,
+    fontSize: 12,
+    fontWeight: 700,
+  },
+
+  ragStatusInline: {
+    fontSize: 12,
+    fontWeight: 700,
   },
 
   trendRow: {
@@ -1887,25 +1805,6 @@ const styles = {
     color: 'var(--color-muted)',
   },
 
-  resilienceHeadline: {
-    margin: '8px 0 0',
-    fontSize: '12px',
-    lineHeight: 1.45,
-    color: 'var(--color-muted)',
-  },
-
-  whatNextCta: {
-    display: 'inline-flex',
-    marginTop: '8px',
-    borderRadius: '7px',
-    padding: '8px 10px',
-    backgroundColor: 'var(--color-blue-soft, #eff6ff)',
-    color: 'var(--color-blue, #1d4ed8)',
-    fontSize: '12px',
-    fontWeight: '700',
-    textDecoration: 'none',
-  },
-
   esgScoreValue: {
     fontSize: '13px',
     fontWeight: '700',
@@ -1932,82 +1831,14 @@ const styles = {
     fontSize: '12px',
     fontWeight: '600',
     color: 'var(--color-ink)',
-    marginBottom: '3px',
-  },
-
-  layerActiveCaption: {
-    fontSize: '11px',
-    lineHeight: 1.35,
-    color: 'var(--color-muted)',
-    marginBottom: '10px',
+    marginBottom: '8px',
   },
 
   layerRadioGroup: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '10px',
-    marginBottom: '12px',
-  },
-
-  layerGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '5px',
-  },
-
-  layerGroupTitle: {
-    fontSize: '10px',
-    fontWeight: 800,
-    color: 'var(--color-muted)',
-    letterSpacing: '0.04em',
-    textTransform: 'uppercase',
-  },
-
-  layerButtonGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(118px, 1fr))',
     gap: '6px',
-  },
-
-  layerButton: {
-    minHeight: 58,
-    border: '1px solid var(--color-border)',
-    borderRadius: '8px',
-    backgroundColor: 'var(--color-card)',
-    color: 'var(--color-ink)',
-    cursor: 'pointer',
-    padding: '7px 8px',
-    textAlign: 'left',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '3px',
-  },
-
-  layerButtonActive: {
-    borderColor: 'var(--color-green)',
-    backgroundColor: 'var(--color-green-soft)',
-  },
-
-  layerButtonLabel: {
-    fontSize: '11.5px',
-    fontWeight: 800,
-    lineHeight: 1.15,
-  },
-
-  layerButtonCaption: {
-    fontSize: '10.5px',
-    lineHeight: 1.25,
-    color: 'var(--color-muted)',
-  },
-
-  layerFallbackNote: {
-    fontSize: '11px',
-    lineHeight: 1.35,
-    color: 'var(--color-muted)',
-    backgroundColor: 'var(--color-grey-soft)',
-    borderRadius: '8px',
-    padding: '7px 8px',
-    marginBottom: '6px',
+    marginBottom: '10px',
   },
 
   radioLabel: {

@@ -16,7 +16,7 @@ describe('OverviewDashboard weakest-link copy', () => {
     const en = readJson('src/i18n/locales/en.json');
     const ms = readJson('src/i18n/locales/ms.json');
 
-    expect(source).toContain("t('about.resilienceByPillarBody')");
+    expect(source).toContain("'about.resilienceByPillarBody'");
     expect(en.about.resilienceByPillarBody).toBeTruthy();
     expect(ms.about.resilienceByPillarBody).toBeTruthy();
   });

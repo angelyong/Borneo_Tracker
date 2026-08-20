@@ -5,7 +5,47 @@ stage by stage, on branch `impactSimulator`. Written after Stage IS-3A.
 Nothing in this log is committed to git yet — everything described below is
 still an uncommitted working-tree change.
 
-**Status at a glance:**
+## Correction — 2026-08-18 (current release and simulator status)
+
+This dated correction supersedes the **current-status** statements in the
+older log below; those entries are retained as historical implementation
+evidence and must not be read as the current released-data baseline.
+
+- The 2026-08-17 controlled data release restored Sabah and Sarawak's
+  Education input after a duplicate-record canonical collision. Both now
+  have six scored pillars. The published baselines are Sabah `67.6 / 62.0`
+  (Index / Strict; Food weakest) and Sarawak `73.6 / 71.0` (Education
+  weakest), rather than the pre-correction 5/6 values recorded later in
+  this document.
+- The full Stage IS-3B slider, IS-3C before/after visualisation, and IS-3D
+  safety/accessibility work are present in the current implementation. The
+  page fetches `resilience_model.json` at runtime, uses the deterministic
+  engine, labels scenarios as illustrative rather than forecasts, and keeps
+  source/year/confidence beside scored inputs.
+- `simulate_resilience()` is available as a deterministic utility seam, but
+  **Phase 1.5 is not complete**: it is not yet exposed as a chatbot tool.
+- The historical statements below that say Sabah/Sarawak lack Education,
+  have 5/6 pillars, show 72.1/79.3, or that IS-3B through IS-3D are not
+  started describe the state when they were written. They are not deleted
+  because they document the original work and regression context.
+
+**Current status at a glance (2026-08-18):**
+
+| Stage | What it delivers | Current status |
+|---|---|---|
+| IS-1A | Python emits `resilience_model.json` | ✅ Released |
+| IS-1B | Wired into the pipeline + manifest | ✅ Released |
+| IS-2A | JS `recompute()` engine | ✅ Implemented and golden-tested |
+| IS-2B | Golden drift test (anti-lie gate) | ✅ Implemented |
+| IS-3A | `/simulator` page skeleton | ✅ Implemented |
+| IS-3B | Six-pillar sliders | ✅ Implemented |
+| IS-3C | Before/after visualization | ✅ Implemented |
+| IS-3D | Illustrative copy, edge cases, a11y | ✅ Implemented |
+| Phase 1.5 | Chatbot `simulate_resilience` tool | ⏳ Not integrated with chatbot |
+
+---
+
+**Historical status at the time this log was first written:**
 
 | Stage | What it delivers | Status |
 |---|---|---|

@@ -191,9 +191,25 @@ const ImpactSimulator = () => {
               {thresholds && <RagGauge score={baselineResult.index} thresholds={thresholds} maxWidth={180} />}
               <div style={styles.indexNumber}>{baselineResult.index ?? t('simulator.noIndex')}</div>
               <RagStatus rag={baselineResult.rag} t={t} />
-              <HexRadar pillars={baselineResult.pillarScores} max={100} weakest={baselineResult.weakestPillar} maxWidth={160} />
+              <HexRadar
+                pillars={baselineResult.pillarScores}
+                max={100}
+                weakest={baselineResult.weakestPillar}
+                maxWidth={160}
+                missingLabel={t('dashboard.noComparableData')}
+                incompleteLabel={t('regional.scoredPillarsTitle', {
+                  count: Object.values(baselineResult.pillarScores).filter(Number.isFinite).length,
+                })}
+                ariaLabel={t('regional.scoredPillarsTitle', {
+                  count: Object.values(baselineResult.pillarScores).filter(Number.isFinite).length,
+                })}
+              />
               <div style={styles.weakestBarsWrap}>
-                <WeakestLinkBars territory={baselineResult} title={t('dashboard.weakestLinkFirst')} />
+                <WeakestLinkBars
+                  territory={baselineResult}
+                  title={t('dashboard.weakestLinkFirst')}
+                  missingLabel={t('dashboard.noComparableData')}
+                />
               </div>
               <div style={styles.panelDisclaimer}>{t('simulator.illustrative')}</div>
             </div>
@@ -203,9 +219,25 @@ const ImpactSimulator = () => {
               {thresholds && <RagGauge score={scenarioResult.index} thresholds={thresholds} maxWidth={180} />}
               <div style={styles.indexNumber}>{scenarioResult.index ?? t('simulator.noIndex')}</div>
               <RagStatus rag={scenarioResult.rag} t={t} />
-              <HexRadar pillars={scenarioResult.pillarScores} max={100} weakest={scenarioResult.weakestPillar} maxWidth={160} />
+              <HexRadar
+                pillars={scenarioResult.pillarScores}
+                max={100}
+                weakest={scenarioResult.weakestPillar}
+                maxWidth={160}
+                missingLabel={t('dashboard.noComparableData')}
+                incompleteLabel={t('regional.scoredPillarsTitle', {
+                  count: Object.values(scenarioResult.pillarScores).filter(Number.isFinite).length,
+                })}
+                ariaLabel={t('regional.scoredPillarsTitle', {
+                  count: Object.values(scenarioResult.pillarScores).filter(Number.isFinite).length,
+                })}
+              />
               <div style={styles.weakestBarsWrap}>
-                <WeakestLinkBars territory={scenarioResult} title={t('dashboard.weakestLinkFirst')} />
+                <WeakestLinkBars
+                  territory={scenarioResult}
+                  title={t('dashboard.weakestLinkFirst')}
+                  missingLabel={t('dashboard.noComparableData')}
+                />
               </div>
               <div style={styles.panelDisclaimer}>{t('simulator.illustrative')}</div>
             </div>

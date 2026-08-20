@@ -26,6 +26,7 @@ export type AIChatEntityResult = {
   territories: string[];
   regions: string[];
   concepts: string[];
+  sdgGoals: string[];
   indicators: string[];
   pillars: string[];
   districts: string[];
@@ -42,8 +43,13 @@ export type AIChatEntityResult = {
     strongest: boolean;
     targetGap: boolean;
     sdgProgress: boolean;
+    sdgIndicatorList: boolean;
     districtLevel: boolean;
     latest: boolean;
+  };
+  comparisonQuery?: {
+    kind: 'generic' | 'higher' | 'lower' | 'difference';
+    matchedTerm: string;
   };
   ambiguities: string[];
   matchedTerms: string[];
@@ -167,7 +173,7 @@ export type FactSource = {
   title?: string;
   year?: number;
   url?: string;
-  sourceFile: string;
+  sourceFile?: string;
   sourcePath?: string;
 };
 
@@ -433,6 +439,7 @@ export type AIChatPublishedNewsItem = {
 
 export type AIChatNewsQuery = {
   territories: string[];
+  topics?: string[];
   fromDate?: string;
   toDate?: string;
   latest?: boolean;
@@ -450,8 +457,10 @@ export type AIChatNewsResult = {
   warnings: string[];
   queryApplied: {
     territories: string[];
+    topics: string[];
     fromDate?: string;
     toDate?: string;
+    latest: boolean;
     limit: number;
   };
 };
@@ -467,6 +476,7 @@ export type AIChatFactObject = {
   intent: AIChatIntent;
   territories: string[];
   concepts: string[];
+  sdgGoals: string[];
   indicators: string[];
   pillars: string[];
   districts: string[];
@@ -478,6 +488,21 @@ export type AIChatFactObject = {
     weakestPillar?: string;
     strongestPillar?: string;
     supportingPillars?: string[];
+  };
+  sdgIndicatorList?: {
+    sdgGoal: string;
+    label?: string;
+    supported: boolean;
+    supportedGoals: Array<{ goal: string; label: string }>;
+    groups: Array<{
+      indicator: string;
+      concept?: string;
+      unit?: string;
+      territories: string[];
+      years: number[];
+      sources: string[];
+      sourcePaths: string[];
+    }>;
   };
   values: {
     rawValues: FactValue[];
@@ -608,6 +633,7 @@ export type FallbackReason =
   | 'GEMINI_EMPTY_RESPONSE'
   | 'GEMINI_NOT_CONFIGURED'
   | 'GEMINI_RESPONSE_REJECTED'
+  | 'GEMINI_TRUNCATED'
   | 'DETERMINISTIC_BLOCKED'
   | 'DETERMINISTIC_CLARIFICATION'
   | 'QUOTA_UNAVAILABLE'
@@ -734,7 +760,9 @@ export type ResponseValidationFailureCode =
   | 'UNSUPPORTED_TARGET_OR_GAP'
   | 'MALFORMED_OUTPUT'
   | 'UNVERIFIED_FORECAST_CLAIM'
-  | 'MISSING_ILLUSTRATIVE_DISCLAIMER';
+  | 'MISSING_ILLUSTRATIVE_DISCLAIMER'
+  | 'TRUNCATED_OUTPUT'
+  | 'MALFORMED_OUTPUT';
 
 export type ResponseValidationIssue = {
   code: ResponseValidationFailureCode;

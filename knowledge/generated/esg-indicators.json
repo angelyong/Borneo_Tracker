@@ -3,7 +3,7 @@
     "id": "esg-indicators-page-en",
     "title": "ESG Indicators",
     "category": "esg-indicators",
-    "content": "Real snapshot data grouped by pillar with visible confidence tags Environment Social Governance canonical indicators available Latest data year Confidence mix Trend status Historical series not enabled yet No canonical indicators are available for this pillar yet.",
+    "content": "Real snapshot data grouped by pillar with visible confidence tags Environment Social Governance canonical indicators available Latest data year Confidence mix Trend status Historical series not enabled yet",
     "language": "en",
     "pageUrl": "/esg",
     "region": null,
@@ -61,13 +61,13 @@
       "sourcePath": "esg.overview",
       "extractedAt": null
     },
-    "searchableText": "esg indicators esg-indicators real snapshot data grouped by pillar with visible confidence tags environment social governance canonical indicators available latest data year confidence mix trend status historical series not enabled yet no canonical indicators are available for this pillar yet esg indicators esg-indicators real snapshot data grouped pillar with visible confidence tags environment social governance canonical available latest year mix trend status historical series"
+    "searchableText": "esg indicators esg-indicators real snapshot data grouped by pillar with visible confidence tags environment social governance canonical indicators available latest data year confidence mix trend status historical series not enabled yet esg indicators esg-indicators real snapshot data grouped pillar with visible confidence tags environment social governance canonical available latest year mix trend status historical series"
   },
   {
     "id": "esg-indicators-page-ms",
     "title": "Penunjuk ESG",
     "category": "esg-indicators",
-    "content": "Data gambaran sebenar dikumpulkan mengikut tunjang dengan tanda keyakinan yang jelas Alam Sekitar Sosial Tadbir Urus penunjuk kanonik tersedia Tahun data terkini Campuran keyakinan Status trend Siri sejarah belum diaktifkan Belum ada penunjuk kanonik untuk tunjang ini.",
+    "content": "Data gambaran sebenar dikumpulkan mengikut tunjang dengan tanda keyakinan yang jelas Alam Sekitar Sosial Tadbir Urus penunjuk kanonik tersedia Tahun data terkini Campuran keyakinan Status trend Siri sejarah belum diaktifkan",
     "language": "ms",
     "pageUrl": "/esg",
     "region": null,
@@ -125,6 +125,6 @@
       "sourcePath": "esg.overview",
       "extractedAt": null
     },
-    "searchableText": "penunjuk esg esg-indicators data gambaran sebenar dikumpulkan mengikut tunjang dengan tanda keyakinan yang jelas alam sekitar sosial tadbir urus penunjuk kanonik tersedia tahun data terkini campuran keyakinan status trend siri sejarah belum diaktifkan belum ada penunjuk kanonik untuk tunjang ini penunjuk esg esg-indicators data gambaran sebenar dikumpulkan mengikut tunjang dengan tanda keyakinan yang jelas alam sekitar sosial tadbir urus kanonik tersedia tahun terkini campuran"
+    "searchableText": "penunjuk esg esg-indicators data gambaran sebenar dikumpulkan mengikut tunjang dengan tanda keyakinan yang jelas alam sekitar sosial tadbir urus penunjuk kanonik tersedia tahun data terkini campuran keyakinan status trend siri sejarah belum diaktifkan penunjuk esg esg-indicators data gambaran sebenar dikumpulkan mengikut tunjang dengan tanda keyakinan yang jelas alam sekitar sosial tadbir urus kanonik tersedia tahun terkini campuran"
   }
 ]
