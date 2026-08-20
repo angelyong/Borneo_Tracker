@@ -19,6 +19,7 @@ import {
   getLayerRows,
   getRowsForPillar,
   layerColorScale,
+  shouldPreserveMapForNoBoundary,
   summarizeRows,
   territoryForParent,
   titleCaseConfidence,
@@ -151,24 +152,36 @@ const FitBorneoOnLoad = ({ onInitialView }) => {
 // only flies to a district once the user actively selects one (dropdown or map
 // click, via `zoomToDistrict`). Leaving district mode restores the Borneo framing.
 // Right padding keeps the focus in the map area, not hidden behind the panel.
-const MapFocus = ({ geo, parent, selectedKey, isDistrict, zoomToDistrict, panelWidth }) => {
+const MapFocus = ({ geo, parent, selectedKey, isDistrict, zoomToDistrict, boundaryUnavailable, panelWidth }) => {
   const map = useMap();
   const wasDistrict = useRef(false);
+  const previousParent = useRef(null);
   const rightPad = (panelWidth || 360) + 40;
 
   useEffect(() => {
     if (!isDistrict) {
       if (wasDistrict.current) {
         wasDistrict.current = false;
+        previousParent.current = null;
         applyBorneoFit(map);
       }
       return;
     }
 
+    const enteringDistrict = !wasDistrict.current;
+    const parentChanged = !enteringDistrict && previousParent.current !== parent;
     wasDistrict.current = true;
+    previousParent.current = parent;
     // Unlock the Borneo-wide zoom/pan clamp so we can zoom into a district.
     map.setMinZoom(5);
     map.setMaxBounds(null);
+
+    // The data artifact can honestly retain a district before a licensed,
+    // verified boundary exists. Do not recenter or imply a selectable polygon
+    // when that district is explicitly marked as not mappable. Entering District
+    // mode still starts at the Borneo overview; later no-geometry selections
+    // leave the user's current map context intact.
+    if (shouldPreserveMapForNoBoundary({ boundaryUnavailable, enteringDistrict, parentChanged })) return;
 
     // Zoom to the chosen district only after an explicit selection.
     if (zoomToDistrict && selectedKey && geo) {
@@ -195,7 +208,7 @@ const MapFocus = ({ geo, parent, selectedKey, isDistrict, zoomToDistrict, panelW
       paddingBottomRight: [rightPad, 30],
       animate: true,
     });
-  }, [map, geo, parent, selectedKey, isDistrict, zoomToDistrict, rightPad]);
+  }, [map, geo, parent, selectedKey, isDistrict, zoomToDistrict, boundaryUnavailable, rightPad]);
 
   return null;
 };
@@ -249,6 +262,22 @@ const OverviewDashboard = () => {
   // syncing state in an effect — avoids cascading renders and keeps the <select>
   // controlled even right after the parent changes.
   const district = districtOptions.includes(districtSel) ? districtSel : districtOptions[0] || '';
+
+  // `has_geometry: false` / `no_geometry` is an Ethics (E) contract from the
+  // data pipeline: retain the observed district data, but never imply that a
+  // boundary polygon exists. Older artifacts which predate the field retain
+  // their existing map behaviour until the refreshed artifact is available.
+  const districtOptionDetails = useMemo(
+    () =>
+      districtOptions.map((name) => {
+        const row = (districtData?.rows || []).find(
+          (entry) => entry.parent === districtParent && entry.territory === name
+        );
+        const boundaryUnavailable = row?.has_geometry === false || row?.geometry_status === 'no_geometry';
+        return { name, boundaryUnavailable };
+      }),
+    [districtOptions, districtData, districtParent]
+  );
 
   // The active scope feeding every panel card: district rows + name in district
   // mode, else the territory rows + selected territory.
@@ -422,6 +451,23 @@ const OverviewDashboard = () => {
     return row?.key || null;
   }, [districtData, districtParent, district]);
 
+  const selectedDistrictBoundaryUnavailable = useMemo(() => {
+    if (!selectedKey) return false;
+    const selectedRow = (districtData?.rows || []).find(
+      (row) => row.parent === districtParent && row.key === selectedKey
+    );
+    if (selectedRow?.has_geometry === false || selectedRow?.geometry_status === 'no_geometry') return true;
+
+    // A mismatched boundary file is also not a valid map capability. Once the
+    // GeoJSON is loaded, reflect that safely instead of attempting a false fly-to.
+    return Boolean(
+      districtGeo?.features &&
+        !districtGeo.features.some(
+          (feature) => feature.properties?.parent === districtParent && feature.properties?.key === selectedKey
+        )
+    );
+  }, [districtData, districtGeo, districtParent, selectedKey]);
+
   // Global place index for the locator search: the 4 top-level regions plus every
   // district across every province. Districts come from the deduped `parents` map,
   // so each name appears once regardless of how many indicator rows it has.
@@ -479,15 +525,20 @@ const OverviewDashboard = () => {
         // restore the whole-island framing, which would override an immediate flyTo.
         if (center && wasRegion) mapRef.current?.flyTo(center, 7, { duration: 0.8 });
       } else {
+        const destination = (districtData?.rows || []).find(
+          (row) => row.parent === item.parent && row.territory === item.name
+        );
+        const boundaryUnavailable =
+          destination?.has_geometry === false || destination?.geometry_status === 'no_geometry';
         setLevel('district');
         setDistrictParent(item.parent);
         setDistrictSel(item.name);
-        setZoomToDistrict(true); // explicit pick -> MapFocus flies to the polygon
+        setZoomToDistrict(!boundaryUnavailable); // only fly when a boundary is available
       }
       setSearchText(item.name);
       setSearchOpen(false);
     },
-    [level]
+    [districtData, level]
   );
 
   // Close the suggestions dropdown when clicking outside the search box.
@@ -532,7 +583,7 @@ const OverviewDashboard = () => {
         return { fillColor: '#2563eb', fillOpacity: 0.85, color: '#0b1220', weight: 3.5 };
       }
 
-      const color = choropleth?.colorForKey(props.key);
+      const color = choropleth?.colorFor(props.parent, props.key);
       const hasData = !!color;
       return {
         fillColor: color || '#94a3b8',
@@ -548,7 +599,7 @@ const OverviewDashboard = () => {
   const onEachDistrict = useCallback(
     (feature, layer) => {
       const props = feature.properties;
-      const row = choropleth?.valueByKey[props.key];
+      const row = choropleth?.rowFor(props.parent, props.key);
       const valueText = row ? formatValue(row) : 'No data for this layer';
       layer.bindTooltip(`<strong>${props.name}</strong><br/>${props.parent}<br/>${valueText}`, {
         direction: 'top',
@@ -801,6 +852,7 @@ const OverviewDashboard = () => {
             selectedKey={selectedKey}
             isDistrict={isDistrict}
             zoomToDistrict={zoomToDistrict}
+            boundaryUnavailable={selectedDistrictBoundaryUnavailable}
             panelWidth={panelWidth}
           />
 
@@ -928,13 +980,15 @@ const OverviewDashboard = () => {
                 value={district}
                 onChange={(e) => {
                   setDistrictSel(e.target.value);
-                  setZoomToDistrict(true); // explicit pick -> fly to it
+                  const option = districtOptionDetails.find((item) => item.name === e.target.value);
+                  setZoomToDistrict(!option?.boundaryUnavailable); // never promise a missing boundary
                 }}
                 style={{ ...styles.panelDropdown, ...styles.cascadeSelect }}
               >
-                {districtOptions.map((name) => (
+                {districtOptionDetails.map(({ name, boundaryUnavailable }) => (
                   <option key={name} value={name}>
                     {name}
+                    {boundaryUnavailable ? ` — ${t('dashboard.boundaryUnavailableOption')}` : ''}
                   </option>
                 ))}
               </select>
@@ -954,6 +1008,15 @@ const OverviewDashboard = () => {
           )}
         </div>
 
+        {isDistrict && selectedDistrictBoundaryUnavailable && (
+          <div role="status" style={styles.districtBoundaryNotice}>
+            {t('dashboard.districtBoundaryUnavailable', {
+              district,
+              parent: districtParent,
+            })}
+          </div>
+        )}
+
         {/* District mode reads districts.json, which rebuilds on its own slower
             cadence — show that file's own date so the gap stays visible. */}
         {/* Two different trust claims, deliberately side by side: DataFreshness
@@ -963,6 +1026,7 @@ const OverviewDashboard = () => {
           <DataFreshness
             generatedAt={isDistrict ? districtGeneratedAt : generatedAt}
             loading={isDistrict ? districtLoading : loading}
+            artifact={isDistrict ? districtData : data}
           />
           <IntegrityChip />
         </div>
@@ -1248,6 +1312,7 @@ const OverviewDashboard = () => {
               <div style={styles.stateText}>
                 {t('dashboard.noDistrictDataForLayer', {
                   layer: LAYER_CONFIG[activeLayer]?.label,
+                  district,
                   parent: districtParent,
                 })}
               </div>
@@ -1578,6 +1643,17 @@ const styles = {
     flexWrap: 'wrap',
     gap: '6px',
     marginTop: '-6px',
+    flexShrink: 0,
+  },
+
+  districtBoundaryNotice: {
+    padding: '7px 10px',
+    border: '1px solid var(--color-border)',
+    borderRadius: '8px',
+    background: 'var(--color-grey-soft)',
+    color: 'var(--color-muted)',
+    fontSize: '11px',
+    lineHeight: 1.4,
     flexShrink: 0,
   },
 

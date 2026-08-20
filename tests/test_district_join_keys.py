@@ -6,6 +6,7 @@ from io import StringIO
 from pathlib import Path
 
 import validate_data
+from build_geojson import assert_unique_geometry_identities
 from district_keys import (
     geometry_join_key,
     row_join_key,
@@ -55,7 +56,18 @@ class DistrictJoinKeyTests(unittest.TestCase):
 
 
 class DistrictJoinCoverageValidationTests(unittest.TestCase):
-    def run_coverage_check(self, rows, previous=None):
+    @staticmethod
+    def feature(parent, key, name=None, geometry=None):
+        return {
+            "type": "Feature",
+            "properties": {"parent": parent, "key": key, "name": name or key},
+            "geometry": geometry if geometry is not None else {
+                "type": "Polygon",
+                "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 0]]],
+            },
+        }
+
+    def run_coverage_check(self, rows, previous=None, features=None, previous_geo=None):
         root = Path.cwd() / "tests" / "_tmp_district_join_keys"
         if root.exists():
             shutil.rmtree(root)
@@ -66,13 +78,7 @@ class DistrictJoinCoverageValidationTests(unittest.TestCase):
                 json.dumps(
                     {
                         "type": "FeatureCollection",
-                        "features": [
-                            {
-                                "type": "Feature",
-                                "properties": {"parent": "Sabah", "key": "kinabalu"},
-                                "geometry": None,
-                            }
-                        ],
+                        "features": features if features is not None else [self.feature("Sabah", "kinabalu")],
                     }
                 ),
                 encoding="utf-8",
@@ -82,17 +88,25 @@ class DistrictJoinCoverageValidationTests(unittest.TestCase):
             try:
                 report = validate_data.Report()
                 with redirect_stdout(StringIO()):
-                    validate_data.check_district_join_coverage(report, rows, previous)
+                    validate_data.check_district_join_coverage(
+                        report,
+                        rows,
+                        previous,
+                        previous_geo,
+                    )
                 return report
             finally:
                 validate_data.ROOT = original_root
         finally:
             shutil.rmtree(root, ignore_errors=True)
 
-    def test_validator_fails_new_unlabelled_no_geometry_row(self):
+    def test_validator_fails_unlabelled_no_geometry_row(self):
         report = self.run_coverage_check(
             [
-                {"parent": "Sabah", "territory": "Kota Kinabalu", "indicator": "Population"},
+                {
+                    "parent": "Sabah", "territory": "Kota Kinabalu", "indicator": "Population",
+                    "key": "kinabalu", "geometry_status": "match", "has_geometry": True,
+                },
                 {"parent": "Sarawak", "territory": "Gedong", "indicator": "Population"},
             ],
             previous={"rows": []},
@@ -100,17 +114,21 @@ class DistrictJoinCoverageValidationTests(unittest.TestCase):
 
         self.assertGreater(report.failed, 0)
         self.assertTrue(
-            any("new no-geometry districts are explicitly labelled" in failure for failure in report.failures)
+            any("geometry status exactly matches GeoJSON coverage" in failure for failure in report.failures)
         )
 
     def test_validator_accepts_labelled_no_geometry_row(self):
         report = self.run_coverage_check(
             [
-                {"parent": "Sabah", "territory": "Kota Kinabalu", "indicator": "Population"},
+                {
+                    "parent": "Sabah", "territory": "Kota Kinabalu", "indicator": "Population",
+                    "key": "kinabalu", "geometry_status": "match", "has_geometry": True,
+                },
                 {
                     "parent": "Sarawak",
                     "territory": "Gedong",
                     "indicator": "Population",
+                    "key": "gedong",
                     "geometry_status": "no_geometry",
                     "has_geometry": False,
                 },
@@ -120,12 +138,107 @@ class DistrictJoinCoverageValidationTests(unittest.TestCase):
 
         self.assertEqual(report.failed, 0)
 
-    def test_validator_tolerates_unchanged_legacy_unlabelled_rows(self):
-        matched = {"parent": "Sabah", "territory": "Kota Kinabalu", "indicator": "Population"}
-        row = {"parent": "Sarawak", "territory": "Gedong", "indicator": "Population"}
-        report = self.run_coverage_check([matched, row], previous={"rows": [matched, row]})
+    def test_validator_rejects_serialized_key_mismatch(self):
+        row = {
+            "parent": "Sabah", "territory": "Kota Kinabalu", "indicator": "Population",
+            "key": "kotakinabalu", "geometry_status": "match", "has_geometry": True,
+        }
+        report = self.run_coverage_check([row])
 
-        self.assertEqual(report.failed, 0)
+        self.assertGreater(report.failed, 0)
+        self.assertTrue(any("serialized keys equal canonical join keys" in failure for failure in report.failures))
+
+    def test_validator_rejects_status_mismatch_for_existing_geometry(self):
+        row = {
+            "parent": "Sabah", "territory": "Kota Kinabalu", "indicator": "Population",
+            "key": "kinabalu", "geometry_status": "no_geometry", "has_geometry": False,
+        }
+        report = self.run_coverage_check([row])
+
+        self.assertGreater(report.failed, 0)
+        self.assertTrue(any("geometry status exactly matches GeoJSON coverage" in failure for failure in report.failures))
+
+    def test_validator_rejects_duplicate_geometry_identity(self):
+        row = {
+            "parent": "Sabah", "territory": "Kota Kinabalu", "indicator": "Population",
+            "key": "kinabalu", "geometry_status": "match", "has_geometry": True,
+        }
+        report = self.run_coverage_check(
+            [row],
+            features=[
+                self.feature("Sabah", "kinabalu", "Kota Kinabalu"),
+                self.feature("Sabah", "kinabalu", "Kota Kinabalu duplicate"),
+            ],
+        )
+
+        self.assertGreater(report.failed, 0)
+        self.assertTrue(any("parent-scoped keys are unique" in failure for failure in report.failures))
+
+    def test_validator_rejects_null_geometry_feature(self):
+        row = {
+            "parent": "Sabah", "territory": "Kota Kinabalu", "indicator": "Population",
+            "key": "kinabalu", "geometry_status": "no_geometry", "has_geometry": False,
+        }
+        feature = self.feature("Sabah", "kinabalu")
+        feature["geometry"] = None
+        report = self.run_coverage_check([row], features=[feature])
+
+        self.assertGreater(report.failed, 0)
+        self.assertTrue(
+            any("renderable Polygon/MultiPolygon geometry" in failure for failure in report.failures)
+        )
+
+    def test_validator_rejects_conflicting_display_names(self):
+        rows = [
+            {
+                "parent": "Sabah", "territory": "Kota Kinabalu", "indicator": "Population",
+                "key": "kinabalu", "geometry_status": "match", "has_geometry": True,
+            },
+            {
+                "parent": "Sabah", "territory": "Kinabalu", "indicator": "GDP",
+                "key": "kinabalu", "geometry_status": "match", "has_geometry": True,
+            },
+        ]
+        report = self.run_coverage_check(rows)
+
+        self.assertGreater(report.failed, 0)
+        self.assertTrue(any("parent-scoped keys have one display name" in failure for failure in report.failures))
+
+    def test_validator_rejects_baseline_geometry_removal(self):
+        row = {
+            "parent": "Sabah", "territory": "Kota Kinabalu", "indicator": "Population",
+            "key": "kinabalu", "geometry_status": "no_geometry", "has_geometry": False,
+        }
+        previous = {
+            "rows": [{
+                "parent": "Sabah", "territory": "Kota Kinabalu", "indicator": "Population",
+                "key": "kinabalu", "geometry_status": "match", "has_geometry": True,
+            }]
+        }
+        previous_geo = {"type": "FeatureCollection", "features": [self.feature("Sabah", "kinabalu")]}
+        report = self.run_coverage_check([row], previous, features=[], previous_geo=previous_geo)
+
+        self.assertGreater(report.failed, 0)
+        self.assertTrue(any("previously mapped districts do not lose geometry" in failure for failure in report.failures))
+        self.assertTrue(any("geometry coverage does not decline from baseline" in failure for failure in report.failures))
+
+
+class DistrictGeometryBuilderTests(unittest.TestCase):
+    def test_builder_rejects_duplicate_parent_scoped_identity(self):
+        polygon = {"type": "Polygon", "coordinates": [[[0, 0], [1, 0], [1, 1], [0, 0]]]}
+        features = [
+            {
+                "properties": {"parent": "Sabah", "key": "kinabalu", "name": "Kota Kinabalu"},
+                "geometry": polygon,
+            },
+            {
+                "properties": {"parent": "Sabah", "key": "kinabalu", "name": "Duplicate"},
+                "geometry": polygon,
+            },
+        ]
+
+        with self.assertRaisesRegex(ValueError, "duplicate geometry identity"):
+            assert_unique_geometry_identities(features)
 
 
 if __name__ == "__main__":

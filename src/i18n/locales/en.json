@@ -248,6 +248,8 @@
     "loadingMapData": "Loading map data…",
     "noData": "No data",
     "noDistrictDataForLayer": "No district data for “{{layer}}” in {{district}} ({{parent}}). Choose another layer or switch to Region view for territory-level data.",
+    "boundaryUnavailableOption": "boundary unavailable on map",
+    "districtBoundaryUnavailable": "Boundary unavailable on the map for {{district}} ({{parent}}). District data remains available; no polygon or map focus is shown.",
     "scoreLayerDistrictUnavailable": "No district-level score is computed for {{district}}. Switch to Region view to compare territory 0-100 scores.",
     "districtFallbackEducation": "District mode shows mean years schooling as a raw education indicator, not the territory Education resilience score.",
     "districtFallbackHealthcare": "District mode shows life expectancy as a raw healthcare indicator, not the territory Healthcare resilience score.",

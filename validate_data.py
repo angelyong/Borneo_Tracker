@@ -47,7 +47,7 @@ from pathlib import Path
 
 from compute_resilience import PILLARS
 from data_model import DASHBOARD_TERRITORIES, KALIMANTAN_PROVINCES
-from district_keys import load_geometry_key_set, row_join_key
+from district_keys import district_identity, row_join_key, usable_polygon_geometry
 from project_time import project_today
 
 ROOT = Path(__file__).parent
@@ -414,90 +414,192 @@ def check_no_volatile_stale(report, scope, rows):
 
 def district_geometry_identity(row):
     return (
-        row.get("parent"),
-        row_join_key(row),
+        *district_key_identity(row),
         row.get("territory"),
         row.get("indicator"),
     )
 
 
 def district_key_identity(row):
-    return (row.get("parent"), row_join_key(row))
+    return district_identity(row.get("parent"), row_join_key(row))
 
 
-def unlabeled_no_geometry_rows(rows, geometry_keys):
-    offenders = []
-    for row in rows:
-        key = district_key_identity(row)
-        if key in geometry_keys:
-            continue
-        if row.get("geometry_status") == "no_geometry" and row.get("has_geometry") is False:
-            continue
-        offenders.append(row)
-    return offenders
+def _district_row_label(row):
+    return " / ".join(
+        str(row.get(field) or "?")
+        for field in ("parent", "territory", "indicator")
+    )
 
 
-def check_district_join_coverage(report, rows, previous=None):
+def _geometry_feature_records(geo):
+    """Return geometry identity/name pairs without silently dropping defects."""
+    records = []
+    for index, feature in enumerate((geo or {}).get("features") or []):
+        props = feature.get("properties") or {}
+        identity = district_identity(props.get("parent"), props.get("key"))
+        geometry_ok, geometry_error = usable_polygon_geometry(feature.get("geometry"))
+        records.append((index, identity, props.get("name"), geometry_ok, geometry_error))
+    return records
+
+
+def _geometry_keys_from_payload(geo):
+    return {
+        identity
+        for _, identity, _, geometry_ok, _ in _geometry_feature_records(geo)
+        if all(identity) and geometry_ok
+    }
+
+
+def check_district_join_coverage(report, rows, previous=None, previous_geo=None, baseline_ref="HEAD"):
+    """Verify the published data/geometry join contract and coverage regression.
+
+    The district data model is deliberately explicit: every row must serialize
+    the canonical key and its geometry availability must exactly agree with the
+    GeoJSON.  A no-geometry district is valid only when it is labelled as such;
+    it is never silently treated as a map feature or a zero-valued score.
+    """
     scope = "districts.json"
     geo, error = read_json(DISTRICT_GEOJSON)
     if not report.check("borneo_districts.geojson", "parses as JSON", geo is not None, error or ""):
         return
-    try:
-        geometry_keys = load_geometry_key_set(ROOT / DISTRICT_GEOJSON)
-    except (OSError, ValueError, json.JSONDecodeError) as exc:
-        report.check("borneo_districts.geojson", "join keys are readable", False, str(exc))
-        return
 
-    district_keys = {district_key_identity(row) for row in rows}
+    records = _geometry_feature_records(geo)
+    incomplete_geometry = [(index, identity) for index, identity, _, _, _ in records if not all(identity)]
+    report.check(
+        "borneo_districts.geojson",
+        "every feature has a parent-scoped key",
+        not incomplete_geometry,
+        ", ".join(f"feature {index}: {identity!r}" for index, identity in incomplete_geometry[:3])
+        if incomplete_geometry else "all feature identities are complete",
+    )
+    unusable_geometry = [
+        (index, identity, geometry_error)
+        for index, identity, _, geometry_ok, geometry_error in records
+        if not geometry_ok
+    ]
+    report.check(
+        "borneo_districts.geojson",
+        "every feature has renderable Polygon/MultiPolygon geometry",
+        not unusable_geometry,
+        "; ".join(
+            f"feature {index} {identity!r}: {geometry_error}"
+            for index, identity, geometry_error in unusable_geometry[:3]
+        ) + (f"; +{len(unusable_geometry) - 3} more" if len(unusable_geometry) > 3 else "")
+        if unusable_geometry else "all feature geometries are renderable",
+    )
+    geometry_names = {}
+    duplicate_geometry = []
+    for index, identity, name, geometry_ok, _ in records:
+        if not all(identity) or not geometry_ok:
+            continue
+        if identity in geometry_names:
+            duplicate_geometry.append((identity, geometry_names[identity], name, index))
+        else:
+            geometry_names[identity] = name
+    report.check(
+        "borneo_districts.geojson",
+        "parent-scoped keys are unique",
+        not duplicate_geometry,
+        "; ".join(
+            f"{identity!r} ({first!r} / {second!r}, feature {index})"
+            for identity, first, second, index in duplicate_geometry[:3]
+        ) if duplicate_geometry else f"{len(geometry_names)} unique feature identity(s)",
+    )
+    geometry_keys = set(geometry_names)
+
+    key_mismatches = [
+        row for row in rows
+        if str(row.get("key") or "") != str(row_join_key(row))
+    ]
+    report.check(
+        scope,
+        "serialized keys equal canonical join keys",
+        not key_mismatches,
+        "; ".join(
+            f"{_district_row_label(row)}: {row.get('key')!r} != {row_join_key(row)!r}"
+            for row in key_mismatches[:5]
+        ) + (f"; +{len(key_mismatches) - 5} more" if len(key_mismatches) > 5 else "")
+        if key_mismatches else "all serialized keys are canonical",
+    )
+
+    invalid_data_keys = [row for row in rows if not all(district_key_identity(row))]
+    report.check(
+        scope,
+        "every row has a parent-scoped join identity",
+        not invalid_data_keys,
+        "; ".join(_district_row_label(row) for row in invalid_data_keys[:5])
+        if invalid_data_keys else "all row identities are complete",
+    )
+    district_names = {}
+    conflicting_names = []
+    for row in rows:
+        identity = district_key_identity(row)
+        name = str(row.get("territory") or "").strip()
+        if not all(identity):
+            continue
+        if identity in district_names and district_names[identity] != name:
+            conflicting_names.append((identity, district_names[identity], name))
+        else:
+            district_names[identity] = name
+    report.check(
+        scope,
+        "parent-scoped keys have one display name",
+        not conflicting_names,
+        "; ".join(f"{identity!r} ({first!r} / {second!r})" for identity, first, second in conflicting_names[:3])
+        if conflicting_names else f"{len(district_names)} unique district identity(s)",
+    )
+
+    district_keys = set(district_names)
     matched = district_keys & geometry_keys
     missing = district_keys - geometry_keys
-    explicit_no_geometry = {
-        district_key_identity(row)
-        for row in rows
-        if district_key_identity(row) in missing
-        and row.get("geometry_status") == "no_geometry"
-        and row.get("has_geometry") is False
-    }
+    status_mismatches = []
+    for row in rows:
+        expected_match = district_key_identity(row) in geometry_keys
+        expected_status = "match" if expected_match else "no_geometry"
+        expected_has_geometry = expected_match
+        if (row.get("geometry_status") != expected_status
+                or row.get("has_geometry") is not expected_has_geometry):
+            status_mismatches.append((row, expected_status, expected_has_geometry))
     report.check(
         scope,
-        "district join keys match geometry or are labelled no-geometry",
-        matched or not district_keys,
-        f"{len(matched)}/{len(district_keys)} district key(s) join; "
-        f"{len(explicit_no_geometry)} labelled no-geometry",
+        "geometry status exactly matches GeoJSON coverage",
+        not status_mismatches,
+        "; ".join(
+            f"{_district_row_label(row)}: expected {status}/{has_geometry}"
+            for row, status, has_geometry in status_mismatches[:5]
+        ) + (f"; +{len(status_mismatches) - 5} more" if len(status_mismatches) > 5 else "")
+        if status_mismatches else f"{len(matched)}/{len(district_keys)} matched; {len(missing)} no-geometry",
+    )
+    report.check(
+        scope,
+        "every district identity is matched or explicitly no-geometry",
+        len(matched) + len(missing) == len(district_keys) and not status_mismatches,
+        f"{len(matched)}/{len(district_keys)} matched; {len(missing)} explicitly no-geometry",
     )
 
-    offenders = unlabeled_no_geometry_rows(rows, geometry_keys)
-    if previous:
-        previous_geo, _ = previous_json(DISTRICT_GEOJSON)
-        previous_geometry_keys = geometry_keys
-        if previous_geo is not None:
-            previous_geometry_keys = {
-                (feature.get("properties", {}).get("parent"), str(feature.get("properties", {}).get("key")))
-                for feature in previous_geo.get("features", [])
-                if feature.get("properties", {}).get("parent") and feature.get("properties", {}).get("key")
-            }
-        baseline_unlabelled = {
-            district_geometry_identity(row)
-            for row in unlabeled_no_geometry_rows(previous.get("rows") or [], previous_geometry_keys)
-        }
-        offenders = [
-            row for row in offenders
-            if district_geometry_identity(row) not in baseline_unlabelled
-        ]
-    detail = (
-        "; ".join(
-            f"{row.get('parent')} / {row.get('territory')} / {row.get('indicator')}"
-            for row in offenders[:5]
-        )
-        + (f"; +{len(offenders) - 5} more" if len(offenders) > 5 else "")
-        if offenders else
-        "all new unmatched rows are explicitly labelled"
-    )
+    if previous is None or previous_geo is None:
+        return
+
+    previous_geometry_keys = _geometry_keys_from_payload(previous_geo)
+    previous_district_keys = {district_key_identity(row) for row in previous.get("rows") or []}
+    previous_matched = previous_district_keys & previous_geometry_keys
+    regressed = (previous_matched & district_keys) - geometry_keys
     report.check(
         scope,
-        "new no-geometry districts are explicitly labelled",
-        not offenders,
-        detail,
+        "previously mapped districts do not lose geometry",
+        not regressed,
+        ", ".join(f"{parent} / {key}" for parent, key in sorted(regressed)[:5])
+        + (f"; +{len(regressed) - 5} more" if len(regressed) > 5 else "")
+        if regressed else "no mapped district lost geometry",
+    )
+    previous_ratio = len(previous_matched) / len(previous_district_keys) if previous_district_keys else 1
+    current_ratio = len(matched) / len(district_keys) if district_keys else 1
+    report.check(
+        scope,
+        "geometry coverage does not decline from baseline",
+        len(matched) >= len(previous_matched) and current_ratio >= previous_ratio,
+        f"current {len(matched)}/{len(district_keys)} ({current_ratio:.1%}); "
+        f"baseline {len(previous_matched)}/{len(previous_district_keys)} ({previous_ratio:.1%})",
     )
 
 
@@ -597,6 +699,14 @@ def validate_districts(report, baseline_ref="HEAD", require_baseline=False):
         return
     previous, previous_skip = previous_json(DISTRICTS_JSON, baseline_ref)
     check_baseline_available(report, scope, previous, previous_skip, require_baseline)
+    previous_geo, previous_geo_skip = previous_json(DISTRICT_GEOJSON, baseline_ref)
+    check_baseline_available(
+        report,
+        "borneo_districts.geojson",
+        previous_geo,
+        previous_geo_skip,
+        require_baseline,
+    )
 
     parents = current.get("parents") or {}
     rows = current.get("rows") or []
@@ -627,7 +737,7 @@ def validate_districts(report, baseline_ref="HEAD", require_baseline=False):
     check_count(report, scope, "district count", district_count, previous_districts, previous_skip)
     check_count(report, scope, "row count", len(rows),
                 len(previous.get("rows") or []) if previous else None, previous_skip)
-    check_district_join_coverage(report, rows, previous)
+    check_district_join_coverage(report, rows, previous, previous_geo, baseline_ref)
     check_stale_freshness(report, scope, rows)
     check_generated_at(report, scope, current, previous, previous_skip)
     check_artifact_freshness(report, scope, current)
