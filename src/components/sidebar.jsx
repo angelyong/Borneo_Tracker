@@ -55,16 +55,32 @@ const Sidebar = ({ collapsed = false }) => {
     };
   }, [location.pathname]);
 
-  const menuItems = [
-    { name: t('sidebar.dashboard'),        path: '/'       ,   icon: <Icons.Grid size={20} />     },
-    { name: t('sidebar.regionalDetails'),  path: '/regions',   icon: <Icons.Table size={20} /> },
-    { name: t('sidebar.esgIndicators'),    path: '/esg',       icon: <Icons.Gauge size={20} /> },
-    { name: t('sidebar.sdgProgress'),      path: '/sdg',       icon: <Icons.Chart size={20} /> },
-    { name: t('sidebar.impactSimulator'),  path: '/simulator', icon: <Icons.Crosshair size={20} /> },
-    { name: t('sidebar.newsInsights'),     path: '/news',      icon: <Icons.Newspaper size={20} />, badgeKey: 'news' },
-    { name: t('sidebar.community'),        path: '/community', icon: <Icons.Comment size={20} />, badgeKey: 'community' },
-    { name: t('sidebar.generateReport'),   path: '/reports',   icon: <Icons.FileArrow size={20} /> },
-    { name: t('sidebar.dataSources'),      path: '/data-sources', icon: <Icons.Frame size={20} /> },
+  const menuGroups = [
+    {
+      label: t('sidebar.groupExplore'),
+      items: [
+        { name: t('sidebar.dashboard'),        path: '/'       ,   icon: <Icons.Grid size={20} />     },
+        { name: t('sidebar.regionalDetails'),  path: '/regions',   icon: <Icons.Table size={20} /> },
+        { name: t('sidebar.esgIndicators'),    path: '/esg',       icon: <Icons.Gauge size={20} /> },
+        { name: t('sidebar.sdgProgress'),      path: '/sdg',       icon: <Icons.Chart size={20} /> },
+      ],
+    },
+    {
+      label: t('sidebar.groupAnalyse'),
+      items: [
+        { name: t('sidebar.impactSimulator'),  path: '/simulator', icon: <Icons.Crosshair size={20} /> },
+        { name: t('sidebar.newsInsights'),     path: '/news',      icon: <Icons.Newspaper size={20} />, badgeKey: 'news' },
+        { name: t('sidebar.community'),        path: '/community', icon: <Icons.Comment size={20} />, badgeKey: 'community' },
+      ],
+    },
+    {
+      label: t('sidebar.groupAct'),
+      items: [
+        { name: t('sidebar.generateReport'),   path: '/reports',   icon: <Icons.FileArrow size={20} /> },
+        { name: t('sidebar.dataSources'),      path: '/data-sources', icon: <Icons.Frame size={20} /> },
+        { name: t('sidebar.aboutBorneoTracker'), path: '/about', icon: <Icons.Info size={20} /> },
+      ],
+    },
   ];
 
   // Grouped under a single expandable "Admin Tools" entry instead of sitting
@@ -79,32 +95,39 @@ const Sidebar = ({ collapsed = false }) => {
     navigate('/login');
   };
 
+  const renderNavItem = (item) => (
+    <NavLink
+      key={item.name}
+      to={item.path}
+      style={({ isActive }) => ({
+        ...styles.navLink,
+        ...(isActive ? styles.navLinkActive : {}),
+        justifyContent: collapsed ? 'center' : 'flex-start',
+        padding: collapsed ? '12px 8px' : '12px 14px',
+      })}
+    >
+      <span style={styles.navIcon}>{item.icon}</span>
+      {!collapsed && <span style={styles.navText}>{item.name}</span>}
+      {!collapsed && item.badgeKey && counts[item.badgeKey] > 0 && (
+        <span style={styles.badge}>{counts[item.badgeKey] > 9 ? '9+' : counts[item.badgeKey]}</span>
+      )}
+    </NavLink>
+  );
+
   return (
     <div style={{ ...styles.sidebar, width: collapsed ? 72 : '100%' }}>
 
       {/* ── Nav links ── */}
       <nav style={styles.nav}>
-        {menuItems.map((item) => (
-          <NavLink
-            key={item.name}
-            to={item.path}
-            style={({ isActive }) => ({
-              ...styles.navLink,
-              ...(isActive ? styles.navLinkActive : {}),
-              justifyContent: collapsed ? 'center' : 'flex-start',
-              padding: collapsed ? '12px 8px' : '12px 14px',
-            })}
-          >
-            <span style={styles.navIcon}>{item.icon}</span>
-            {!collapsed && <span>{item.name}</span>}
-            {!collapsed && item.badgeKey && counts[item.badgeKey] > 0 && (
-              <span style={styles.badge}>{counts[item.badgeKey] > 9 ? '9+' : counts[item.badgeKey]}</span>
-            )}
-          </NavLink>
+        {menuGroups.map((group) => (
+          <div key={group.label} role="group" aria-label={group.label} style={styles.navGroup}>
+            {!collapsed && <div style={styles.groupLabel}>{group.label}</div>}
+            {group.items.map(renderNavItem)}
+          </div>
         ))}
 
         {isAdmin && (
-          <div>
+          <div role="group" aria-label={t('sidebar.adminTools')} style={styles.navGroup}>
             <button
               type="button"
               onClick={() => setAdminOpen((open) => !open)}
@@ -154,19 +177,6 @@ const Sidebar = ({ collapsed = false }) => {
             )}
           </div>
         )}
-
-        <NavLink
-          to="/about"
-          style={({ isActive }) => ({
-            ...styles.navLink,
-            ...(isActive ? styles.navLinkActive : {}),
-            justifyContent: collapsed ? 'center' : 'flex-start',
-            padding: collapsed ? '12px 8px' : '12px 14px',
-          })}
-        >
-          <span style={styles.navIcon}><Icons.Info size={20} /></span>
-          {!collapsed && <span>{t('sidebar.aboutBorneoTracker')}</span>}
-        </NavLink>
       </nav>
 
       {/* ── Bottom section ── */}
@@ -260,7 +270,22 @@ const styles = {
     display:       'flex',
     flexDirection: 'column',
     padding:       '0 12px',
+    gap:           '10px',
+  },
+  navGroup: {
+    display:       'flex',
+    flexDirection: 'column',
     gap:           '2px',
+  },
+  groupLabel: {
+    padding:        '0 14px 4px',
+    color:          '#75a188',
+    fontSize:       '10.5px',
+    fontWeight:     '800',
+    letterSpacing:  '0.08em',
+    lineHeight:     1.2,
+    textTransform:  'uppercase',
+    whiteSpace:     'nowrap',
   },
   navLink: {
     display:        'flex',
@@ -284,6 +309,12 @@ const styles = {
     height:        '22px',
     color:         '#9caea4',
     flexShrink:    0,
+  },
+  navText: {
+    minWidth: 0,
+    overflowWrap: 'normal',
+    whiteSpace: 'normal',
+    lineHeight: 1.2,
   },
   navLinkActive: {
     backgroundColor: '#1e4433',

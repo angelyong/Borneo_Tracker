@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useOutletContext } from 'react-router-dom';
+import { Link, useOutletContext } from 'react-router-dom';
 import { GeoJSON, MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -42,6 +42,7 @@ import HexRadar from '../../components/HexRadar';
 import { HEXAGON_PILLARS } from '../../components/hexagonPillars';
 import { buildHeadline } from '../../utils/headline';
 import { buildAggregateResilience, RESILIENCE_PILLARS } from '../../utils/resiliencePresentation';
+import { makeSimulatorHref } from '../../utils/simulatorRoute';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -606,6 +607,13 @@ const OverviewDashboard = () => {
     [resilienceView]
   );
 
+  // Districts have no comparable resilience score and Overall Borneo is an
+  // aggregate, so neither can truthfully become a simulator scenario.
+  const simulatorHref = useMemo(() => {
+    if (isDistrict || isOverall || !Number.isFinite(resilienceView?.index)) return null;
+    return makeSimulatorHref(panelTerritory, resilienceView?.weakestPillar);
+  }, [isDistrict, isOverall, panelTerritory, resilienceView]);
+
   const hexCoverage = useMemo(() => {
     if (isDistrict) {
       return scopeName ? getHexagonCoverage(scopeRows, scopeName) : null;
@@ -1017,8 +1025,24 @@ const OverviewDashboard = () => {
                   {t(headline.key, {
                     ...headline.values,
                     rag: headline.values.rag ? t(`dashboard.ragBand_${headline.values.rag}`) : undefined,
+                    weakestPillar: headline.values.weakestPillar
+                      ? t(`dashboard.pillars.${headline.values.weakestPillar}`, {
+                        defaultValue: headline.values.weakestPillar,
+                      })
+                      : undefined,
                   })}
                 </p>
+              )}
+
+              {simulatorHref && (
+                <Link to={simulatorHref} style={styles.whatNextCta}>
+                  {t('dashboard.whatNextCta', {
+                    territory: panelTerritory,
+                    pillar: t(`dashboard.pillars.${resilienceView.weakestPillar}`, {
+                      defaultValue: resilienceView.weakestPillar,
+                    }),
+                  })}
+                </Link>
               )}
 
               {Number.isFinite(resilienceView.indexStrict) && (
@@ -1686,6 +1710,20 @@ const styles = {
     fontWeight: '600',
     color: 'var(--color-ink)',
     textAlign: 'center',
+  },
+
+  whatNextCta: {
+    display: 'block',
+    margin: '10px 0 0',
+    padding: '9px 11px',
+    borderRadius: '8px',
+    background: 'var(--color-grey-soft)',
+    color: 'var(--color-ink)',
+    fontSize: '12px',
+    fontWeight: 700,
+    lineHeight: 1.4,
+    textAlign: 'center',
+    textDecoration: 'none',
   },
 
   ragStatus: {

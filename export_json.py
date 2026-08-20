@@ -4,7 +4,7 @@ import sqlite3
 from pathlib import Path
 
 from data_model import DASHBOARD_TERRITORIES, TODAY, dashboard_rows, load_indicator_rows
-from json_artifacts import write_json_lf
+from json_artifacts import build_indicators_meta, write_json_lf
 
 ROOT = Path(__file__).parent
 OUTPUT = ROOT / "public" / "data" / "indicators.json"
@@ -162,6 +162,7 @@ def main(allow_model_fallback=False):
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "generatedAt": TODAY,
+        "meta": build_indicators_meta(rows, DASHBOARD_TERRITORIES, series),
         "territories": DASHBOARD_TERRITORIES,
         "trendReady": series_count > 0,
         "trendMinPoints": MIN_TREND_POINTS,

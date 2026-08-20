@@ -65,8 +65,8 @@ Weakest-link bars · strict score + fragility gap · provenance chips · freshne
 
 ### **BT-28 · Release-sequencing contract for `public/data` changes**
 **Why:** BT-11a, BT-16a and BT-18 all regenerate `public/data`, and none of them can produce a green PR (see 0.3). Without this card those three stall at review.
-**Do:** write and agree the sequence: (1) PR contains pipeline/code changes only, no regenerated artifacts; (2) merge to master; (3) `refresh-data.yml` regenerates and commits data; (4) `anchor.yml` mints the proof and dispatches deploy. Document it in `docs/`, add it as a checklist item on every data card, and **confirm with the repo owner whether `AUTO_PRODUCTION_DEPLOY` is `true`** — `deploy.yml:159,166-169` aborts automatic dispatch unless it is exactly `true`, and `docs/DEPLOYMENT_SETUP.md:147` documents it as defaulting to `false`. If it is false, nothing in this plan reaches the client without a manual production run with an exact proof-commit SHA.
-**Files:** `docs/` (new note), plus the checklist on BT-11a/16a/18.
+**Do:** write and agree the sequence: (1) PR contains pipeline/code changes only, no regenerated artifacts; (2) merge to master; (3) `refresh-data.yml` regenerates and commits data; (4) `anchor.yml` mints the proof and dispatches deploy. Document it in `docs/public-data-release-sequence.md`, add it as a checklist item on every data card, and **confirm with the repo owner whether `AUTO_PRODUCTION_DEPLOY` is `true`** — `deploy.yml:159,166-169` aborts automatic dispatch unless it is exactly `true`, and `docs/DEPLOYMENT_SETUP.md:147` documents it as defaulting to `false`. If it is false, nothing in this plan reaches the client without a manual production run with an exact proof-commit SHA.
+**Files:** `docs/public-data-release-sequence.md`, plus the checklist on BT-11a/16a/18.
 **Done when:** the sequence is written down, one data card has been run through it end to end, and the `AUTO_PRODUCTION_DEPLOY` answer is recorded.
 **Role:** DATA/DEVOPS · **Effort:** M · **Priority:** P0 · **Blocks:** BT-11a, BT-16a, BT-18
 
@@ -83,6 +83,7 @@ Weakest-link bars · strict score + fragility gap · provenance chips · freshne
 **Do:** delete the two now-redundant `SOURCED_ROWS` entries (or add a `build_internet_rows`-style duplicate guard). Add a durable guard: de-duplicate on `(territory, indicator)` **before** `assign_canonical`, or assert exactly one canonical row per `(territory, dashboard_concept)` after load.
 **Trap:** `borneo_tracker.db` and `borneo_tracker.snapshot.db` are **untracked and stale from 2026-07-15**; in them the RLS rows are already `canonical=1`, so running `compute_resilience.py` alone reproduces the *old* 6/6 behaviour and makes the bug look already-fixed. `compute_resilience.py:130` also silently falls back to the snapshot DB. **Verify with a full `run_pipeline.py`, never `compute_resilience.py` alone.**
 **Files:** `data_model.py` (~2 lines + guard), regenerated `public/data` **via BT-28's sequence**.
+**Release checklist:** follow `docs/public-data-release-sequence.md`; the feature PR must not commit regenerated `public/data` artifacts, and BT-07/BT-17 stay blocked until the post-refresh `resilience.json` is active.
 **Done when:** 4/4 territories score 6 pillars, numbers match the 0.2 table, verified through a full pipeline run.
 **Role:** DATA · **Effort:** M · **Priority:** P0 · **Depends on:** BT-28 · **Pairs with:** BT-32
 
@@ -219,6 +220,7 @@ Weakest-link bars · strict score + fragility gap · provenance chips · freshne
 **⚠️ Correctness landmine v1 created:** v1 proposed `nextExpectedUpdate`. `json_artifacts.py:14-18` strips **only the top-level `generatedAt`** before deciding whether to rewrite bytes. A clock-derived value nested in `meta` survives that filter, so **every daily run** would produce new bytes → new `dataVersion` → 6 new provenance lines/day → a new `versions/<sha>/` → a new Bitcoin stamp → a new production deploy, on days when no datum moved. That defeats the documented intent of an append-only log of *distinct data versions*. **Every `meta` field must be deterministic given the data** — drop `nextExpectedUpdate`, or express it as a relative cadence, or extend `_without_volatile_generated_at` (with a test).
 **Also note:** `source_count` already exists per row but **every value is 1**, so a UI built on it shows 1 everywhere.
 **Files:** `export_json.py`, `compute_resilience.py` (`resilience_model.json` is written by `build_model()`, not `export_json.py`, and a shape change there bumps `MODEL_SCHEMA_VERSION`, which `src/utils/resilienceModel.js` and its golden test key off).
+**Release checklist:** follow `docs/public-data-release-sequence.md`; the feature PR must be code/test/docs only until the post-merge refresh and proof workflows regenerate `public/data`.
 **Role:** DATA · **Effort:** M · **Priority:** P0 · **Depends on:** BT-28
 
 ### **BT-16b · Build the per-source cadence & coverage registry** *(split from v1's BT-16)*
@@ -241,6 +243,7 @@ Weakest-link bars · strict score + fragility gap · provenance chips · freshne
 - **Option A — unhashed.** Drop the file in `public/data/` without touching `DATASET_PATHS`. Verified: all gates pass unchanged, Vite copies it, the deploy mirror uploads it, `.htaccess` serves it `no-store`. Cost ≈ 0. **Loss:** the one artifact on an anchoring-branded site that is not anchored.
 - **Option B — hashed.** Needs `manifest_contract.py` +1 path, a **flat filename** (`verify_manifest.py:23` and `deploy.yml:878` both break on a subdirectory), a regenerated manifest + provenance batch, a fresh `versions/<sha>/` + `.ots`, **and** `src/data/useIntegrity.js:6-12` plus its length check at `:66` — otherwise **every visitor's Verify chip reads INVALID**. Two test constants move (`useIntegrity.test.js:99` and `:148`). Plus an unmitigated trap: `index.html` has no cache directive and is uploaded **last**, so a returning visitor runs a cached 6-file bundle against a 7-file `no-store` manifest and sees INVALID until a hard refresh.
 **Files (v1's list omitted all of these):** `build_resilience_history.py`, `run_pipeline.py`, `refresh-data.yml`, `validate_data.py`, **plus** `manifest_contract.py`, `useIntegrity.js`, `useIntegrity.test.js` if Option B.
+**Release checklist:** follow `docs/public-data-release-sequence.md`; decide hashed vs unhashed scope before merge, then let the post-merge refresh/anchor sequence create any regenerated artifacts and proofs.
 **Role:** DATA · **Effort:** L · **Priority:** P1 · **Depends on:** BT-11a, BT-28
 
 ### **BT-19 · Momentum UI: delta + biggest movers**

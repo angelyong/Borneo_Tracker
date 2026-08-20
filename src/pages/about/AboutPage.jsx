@@ -98,12 +98,33 @@ function useAboutContent(t) {
     },
   ];
 
-  return { indicatorCards, monitorItems, exploreItems, scopeItems };
+  const howItWorksItems = [
+    {
+      title: t('about.howItWorksMonitorTitle'),
+      body: t('about.howItWorksMonitorBody'),
+      icon: ForestGroupIcon,
+      tone: 'green',
+    },
+    {
+      title: t('about.howItWorksVerifyTitle'),
+      body: t('about.howItWorksVerifyBody'),
+      icon: ShieldIcon,
+      tone: 'amber',
+    },
+    {
+      title: t('about.howItWorksScoreTitle'),
+      body: t('about.howItWorksScoreBody'),
+      icon: GrowthIcon,
+      tone: 'blue',
+    },
+  ];
+
+  return { indicatorCards, monitorItems, exploreItems, scopeItems, howItWorksItems };
 }
 
 export default function AboutPage() {
   const { t } = useTranslation();
-  const { indicatorCards, monitorItems, exploreItems, scopeItems } = useAboutContent(t);
+  const { indicatorCards, monitorItems, exploreItems, scopeItems, howItWorksItems } = useAboutContent(t);
   return (
     <main className="about-page" aria-labelledby="about-title">
       <section className="about-hero" aria-label="About Borneo Tracker">
@@ -153,7 +174,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      <Section title={t('about.whatWeMonitor')}>
+      <Section id="what-we-monitor" title={t('about.whatWeMonitor')}>
         <div className="monitor-grid">
           {monitorItems.map((item) => (
             <InfoCard key={item.title} item={item} />
@@ -161,7 +182,19 @@ export default function AboutPage() {
         </div>
       </Section>
 
-      <Section title={t('about.theResilienceScore')}>
+      <Section id="how-it-works" title={t('about.howItWorks')}>
+        <p className="about-section-lede">
+          {t('about.howItWorksIntro')}
+        </p>
+        <div className="monitor-grid">
+          {howItWorksItems.map((item) => (
+            <InfoCard key={item.title} item={item} />
+          ))}
+        </div>
+        
+      </Section>
+
+      <Section id="resilience-score" title={t('about.theResilienceScore')}>
         <p style={{ maxWidth: '72ch', color: 'var(--color-muted)', lineHeight: 1.65, margin: '0 0 22px' }}>
           <b style={{ color: 'var(--color-ink)' }}>{t('about.resilienceQuoted')}</b> {t('about.resilienceExplainerPart1')}{' '}
           <b style={{ color: 'var(--color-ink)' }}>{t('about.resilienceScoreLabel')}</b> {t('about.resilienceExplainerPart2')}
@@ -186,7 +219,7 @@ export default function AboutPage() {
         </div>
       </Section>
 
-      <Section title={t('about.whatYouCanExplore')}>
+      <Section id="what-you-can-explore" title={t('about.whatYouCanExplore')}>
         <div className="explore-grid">
           {exploreItems.map((item) => (
             <FeatureCard key={item.title} item={item} />
@@ -227,8 +260,7 @@ export default function AboutPage() {
   );
 }
 
-function Section({ title, children }) {
-  const id = title.toLowerCase().replaceAll(' ', '-');
+function Section({ id, title, children }) {
   return (
     <section className="about-section" aria-labelledby={id}>
       <h2 id={id}>{title}</h2>

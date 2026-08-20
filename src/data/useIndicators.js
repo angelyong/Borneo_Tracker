@@ -27,12 +27,151 @@ export const CATEGORY_TO_PILLAR = {
   Governance: 'G',
 };
 
+export const LAYER_GROUPS = [
+  { key: 'scores', labelKey: 'dashboard.layerGroupScores', layers: ['resilience', 'food', 'energy', 'healthcare', 'education', 'shelter', 'entertainment'] },
+  { key: 'environment', labelKey: 'dashboard.layerGroupEnvironment', layers: ['forestCover', 'deforestation', 'airQuality', 'fireHotspots'] },
+  { key: 'society', labelKey: 'dashboard.layerGroupSociety', layers: ['poverty'] },
+];
+
 export const LAYER_CONFIG = {
-  forestCover: { label: 'Forest Cover', concept: 'forest_cover', better: 'higher' },
-  deforestation: { label: 'Deforestation', concept: 'deforestation', better: 'lower' },
-  airQuality: { label: 'Air Quality', concept: 'air_quality', better: 'lower' },
-  fireHotspots: { label: 'Fire Hotspots', concept: 'fire_hotspots', better: 'lower' },
-  poverty: { label: 'Poverty', concept: 'poverty', better: 'lower' },
+  resilience: {
+    label: 'Resilience',
+    labelKey: 'dashboard.layerLabels.resilience',
+    captionKey: 'dashboard.layerCaptions.resilience',
+    unitKey: 'dashboard.layerUnits.score',
+    directionKey: 'dashboard.layerDirections.higherBetter',
+    source: 'resilience',
+    scoreKey: 'index',
+    better: 'higher',
+    scale: 'absolute',
+  },
+  food: {
+    label: 'Food',
+    labelKey: 'dashboard.layerLabels.food',
+    captionKey: 'dashboard.layerCaptions.food',
+    unitKey: 'dashboard.layerUnits.score',
+    directionKey: 'dashboard.layerDirections.higherBetter',
+    source: 'resilience',
+    pillar: 'Food',
+    better: 'higher',
+    scale: 'absolute',
+  },
+  energy: {
+    label: 'Energy',
+    labelKey: 'dashboard.layerLabels.energy',
+    captionKey: 'dashboard.layerCaptions.energy',
+    unitKey: 'dashboard.layerUnits.score',
+    directionKey: 'dashboard.layerDirections.higherBetter',
+    source: 'resilience',
+    pillar: 'Energy',
+    better: 'higher',
+    scale: 'absolute',
+  },
+  healthcare: {
+    label: 'Healthcare',
+    labelKey: 'dashboard.layerLabels.healthcare',
+    captionKey: 'dashboard.layerCaptions.healthcare',
+    unitKey: 'dashboard.layerUnits.score',
+    directionKey: 'dashboard.layerDirections.higherBetter',
+    source: 'resilience',
+    pillar: 'Healthcare',
+    better: 'higher',
+    scale: 'absolute',
+    districtFallbackConcept: 'healthcare',
+    districtFallbackKey: 'dashboard.districtFallbackHealthcare',
+    districtUnitKey: 'dashboard.layerUnits.years',
+  },
+  education: {
+    label: 'Education',
+    labelKey: 'dashboard.layerLabels.education',
+    captionKey: 'dashboard.layerCaptions.education',
+    unitKey: 'dashboard.layerUnits.score',
+    directionKey: 'dashboard.layerDirections.higherBetter',
+    source: 'resilience',
+    pillar: 'Education',
+    better: 'higher',
+    scale: 'absolute',
+    districtFallbackConcept: 'education',
+    districtFallbackKey: 'dashboard.districtFallbackEducation',
+    districtUnitKey: 'dashboard.layerUnits.years',
+  },
+  shelter: {
+    label: 'Shelter',
+    labelKey: 'dashboard.layerLabels.shelter',
+    captionKey: 'dashboard.layerCaptions.shelter',
+    unitKey: 'dashboard.layerUnits.score',
+    directionKey: 'dashboard.layerDirections.higherBetter',
+    source: 'resilience',
+    pillar: 'Shelter',
+    better: 'higher',
+    scale: 'absolute',
+  },
+  entertainment: {
+    label: 'Entertainment',
+    labelKey: 'dashboard.layerLabels.entertainment',
+    captionKey: 'dashboard.layerCaptions.entertainment',
+    unitKey: 'dashboard.layerUnits.score',
+    directionKey: 'dashboard.layerDirections.higherBetter',
+    source: 'resilience',
+    pillar: 'Entertainment',
+    better: 'higher',
+    scale: 'absolute',
+  },
+  forestCover: {
+    label: 'Forest Cover',
+    labelKey: 'dashboard.layerLabels.forestCover',
+    captionKey: 'dashboard.layerCaptions.forestCover',
+    unitKey: 'dashboard.layerUnits.reportedArea',
+    directionKey: 'dashboard.layerDirections.higherBetter',
+    source: 'indicators',
+    concept: 'forest_cover',
+    better: 'higher',
+    scale: 'relative',
+  },
+  deforestation: {
+    label: 'Deforestation',
+    labelKey: 'dashboard.layerLabels.deforestation',
+    captionKey: 'dashboard.layerCaptions.deforestation',
+    unitKey: 'dashboard.layerUnits.hectares',
+    directionKey: 'dashboard.layerDirections.lowerBetter',
+    source: 'indicators',
+    concept: 'deforestation',
+    better: 'lower',
+    scale: 'relative',
+  },
+  airQuality: {
+    label: 'Air Quality',
+    labelKey: 'dashboard.layerLabels.airQuality',
+    captionKey: 'dashboard.layerCaptions.airQuality',
+    unitKey: 'dashboard.layerUnits.aqi',
+    directionKey: 'dashboard.layerDirections.lowerBetter',
+    source: 'indicators',
+    concept: 'air_quality',
+    better: 'lower',
+    scale: 'relative',
+  },
+  fireHotspots: {
+    label: 'Fire Hotspots',
+    labelKey: 'dashboard.layerLabels.fireHotspots',
+    captionKey: 'dashboard.layerCaptions.fireHotspots',
+    unitKey: 'dashboard.layerUnits.count',
+    directionKey: 'dashboard.layerDirections.lowerBetter',
+    source: 'indicators',
+    concept: 'fire_hotspots',
+    better: 'lower',
+    scale: 'relative',
+  },
+  poverty: {
+    label: 'Poverty',
+    labelKey: 'dashboard.layerLabels.poverty',
+    captionKey: 'dashboard.layerCaptions.poverty',
+    unitKey: 'dashboard.layerUnits.percent',
+    directionKey: 'dashboard.layerDirections.lowerBetter',
+    source: 'indicators',
+    concept: 'poverty',
+    better: 'lower',
+    scale: 'relative',
+  },
 };
 
 // `generatedAt` is the top-level date the daily rebuild pipeline stamps into
@@ -262,10 +401,11 @@ export function useBruneiGeo() {
 // spread of those values — powers the district choropleth. Mirrors layerColorScale.
 export function buildDistrictChoropleth(rows, layerKey) {
   const config = LAYER_CONFIG[layerKey];
+  const concept = config?.districtFallbackConcept || config?.concept;
   const valueByKey = {};
-  if (config) {
+  if (config && concept) {
     rows
-      .filter((row) => row.canonical === 1 && row.dashboard_concept === config.concept)
+      .filter((row) => row.canonical === 1 && row.dashboard_concept === concept)
       .forEach((row) => {
         valueByKey[row.key] = row;
       });
@@ -305,9 +445,10 @@ export function getDistrictsForParent(districtData, parent) {
 // Layer entries (map choropleth) for every district under one parent.
 export function getDistrictLayerRows(rows, parent, layerKey) {
   const config = LAYER_CONFIG[layerKey];
-  if (!config) return [];
+  const concept = config?.districtFallbackConcept || config?.concept;
+  if (!config || !concept) return [];
   return rows
-    .filter((row) => row.parent === parent && row.canonical === 1 && row.dashboard_concept === config.concept)
+    .filter((row) => row.parent === parent && row.canonical === 1 && row.dashboard_concept === concept)
     .map((row) => ({ territory: row.territory, row }));
 }
 
@@ -401,14 +542,52 @@ export function formatValue(row) {
   return formatted;
 }
 
+export function isScoreLayer(layerKey) {
+  return LAYER_CONFIG[layerKey]?.source === 'resilience';
+}
+
+export function hasDistrictFallbackLayer(layerKey) {
+  return Boolean(LAYER_CONFIG[layerKey]?.districtFallbackConcept);
+}
+
 export function titleCaseConfidence(value) {
   if (!value) return 'Unknown';
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 
-export function getLayerRows(rows, layerKey) {
+function buildScoreLayerRow(territoryName, territory, config, generatedAt) {
+  const value = config.scoreKey === 'index' ? territory?.index : territory?.pillarScores?.[config.pillar];
+  if (!Number.isFinite(value)) return null;
+  return {
+    territory: territoryName,
+    indicator: config.label,
+    value,
+    unit: '/100',
+    source: 'resilience.json',
+    confidence: 'score',
+    year: generatedAt || null,
+    dashboard_concept: config.scoreKey || config.pillar,
+    canonical: 1,
+  };
+}
+
+export function getLayerRows(rows, layerKey, resilienceData = null) {
   const config = LAYER_CONFIG[layerKey];
   if (!config) return [];
+  if (config.source === 'resilience') {
+    return TERRITORIES.map((territory) => {
+      const scoreRow = buildScoreLayerRow(
+        territory,
+        resilienceData?.territories?.[territory],
+        config,
+        resilienceData?.generatedAt
+      );
+      return {
+        territory,
+        row: scoreRow,
+      };
+    });
+  }
   return TERRITORIES.map((territory) => {
     const row = getCanonicalRows(rows, territory).find((item) => item.dashboard_concept === config.concept);
     return {
@@ -420,6 +599,14 @@ export function getLayerRows(rows, layerKey) {
 
 export function layerColorScale(entries, layerKey) {
   const config = LAYER_CONFIG[layerKey];
+  if (config?.scale === 'absolute') {
+    return (value) => {
+      if (!Number.isFinite(value)) return '#cbd5e1';
+      if (value >= 70) return '#16a34a';
+      if (value >= 40) return '#f59e0b';
+      return '#dc2626';
+    };
+  }
   const values = entries.map((entry) => entry.row?.value).filter((value) => Number.isFinite(value));
   if (!config || values.length === 0) {
     return () => '#94a3b8';
