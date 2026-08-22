@@ -12,7 +12,26 @@
     "clearFilters": "Clear filters",
     "noData": "No data",
     "readMore": "Read more",
-    "somethingWentWrong": "Something went wrong. Please try again."
+    "somethingWentWrong": "Something went wrong. Please try again.",
+    "tagline": "Measure Borneo. Understand Borneo. Strengthen Borneo."
+  },
+  "answerStrip": {
+    "regionLabel": "At a glance",
+    "whatLabel": "What is happening?",
+    "whereLabel": "Where?",
+    "whyLabel": "Why does it matter?",
+    "whatNextLabel": "What next?",
+    "whereText": "{{territory}} has the lowest Resilience Index, weakest at {{pillar}}.",
+    "whereTextSingleTerritory": "{{territory}} — weakest at {{pillar}}.",
+    "leverUnavailable": "An illustrative {{pillar}} scenario isn't available yet for {{territory}}.",
+    "why": {
+      "Food": "Low food self-sufficiency means the territory depends heavily on imports.",
+      "Energy": "Limited electricity access constrains households, clinics, and schools alike.",
+      "Education": "Fewer years of schooling limits the territory's long-term earning power.",
+      "Shelter": "Gaps in clean water and sanitation access raise public-health risk at home.",
+      "Healthcare": "Lower life expectancy and fewer hospital beds strain the health system.",
+      "Entertainment": "Low internet access limits access to information, services, and opportunity."
+    }
   },
   "freshness": {
     "dataAsOf": "Data as of {{date}} · daily snapshot",
@@ -215,6 +234,7 @@
     "region": "Region",
     "district": "District",
     "noPlacesMatch": "No places match “{{query}}”.",
+    "askBorneoBot": "Ask BorneoBot: “{{query}}”",
     "dragToResizePanel": "Drag to resize panel",
     "overallResilienceStatus": "Overall Resilience Status",
     "resilienceDistrictNotice": "The Resilience Index is computed at territory level (6 pillars). Switch to Region view for {{district}}'s score — district-level indicators don't yet cover all pillars.",
@@ -257,6 +277,9 @@
     "weakestLinkFirst": "Weakest link first",
     "pillarProvenance": "Pillar provenance · {{count}}/6 scored",
     "noComparableData": "No comparable data — never imputed",
+    "pillarDrillDownTitle": "{{pillar}} indicators — {{territory}}",
+    "pillarDrillDownNoData": "No data available for this pillar.",
+    "pillarDrillDownScore": "Score {{score}}",
     "territoryCoverageFull": "{{scored}}/6 pillars scored.",
     "territoryCoveragePartial": "{{scored}}/6 pillars scored. Not scored: {{pillars}} — no comparable data is imputed.",
     "aggregateCoverageByPillar": "Pillar contributors (scored territories): {{coverage}}.",
@@ -333,6 +356,7 @@
     "categorySocial": "Social",
     "categoryGovernance": "Governance",
     "categorySnapshot": "{{category}} Snapshot",
+    "answerStripWhat": "{{environment}} Environmental indicators tracked, {{social}} Social, {{governance}} Governance.",
     "snapshotOnly": "Snapshot Only",
     "canonicalIndicatorsAvailable": "canonical indicators available",
     "latestDataYear": "Latest data year",
@@ -346,7 +370,8 @@
   "sdg": {
     "title": "SDG Progress",
     "subtitle": "UN Sustainable Development Goals tracked with real snapshot data and visible confidence tags",
-    "noCanonicalIndicatorsForRegion": "No canonical indicators are available for this goal in {{region}} yet."
+    "noCanonicalIndicatorsForRegion": "No canonical indicators are available for this goal in {{region}} yet.",
+    "answerStripWhat": "{{tracked}} of {{total}} SDGs have tracked data for this territory."
   },
   "simulator": {
     "title": "Impact Simulator",
@@ -497,7 +522,7 @@
   "about": {
     "kicker": "ABOUT THE PLATFORM",
     "heroTitle": "Understanding Borneo Through Trusted Data",
-    "heroLede": "Borneo Tracker brings environmental, social and sustainability indicators together in one clear and accessible platform.",
+    "heroLede": "Borneo Tracker brings environmental, social and sustainability indicators together in one clear, actionable intelligence platform.",
     "exploreDashboard": "Explore Dashboard",
     "viewDataSources": "View Data Sources",
     "ourPurpose": "Our Purpose",

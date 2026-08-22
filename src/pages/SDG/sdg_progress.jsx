@@ -11,6 +11,7 @@ import {
 } from '../../data/useIndicators';
 import DataFreshness from '../../components/DataFreshness';
 import ExportMenu from '../../components/ExportMenu';
+import AnswerStrip from '../../components/AnswerStrip';
 
 const SDGProgress = () => {
   const { t } = useTranslation();
@@ -23,6 +24,16 @@ const SDGProgress = () => {
     if (!data?.rows) return [];
     return getRowsForSdg(data.rows, selectedRegion, selectedGoal);
   }, [data, selectedGoal, selectedRegion]);
+
+  // BT-23: "What" only, same reasoning as the ESG page — how many of the
+  // tracked SDGs actually have canonical data for the selected region.
+  // Where/Why/What-next don't map cleanly onto an SDG breakdown.
+  const sdgAnswerStripWhat = useMemo(() => {
+    if (!data?.rows) return null;
+    const trackedCount = SDG_GOALS.filter((goal) => getRowsForSdg(data.rows, selectedRegion, goal.goal).length > 0).length;
+    return t('sdg.answerStripWhat', { tracked: trackedCount, total: SDG_GOALS.length });
+  }, [data, selectedRegion, t]);
+
   const summary = summarizeRows(rows);
   const goalLabel = SDG_GOALS.find((item) => item.goal === selectedGoal)?.label || selectedGoal;
   const filenameBase = `sdg-${selectedGoal}-${selectedRegion}`.toLowerCase().replace(/\s+/g, '-');
@@ -61,6 +72,8 @@ const SDGProgress = () => {
             )}
           </div>
         </div>
+
+        {sdgAnswerStripWhat && <AnswerStrip what={sdgAnswerStripWhat} />}
 
         <div style={styles.tabs}>
           {SDG_GOALS.map(({ goal, label }) => (

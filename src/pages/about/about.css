@@ -87,6 +87,13 @@
   line-height: 1;
 }
 
+.about-tagline {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #06451d;
+}
+
 .about-lede {
   max-width: 560px;
   margin-top: 16px;
@@ -806,6 +813,10 @@ html[data-theme='dark'] .notice-panel {
 html[data-theme='dark'] .about-kicker {
   background: var(--color-green-soft);
   border-color: var(--color-border);
+  color: var(--color-green);
+}
+
+html[data-theme='dark'] .about-tagline {
   color: var(--color-green);
 }
 

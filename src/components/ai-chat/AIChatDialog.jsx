@@ -16,19 +16,30 @@ const newMessage = (role, content, extra = {}) => ({
   ...extra,
 });
 
-const AIChatDialog = ({ open, onClose }) => {
+const AIChatDialog = ({ open, onClose, initialMessage = '' }) => {
   const { t, i18n } = useTranslation();
   const location = useLocation();
   const auth = useContext(AuthContext);
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState(initialMessage);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [lastRequest, setLastRequest] = useState(null);
   const conversationIdRef = useRef(createConversationId());
+  const wasOpenRef = useRef(false);
   const closeRef = useRef(null);
   const endRef = useRef(null);
   const inputRef = useRef(null);
+
+  // Pre-fills the input box exactly once per open (e.g. BT-14's "Ask
+  // BorneoBot: <query>" search fallback) without clobbering anything the
+  // user types afterward while the dialog stays open.
+  useEffect(() => {
+    if (open && !wasOpenRef.current && initialMessage) {
+      setInput(initialMessage);
+    }
+    wasOpenRef.current = open;
+  }, [open, initialMessage]);
 
   const assistantBusy = useMemo(
     () => (loading ? newMessage('assistant', t('aiChat.loading')) : null),

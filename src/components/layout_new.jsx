@@ -13,6 +13,7 @@ const Layout = ({ children }) => {
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+  const [chatbotPrefill, setChatbotPrefill] = useState('');
 
   const isDashboardPage = location.pathname === '/';
   const sidebarWidth = isSidebarOpen ? 240 : 0;
@@ -51,6 +52,16 @@ const Layout = ({ children }) => {
     triggerLayoutResize();
   };
 
+  // BT-14: lets a page (e.g. the dashboard search bar's "Ask BorneoBot"
+  // fallback) open the chat panel pre-filled with a query, without that page
+  // needing to know anything about the panel's own open/close state.
+  const askBorneoBot = (query) => {
+    setChatbotPrefill(query);
+    setIsSidebarOpen(false);
+    setIsChatbotOpen(true);
+    triggerLayoutResize();
+  };
+
   return (
     <div style={styles.layout}>
       <MiniTopBar
@@ -70,7 +81,7 @@ const Layout = ({ children }) => {
         >
           {isChatbotOpen && (
             <aside className="chatbot-dock" aria-label="BorneoBot chat panel">
-              <AIChatDialog open={isChatbotOpen} onClose={handleChatbotClose} />
+              <AIChatDialog open={isChatbotOpen} onClose={handleChatbotClose} initialMessage={chatbotPrefill} />
             </aside>
           )}
 
@@ -81,7 +92,7 @@ const Layout = ({ children }) => {
             }}
             className="dashboard-content"
           >
-            {children || <Outlet context={{ isSidebarOpen, isChatbotOpen }} />}
+            {children || <Outlet context={{ isSidebarOpen, isChatbotOpen, askBorneoBot }} />}
           </main>
         </div>
       </div>

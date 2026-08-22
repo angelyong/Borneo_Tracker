@@ -10,6 +10,11 @@ export const SUPPORTED_CHAT_LANGUAGES = ['en', 'ms'];
 export const MAX_CHAT_MESSAGE_LENGTH = 1200;
 
 export const SUGGESTED_QUESTIONS = [
+  // BT-14: client's three example "what BorneoBot can do with dashboard
+  // data" queries, seeded first since they're the priority examples.
+  'Compare Sabah and Sarawak',
+  'Show districts with low food resilience',
+  'Which territory improved the most?',
   'What is Borneo Tracker?',
   'What is the difference between ESG and SDG?',
   'Explain the Forest Cover indicator.',

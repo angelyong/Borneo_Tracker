@@ -40,10 +40,13 @@ import WeakestLinkBars from '../../components/WeakestLinkBars';
 import RagGauge from '../../components/RagGauge';
 import MoneyVsResilience from '../../components/MoneyVsResilience';
 import HexRadar from '../../components/HexRadar';
+import PillarDrillDown from '../../components/PillarDrillDown';
 import { HEXAGON_PILLARS } from '../../components/hexagonPillars';
 import { buildHeadline } from '../../utils/headline';
 import { buildAggregateResilience, RESILIENCE_PILLARS } from '../../utils/resiliencePresentation';
-import { makeSimulatorHref } from '../../utils/simulatorRoute';
+import { makeSimulatorHref, resolveSliderIndicator } from '../../utils/simulatorRoute';
+import { findWeakestTerritory } from '../../utils/weakestTerritory';
+import AnswerStrip from '../../components/AnswerStrip';
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -220,7 +223,7 @@ const MapFocus = ({ geo, parent, selectedKey, isDistrict, zoomToDistrict, bounda
 
 const OverviewDashboard = () => {
   const { t } = useTranslation();
-  const { isChatbotOpen = false } = useOutletContext() || {};
+  const { isChatbotOpen = false, askBorneoBot } = useOutletContext() || {};
   const [searchText, setSearchText] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchActiveIdx, setSearchActiveIdx] = useState(0);
@@ -228,6 +231,10 @@ const OverviewDashboard = () => {
   const [panelTerritory, setPanelTerritory] = useState('Overall Borneo');
   const [esgCategory, setEsgCategory] = useState('Environment');
   const [panelWidth, setPanelWidth] = useState(460);
+  // BT-12: which pillar's drill-down panel is open (null = closed). Only
+  // meaningful for a single selected territory — "Overall Borneo" is an
+  // aggregate with no one territory's real indicator rows to show.
+  const [drillDownPillar, setDrillDownPillar] = useState(null);
 
   // Region vs District drill-down. `level` toggles the whole panel between the
   // 4-territory view (indicators.json) and the ADM2 district view (districts.json).
@@ -665,6 +672,36 @@ const OverviewDashboard = () => {
     return makeSimulatorHref(panelTerritory, resilienceView?.weakestPillar);
   }, [isDistrict, isOverall, panelTerritory, resilienceView]);
 
+  // BT-22: the AnswerStrip's 4 slots are deliberately independent of whatever
+  // territory the user currently has selected in the panel above — "Where"
+  // always names the single worst-off territory across all of Borneo, not
+  // the current selection, so it stays a stable, glanceable answer.
+  const dashboardWeakest = useMemo(
+    () => (resilience?.territories ? findWeakestTerritory(resilience.territories) : null),
+    [resilience]
+  );
+  const dashboardHeadline = useMemo(() => {
+    if (!resilience?.territories) return null;
+    const thresholds = resilience.ragThresholds || { green: 70, amber: 40 };
+    return buildHeadline(buildAggregateResilience(resilience.territories, thresholds));
+  }, [resilience]);
+  const dashboardSimulatorCta = useMemo(() => {
+    if (!dashboardWeakest?.territory || !dashboardWeakest.weakestPillar) return null;
+    const { territory, weakestPillar } = dashboardWeakest;
+    const detailRows = resilience?.territories?.[territory]?.detail?.[weakestPillar] || [];
+    const scoredInputs = Object.fromEntries(detailRows.map((row) => [row.indicator, true]));
+    const leverLive = Boolean(resolveSliderIndicator(weakestPillar, scoredInputs));
+    const pillarLabel = t(`dashboard.pillars.${weakestPillar}`, { defaultValue: weakestPillar });
+
+    if (!leverLive) {
+      return { text: t('answerStrip.leverUnavailable', { territory, pillar: pillarLabel }) };
+    }
+    return {
+      text: t('dashboard.whatNextCta', { territory, pillar: pillarLabel }),
+      href: makeSimulatorHref(territory, weakestPillar),
+    };
+  }, [dashboardWeakest, resilience, t]);
+
   const hexCoverage = useMemo(() => {
     if (isDistrict) {
       return scopeName ? getHexagonCoverage(scopeRows, scopeName) : null;
@@ -829,6 +866,25 @@ const OverviewDashboard = () => {
                     </span>
                   </li>
                 ))
+              ) : askBorneoBot ? (
+                // BT-14: no-results now offers BorneoBot instead of a dead end.
+                // Cost note: this adds no new API/service, but every click here
+                // is one more request against the shared daily AI chat quota in
+                // supabase/functions/ai-chat — a popular "no match" query could
+                // measurably increase chatbot call volume.
+                <li>
+                  <button
+                    type="button"
+                    style={styles.searchAskBot}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      askBorneoBot(searchText.trim());
+                      setSearchOpen(false);
+                    }}
+                  >
+                    {t('dashboard.askBorneoBot', { query: searchText.trim() })}
+                  </button>
+                </li>
               ) : (
                 <li style={styles.searchEmpty}>{t('dashboard.noPlacesMatch', { query: searchText.trim() })}</li>
               )}
@@ -938,6 +994,28 @@ const OverviewDashboard = () => {
         <div onMouseDown={onDragStart} style={styles.dragHandle} title={t('dashboard.dragToResizePanel')}>
           <div style={styles.dragGrip} />
         </div>
+
+        {!isDistrict && dashboardHeadline && dashboardWeakest && (
+          <AnswerStrip
+            what={t(dashboardHeadline.key, {
+              ...dashboardHeadline.values,
+              rag: dashboardHeadline.values.rag ? t(`dashboard.ragBand_${dashboardHeadline.values.rag}`) : undefined,
+              weakestPillar: dashboardHeadline.values.weakestPillar
+                ? t(`dashboard.pillars.${dashboardHeadline.values.weakestPillar}`, {
+                  defaultValue: dashboardHeadline.values.weakestPillar,
+                })
+                : undefined,
+            })}
+            where={t('answerStrip.whereText', {
+              territory: dashboardWeakest.territory,
+              pillar: t(`dashboard.pillars.${dashboardWeakest.weakestPillar}`, {
+                defaultValue: dashboardWeakest.weakestPillar,
+              }),
+            })}
+            why={dashboardWeakest.weakestPillar ? t(`answerStrip.why.${dashboardWeakest.weakestPillar}`) : null}
+            whatNext={dashboardSimulatorCta}
+          />
+        )}
 
         <div style={styles.panelDropdownRow}>
           <div style={styles.levelToggle}>
@@ -1188,6 +1266,7 @@ const OverviewDashboard = () => {
               ariaLabel={t('regional.scoredPillarsTitle', {
                 count: resilienceView?.scoredPillars?.length || Object.values(hexScores).filter(Number.isFinite).length,
               })}
+              onPillarClick={!isOverall ? setDrillDownPillar : undefined}
             />
           ) : (
             <div style={styles.stateText}>{t('dashboard.loadingResilienceScores')}</div>
@@ -1212,6 +1291,15 @@ const OverviewDashboard = () => {
             <div style={{ marginTop: 14, borderTop: '1px solid var(--color-border)', paddingTop: 12 }}>
               <PillarCoverage territory={resilience.territories[panelTerritory]} />
             </div>
+          )}
+
+          {!isDistrict && !isOverall && (
+            <PillarDrillDown
+              pillar={drillDownPillar}
+              territory={panelTerritory}
+              detail={resilience?.territories?.[panelTerritory]?.detail}
+              onClose={() => setDrillDownPillar(null)}
+            />
           )}
         </div>
 
@@ -1566,6 +1654,18 @@ const styles = {
     fontSize: '13px',
     color: 'var(--color-muted)',
     textAlign: 'center',
+  },
+  searchAskBot: {
+    display: 'block',
+    width: '100%',
+    padding: '12px',
+    fontSize: '13px',
+    fontWeight: 700,
+    color: 'var(--color-green)',
+    background: 'none',
+    border: 'none',
+    textAlign: 'center',
+    cursor: 'pointer',
   },
 
   popupContent: {

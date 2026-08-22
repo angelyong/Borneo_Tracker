@@ -12,7 +12,26 @@
     "clearFilters": "Kosongkan penapis",
     "noData": "Tiada data",
     "readMore": "Baca lagi",
-    "somethingWentWrong": "Sesuatu tidak kena. Sila cuba lagi."
+    "somethingWentWrong": "Sesuatu tidak kena. Sila cuba lagi.",
+    "tagline": "Ukur Borneo. Fahami Borneo. Perkukuh Borneo."
+  },
+  "answerStrip": {
+    "regionLabel": "Sepintas lalu",
+    "whatLabel": "Apa yang berlaku?",
+    "whereLabel": "Di mana?",
+    "whyLabel": "Mengapa ia penting?",
+    "whatNextLabel": "Apa seterusnya?",
+    "whereText": "{{territory}} mempunyai Indeks Daya Tahan terendah, paling lemah pada {{pillar}}.",
+    "whereTextSingleTerritory": "{{territory}} — paling lemah pada {{pillar}}.",
+    "leverUnavailable": "Senario ilustrasi {{pillar}} belum tersedia untuk {{territory}}.",
+    "why": {
+      "Food": "Sara diri makanan yang rendah bermakna wilayah ini sangat bergantung kepada import.",
+      "Energy": "Akses elektrik yang terhad membataskan isi rumah, klinik, dan sekolah.",
+      "Education": "Tahun persekolahan yang lebih sedikit mengehadkan potensi pendapatan jangka panjang wilayah.",
+      "Shelter": "Jurang dalam akses air bersih dan sanitasi meningkatkan risiko kesihatan awam di rumah.",
+      "Healthcare": "Jangka hayat yang lebih rendah dan kekurangan katil hospital membebankan sistem kesihatan.",
+      "Entertainment": "Akses internet yang rendah mengehadkan akses kepada maklumat, perkhidmatan, dan peluang."
+    }
   },
   "freshness": {
     "dataAsOf": "Data setakat {{date}} · gambaran harian",
@@ -214,6 +233,7 @@
     "region": "Wilayah",
     "district": "Daerah",
     "noPlacesMatch": "Tiada tempat sepadan dengan “{{query}}”.",
+    "askBorneoBot": "Tanya BorneoBot: “{{query}}”",
     "dragToResizePanel": "Seret untuk ubah saiz panel",
     "overallResilienceStatus": "Status Daya Tahan Keseluruhan",
     "resilienceDistrictNotice": "Indeks Daya Tahan dikira pada peringkat wilayah (6 tunjang). Tukar ke paparan Wilayah untuk skor {{district}} — penunjuk peringkat daerah belum merangkumi semua tunjang.",
@@ -256,6 +276,9 @@
     "weakestLinkFirst": "Pautan terlemah dahulu",
     "pillarProvenance": "Liputan tunjang · {{count}}/6 berskor",
     "noComparableData": "Tiada data setanding — tidak pernah dianggarkan",
+    "pillarDrillDownTitle": "Penunjuk {{pillar}} — {{territory}}",
+    "pillarDrillDownNoData": "Tiada data tersedia untuk tunjang ini.",
+    "pillarDrillDownScore": "Skor {{score}}",
     "territoryCoverageFull": "{{scored}}/6 tunjang diberi skor.",
     "territoryCoveragePartial": "{{scored}}/6 tunjang diberi skor. Tidak diberi skor: {{pillars}} — tiada data setanding dianggarkan.",
     "aggregateCoverageByPillar": "Penyumbang tunjang (wilayah diberi skor): {{coverage}}.",
@@ -332,6 +355,7 @@
     "categorySocial": "Sosial",
     "categoryGovernance": "Tadbir Urus",
     "categorySnapshot": "Gambaran Ringkas {{category}}",
+    "answerStripWhat": "{{environment}} penunjuk Alam Sekitar dijejaki, {{social}} Sosial, {{governance}} Tadbir Urus.",
     "snapshotOnly": "Gambaran Sahaja",
     "canonicalIndicatorsAvailable": "penunjuk kanonik tersedia",
     "latestDataYear": "Tahun data terkini",
@@ -345,7 +369,8 @@
   "sdg": {
     "title": "Kemajuan SDG",
     "subtitle": "Matlamat Pembangunan Mampan (SDG) PBB dijejaki dengan data gambaran sebenar dan tanda keyakinan yang jelas",
-    "noCanonicalIndicatorsForRegion": "Belum ada penunjuk kanonik untuk matlamat ini di {{region}}."
+    "noCanonicalIndicatorsForRegion": "Belum ada penunjuk kanonik untuk matlamat ini di {{region}}.",
+    "answerStripWhat": "{{tracked}} daripada {{total}} SDG mempunyai data dijejaki untuk wilayah ini."
   },
   "simulator": {
     "title": "Simulator Impak",
@@ -492,7 +517,7 @@
   "about": {
     "kicker": "MENGENAI PLATFORM",
     "heroTitle": "Memahami Borneo Melalui Data Dipercayai",
-    "heroLede": "Borneo Tracker menggabungkan penunjuk alam sekitar, sosial dan kemampanan dalam satu platform yang jelas dan mudah diakses.",
+    "heroLede": "Borneo Tracker menggabungkan penunjuk alam sekitar, sosial dan kemampanan dalam satu platform analitik yang jelas dan boleh diambil tindakan.",
     "exploreDashboard": "Terokai Papan Pemuka",
     "viewDataSources": "Lihat Sumber Data",
     "ourPurpose": "Tujuan Kami",

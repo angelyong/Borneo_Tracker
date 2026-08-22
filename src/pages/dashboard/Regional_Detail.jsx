@@ -24,6 +24,9 @@ import { HEXAGON_PILLARS } from '../../components/hexagonPillars';
 import IntegrityChip from '../../components/IntegrityChip';
 import ScoreExplainer from '../../components/ScoreExplainer';
 import { bandLabelKeyForRag } from '../../utils/resilienceBand';
+import AnswerStrip from '../../components/AnswerStrip';
+import { buildHeadline } from '../../utils/headline';
+import { makeSimulatorHref, resolveSliderIndicator } from '../../utils/simulatorRoute';
 
 const RegionalDetails = () => {
   const { t, i18n } = useTranslation();
@@ -88,6 +91,31 @@ const RegionalDetails = () => {
   const territoryBandLabelKey = Number.isFinite(territoryResilience?.index)
     ? bandLabelKeyForRag(territoryResilience?.rag)
     : null;
+
+  // BT-23: AnswerStrip scoped to the currently selected territory — recomputes
+  // (and the strip re-renders) whenever selectedTerritory changes, since every
+  // value below derives from territoryResilience, which itself is keyed by
+  // selectedTerritory.
+  const regionalHeadline = useMemo(
+    () => (territoryResilience ? buildHeadline(territoryResilience) : null),
+    [territoryResilience]
+  );
+  const regionalSimulatorCta = useMemo(() => {
+    const pillar = territoryResilience?.weakestPillar;
+    if (!pillar) return null;
+    const detailRows = territoryResilience?.detail?.[pillar] || [];
+    const scoredInputs = Object.fromEntries(detailRows.map((row) => [row.indicator, true]));
+    const leverLive = Boolean(resolveSliderIndicator(pillar, scoredInputs));
+    const pillarLabel = t(`dashboard.pillars.${pillar}`, { defaultValue: pillar });
+
+    if (!leverLive) {
+      return { text: t('answerStrip.leverUnavailable', { territory: selectedTerritory, pillar: pillarLabel }) };
+    }
+    return {
+      text: t('dashboard.whatNextCta', { territory: selectedTerritory, pillar: pillarLabel }),
+      href: makeSimulatorHref(selectedTerritory, pillar),
+    };
+  }, [territoryResilience, selectedTerritory, t]);
   // Real 0–100 resilience scores per hexagon pillar (only exists for the four
   // territories). Null for unsupported scopes or while loading — the radar card
   // falls back to an honest note in that case.
@@ -256,6 +284,32 @@ const RegionalDetails = () => {
 
           {!loading && !error && (
             <>
+              {regionalHeadline && (
+                <AnswerStrip
+                  what={t(regionalHeadline.key, {
+                    ...regionalHeadline.values,
+                    rag: regionalHeadline.values.rag ? t(`dashboard.ragBand_${regionalHeadline.values.rag}`) : undefined,
+                    weakestPillar: regionalHeadline.values.weakestPillar
+                      ? t(`dashboard.pillars.${regionalHeadline.values.weakestPillar}`, {
+                        defaultValue: regionalHeadline.values.weakestPillar,
+                      })
+                      : undefined,
+                  })}
+                  where={
+                    territoryResilience?.weakestPillar
+                      ? t('answerStrip.whereTextSingleTerritory', {
+                        territory: selectedTerritory,
+                        pillar: t(`dashboard.pillars.${territoryResilience.weakestPillar}`, {
+                          defaultValue: territoryResilience.weakestPillar,
+                        }),
+                      })
+                      : null
+                  }
+                  why={territoryResilience?.weakestPillar ? t(`answerStrip.why.${territoryResilience.weakestPillar}`) : null}
+                  whatNext={regionalSimulatorCta}
+                />
+              )}
+
               {/* Summary strip */}
               <div style={styles.summaryStrip}>
                 {territoryResilience?.index != null && (

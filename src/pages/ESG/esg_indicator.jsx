@@ -11,6 +11,7 @@ import {
 } from '../../data/useIndicators';
 import DataFreshness from '../../components/DataFreshness';
 import ExportMenu from '../../components/ExportMenu';
+import AnswerStrip from '../../components/AnswerStrip';
 
 const CATEGORIES = ['Environment', 'Social', 'Governance'];
 const CATEGORY_LABEL_KEY = {
@@ -30,6 +31,22 @@ const ESGIndicator = () => {
     if (!data?.rows) return [];
     return getRowsForPillar(data.rows, selectedRegion, CATEGORY_TO_PILLAR[selectedCategory]);
   }, [data, selectedCategory, selectedRegion]);
+
+  // BT-23: "What" only — counts across all 3 ESG categories for the
+  // selected region, regardless of which tab is active. Where/Why/What-next
+  // don't naturally fit an ESG breakdown, so they're suppressed rather than
+  // padded with filler (AnswerStrip already hides any slot left undefined).
+  const esgAnswerStripWhat = useMemo(() => {
+    if (!data?.rows) return null;
+    const counts = Object.fromEntries(
+      CATEGORIES.map((category) => [category, getRowsForPillar(data.rows, selectedRegion, CATEGORY_TO_PILLAR[category]).length])
+    );
+    return t('esg.answerStripWhat', {
+      environment: counts.Environment,
+      social: counts.Social,
+      governance: counts.Governance,
+    });
+  }, [data, selectedRegion, t]);
 
   const summary = summarizeRows(rows);
   const filenameBase = `esg-${selectedCategory}-${selectedRegion}`.toLowerCase().replace(/\s+/g, '-');
@@ -68,6 +85,8 @@ const ESGIndicator = () => {
               )}
             </div>
           </div>
+
+          {esgAnswerStripWhat && <AnswerStrip what={esgAnswerStripWhat} />}
 
           {/* ── Pillar tabs ── */}
           <div style={styles.tabs}>

@@ -1,6 +1,6 @@
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import HexRadar from './HexRadar';
 import { HEXAGON_PILLARS } from './hexagonPillars';
 import WeakestLinkBars from './WeakestLinkBars';
@@ -93,5 +93,58 @@ describe('truthful hexagon score rendering', () => {
     expect(container.querySelectorAll('[title="No comparable data — never imputed"]')).toHaveLength(3);
     expect(text.indexOf('Food')).toBeLessThan(text.indexOf('Energy'));
     expect(text.indexOf('Energy')).toBeLessThan(text.indexOf('Education'));
+  });
+});
+
+// BT-12: opt-in pillar drill-down interactivity.
+describe('HexRadar pillar drill-down interactivity', () => {
+  it('is purely decorative (no button role, no tabIndex) when onPillarClick is omitted', () => {
+    render(<HexRadar pillars={{ Food: 28.6, Energy: 98.5 }} max={100} />);
+    expect(container.querySelectorAll('[role="button"]')).toHaveLength(0);
+  });
+
+  it('makes every axis clickable and keyboard-operable when onPillarClick is supplied', () => {
+    const onPillarClick = vi.fn();
+    render(
+      <HexRadar
+        pillars={{ Food: 28.6, Energy: 98.5, Education: 51.3, Shelter: 66, Healthcare: 59.5, Entertainment: 52.2 }}
+        max={100}
+        onPillarClick={onPillarClick}
+      />
+    );
+
+    const buttons = container.querySelectorAll('[role="button"]');
+    expect(buttons).toHaveLength(HEXAGON_PILLARS.length);
+
+    const foodButton = [...buttons].find((el) => el.getAttribute('aria-label') === 'Food');
+    expect(foodButton).toBeTruthy();
+    expect(foodButton.tabIndex).toBe(0);
+
+    act(() => {
+      foodButton.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    });
+    expect(onPillarClick).toHaveBeenCalledWith('Food');
+
+    onPillarClick.mockClear();
+    act(() => {
+      foodButton.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+    });
+    expect(onPillarClick).toHaveBeenCalledWith('Food');
+
+    onPillarClick.mockClear();
+    act(() => {
+      foodButton.dispatchEvent(new KeyboardEvent('keydown', { key: ' ', bubbles: true }));
+    });
+    expect(onPillarClick).toHaveBeenCalledWith('Food');
+  });
+
+  it('does not invoke onPillarClick for an unrelated key press', () => {
+    const onPillarClick = vi.fn();
+    render(<HexRadar pillars={{ Food: 28.6 }} max={100} onPillarClick={onPillarClick} />);
+    const button = container.querySelector('[role="button"][aria-label="Food"]');
+    act(() => {
+      button.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
+    });
+    expect(onPillarClick).not.toHaveBeenCalled();
   });
 });

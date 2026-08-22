@@ -24,6 +24,10 @@ export default function HexRadar({
   missingLabel = 'No data',
   incompleteLabel = 'Incomplete scores — no polygon shown',
   ariaLabel: translatedAriaLabel,
+  // BT-12: opt-in drill-down. Passing onPillarClick makes every axis label
+  // clickable + keyboard-operable; omit it (existing callers) and the radar
+  // renders exactly as before, purely decorative.
+  onPillarClick,
 }) {
   const keys = HEXAGON_PILLARS;
   const values = keys.map((key) => pillars?.[key]);
@@ -105,8 +109,26 @@ export default function HexRadar({
         const ly = cy - (maxR + 20) * Math.sin(axis.angle);
         const scored = Number.isFinite(axis.value);
         const isWeakest = scored && axis.key === weakest;
+        const interactive = Boolean(onPillarClick);
         return (
-          <g key={axis.key}>
+          <g
+            key={axis.key}
+            role={interactive ? 'button' : undefined}
+            tabIndex={interactive ? 0 : undefined}
+            aria-label={interactive ? axis.key : undefined}
+            style={interactive ? { cursor: 'pointer' } : undefined}
+            onClick={interactive ? () => onPillarClick(axis.key) : undefined}
+            onKeyDown={
+              interactive
+                ? (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      onPillarClick(axis.key);
+                    }
+                  }
+                : undefined
+            }
+          >
             <text
               x={lx}
               y={ly - 4}
@@ -124,6 +146,7 @@ export default function HexRadar({
               fontSize="8"
               fontWeight={isWeakest ? '700' : '400'}
               fill={isWeakest ? 'var(--color-red)' : 'var(--color-muted)'}
+              textDecoration={interactive ? 'underline' : undefined}
             >
               {axis.key}
             </text>
