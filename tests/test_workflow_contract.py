@@ -1,6 +1,7 @@
 """Static guards for the exact-SHA publication/deploy contract."""
 import unittest
 from pathlib import Path
+from manifest_contract import DATASET_PATHS
 
 ROOT=Path(__file__).parents[1]
 
@@ -54,6 +55,11 @@ class WorkflowContractTests(unittest.TestCase):
         refresh=self.read("refresh-data.yml")
         self.assertIn("mapfile -t manifest_paths < <(python verify_manifest.py paths)",refresh)
         self.assertIn('python validate_data.py --baseline-ref "${{ github.sha }}" --require-baseline', refresh)
+        self.assertIn("fetch-depth: 0", refresh)
+        self.assertIn("public/data/sources.json", refresh)
+        self.assertIn("public/data/resilience_history.json", refresh)
+        self.assertNotIn("sources.json", str(DATASET_PATHS))
+        self.assertNotIn("resilience_history.json", str(DATASET_PATHS))
     def test_catchup_refuses_branch_tip_stamping(self):
         text=(ROOT/"catch_up_anchors.py").read_text(encoding="utf-8")
         self.assertIn("never infer a byte sequence from branch tip",text)

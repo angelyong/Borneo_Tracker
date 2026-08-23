@@ -145,6 +145,31 @@
     "heroLabel": "Fingerprint of this data version",
     "terminalHint": "Run these anywhere. Neither tool is ours."
   },
+  "sourceRegistry": {
+    "eyebrow": "Source transparency",
+    "title": "Authoritative data sources",
+    "hint": "This registry explains who publishes the underlying data, expected refresh timing, territorial coverage and licence. It is separate from the immutable integrity ledger below.",
+    "caption": "Source coverage and expected publication cadence",
+    "loading": "Loading source registry…",
+    "error": "The source registry could not be loaded. The integrity ledger below remains available.",
+    "empty": "No source records are available yet.",
+    "generatedAt": "Registry generated {{date}}",
+    "generatedAtUnknown": "Registry build date is unavailable",
+    "source": "Source",
+    "cadenceLabel": "Expected cadence",
+    "coverage": "Coverage",
+    "licence": "Licence",
+    "opensOfficialSite": "opens official site in a new tab",
+    "cadence": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "annual": "Annual",
+      "irregular": "Irregular",
+      "custom": "{{cadence}} · about every {{days}} days"
+    }
+  },
   "sidebar": {
     "groupExplore": "Explore",
     "groupAnalyse": "Analyse",

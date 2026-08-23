@@ -142,6 +142,31 @@
     "heroLabel": "Cap jari versi data ini",
     "terminalHint": "Jalankan di mana-mana. Kedua-dua alat ini bukan milik kami."
   },
+  "sourceRegistry": {
+    "eyebrow": "Ketelusan sumber",
+    "title": "Sumber data berautoriti",
+    "hint": "Daftar ini menerangkan penerbit data asas, jangkaan masa kemas kini, liputan wilayah dan lesen. Ia berasingan daripada lejar integriti kekal di bawah.",
+    "caption": "Liputan sumber dan jangkaan kekerapan penerbitan",
+    "loading": "Memuatkan daftar sumber…",
+    "error": "Daftar sumber tidak dapat dimuatkan. Lejar integriti di bawah masih tersedia.",
+    "empty": "Belum ada rekod sumber tersedia.",
+    "generatedAt": "Daftar dijana {{date}}",
+    "generatedAtUnknown": "Tarikh binaan daftar tidak tersedia",
+    "source": "Sumber",
+    "cadenceLabel": "Kekerapan dijangka",
+    "coverage": "Liputan",
+    "licence": "Lesen",
+    "opensOfficialSite": "membuka laman rasmi dalam tab baharu",
+    "cadence": {
+      "daily": "Harian",
+      "weekly": "Mingguan",
+      "monthly": "Bulanan",
+      "quarterly": "Suku tahunan",
+      "annual": "Tahunan",
+      "irregular": "Tidak tetap",
+      "custom": "{{cadence}} · kira-kira setiap {{days}} hari"
+    }
+  },
   "sidebar": {
     "groupExplore": "Terokai",
     "groupAnalyse": "Analisis",

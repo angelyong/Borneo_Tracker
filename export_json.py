@@ -5,6 +5,7 @@ from pathlib import Path
 
 from data_model import DASHBOARD_TERRITORIES, TODAY, dashboard_rows, load_indicator_rows
 from json_artifacts import build_indicators_meta, write_json_lf
+import sources_registry
 
 ROOT = Path(__file__).parent
 OUTPUT = ROOT / "public" / "data" / "indicators.json"
@@ -171,6 +172,10 @@ def main(allow_model_fallback=False):
     }
     write_json_lf(OUTPUT, payload)
     print(f"Wrote {len(rows)} dashboard rows + {series_count} trend series -> {OUTPUT.relative_to(ROOT)}")
+    # BT-16b is a source-level transparency artifact, not a seventh member of
+    # the immutable six-file manifest.  It is regenerated with the dashboard
+    # export so the Sources UI cannot drift from the refresh workflow.
+    sources_registry.export_json()
     return 0
 
 

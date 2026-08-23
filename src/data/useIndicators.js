@@ -251,6 +251,31 @@ export function useResilience() {
   return state;
 }
 
+// BT-16b source registry is an auxiliary transparency artifact. It is
+// intentionally loaded outside useIntegrity's immutable six-file scope.
+export function useSourceRegistry() {
+  const [state, setState] = useState({ data: null, loading: true, error: null, generatedAt: null });
+  const [retry, setRetry] = useState(0);
+
+  useEffect(() => {
+    let ignore = false;
+    async function load() {
+      try {
+        const response = await fetch('/data/sources.json');
+        if (!response.ok) throw new Error(`Failed to load source registry (${response.status})`);
+        const payload = await response.json();
+        if (!ignore) setState({ data: payload, loading: false, error: null, generatedAt: payload?.generatedAt ?? null });
+      } catch (error) {
+        if (!ignore) setState({ data: null, loading: false, error: error.message, generatedAt: null });
+      }
+    }
+    load();
+    return () => { ignore = true; };
+  }, [retry]);
+
+  return { ...state, retry: () => setRetry((attempt) => attempt + 1) };
+}
+
 // Impact Simulator model contract — bounds, indicator->pillar mapping,
 // scoring metadata and the per-territory baseline that
 // src/utils/resilienceModel.js mirrors client-side. Fetched at runtime
