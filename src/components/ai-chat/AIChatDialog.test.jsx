@@ -126,6 +126,17 @@ describe('AI chat dialog', () => {
     expect(document.querySelector('[role="dialog"]')).toBeFalsy();
   });
 
+  it('prefills a handoff question without submitting it automatically', () => {
+    render(
+      <MemoryRouter>
+        <AIChatDialog open onClose={() => {}} prefill="What is the evidence for this place?" />
+      </MemoryRouter>
+    );
+
+    expect(document.querySelector('#ai-chat-input')?.value).toBe('What is the evidence for this place?');
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   it('renders the user message and loading announcement while pending', () => {
     render(<MemoryRouter><ControlledChat /></MemoryRouter>);
     click(document.querySelector('[aria-label="AI Assistant"]'));
@@ -283,6 +294,19 @@ describe('AI chat dialog', () => {
     await submitMessage('Bad request');
     expect(document.querySelector('[role="alert"]')?.textContent).toContain('request could not be sent');
     expect(document.querySelector('[role="alert"] button')).toBeFalsy();
+  });
+
+  it('uses a static six-pillar fallback instead of an error when chat quota is exhausted', async () => {
+    fetch.mockResolvedValueOnce(errorResponse(429, { code: 'AI_CHAT_QUOTA_EXHAUSTED' }));
+    render(<MemoryRouter><ControlledChat /></MemoryRouter>);
+    click(document.querySelector('[aria-label="AI Assistant"]'));
+
+    await submitMessage('Tell me about an unknown place');
+    await waitFor(() => {
+      expect(document.body.textContent).toContain('BorneoBot is temporarily at capacity');
+      expect(document.body.textContent).toContain('Food, Energy, Education, Shelter, Healthcare and Entertainment');
+      expect(document.querySelector('[role="alert"]')).toBeFalsy();
+    });
   });
 
   it('handles missing source fields, unsafe URLs, internal fields, quota absence, and optional quota', () => {

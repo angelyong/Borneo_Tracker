@@ -28,7 +28,6 @@
     "dateUnknown": "Tarikh data tidak diketahui",
     "dateUnknownShort": "Tarikh binaan tidak diketahui",
     "ageFresh": "terkini",
-    "ageDays_one": "berusia {{count}} hari",
     "ageDays_other": "berusia {{count}} hari",
     "ageStalled": "penyegaran mungkin terhenti",
     "tooltip": "Buka ringkasan kesegaran data dan rantaian kepercayaan.",
@@ -46,7 +45,6 @@
     "buildClockValue": "JSON dibina {{date}}",
     "substantiveValue": "tahun pemerhatian sumber terkini {{year}}",
     "substantiveUnknown": "tiada tahun pemerhatian sumber direkodkan",
-    "sourcesValue_one": "{{count}} label sumber",
     "sourcesValue_other": "{{count}} label sumber",
     "sourcesUnknown": "kiraan sumber tidak tersedia",
     "frequencyValue": "disemak setiap hari, dikemas kini apabila sumber berubah; rentak sumber: {{cadence}}",
@@ -214,6 +212,9 @@
     "region": "Wilayah",
     "district": "Daerah",
     "noPlacesMatch": "Tiada tempat sepadan dengan “{{query}}”.",
+    "askBorneoBot": "Tanya BorneoBot",
+    "botSearchPrompt": "Saya tidak menemui “{{query}}” sebagai tempat di Borneo. Apakah yang anda boleh beritahu saya mengenainya dalam konteks Borneo?",
+    "overallBorneo": "Seluruh Borneo",
     "dragToResizePanel": "Seret untuk ubah saiz panel",
     "overallResilienceStatus": "Status Daya Tahan Keseluruhan",
     "resilienceDistrictNotice": "Indeks Daya Tahan dikira pada peringkat wilayah (6 tunjang). Tukar ke paparan Wilayah untuk skor {{district}} — penunjuk peringkat daerah belum merangkumi semua tunjang.",
@@ -493,6 +494,7 @@
     "kicker": "MENGENAI PLATFORM",
     "heroTitle": "Memahami Borneo Melalui Data Dipercayai",
     "heroLede": "Borneo Tracker menggabungkan penunjuk alam sekitar, sosial dan kemampanan dalam satu platform yang jelas dan mudah diakses.",
+    "positioning": "Ukur Borneo. Fahami Borneo. Kukuhkan Borneo.",
     "exploreDashboard": "Terokai Papan Pemuka",
     "viewDataSources": "Lihat Sumber Data",
     "ourPurpose": "Tujuan Kami",
@@ -544,6 +546,7 @@
     "scopeSourcesBody": "Sumber data yang jelas dan kemas kini berkala"
   },
   "auth": {
+    "positioning": "Ukur Borneo. Fahami Borneo. Kukuhkan Borneo.",
     "loginTitle": "Log Masuk",
     "noAccountYet": "Tiada akaun lagi?",
     "registerNow": "Daftar sekarang.",
@@ -665,6 +668,7 @@
     "openSource": "Buka sumber: {{source}}",
     "quotaRemaining_other": "{{count}} jawapan berbaki",
     "quotaLimit_other": "Had {{count}} jawapan",
+    "quotaFallback": "BorneoBot buat sementara waktu telah mencapai kapasiti. Sementara kuota diset semula, gunakan enam tunjang Kekayaan Sebenar — Makanan, Tenaga, Pendidikan, Perlindungan, Penjagaan Kesihatan dan Hiburan — untuk meneroka data serta sumber yang disahkan di papan pemuka.",
     "errors": {
       "AI_CHAT_ERROR": "Pembantu AI tidak dapat menjawab sekarang.",
       "AI_CHAT_EMPTY_MESSAGE": "Masukkan mesej untuk bertanya kepada BorneoBot.",
@@ -692,6 +696,18 @@
       "AI_CHAT_MALFORMED_RESPONSE": "Pembantu AI mengembalikan jawapan yang tidak sah.",
       "AI_CHAT_REQUEST_FAILED": "Pembantu AI tidak dapat menjawab sekarang."
     }
+  },
+  "pillarDrilldown": {
+    "openAxis": "Buka butiran penunjuk {{pillar}}",
+    "title": "Penunjuk {{pillar}}",
+    "score": "Skor tunjang daya tahan: {{score}} / 100",
+    "indicatorScore": "Sumbangan skor: {{score}} / 100",
+    "source": "Sumber: {{source}}",
+    "unscoredTitle": "Tiada data setanding untuk tunjang ini",
+    "unscoredBody": "{{pillar}} tidak diberi skor untuk {{territory}} kerana data setanding tidak tersedia. Skor sifar tidak diandaikan.",
+    "roadmapCta": "Lihat laluan melengkapkan data",
+    "aggregateTitle": "Skor agregat, tiada senarai penunjuk tunggal",
+    "aggregateBody": "Nilai seluruh Borneo ini menggabungkan skor wilayah. Pilih satu wilayah untuk melihat penunjuk sumber yang diberi skor."
   },
   "pagination": {
     "prev": "< Sebelum",

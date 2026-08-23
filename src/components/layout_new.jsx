@@ -13,6 +13,7 @@ const Layout = ({ children }) => {
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+  const [chatbotPrefill, setChatbotPrefill] = useState('');
 
   const isDashboardPage = location.pathname === '/';
   const sidebarWidth = isSidebarOpen ? 240 : 0;
@@ -23,6 +24,13 @@ const Layout = ({ children }) => {
     }, 280);
   };
 
+  const openChatbot = (prefill = '') => {
+    setChatbotPrefill(prefill);
+    setIsSidebarOpen(false);
+    setIsChatbotOpen(true);
+    triggerLayoutResize();
+  };
+
   const handleChatbotToggle = () => {
     if (isChatbotOpen) {
       setIsChatbotOpen(false);
@@ -30,9 +38,7 @@ const Layout = ({ children }) => {
       return;
     }
 
-    setIsSidebarOpen(false);
-    setIsChatbotOpen(true);
-    triggerLayoutResize();
+    openChatbot();
   };
 
   const handleMenuClick = () => {
@@ -70,7 +76,7 @@ const Layout = ({ children }) => {
         >
           {isChatbotOpen && (
             <aside className="chatbot-dock" aria-label="BorneoBot chat panel">
-              <AIChatDialog open={isChatbotOpen} onClose={handleChatbotClose} />
+              <AIChatDialog key={chatbotPrefill} open={isChatbotOpen} onClose={handleChatbotClose} prefill={chatbotPrefill} />
             </aside>
           )}
 
@@ -81,7 +87,7 @@ const Layout = ({ children }) => {
             }}
             className="dashboard-content"
           >
-            {children || <Outlet context={{ isSidebarOpen, isChatbotOpen }} />}
+            {children || <Outlet context={{ isSidebarOpen, isChatbotOpen, openChatbot }} />}
           </main>
         </div>
       </div>

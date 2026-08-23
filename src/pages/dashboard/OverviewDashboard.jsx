@@ -40,6 +40,7 @@ import WeakestLinkBars from '../../components/WeakestLinkBars';
 import RagGauge from '../../components/RagGauge';
 import MoneyVsResilience from '../../components/MoneyVsResilience';
 import HexRadar from '../../components/HexRadar';
+import PillarDrilldownModal from '../../components/PillarDrilldownModal';
 import { HEXAGON_PILLARS } from '../../components/hexagonPillars';
 import { buildHeadline } from '../../utils/headline';
 import { buildAggregateResilience, RESILIENCE_PILLARS } from '../../utils/resiliencePresentation';
@@ -220,7 +221,7 @@ const MapFocus = ({ geo, parent, selectedKey, isDistrict, zoomToDistrict, bounda
 
 const OverviewDashboard = () => {
   const { t } = useTranslation();
-  const { isChatbotOpen = false } = useOutletContext() || {};
+  const { isChatbotOpen = false, openChatbot } = useOutletContext() || {};
   const [searchText, setSearchText] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchActiveIdx, setSearchActiveIdx] = useState(0);
@@ -228,6 +229,7 @@ const OverviewDashboard = () => {
   const [panelTerritory, setPanelTerritory] = useState('Overall Borneo');
   const [esgCategory, setEsgCategory] = useState('Environment');
   const [panelWidth, setPanelWidth] = useState(460);
+  const [drilldownPillar, setDrilldownPillar] = useState(null);
 
   // Region vs District drill-down. `level` toggles the whole panel between the
   // 4-territory view (indicators.json) and the ADM2 district view (districts.json).
@@ -555,7 +557,14 @@ const OverviewDashboard = () => {
 
   const onSearchKeyDown = useCallback(
     (e) => {
-      if (!searchMatches.length) return;
+      if (!searchMatches.length) {
+        if (e.key === 'Enter' && searchText.trim()) {
+          e.preventDefault();
+          openChatbot?.(t('dashboard.botSearchPrompt', { query: searchText.trim() }));
+          setSearchOpen(false);
+        }
+        return;
+      }
       if (e.key === 'ArrowDown') {
         e.preventDefault();
         setSearchOpen(true);
@@ -570,7 +579,7 @@ const OverviewDashboard = () => {
         setSearchOpen(false);
       }
     },
-    [searchMatches, searchActiveIdx, handleSelectPlace]
+    [searchMatches, searchActiveIdx, handleSelectPlace, openChatbot, searchText, t]
   );
 
   const styleDistrict = useCallback(
@@ -708,6 +717,15 @@ const OverviewDashboard = () => {
     return out;
   }, [isDistrict, resilienceView]);
 
+  const drilldownTerritory = !isDistrict && !isOverall ? panelTerritory : t('dashboard.overallBorneo');
+  const drilldownIndicators = !isDistrict && !isOverall
+    ? resilience?.territories?.[panelTerritory]?.detail?.[drilldownPillar] || []
+    : [];
+
+  const openPillarDrilldown = useCallback((pillar) => {
+    setDrilldownPillar(pillar);
+  }, []);
+
   // True when the hexagon has at least one scored pillar (districts often don't).
   const hasHexCoverage = useMemo(
     () => !!hexCoverage && Object.values(hexCoverage).some((count) => count > 0),
@@ -830,7 +848,20 @@ const OverviewDashboard = () => {
                   </li>
                 ))
               ) : (
-                <li style={styles.searchEmpty}>{t('dashboard.noPlacesMatch', { query: searchText.trim() })}</li>
+                <li style={styles.searchEmpty}>
+                  <span>{t('dashboard.noPlacesMatch', { query: searchText.trim() })}</span>
+                  <button
+                    type="button"
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => {
+                      openChatbot?.(t('dashboard.botSearchPrompt', { query: searchText.trim() }));
+                      setSearchOpen(false);
+                    }}
+                    style={styles.searchBotButton}
+                  >
+                    {t('dashboard.askBorneoBot')}
+                  </button>
+                </li>
               )}
             </ul>
           )}
@@ -1188,6 +1219,8 @@ const OverviewDashboard = () => {
               ariaLabel={t('regional.scoredPillarsTitle', {
                 count: resilienceView?.scoredPillars?.length || Object.values(hexScores).filter(Number.isFinite).length,
               })}
+              onPillarSelect={openPillarDrilldown}
+              pillarActionLabel={t('pillarDrilldown.openAxis', { pillar: '{{pillar}}' })}
             />
           ) : (
             <div style={styles.stateText}>{t('dashboard.loadingResilienceScores')}</div>
@@ -1343,6 +1376,14 @@ const OverviewDashboard = () => {
           )}
         </div>
       </div>
+      <PillarDrilldownModal
+        open={Boolean(drilldownPillar)}
+        onClose={() => setDrilldownPillar(null)}
+        territory={drilldownTerritory}
+        pillar={drilldownPillar}
+        score={hexScores?.[drilldownPillar]}
+        indicators={drilldownIndicators}
+      />
     </div>
   );
 };
@@ -1566,6 +1607,19 @@ const styles = {
     fontSize: '13px',
     color: 'var(--color-muted)',
     textAlign: 'center',
+    display: 'grid',
+    gap: '8px',
+  },
+
+  searchBotButton: {
+    justifySelf: 'center',
+    border: '1px solid #0b6b38',
+    borderRadius: '7px',
+    background: '#f1f8f2',
+    color: '#075f2a',
+    padding: '6px 10px',
+    fontWeight: 700,
+    cursor: 'pointer',
   },
 
   popupContent: {

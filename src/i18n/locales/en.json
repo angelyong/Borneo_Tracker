@@ -215,6 +215,9 @@
     "region": "Region",
     "district": "District",
     "noPlacesMatch": "No places match “{{query}}”.",
+    "askBorneoBot": "Ask BorneoBot instead",
+    "botSearchPrompt": "I could not find “{{query}}” as a Borneo place. What can you tell me about it in the context of Borneo?",
+    "overallBorneo": "Overall Borneo",
     "dragToResizePanel": "Drag to resize panel",
     "overallResilienceStatus": "Overall Resilience Status",
     "resilienceDistrictNotice": "The Resilience Index is computed at territory level (6 pillars). Switch to Region view for {{district}}'s score — district-level indicators don't yet cover all pillars.",
@@ -498,6 +501,7 @@
     "kicker": "ABOUT THE PLATFORM",
     "heroTitle": "Understanding Borneo Through Trusted Data",
     "heroLede": "Borneo Tracker brings environmental, social and sustainability indicators together in one clear and accessible platform.",
+    "positioning": "Measure Borneo. Understand Borneo. Strengthen Borneo.",
     "exploreDashboard": "Explore Dashboard",
     "viewDataSources": "View Data Sources",
     "ourPurpose": "Our Purpose",
@@ -548,6 +552,7 @@
     "scopeSourcesBody": "Clear data sources and regular updates"
   },
   "auth": {
+    "positioning": "Measure Borneo. Understand Borneo. Strengthen Borneo.",
     "loginTitle": "Login",
     "noAccountYet": "Don't have any account?",
     "registerNow": "Register now.",
@@ -671,6 +676,7 @@
     "quotaRemaining_other": "{{count}} responses remaining",
     "quotaLimit_one": "{{count}} response limit",
     "quotaLimit_other": "{{count}} responses limit",
+    "quotaFallback": "BorneoBot is temporarily at capacity. While the quota resets, use the six True Wealth pillars — Food, Energy, Education, Shelter, Healthcare and Entertainment — to explore the dashboard’s verified data and sources.",
     "errors": {
       "AI_CHAT_ERROR": "The AI assistant could not respond right now.",
       "AI_CHAT_EMPTY_MESSAGE": "Enter a message to ask BorneoBot.",
@@ -698,6 +704,18 @@
       "AI_CHAT_MALFORMED_RESPONSE": "The AI assistant returned an invalid response.",
       "AI_CHAT_REQUEST_FAILED": "The AI assistant could not respond right now."
     }
+  },
+  "pillarDrilldown": {
+    "openAxis": "Open {{pillar}} indicator details",
+    "title": "{{pillar}} indicators",
+    "score": "Resilience pillar score: {{score}} / 100",
+    "indicatorScore": "Scored contribution: {{score}} / 100",
+    "source": "Source: {{source}}",
+    "unscoredTitle": "No comparable data for this pillar",
+    "unscoredBody": "{{pillar}} is not scored for {{territory}} because no comparable data is available. A score of zero is not assumed.",
+    "roadmapCta": "View the data-completion route",
+    "aggregateTitle": "Aggregate score, no single indicator list",
+    "aggregateBody": "This All-Borneo value combines territory scores. Choose an individual territory to inspect its scored source indicators."
   },
   "pagination": {
     "prev": "< Prev",

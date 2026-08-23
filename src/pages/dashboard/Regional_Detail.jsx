@@ -20,6 +20,7 @@ import { THEME_CHANGE_EVENT, cssVar } from '../../utils/theme';
 import DataFreshness from '../../components/DataFreshness';
 import ProvenanceChip from '../../components/ProvenanceChip';
 import HexRadar from '../../components/HexRadar';
+import PillarDrilldownModal from '../../components/PillarDrilldownModal';
 import { HEXAGON_PILLARS } from '../../components/hexagonPillars';
 import IntegrityChip from '../../components/IntegrityChip';
 import ScoreExplainer from '../../components/ScoreExplainer';
@@ -30,6 +31,7 @@ const RegionalDetails = () => {
   const [selectedTerritory,  setSelectedTerritory]  = useState('Sarawak');
   const [selectedConcept,    setSelectedConcept]    = useState('forest_cover');
   const [chartMode,          setChartMode]          = useState('snapshot');
+  const [drilldownPillar,    setDrilldownPillar]    = useState(null);
   // ECharts draws to a canvas, so it can't read CSS vars directly — bump this
   // on theme change to force the chart-building effects below to re-run and
   // re-read the current colors via cssVar().
@@ -406,6 +408,8 @@ const RegionalDetails = () => {
                         ariaLabel={t('regional.scoredPillarsTitle', {
                           count: territoryResilience.scoredPillars?.length || Object.values(pillarScores).filter(Number.isFinite).length,
                         })}
+                        onPillarSelect={setDrilldownPillar}
+                        pillarActionLabel={t('pillarDrilldown.openAxis', { pillar: '{{pillar}}' })}
                       />
                     ) : (
                       <div style={{ textAlign: 'center', fontSize: '13px', color: 'var(--color-muted)', padding: '0 16px' }}>
@@ -476,6 +480,14 @@ const RegionalDetails = () => {
           )}
         </div>
       </div>
+      <PillarDrilldownModal
+        open={Boolean(drilldownPillar)}
+        onClose={() => setDrilldownPillar(null)}
+        territory={selectedTerritory}
+        pillar={drilldownPillar}
+        score={pillarScores?.[drilldownPillar]}
+        indicators={territoryResilience?.detail?.[drilldownPillar] || []}
+      />
     </div>
   );
 };

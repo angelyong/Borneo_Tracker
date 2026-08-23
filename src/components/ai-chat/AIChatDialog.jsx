@@ -16,12 +16,15 @@ const newMessage = (role, content, extra = {}) => ({
   ...extra,
 });
 
-const AIChatDialog = ({ open, onClose }) => {
+const AIChatDialog = ({ open, onClose, prefill = '' }) => {
   const { t, i18n } = useTranslation();
   const location = useLocation();
   const auth = useContext(AuthContext);
   const [messages, setMessages] = useState([]);
-  const [input, setInput] = useState('');
+  // The dock only mounts this dialog when opening it. Initialising from the
+  // handoff prompt avoids a synchronous state write in an effect and keeps the
+  // question editable (and unsent) for the user to review.
+  const [input, setInput] = useState(prefill);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [lastRequest, setLastRequest] = useState(null);
@@ -94,6 +97,17 @@ const AIChatDialog = ({ open, onClose }) => {
         }),
       ]);
     } catch (chatError) {
+      if (chatError?.status === 429 || chatError?.code === 'AI_CHAT_RATE_LIMITED') {
+        setMessages((current) => [
+          ...current,
+          newMessage('assistant', t('aiChat.quotaFallback'), {
+            mode: 'template-fallback',
+            sources: [],
+            fallback: { used: true, reason: 'AI_CHAT_QUOTA_EXHAUSTED', degraded: true },
+          }),
+        ]);
+        return;
+      }
       setError({
         code: chatError?.code || 'AI_CHAT_ERROR',
         message: chatError?.message || t('aiChat.errors.AI_CHAT_ERROR'),

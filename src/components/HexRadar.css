@@ -1,0 +1,9 @@
+.hex-radar-axis { cursor: pointer; }
+
+/* SVG groups do not expose a reliable browser outline. The transparent hit area
+   becomes a high-contrast ring when keyboard focus reaches an axis. */
+.hex-radar-axis:focus-visible .hex-radar-focus-ring {
+  fill: color-mix(in srgb, var(--color-blue) 18%, transparent);
+  stroke: var(--color-blue);
+  stroke-width: 2;
+}

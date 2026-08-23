@@ -10,10 +10,7 @@ export const SUPPORTED_CHAT_LANGUAGES = ['en', 'ms'];
 export const MAX_CHAT_MESSAGE_LENGTH = 1200;
 
 export const SUGGESTED_QUESTIONS = [
-  'What is Borneo Tracker?',
-  'What is the difference between ESG and SDG?',
+  'Compare Sabah and Sarawak',
+  'Show districts with low food resilience',
   'Explain the Forest Cover indicator.',
-  'Which SDGs are monitored by Borneo Tracker?',
-  'Where does the environmental data come from?',
-  'How do I generate a report?',
 ];
