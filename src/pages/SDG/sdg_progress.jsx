@@ -9,7 +9,9 @@ import {
   titleCaseConfidence,
   useIndicators,
 } from '../../data/useIndicators';
+import AnswerStrip from '../../components/AnswerStrip';
 import DataFreshness from '../../components/DataFreshness';
+import { useTerritoryAnswerStrip } from '../../data/useAnswerStrip';
 import ExportMenu from '../../components/ExportMenu';
 
 const SDGProgress = () => {
@@ -17,6 +19,8 @@ const SDGProgress = () => {
   const [selectedRegion, setSelectedRegion] = useState('Sarawak');
   const [selectedGoal, setSelectedGoal] = useState('SDG1');
   const { data, loading, error, generatedAt } = useIndicators();
+  // BT-23: the same decision frame the Dashboard shows, for the territory in view.
+  const answerStrip = useTerritoryAnswerStrip(selectedRegion);
   const contentRef = useRef(null);
 
   const rows = useMemo(() => {
@@ -61,6 +65,8 @@ const SDGProgress = () => {
             )}
           </div>
         </div>
+
+        {answerStrip ? <AnswerStrip strip={answerStrip} compact style={styles.answerStrip} /> : null}
 
         <div style={styles.tabs}>
           {SDG_GOALS.map(({ goal, label }) => (
@@ -222,6 +228,10 @@ const styles = {
     cursor: 'pointer',
     outline: 'none',
     minWidth: '150px',
+  },
+  answerStrip: {
+    margin:          '0 0 20px',
+    maxWidth:        '860px',
   },
   tabs: {
     display: 'flex',

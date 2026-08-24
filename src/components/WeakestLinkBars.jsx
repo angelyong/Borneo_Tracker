@@ -15,6 +15,11 @@ function ragColor(score) {
 export default function WeakestLinkBars({
   territory,
   title = 'Weakest link first',
+  // The methodology claim itself ("resilience is capped by the weakest
+  // essential"), kept separate from `explanation`, which only describes what
+  // the widget below is showing. The claim is the point; the description is
+  // navigation.
+  principle,
   explanation,
   missingLabel = 'No comparable data — never imputed',
 }) {
@@ -45,6 +50,12 @@ export default function WeakestLinkBars({
       >
         {title}
       </div>
+
+      {principle ? (
+        <p style={{ color: 'var(--color-ink)', fontSize: 12.5, fontWeight: 600, lineHeight: 1.45, margin: '-3px 0 0' }}>
+          {principle}
+        </p>
+      ) : null}
 
       {explanation ? (
         <p style={{ color: 'var(--color-muted)', fontSize: 12, lineHeight: 1.45, margin: '-3px 0 1px' }}>

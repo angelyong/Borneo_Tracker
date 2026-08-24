@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useOutletContext } from 'react-router-dom';
+import { useOutletContext } from 'react-router-dom';
 import { GeoJSON, MapContainer, Marker, TileLayer, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
 import {
   CATEGORY_TO_PILLAR,
   LAYER_CONFIG,
+  LAYER_GROUPS,
   TERRITORIES,
   buildDistrictChoropleth,
   formatValue,
@@ -28,6 +29,7 @@ import {
   useDistricts,
   useIndicators,
   useResilience,
+  useResilienceHistory,
 } from '../../data/useIndicators';
 
 import L from 'leaflet';
@@ -36,12 +38,17 @@ import DataFreshness from '../../components/DataFreshness';
 import IntegrityChip from '../../components/IntegrityChip';
 import PillarCoverage from '../../components/PillarCoverage';
 import ProvenanceChip from '../../components/ProvenanceChip';
+import ScoreExplainer from '../../components/ScoreExplainer';
 import WeakestLinkBars from '../../components/WeakestLinkBars';
 import RagGauge from '../../components/RagGauge';
 import MoneyVsResilience from '../../components/MoneyVsResilience';
 import HexRadar from '../../components/HexRadar';
 import PillarDrilldownModal from '../../components/PillarDrilldownModal';
 import { HEXAGON_PILLARS } from '../../components/hexagonPillars';
+import AnswerStrip from '../../components/AnswerStrip';
+import MomentumBadge, { MomentumMovers, MomentumSummary } from '../../components/MomentumBadge';
+import { buildAnswerStrip } from '../../utils/answerStrip';
+import { biggestMovers, computeMomentum, movementSummary } from '../../utils/momentum';
 import { buildHeadline } from '../../utils/headline';
 import { buildAggregateResilience, RESILIENCE_PILLARS } from '../../utils/resiliencePresentation';
 import { makeSimulatorHref } from '../../utils/simulatorRoute';
@@ -214,6 +221,12 @@ const MapFocus = ({ geo, parent, selectedKey, isDistrict, zoomToDistrict, bounda
   return null;
 };
 
+// A layer's on-screen name comes from its `labelKey` everywhere. Reading
+// `config.label` in one place and deriving the name from the object key in
+// another let the picker and the legend disagree about the same layer.
+const layerLabel = (t, key) =>
+  (LAYER_CONFIG[key]?.labelKey ? t(LAYER_CONFIG[key].labelKey) : null) || LAYER_CONFIG[key]?.label || key;
+
 // RagGauge moved to src/components/RagGauge.jsx (imported above) to de-duplicate —
 // the Impact Simulator reuses the same shared component (IS-3C).
 // HexRadar moved to src/components/HexRadar.jsx (imported above) to de-duplicate —
@@ -249,6 +262,7 @@ const OverviewDashboard = () => {
 
   const { data, loading, error, generatedAt } = useIndicators();
   const { data: resilience } = useResilience();
+  const { data: resilienceHistory } = useResilienceHistory();
   const { data: districtData, loading: districtLoading, generatedAt: districtGeneratedAt } = useDistricts();
   const { data: districtGeo } = useDistrictGeo();
   const { data: bruneiGeo } = useBruneiGeo();
@@ -393,11 +407,11 @@ const OverviewDashboard = () => {
       const entry = territoryFill[territory];
       const valueText = entry?.row ? formatValue(entry.row) : 'No data for this layer';
       layer.bindTooltip(
-        `<strong>${territory}</strong><br/>${LAYER_CONFIG[activeLayer]?.label || ''}<br/>${valueText}`,
+        `<strong>${territory}</strong><br/>${layerLabel(t, activeLayer)}<br/>${valueText}`,
         { direction: 'top', sticky: true }
       );
     },
-    [territoryFill, activeLayer]
+    [territoryFill, activeLayer, t]
   );
 
   // Floating value labels pinned at each territory centre (the demo's "pills").
@@ -667,12 +681,49 @@ const OverviewDashboard = () => {
     [resilienceView]
   );
 
-  // Districts have no comparable resilience score and Overall Borneo is an
-  // aggregate, so neither can truthfully become a simulator scenario.
-  const simulatorHref = useMemo(() => {
-    if (isDistrict || isOverall || !Number.isFinite(resilienceView?.index)) return null;
-    return makeSimulatorHref(panelTerritory, resilienceView?.weakestPillar);
-  }, [isDistrict, isOverall, panelTerritory, resilienceView]);
+  // BT-19. A district has no series and all-Borneo has no aggregate series, so
+  // only a single territory gets a badge; the aggregate scope names the
+  // territories that moved instead of averaging four histories into a new one.
+  const momentum = useMemo(
+    () =>
+      isDistrict || isOverall || !resilienceHistory?.territories
+        ? null
+        : computeMomentum(resilienceHistory.territories[panelTerritory]),
+    [isDistrict, isOverall, panelTerritory, resilienceHistory]
+  );
+
+  // The client asked for score -> direction -> biggest movers as one sequence,
+  // so the movers list is not an alternative to the badge: every scope that has
+  // a score shows it, beneath whichever direction reading that scope supports.
+  const movers = useMemo(
+    () => (isDistrict || !resilienceHistory?.territories ? null : biggestMovers(resilienceHistory)),
+    [isDistrict, resilienceHistory]
+  );
+
+  // Only the aggregate scope needs the direction counts; a single territory
+  // states its own delta in the badge above.
+  const movementCounts = useMemo(
+    () => (isDistrict || !isOverall || !resilienceHistory?.territories ? null : movementSummary(resilienceHistory)),
+    [isDistrict, isOverall, resilienceHistory]
+  );
+
+  // BT-22. The strip owns what/where/why/what-next for this scope, so the
+  // headline and the simulator CTA are rendered through it rather than twice.
+  // The aggregate scope resolves its own deep link from the weakest territory,
+  // which `simulatorHref` above deliberately refuses to do for a Borneo-wide
+  // average.
+  const answerStrip = useMemo(() => {
+    if (isDistrict || !headline) return null;
+    return buildAnswerStrip({
+      headline,
+      isAggregate: Boolean(resilienceView?.isAggregate),
+      territory: isOverall ? null : panelTerritory,
+      territories: resilience?.territories || null,
+      weakestPillar: resilienceView?.weakestPillar || null,
+      pillarScores: resilienceView?.pillarScores || null,
+      makeHref: makeSimulatorHref,
+    });
+  }, [headline, isDistrict, isOverall, panelTerritory, resilience, resilienceView]);
 
   const hexCoverage = useMemo(() => {
     if (isDistrict) {
@@ -952,7 +1003,7 @@ const OverviewDashboard = () => {
         </div>
 
         <div style={styles.mapLegend}>
-          <div style={styles.mapLegendTitle}>{LAYER_CONFIG[activeLayer]?.label || t('dashboard.layer')}</div>
+          <div style={styles.mapLegendTitle}>{activeLayer ? layerLabel(t, activeLayer) : t('dashboard.layer')}</div>
           <div style={styles.mapLegendSub}>
             {isDistrict ? t('dashboard.acrossDistricts', { parent: districtParent }) : t('dashboard.colouredAcrossRegions')}
           </div>
@@ -1115,30 +1166,11 @@ const OverviewDashboard = () => {
                 </span>
               </div>
 
-              {headline && (
-                <p style={styles.resilienceHeadline}>
-                  {t(headline.key, {
-                    ...headline.values,
-                    rag: headline.values.rag ? t(`dashboard.ragBand_${headline.values.rag}`) : undefined,
-                    weakestPillar: headline.values.weakestPillar
-                      ? t(`dashboard.pillars.${headline.values.weakestPillar}`, {
-                        defaultValue: headline.values.weakestPillar,
-                      })
-                      : undefined,
-                  })}
-                </p>
-              )}
+              {momentum ? <MomentumBadge momentum={momentum} style={styles.momentumRow} /> : null}
+              {movementCounts ? <MomentumSummary summary={movementCounts} style={styles.momentumRow} /> : null}
+              {movers ? <MomentumMovers movers={movers} style={styles.momentumRow} /> : null}
 
-              {simulatorHref && (
-                <Link to={simulatorHref} style={styles.whatNextCta}>
-                  {t('dashboard.whatNextCta', {
-                    territory: panelTerritory,
-                    pillar: t(`dashboard.pillars.${resilienceView.weakestPillar}`, {
-                      defaultValue: resilienceView.weakestPillar,
-                    }),
-                  })}
-                </Link>
-              )}
+              {answerStrip && <AnswerStrip strip={answerStrip} />}
 
               {Number.isFinite(resilienceView.indexStrict) && (
                 <div style={styles.trendRow}>
@@ -1155,6 +1187,10 @@ const OverviewDashboard = () => {
                     · {t('dashboard.fragilityGap')} {resilienceView.index >= resilienceView.indexStrict ? '−' : '+'}
                     {Math.abs(Math.round((resilienceView.index - resilienceView.indexStrict) * 10) / 10)}
                   </span>
+                  {/* Client §1.2: the second score must be explained where it is
+                      shown. Click-to-open rather than a hover tooltip, so the
+                      explanation is reachable on touch and by keyboard. */}
+                  <ScoreExplainer labelKey="scoreExplainer.strictOpenLabel" />
                 </div>
               )}
 
@@ -1231,6 +1267,7 @@ const OverviewDashboard = () => {
               <WeakestLinkBars
                 territory={resilienceView}
                 title={t('dashboard.weakestLinkFirst')}
+                principle={t('dashboard.weakestLinkPrinciple')}
                 explanation={t(
                   resilienceView.isAggregate
                     ? 'dashboard.aggregateResilienceByPillarBody'
@@ -1298,23 +1335,44 @@ const OverviewDashboard = () => {
 
         <div style={styles.card}>
           <div style={styles.mapLayerSectionTitle}>
-            {t('dashboard.mapLayer', { layer: activeLayer ? LAYER_CONFIG[activeLayer]?.label : t('dashboard.none') })}
+            {t('dashboard.mapLayer', { layer: activeLayer ? layerLabel(t, activeLayer) : t('dashboard.none') })}
           </div>
 
-          <div style={styles.layerRadioGroup}>
-            {Object.keys(LAYER_CONFIG).map((key) => (
-              <label key={key} style={styles.radioLabel}>
-                <input
-                  type="radio"
-                  name="active-layer"
-                  checked={activeLayer === key}
-                  onChange={() => setActiveLayer(key)}
-                  style={styles.radioInput}
-                />
-                {key.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase())}
-              </label>
-            ))}
-          </div>
+          {/* Client §3.3: the point of switching layers is to answer "where is
+              the problem?". Each layer's caption is written as exactly that
+              question, so the active one is stated here alongside which
+              direction is the bad one. */}
+          {activeLayer && LAYER_CONFIG[activeLayer] ? (
+            <div style={styles.mapLayerCaption}>
+              {t(LAYER_CONFIG[activeLayer].captionKey)}{' '}
+              <span style={styles.mapLayerDirection}>
+                ({t(LAYER_CONFIG[activeLayer].directionKey)})
+              </span>
+            </div>
+          ) : null}
+
+          {/* Twelve flat radios stopped being scannable once the pillar score
+              layers landed. The grouping is the one already defined (and
+              guarded by a test) in useIndicators.js. */}
+          {LAYER_GROUPS.map((group) => (
+            <div key={group.key} role="group" aria-label={t(group.labelKey)} style={styles.layerGroup}>
+              <div style={styles.layerGroupLabel}>{t(group.labelKey)}</div>
+              <div style={styles.layerRadioGroup}>
+                {group.layers.map((key) => (
+                  <label key={key} style={styles.radioLabel} title={t(LAYER_CONFIG[key].captionKey)}>
+                    <input
+                      type="radio"
+                      name="active-layer"
+                      checked={activeLayer === key}
+                      onChange={() => setActiveLayer(key)}
+                      style={styles.radioInput}
+                    />
+                    {layerLabel(t, key)}
+                  </label>
+                ))}
+              </div>
+            </div>
+          ))}
 
           {loading && <div style={styles.stateText}>{t('dashboard.loadingMapData')}</div>}
           {error && <div style={{ ...styles.stateText, color: 'var(--color-red)' }}>{error}</div>}
@@ -1344,7 +1402,7 @@ const OverviewDashboard = () => {
             ) : (
               <div style={styles.stateText}>
                 {t('dashboard.noDistrictDataForLayer', {
-                  layer: LAYER_CONFIG[activeLayer]?.label,
+                  layer: layerLabel(t, activeLayer),
                   district,
                   parent: districtParent,
                 })}
@@ -1833,6 +1891,11 @@ const styles = {
     gap: 3,
   },
 
+  momentumRow: {
+    justifyContent: 'center',
+    marginTop: '8px',
+  },
+
   resilienceHeadline: {
     margin: '8px 0 0',
     fontSize: '13px',
@@ -1840,20 +1903,6 @@ const styles = {
     fontWeight: '600',
     color: 'var(--color-ink)',
     textAlign: 'center',
-  },
-
-  whatNextCta: {
-    display: 'block',
-    margin: '10px 0 0',
-    padding: '9px 11px',
-    borderRadius: '8px',
-    background: 'var(--color-grey-soft)',
-    color: 'var(--color-ink)',
-    fontSize: '12px',
-    fontWeight: 700,
-    lineHeight: 1.4,
-    textAlign: 'center',
-    textDecoration: 'none',
   },
 
   ragStatus: {
@@ -1962,6 +2011,30 @@ const styles = {
     fontWeight: '600',
     color: 'var(--color-ink)',
     marginBottom: '8px',
+  },
+
+  mapLayerCaption: {
+    fontSize: '11.5px',
+    lineHeight: 1.45,
+    color: 'var(--color-muted)',
+    margin: '-2px 0 10px',
+  },
+
+  mapLayerDirection: {
+    whiteSpace: 'nowrap',
+  },
+
+  layerGroup: {
+    marginBottom: '10px',
+  },
+
+  layerGroupLabel: {
+    fontSize: '10px',
+    fontWeight: 700,
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    color: 'var(--color-muted)',
+    marginBottom: '4px',
   },
 
   layerRadioGroup: {

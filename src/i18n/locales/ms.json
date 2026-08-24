@@ -60,7 +60,7 @@
   "scoreExplainer": {
     "openLabel": "Terangkan Indeks Daya Tahan, skor Ketat dan jurang kerapuhan",
     "strictOpenLabel": "Terangkan mengapa skor Indeks dan Ketat berbeza",
-    "title": "Mengapa skor berbeza",
+    "title": "Mengapa skor ini berbeza?",
     "indexLabel": "Indeks:",
     "indexBody": " min aritmetik bagi skor tunjang yang diberi skor.",
     "strictLabel": "Ketat:",
@@ -280,6 +280,7 @@
     "districtFallbackHealthcare": "Paparan Daerah menunjukkan jangka hayat sebagai penunjuk penjagaan kesihatan mentah, bukan skor daya tahan Penjagaan Kesihatan wilayah.",
     "thisDistrict": "daerah ini",
     "weakestLinkFirst": "Pautan terlemah dahulu",
+    "weakestLinkPrinciple": "Daya tahan hanya sekuat tunjang keperluan asasnya yang paling lemah.",
     "pillarProvenance": "Liputan tunjang · {{count}}/6 berskor",
     "noComparableData": "Tiada data setanding — tidak pernah dianggarkan",
     "territoryCoverageFull": "{{scored}}/6 tunjang diberi skor.",
@@ -350,6 +351,39 @@
       "higherBetter": "lebih tinggi lebih baik",
       "lowerBetter": "lebih rendah lebih baik"
     }
+  },
+  "momentum": {
+    "changed": "{{delta}} sejak {{date}}",
+    "flat": "Tiada perubahan sejak {{date}}",
+    "firstReading": "Bacaan pertama mengikut kaedah semasa ({{date}})",
+    "direction_up": "Meningkat",
+    "direction_down": "Menurun",
+    "sparklineLabel": "Indeks daya tahan dari {{start}} hingga {{end}}",
+    "methodologyNote": "Bacaan terdahulu menggunakan kaedah berbeza dan tidak boleh dibandingkan.",
+    "moversLabel": "Perubahan terbesar:",
+    "moversNone": "Tiada wilayah berubah sejak penerbitan terakhir.",
+    "moverItem": "{{territory}} {{delta}}",
+    "summary": "Sejak penerbitan terakhir: {{up}} naik · {{down}} turun · {{flat}} tiada perubahan, daripada {{total}} wilayah.",
+    "summaryUnknown": "{{unknown}} tiada bacaan terdahulu yang boleh dibandingkan."
+  },
+  "answerStrip": {
+    "title": "Apa maksudnya",
+    "labelWhat": "Apa",
+    "labelWhere": "Di mana",
+    "labelWhy": "Mengapa",
+    "labelNext": "Langkah seterusnya",
+    "whereTerritory": "{{territory}} ialah wilayah berskor paling lemah pada {{index}}.",
+    "wherePillar": "Di {{territory}}, {{pillar}} ialah tunjang berskor paling lemah pada {{score}}.",
+    "wherePillarNoScore": "Di {{territory}}, {{pillar}} ialah tunjang berskor paling lemah.",
+    "why": {
+      "Food": "Sara diri makanan yang rendah bermakna lebih banyak makanan datang dari luar, jadi harga isi rumah mengikut kos pengangkutan dan kadar tukaran mata wang, bukan hasil tuaian tempatan.",
+      "Energy": "Apabila tenaga menjadi tunjang paling lemah, akses belum menyeluruh, dan setiap perkhidmatan yang bergantung padanya — klinik, sekolah, penyimpanan sejuk — mewarisi jurang itu.",
+      "Education": "Asas pendidikan yang lemah mengehadkan tenaga kerja mahir yang diperlukan oleh lima tunjang lain, dan perubahan di sini mengambil satu generasi untuk kelihatan pada tunjang lain.",
+      "Shelter": "Skor perumahan yang lemah mencerminkan jurang air bersih dan sanitasi di rumah, yang menentukan kesihatan harian jauh sebelum melibatkan klinik.",
+      "Healthcare": "Apabila penjagaan kesihatan paling lemah, kapasiti adalah nipis berbanding penduduk, jadi permintaan biasa pun sudah membebankannya tanpa sebarang krisis.",
+      "Entertainment": "Tunjang ini mengukur ketersambungan dan penyertaan harian, jadi skor lemah bermakna lebih ramai tidak dapat mencapai perkhidmatan dalam talian, pekerjaan dan maklumat yang diandaikan oleh ekonomi lain."
+    },
+    "unavailable": "Data berskor dalam skop ini tidak mencukupi untuk merangka keputusan."
   },
   "esg": {
     "title": "Penunjuk ESG",
@@ -533,7 +567,6 @@
     "howItWorksVerifyBody": "Setiap penunjuk dipadankan dengan maklumat sumber, kemas kini dan keyakinan supaya pengguna dapat menilai bukti di sebalik papan pemuka.",
     "howItWorksScoreTitle": "Kami skor daya tahan",
     "howItWorksScoreBody": "Penunjuk berskor menyumbang kepada Skor Daya Tahan 0-100 dan enam keperluan Kekayaan Sebenar, supaya titik lemah jelas tanpa mengisi jurang dengan data rekaan.",
-  
     "theResilienceScore": "Skor Daya Tahan",
     "resilienceQuoted": "“Daya Tahan”",
     "resilienceExplainerPart1": "di sini hanya bermaksud sejauh mana sesuatu tempat dapat menjaga rakyatnya sendiri merentasi keperluan asas kehidupan — daripada makanan dan tenaga kepada perumahan, penjagaan kesihatan, pendidikan dan kesejahteraan seharian — walaupun ketika keadaan sukar. Sesuatu wilayah mungkin kelihatan kaya di atas kertas namun masih rapuh jika hanya satu daripada keperluan asas ini lemah. Borneo Tracker menukar data ini kepada satu",

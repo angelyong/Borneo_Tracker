@@ -9,7 +9,9 @@ import {
   titleCaseConfidence,
   useIndicators,
 } from '../../data/useIndicators';
+import AnswerStrip from '../../components/AnswerStrip';
 import DataFreshness from '../../components/DataFreshness';
+import { useTerritoryAnswerStrip } from '../../data/useAnswerStrip';
 import ExportMenu from '../../components/ExportMenu';
 
 const CATEGORIES = ['Environment', 'Social', 'Governance'];
@@ -24,6 +26,8 @@ const ESGIndicator = () => {
   const [selectedRegion, setSelectedRegion]   = useState('Sarawak');
   const [selectedCategory, setSelectedCategory] = useState('Environment');
   const { data, loading, error, generatedAt } = useIndicators();
+  // BT-23: the same decision frame the Dashboard shows, for the territory in view.
+  const answerStrip = useTerritoryAnswerStrip(selectedRegion);
   const contentRef = useRef(null);
 
   const rows = useMemo(() => {
@@ -68,6 +72,8 @@ const ESGIndicator = () => {
               )}
             </div>
           </div>
+
+          {answerStrip && <AnswerStrip strip={answerStrip} compact style={styles.answerStrip} />}
 
           {/* ── Pillar tabs ── */}
           <div style={styles.tabs}>
@@ -220,6 +226,10 @@ const styles = {
   },
 
   // ── Tabs ──
+  answerStrip: {
+    margin:          '0 0 20px',
+    maxWidth:        '860px',
+  },
   tabs: {
     display:         'flex',
     gap:             '8px',

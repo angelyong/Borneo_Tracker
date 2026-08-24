@@ -63,7 +63,7 @@
   "scoreExplainer": {
     "openLabel": "Explain Resilience Index, Strict score and fragility gap",
     "strictOpenLabel": "Explain why the Index and Strict scores differ",
-    "title": "Why the scores differ",
+    "title": "Why are these scores different?",
     "indexLabel": "Index:",
     "indexBody": " the arithmetic mean of the scored pillar scores.",
     "strictLabel": "Strict:",
@@ -283,6 +283,7 @@
     "districtFallbackHealthcare": "District mode shows life expectancy as a raw healthcare indicator, not the territory Healthcare resilience score.",
     "thisDistrict": "this district",
     "weakestLinkFirst": "Weakest link first",
+    "weakestLinkPrinciple": "Resilience is only as strong as its weakest essential pillar.",
     "pillarProvenance": "Pillar provenance · {{count}}/6 scored",
     "noComparableData": "No comparable data — never imputed",
     "territoryCoverageFull": "{{scored}}/6 pillars scored.",
@@ -353,6 +354,39 @@
       "higherBetter": "higher is better",
       "lowerBetter": "lower is better"
     }
+  },
+  "momentum": {
+    "changed": "{{delta}} since {{date}}",
+    "flat": "No change since {{date}}",
+    "firstReading": "First reading on the current method ({{date}})",
+    "direction_up": "Improved",
+    "direction_down": "Declined",
+    "sparklineLabel": "Resilience index from {{start}} to {{end}}",
+    "methodologyNote": "Earlier readings used a different method and are not comparable.",
+    "moversLabel": "Biggest movers:",
+    "moversNone": "No territory moved since the last publication.",
+    "moverItem": "{{territory}} {{delta}}",
+    "summary": "Since the last publication: {{up}} up · {{down}} down · {{flat}} unchanged, of {{total}} territories.",
+    "summaryUnknown": "{{unknown}} have no comparable previous reading."
+  },
+  "answerStrip": {
+    "title": "What this means",
+    "labelWhat": "What",
+    "labelWhere": "Where",
+    "labelWhy": "Why",
+    "labelNext": "What next",
+    "whereTerritory": "{{territory}} is the weakest scored territory at {{index}}.",
+    "wherePillar": "In {{territory}}, {{pillar}} is the weakest scored pillar at {{score}}.",
+    "wherePillarNoScore": "In {{territory}}, {{pillar}} is the weakest scored pillar.",
+    "why": {
+      "Food": "Low food self-sufficiency means more of what people eat arrives from outside, so household prices follow freight and exchange rates rather than the local harvest.",
+      "Energy": "Where energy is the weakest pillar, access is not yet universal, and every service built on top of it — clinics, schools, cold storage — inherits that gap.",
+      "Education": "A weak education base limits the skilled workforce the other five needs draw on, and changes here take a generation to show up in the other pillars.",
+      "Shelter": "Weak shelter scores track gaps in clean water and sanitation at home, which decide day-to-day health long before a clinic is involved.",
+      "Healthcare": "Where healthcare is weakest, capacity is thin relative to the population, so ordinary demand strains it without any crisis.",
+      "Entertainment": "This pillar measures everyday connectivity and participation, so a weak score means fewer people can reach the online services, work and information the rest of the economy assumes."
+    },
+    "unavailable": "There is not enough scored data in this scope to frame a decision."
   },
   "esg": {
     "title": "ESG Indicators",

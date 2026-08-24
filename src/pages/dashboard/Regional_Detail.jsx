@@ -17,7 +17,9 @@ import {
   useResilience,
 } from '../../data/useIndicators';
 import { THEME_CHANGE_EVENT, cssVar } from '../../utils/theme';
+import AnswerStrip from '../../components/AnswerStrip';
 import DataFreshness from '../../components/DataFreshness';
+import { useTerritoryAnswerStrip } from '../../data/useAnswerStrip';
 import ProvenanceChip from '../../components/ProvenanceChip';
 import HexRadar from '../../components/HexRadar';
 import PillarDrilldownModal from '../../components/PillarDrilldownModal';
@@ -39,6 +41,8 @@ const RegionalDetails = () => {
 
   const { data,              loading, error, generatedAt } = useIndicators();
   const { data: resilience }                 = useResilience();
+  // BT-23: the same decision frame the Dashboard shows, for the territory in view.
+  const answerStrip = useTerritoryAnswerStrip(selectedTerritory);
 
   const lineChartRef       = useRef(null);
   const barChartRef        = useRef(null);
@@ -316,6 +320,8 @@ const RegionalDetails = () => {
                 </div>
               </div>
 
+              {answerStrip && <AnswerStrip strip={answerStrip} compact style={styles.answerStrip} />}
+
               {/* Chart row */}
               <div style={styles.chartRow}>
 
@@ -512,6 +518,7 @@ const styles = {
   summaryBandgreen: { color: '#166534', backgroundColor: '#dcfce7', borderColor: '#86efac' },
   summaryBandamber: { color: '#92400e', backgroundColor: '#fef3c7', borderColor: '#fcd34d' },
   summaryBandred:   { color: '#991b1b', backgroundColor: '#fee2e2', borderColor: '#fca5a5' },
+  answerStrip:      { margin: '0 0 12px', maxWidth: '860px' },
   summaryChipDetail: { display: 'flex', flexDirection: 'column', gap: '2px', fontSize: '11px', color: 'var(--color-muted)', lineHeight: 1.25 },
 
   chartRow: { display: 'flex', gap: '20px', flexWrap: 'wrap' },

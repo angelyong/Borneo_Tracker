@@ -5,6 +5,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { classifyFreshness } from '../utils/dataFreshness';
+import { formatShortDate } from '../utils/formatDate';
 
 const STATUS_TONE = {
   fresh: { fg: 'var(--color-green)', bg: 'var(--color-green-soft)' },
@@ -13,18 +14,7 @@ const STATUS_TONE = {
   unknown: { fg: 'var(--color-muted)', bg: 'var(--color-grey-soft)' },
 };
 
-const DATE_LOCALE = { en: 'en-GB', ms: 'ms-MY' };
-const DATE_FORMAT = { day: '2-digit', month: 'short', year: 'numeric' };
 const PREVIEW_SOURCE_COUNT = 3;
-
-function formatDate(date, language) {
-  const locale = DATE_LOCALE[language] || DATE_LOCALE[String(language).split('-')[0]] || 'en-GB';
-  try {
-    return date.toLocaleDateString(locale, { ...DATE_FORMAT, timeZone: 'UTC' });
-  } catch {
-    return date.toISOString().slice(0, 10);
-  }
-}
 
 function cleanSource(value) {
   return String(value || '').replace(/\s+/g, ' ').trim();
@@ -137,7 +127,7 @@ export default function DataFreshness({ generatedAt, loading = false, artifact =
   const headline =
     status === 'unknown'
       ? t('freshnessTrust.dateUnknown')
-      : t('freshnessTrust.dataAsOf', { date: formatDate(date, i18n.language) });
+      : t('freshnessTrust.dataAsOf', { date: formatShortDate(date, i18n.language) });
 
   let ageText = null;
   if (status === 'fresh') {
@@ -152,7 +142,7 @@ export default function DataFreshness({ generatedAt, loading = false, artifact =
   const buildClockText =
     status === 'unknown'
       ? t('freshnessTrust.dateUnknownShort')
-      : t('freshnessTrust.buildClockValue', { date: formatDate(date, i18n.language) });
+      : t('freshnessTrust.buildClockValue', { date: formatShortDate(date, i18n.language) });
   const substantiveText = summary.latestYear
     ? t('freshnessTrust.substantiveValue', { year: summary.latestYear })
     : t('freshnessTrust.substantiveUnknown');

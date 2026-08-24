@@ -52,6 +52,22 @@ describe('ScoreExplainer', () => {
     expect(button.getAttribute('aria-expanded')).toBe('true');
   });
 
+  // The Dashboard mounts this beside the Strict score, so its accessible name
+  // has to describe that job rather than reuse the Regional Details wording.
+  it('accepts the strict-score label the Dashboard passes and shows the client question', () => {
+    render(<ScoreExplainer labelKey="scoreExplainer.strictOpenLabel" />);
+
+    const button = document.querySelector(
+      'button[aria-label="Explain why the Index and Strict scores differ"]'
+    );
+    expect(button).toBeTruthy();
+    click(button);
+
+    const dialog = document.querySelector('[role="dialog"]');
+    expect(dialog.getAttribute('aria-label')).toBe('Why are these scores different?');
+    expect(dialog.textContent).toContain('Why are these scores different?');
+  });
+
   it('closes on Escape and returns focus to the trigger', () => {
     render(<ScoreExplainer />);
 
