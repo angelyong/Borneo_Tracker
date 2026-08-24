@@ -125,24 +125,41 @@ graph TD
 ## 4. 四阶段分步修复方案（Step-by-Step Fixing Plan）
 
 ### 阶段一：防护网与独立交互（Day 1）
-- [ ] **Step 1.1 (BT-25)**: 编写 `src/test/i18nParity.test.js`，建立英马双语复数感知校验机制。
-- [ ] **Step 1.2 (BT-24)**: 在 `en.json` 与 `ms.json` 中配置 Slogan，更新 `AboutPage.jsx` 与 `AuthLayout.jsx`。
-- [ ] **Step 1.3 (BT-14)**: 改造 `OverviewDashboard.jsx` 搜索框无结果态，打通 `AIChatDialog.jsx` 预填提问与 429 防护。
-- [ ] **Step 1.4 (BT-12)**: 升级 `HexRadar.jsx` 增加点击与键盘无障碍事件，开发 `PillarDrilldownModal.jsx` 指标穿透弹窗。
+- [x] **Step 1.1 (BT-25)**: 编写 `src/test/i18nParity.test.js`，建立英马双语复数感知校验机制。
+- [x] **Step 1.2 (BT-24)**: 在 `en.json` 与 `ms.json` 中配置 Slogan，更新 `AboutPage.jsx` 与 `AuthLayout.jsx`。
+- [x] **Step 1.3 (BT-14)**: 改造 `OverviewDashboard.jsx` 搜索框无结果态，打通 `AIChatDialog.jsx` 预填提问与 429 防护。
+- [x] **Step 1.4 (BT-12)**: 升级 `HexRadar.jsx` 增加点击与键盘无障碍事件，开发 `PillarDrilldownModal.jsx` 指标穿透弹窗。
 
 ### 阶段二：数据底座与信任注册表（Day 2）
-- [ ] **Step 2.1 (BT-16b)**: 编写 `sources_registry.py`，规范 14~18 个权威发布源，由 `export_json.py` 导出 `public/data/sources.json`。
-- [ ] **Step 2.2 (BT-20)**: 在 `DataVerification.jsx` 增加数据源透明度 Tab/Section，开发 `SourceRegistryTable.jsx`，与密码学账本分立展示。
-- [ ] **Step 2.3 (BT-18)**: 编写 `build_resilience_history.py`，生成标记了版本断点的 `public/data/resilience_history.json`（Option A 模式）。
+- [x] **Step 2.1 (BT-16b)**: 编写 `sources_registry.py`，规范 14~18 个权威发布源，由 `export_json.py` 导出 `public/data/sources.json`。
+- [x] **Step 2.2 (BT-20)**: 在 `DataVerification.jsx` 增加数据源透明度 Tab/Section，开发 `SourceRegistryTable.jsx`，与密码学账本分立展示。
+- [x] **Step 2.3 (BT-18)**: 编写 `build_resilience_history.py`，生成标记了版本断点的 `public/data/resilience_history.json`（Option A 模式）。
 
 ### 阶段三：动量与决策层全量贯通（Day 3）
-- [ ] **Step 3.1 (BT-19)**: 编写 `src/utils/momentum.js` 与 `MomentumBadge.jsx`（含轻量级 SVG Sparkline），接入看板分数卡。
-- [ ] **Step 3.2 (BT-22)**: 开发 `AnswerStrip.jsx`（What / Where / Why / What Next），挂载至 `OverviewDashboard.jsx` 右侧面板顶部。
-- [ ] **Step 3.3 (BT-23)**: 将 `AnswerStrip.jsx` 适配挂载到 `Regional_Detail.jsx`、`esg_indicator.jsx` 与 `sdg_progress.jsx`。
+- [x] **Step 3.1 (BT-19)**: 编写 `src/utils/momentum.js` 与 `MomentumBadge.jsx`（含轻量级 SVG Sparkline），接入看板分数卡。
+- [x] **Step 3.2 (BT-22)**: 开发 `AnswerStrip.jsx`（What / Where / Why / What Next），挂载至 `OverviewDashboard.jsx` 右侧面板顶部。
+- [x] **Step 3.3 (BT-23)**: 将 `AnswerStrip.jsx` 适配挂载到 `Regional_Detail.jsx`、`esg_indicator.jsx` 与 `sdg_progress.jsx`。
 
 ### 阶段四：全量测试、CI 绿灯与交付闭环（Day 4）
-- [ ] **Step 4.1 (BT-26)**: 为 Momentum、Drill-down、AnswerStrip、Registry 编写完备的 Vitest 与 Python 单元测试。
-- [ ] **Step 4.2 (BT-27)**: 提交 `docs/CLIENT_FEEDBACK_2026-08-15_ACTION_PLAN.md`，更新 `PROGRESS_REPORT.md` 与 `README.md`，生成客户交付报告。
+- [x] **Step 4.1 (BT-26)**: 为 Momentum、Drill-down、AnswerStrip、Registry 编写完备的 Vitest 与 Python 单元测试。
+- [x] **Step 4.2 (BT-27)**: 提交 `docs/CLIENT_FEEDBACK_2026-08-15_ACTION_PLAN.md`，更新 `PROGRESS_REPORT.md` 与 `README.md`，生成客户交付报告。
+
+
+### 阶段完成状态（2026-08-24）
+
+| 阶段 | 工单 | 交付物 | 状态 |
+|---|---|---|---|
+| 一 | BT-25 · BT-24 · BT-14 · BT-12 | `i18nParity.test.js`、Slogan、搜索 → BorneoBot、`PillarDrilldownModal` | ✅ commit `013804f` |
+| 二 | BT-16b · BT-20 · BT-18 | `sources_registry.py`、`SourceRegistryTable`、`build_resilience_history.py` | ✅ commit `77f2905` |
+| 三 | BT-19 · BT-22 · BT-23 | `momentum.js` + `MomentumBadge`、`answerStrip.js` + `AnswerStrip`、`useAnswerStrip.js`（Dashboard / Regional / ESG / SDG） | ✅ |
+| 四 | BT-26 · BT-27 | Vitest 56 files / 941 tests → **63 files / 996 tests**；Python **130 tests**；`PROGRESS_REPORT.md` §11、`README.md`、`docs/CLIENT_FEEDBACK_RESPONSE_2026-08-24.md` | ✅ |
+
+**阶段三落地时的两个实际修正（与本文件原设计不同）：**
+
+1. **动量比较窗口比计划更严格。** §3.3 只要求标注 `isMethodologyBreak`；实作再进一步——`computeMomentum()` 完全**不跨方法学断点取差值**，断点后的第一个点回报 "first reading on the current method" 而非任何 delta。仅仅标注仍会先算出 −4.5 再解释，而那个数字本身就是错的。
+2. **AnswerStrip 取代了 Dashboard 原本的 headline 段落与 CTA，而不是叠加在它们上面。** BT-22 要求「一条紧凑的决策条，而非四张卡」；若保留原本的 headline + CTA，同一句话会在同一张卡里出现两次。`dashboard.whatNextCta` 这个既有翻译键被复用，没有新增重复文案。
+
+**Overall Borneo 没有自己的历史序列**（`resilience_history.json` 只有 4 个地区），因此聚合视图改为列出「实际有变动的地区」(`MomentumMovers`)，而不是把四条历史平均成一条新的曲线。
 
 ---
 

@@ -347,8 +347,9 @@ BT-28 · BT-29 · BT-11a · BT-11b · BT-32 · BT-01 · BT-02 · BT-03 · BT-04 
 BT-07 · BT-08 · BT-09 · BT-10 · BT-31 · BT-16a · BT-15 · BT-21 · BT-30
 *BT-31 lands before BT-12/BT-13 build on the radar. BT-30 rides with the map epic — Kota Kinabalu should work before a client clicks it.*
 
-**Wave 3 — momentum, drill-down, decision framing:**
+**Wave 3 — momentum, drill-down, decision framing:** ✅ **delivered 2026-08-24**
 BT-16b · BT-18 · BT-19 · BT-20 · BT-12 · BT-14 · BT-22 · BT-23 · BT-24 · BT-25 · BT-26 · BT-27
+*All twelve closed. Execution plan and per-stage status: `docs/WAVE_3_EXECUTION_AND_FIXING_PLAN.md`. Client-facing note: `docs/CLIENT_FEEDBACK_RESPONSE_2026-08-24.md`. The two new data artifacts (`sources.json`, `resilience_history.json`) are auxiliary by contract and are published by `refresh-data.yml` on master per BT-28, not committed with the feature code.*
 
 ---
 

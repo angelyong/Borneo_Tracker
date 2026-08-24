@@ -57,11 +57,19 @@ python run_pipeline.py   # ingest -> history -> SQLite -> JSON -> resilience -> 
  borneo_tracker.db   — `indicators` (snapshot) + `indicator_observations` (per-year)
         │  export_json.py + compute_resilience.py
         ▼
- public/data/indicators.json + resilience.json          (committed)
+ public/data/indicators.json + resilience.json          (committed, hashed)
+        +  sources.json + resilience_history.json            (auxiliary, unhashed)
         │  fetch()
         ▼
  React frontend (src/data/useIndicators.js — the only data entry point)
 ```
+
+Two **auxiliary transparency artifacts** are exported beside the core datasets:
+
+- `public/data/sources.json` (BT-16b) — the per-source registry: publisher, licence, official URL, cadence, coverage and pillars, rendered by the Sources section of `/data-sources`.
+- `public/data/resilience_history.json` (BT-18) — the Resilience Index series rebuilt from committed `resilience.json` snapshots, each point tagged with the methodology in force that day, which drives the momentum badge on the dashboard.
+
+Both are deliberately **outside** the six-file hash manifest (`manifest_contract.DATASET_PATHS`). Adding a seventh file would make every already-published client fail its integrity check, so these two are auxiliary by contract — see `docs/WAVE_3_EXECUTION_AND_FIXING_PLAN.md` §3.2.
 
 Two add-on pipelines feed the frontend alongside the core steps above:
 
@@ -120,6 +128,8 @@ A real multi-user version needs a backend (auth, shared DB, object storage, malw
 | `export_json.py` / `compute_resilience.py` | DB → frontend JSON (snapshot + series / index scores) |
 | `ingest_districts.py` | Builds `public/data/districts.json` (ADM2 district drill-down, GADM choropleth) |
 | `fetch_news.py` / `digest_news.py` | Pull publisher RSS → rephrase → Supabase news drafts (Borneo Pulse) |
-| `run_pipeline.py` | All six data steps in one command (ingest → history → load_db → export → resilience → districts) |
+| `sources_registry.py` | Per-source registry → `public/data/sources.json` (cadence, licence, coverage) |
+| `build_resilience_history.py` | Resilience Index series from committed snapshots → `public/data/resilience_history.json` |
+| `run_pipeline.py` | All eight data steps in one command (ingest → history → load_db → export → resilience → history series → districts → provenance) |
 | `src/data/useIndicators.js` | The frontend's single data module |
 | `HANDOFF.md` / `PROGRESS_REPORT.md` | Project history & data-layer report |
