@@ -18,7 +18,17 @@ function getFocusableElements(container) {
 // This modal deliberately receives the resilience `detail` payload rather than
 // deriving a score from dashboard rows. That keeps the UI tied to the exact
 // scored inputs and leaves unscored pillars visibly unscored.
-export default function PillarDrilldownModal({ open, onClose, territory, pillar, score, indicators }) {
+export default function PillarDrilldownModal({
+  open,
+  onClose,
+  territory,
+  pillar,
+  score,
+  indicators,
+  // Aggregate scopes only: the per-territory pillar scores this score is the
+  // mean of, pre-formatted by the caller (e.g. ["Sabah 61.0", "Brunei 100.0"]).
+  contributors = null,
+}) {
   const { t } = useTranslation();
   const closeRef = useRef(null);
   const dialogRef = useRef(null);
@@ -84,8 +94,15 @@ export default function PillarDrilldownModal({ open, onClose, territory, pillar,
             {hasDetail ? (
               <ul className="pillar-drilldown-list">
                 {detail.map((indicator) => (
-                  <li key={`${indicator.indicator}-${indicator.year || ''}`}>
-                    <strong>{indicator.indicator}</strong>
+                  // An aggregate flattens four territories' rows into one list,
+                  // so the same indicator and year can appear more than once —
+                  // Sabah and Sarawak both report Clean water access for 2022.
+                  // The territory has to be part of the key, not just the label.
+                  <li key={`${indicator.territory || ''}-${indicator.indicator}-${indicator.year || ''}`}>
+                    <strong>
+                      {indicator.territory ? `${indicator.territory} · ` : null}
+                      {indicator.indicator}
+                    </strong>
                     <span>{formatIndicatorValue(indicator)} · {t('pillarDrilldown.indicatorScore', { score: indicator.score })}</span>
                     <ProvenanceChip
                       confidence={indicator.confidence}
@@ -101,6 +118,21 @@ export default function PillarDrilldownModal({ open, onClose, territory, pillar,
                 <p>{t('pillarDrilldown.aggregateBody')}</p>
               </div>
             )}
+
+            {/* An averaged score is the one a reader cannot account for from
+                the rows above, so the arithmetic is stated rather than implied. */}
+            {contributors ? (
+              <p className="pillar-drilldown-method">
+                {t('pillarDrilldown.aggregateMethod', {
+                  score,
+                  parts: contributors.join(' · '),
+                  // Deliberately not `count`: i18next reserves it for plural
+                  // resolution and would look for _one/_other variants that
+                  // Malay must not have.
+                  territories: contributors.length,
+                })}
+              </p>
+            ) : null}
           </>
         )}
       </section>

@@ -215,20 +215,29 @@ Weakest-link bars · strict score + fragility gap · provenance chips · freshne
 
 ---
 
-### **BT-34 · Aggregate scope: pillar drill-down shows nothing** *(new, 2026-08-26)*
+### **BT-34 · Aggregate scope: pillar drill-down shows nothing** *(new, 2026-08-26 — DONE)*
 **Client ask (§3.4):** *"Make each pillar clickable so users can drill into the underlying indicators."* BT-12 delivered this for a single territory. On **Overall Borneo — the scope the Dashboard opens on** — `drilldownIndicators` is hard-coded to `[]`, so the first-time visitor's click returns a card saying an aggregate has no indicator list.
 **Why it is cheap:** the data is already published. Each pillar has a per-territory indicator list in `resilience.json`, and the aggregate pillar score is the mean of the four territory scores, so the drill-down can show both the contributing rows and the arithmetic behind the number — which also serves §1.2's objection to unaccountable figures. No new collection, no new methodology.
 **Note:** the draft client note wrongly states the aggregate *"genuinely has no one set of source rows"*. It has four. Fix when the note is finalised.
 **Files:** `docs/BT-34_BT-35_PILLAR_DRILLDOWN.md`, `src/pages/dashboard/OverviewDashboard.jsx`, `src/components/PillarDrilldownModal.jsx`, both locales.
+**Done 2026-08-26.** The all-Borneo drill-down now lists each contributing territory's indicators and states the arithmetic (`All-Borneo 73.6 is the mean of the 4 scored territories: Sabah 61.0 · Sarawak 67.4 · Brunei 100.0 · Kalimantan 66.0`). A territory unscored for that pillar contributes no rows rather than a zero.
 **Role:** FE · **Effort:** S · **Priority:** P2 · **Depends on:** BT-12
 
 ### **BT-35 · District scope: pillars are not clickable, and the coverage is asymmetric** *(new, 2026-08-26)*
 **Client ask (§3.4):** same sentence. The district radar is mounted without `onPillarSelect`, so nothing is clickable at all.
 **What the data actually holds:** `districts.json` carries 987 rows over 131 districts. 56 rows are tagged `Education` and 56 `Healthcare` — exactly the 56 Kalimantan districts (BPS Indonesia, canonical, high confidence). **Sabah's 28 and Sarawak's 47 districts carry zero pillar-tagged rows.** So Kalimantan districts have real indicators behind two pillars that no one can reach, while Malaysian districts would show six empty pillars.
 **Must not do:** (1) produce a district-level Resilience Index — two of six pillars for 56 of 131 districts is the exact defect BT-11a corrected and BT-11b gates; (2) label the Malaysian gap as "no data yet" if the real reason is that it is not published at that granularity. The reason belongs on screen.
-**Blocked on investigation:** whether Malaysian agencies publish district-level pillar statistics for Sabah/Sarawak decides both the on-screen wording and what we tell the client.
+**Investigation done 2026-08-26 — the premise was wrong.** Malaysia *does* publish district-level water, sanitation, electricity, internet and (new since Sept 2025) life expectancy, all CC BY 4.0; `ingest_poc.py:275-292` already downloads three of those files and discards the district breakdown. So the empty state cannot say "not published at this granularity". The one real limit is mean years of schooling, which Malaysia does not publish below state level at all. Ingestion is tracked as **BT-36**; this card waits on it. A separate radar defect found during the survey (coverage counts drawn as full scores) was fixed on 2026-08-26.
 **Files:** `docs/BT-34_BT-35_PILLAR_DRILLDOWN.md`, `src/pages/dashboard/OverviewDashboard.jsx`, `src/components/HexRadar.jsx`, `src/components/PillarDrilldownModal.jsx`, both locales.
-**Role:** FE + DATA · **Effort:** S–M · **Priority:** P2 · **Depends on:** BT-12, BT-31
+**Role:** FE + DATA · **Effort:** S–M · **Priority:** P2 · **Depends on:** BT-12, BT-31, BT-36
+
+### **BT-36 · District-level pillar ingestion, both sides of the border** *(new, 2026-08-26)*
+**Why:** district pillar coverage is 2 of 6 and one-sided (Education + Healthcare, Kalimantan only). The Malaysian side is a sourcing gap, not a publication limit — DOSM publishes water, sanitation and electricity per district in `hies/hh_access_amenities.csv`, the same bucket `ingest_districts.py` already fetches two files from, plus district life expectancy (new Sept 2025, the identical indicator we ingest for Kalimantan) and district internet use. All CC BY 4.0. Indonesia is under-ingested too: the BPS endpoint we already call returns kabupaten rice production, internet, water and sanitation that `ingest_districts_bps.py` never requests.
+**Real limits to state rather than solve:** Malaysia publishes no mean years of schooling below state level (0 matches across 290 data.gov.my and 183 OpenDOSM datasets); BPS has no kabupaten electrification ratio.
+**Hazards:** DOSM's ~160 administrative districts vs our GADM 28/47 (clean joins 27/28 Sabah, 40/47 Sarawak); education data uses PPD boundaries; spelling variants already split Sarawak's Maradong/Meradong and Tanjong/Tanjung Manis in the current artifact.
+**Forces a decision:** BT-35 forbids a district Resilience Index because coverage is 2 of 6. At 4–5 of 6 that reasoning lapses, and whether to compute one becomes a genuine methodology question — with BT-11b's pillar-loss gate needing district scope first.
+**Files:** `docs/BT-36_DISTRICT_PILLAR_INGESTION.md`, `ingest_districts.py`, `ingest_districts_bps.py`, `data_model.py`.
+**Role:** DATA · **Effort:** L · **Priority:** P2 · **Blocks:** BT-35
 
 ---
 
@@ -389,7 +398,7 @@ BT-16b · BT-18 · BT-19 · BT-20 · BT-12 · BT-14 · BT-22 · BT-23 · BT-24 �
 | §3.1 Daily headline insight | BT-07 *(+ KIV-03)* |
 | §3.2 Natural-language search | BT-14, BT-33 *(+ KIV-01)* |
 | §3.3 Meaningful map layers | BT-08, BT-09, BT-10, BT-11a, BT-30 *(+ KIV-02)* |
-| §3.4 Clickable pillars + weakest-link explanation | BT-12, BT-13, BT-31, BT-34, BT-35 |
+| §3.4 Clickable pillars + weakest-link explanation | BT-12, BT-13, BT-31, BT-34, BT-35, BT-36 |
 | §4.1 Trust chain | BT-15, BT-16a, BT-16b, BT-20 |
 | §4.2 Interpretation + momentum | BT-17, BT-18, BT-19, BT-32 |
 | §5 Decision layer + positioning | BT-21, BT-22, BT-23, BT-24 |

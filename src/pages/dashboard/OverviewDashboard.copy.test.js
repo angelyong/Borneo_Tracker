@@ -104,6 +104,26 @@ describe('OverviewDashboard weakest-link copy', () => {
     expect(ms.dashboard.districtCoverageIncomplete).toBeTruthy();
   });
 
+  it('gives the all-Borneo drill-down the rows behind the average', () => {
+    const source = readFileSync(resolve(root, 'src/pages/dashboard/OverviewDashboard.jsx'), 'utf8');
+    const en = readJson('src/i18n/locales/en.json');
+    const ms = readJson('src/i18n/locales/ms.json');
+
+    // Client §3.4 asks to drill into the underlying indicators, and the
+    // Dashboard opens on the aggregate scope — which used to return [].
+    expect(source).not.toContain('const drilldownIndicators = !isDistrict && !isOverall');
+    expect(source).toContain('TERRITORIES.flatMap((territory)');
+    expect(source).toContain('contributors={drilldownContributors}');
+    // A territory with no score for the pillar must contribute no rows.
+    expect(source).toContain("if (!Number.isFinite(entry?.pillarScores?.[drilldownPillar])) return [];");
+
+    // `count` is reserved by i18next for plural resolution; Malay has only
+    // `other`, so the method line must not use it as a token.
+    expect(en.pillarDrilldown.aggregateMethod).toContain('{{territories}}');
+    expect(en.pillarDrilldown.aggregateMethod).not.toContain('{{count}}');
+    expect(ms.pillarDrilldown.aggregateMethod).toContain('{{territories}}');
+  });
+
   it('passes the active artifact to the trust-chain popover', () => {
     const source = readFileSync(resolve(root, 'src/pages/dashboard/OverviewDashboard.jsx'), 'utf8');
 

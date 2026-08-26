@@ -59,6 +59,76 @@ describe('PillarDrilldownModal', () => {
     expect(document.body.textContent).toContain('2022');
   });
 
+  // BT-34. On the all-Borneo scope the drill-down flattens four territories'
+  // rows into one list, so each row has to say which territory it came from —
+  // and the same indicator and year legitimately repeat across territories.
+  it('labels each row by territory and keeps duplicate indicator/year pairs distinct', () => {
+    render(
+      <MemoryRouter>
+        <PillarDrilldownModal
+          open
+          onClose={() => {}}
+          territory="Overall Borneo"
+          pillar="Shelter"
+          score={73.6}
+          indicators={[
+            { territory: 'Sabah', indicator: 'Clean water access', value: 80.5, unit: '%', score: 61, source: 'OpenDOSM', year: '2022', confidence: 'high' },
+            { territory: 'Sarawak', indicator: 'Clean water access', value: 83.7, unit: '%', score: 67.4, source: 'OpenDOSM', year: '2022', confidence: 'high' },
+          ]}
+          contributors={['Sabah 61', 'Sarawak 67.4']}
+        />
+      </MemoryRouter>
+    );
+
+    const rows = [...document.querySelectorAll('.pillar-drilldown-list li')];
+    expect(rows).toHaveLength(2);
+    expect(rows[0].textContent).toContain('Sabah · Clean water access');
+    expect(rows[1].textContent).toContain('Sarawak · Clean water access');
+  });
+
+  it('states the arithmetic behind an averaged score', () => {
+    render(
+      <MemoryRouter>
+        <PillarDrilldownModal
+          open
+          onClose={() => {}}
+          territory="Overall Borneo"
+          pillar="Shelter"
+          score={73.6}
+          indicators={[
+            { territory: 'Sabah', indicator: 'Clean water access', value: 80.5, unit: '%', score: 61, source: 'OpenDOSM', year: '2022', confidence: 'high' },
+          ]}
+          contributors={['Sabah 61', 'Sarawak 67.4', 'Brunei 100', 'Kalimantan 66']}
+        />
+      </MemoryRouter>
+    );
+
+    const method = document.querySelector('.pillar-drilldown-method');
+    expect(method.textContent).toBe(
+      'All-Borneo 73.6 is the mean of the 4 scored territories: Sabah 61 · Sarawak 67.4 · Brunei 100 · Kalimantan 66.'
+    );
+  });
+
+  it('omits the territory label and the method line for a single territory', () => {
+    render(
+      <MemoryRouter>
+        <PillarDrilldownModal
+          open
+          onClose={() => {}}
+          territory="Sabah"
+          pillar="Food"
+          score={28.6}
+          indicators={[
+            { indicator: 'Paddy production per capita', value: 28.6, unit: 'kg/capita', score: 28.6, source: 'OpenDOSM', year: '2022', confidence: 'medium' },
+          ]}
+        />
+      </MemoryRouter>
+    );
+
+    expect(document.querySelector('.pillar-drilldown-method')).toBeNull();
+    expect(document.querySelector('.pillar-drilldown-list li').textContent).not.toContain(' · Paddy');
+  });
+
   it('traps Tab and Shift+Tab within its modal focusable elements', () => {
     render(
       <MemoryRouter>

@@ -769,9 +769,36 @@ const OverviewDashboard = () => {
   }, [isDistrict, resilienceView]);
 
   const drilldownTerritory = !isDistrict && !isOverall ? panelTerritory : t('dashboard.overallBorneo');
-  const drilldownIndicators = !isDistrict && !isOverall
-    ? resilience?.territories?.[panelTerritory]?.detail?.[drilldownPillar] || []
-    : [];
+
+  // BT-34. The all-Borneo pillar score is the mean of the four territory pillar
+  // scores, and each of those territories already publishes the indicators
+  // behind it — so the aggregate has four source lists, not none. Flattening
+  // them answers the client's "drill into the underlying indicators" on the
+  // scope the Dashboard actually opens on, and shows the arithmetic behind a
+  // number a reader otherwise cannot account for.
+  const drilldownIndicators = useMemo(() => {
+    if (isDistrict || !drilldownPillar) return [];
+    if (!isOverall) return resilience?.territories?.[panelTerritory]?.detail?.[drilldownPillar] || [];
+
+    return TERRITORIES.flatMap((territory) => {
+      const entry = resilience?.territories?.[territory];
+      // A territory with no score for this pillar contributes no rows and is
+      // absent from the mean; it must not appear as a zero.
+      if (!Number.isFinite(entry?.pillarScores?.[drilldownPillar])) return [];
+      return (entry?.detail?.[drilldownPillar] || []).map((row) => ({ ...row, territory }));
+    });
+  }, [drilldownPillar, isDistrict, isOverall, panelTerritory, resilience]);
+
+  // Pre-formatted "Sabah 61.0" parts for the method line under the list. Only
+  // the aggregate scope has an average to explain.
+  const drilldownContributors = useMemo(() => {
+    if (isDistrict || !isOverall || !drilldownPillar) return null;
+    const parts = TERRITORIES.map((territory) => {
+      const score = resilience?.territories?.[territory]?.pillarScores?.[drilldownPillar];
+      return Number.isFinite(score) ? `${territory} ${score}` : null;
+    }).filter(Boolean);
+    return parts.length ? parts : null;
+  }, [drilldownPillar, isDistrict, isOverall, resilience]);
 
   const openPillarDrilldown = useCallback((pillar) => {
     setDrilldownPillar(pillar);
@@ -1474,6 +1501,7 @@ const OverviewDashboard = () => {
         pillar={drilldownPillar}
         score={hexScores?.[drilldownPillar]}
         indicators={drilldownIndicators}
+        contributors={drilldownContributors}
       />
     </div>
   );

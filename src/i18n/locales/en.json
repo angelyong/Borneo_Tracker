@@ -776,7 +776,8 @@
     "unscoredBody": "{{pillar}} is not scored for {{territory}} because no comparable data is available. A score of zero is not assumed.",
     "roadmapCta": "View the data-completion route",
     "aggregateTitle": "Aggregate score, no single indicator list",
-    "aggregateBody": "This All-Borneo value combines territory scores. Choose an individual territory to inspect its scored source indicators."
+    "aggregateBody": "This All-Borneo value combines territory scores. Choose an individual territory to inspect its scored source indicators.",
+    "aggregateMethod": "All-Borneo {{score}} is the mean of the {{territories}} scored territories: {{parts}}."
   },
   "pagination": {
     "prev": "< Prev",

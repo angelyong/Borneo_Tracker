@@ -767,7 +767,8 @@
     "unscoredBody": "{{pillar}} tidak diberi skor untuk {{territory}} kerana data setanding tidak tersedia. Skor sifar tidak diandaikan.",
     "roadmapCta": "Lihat laluan melengkapkan data",
     "aggregateTitle": "Skor agregat, tiada senarai penunjuk tunggal",
-    "aggregateBody": "Nilai seluruh Borneo ini menggabungkan skor wilayah. Pilih satu wilayah untuk melihat penunjuk sumber yang diberi skor."
+    "aggregateBody": "Nilai seluruh Borneo ini menggabungkan skor wilayah. Pilih satu wilayah untuk melihat penunjuk sumber yang diberi skor.",
+    "aggregateMethod": "Nilai Seluruh Borneo {{score}} ialah purata {{territories}} wilayah berskor: {{parts}}."
   },
   "pagination": {
     "prev": "< Sebelum",
