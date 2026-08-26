@@ -215,6 +215,23 @@ Weakest-link bars · strict score + fragility gap · provenance chips · freshne
 
 ---
 
+### **BT-34 · Aggregate scope: pillar drill-down shows nothing** *(new, 2026-08-26)*
+**Client ask (§3.4):** *"Make each pillar clickable so users can drill into the underlying indicators."* BT-12 delivered this for a single territory. On **Overall Borneo — the scope the Dashboard opens on** — `drilldownIndicators` is hard-coded to `[]`, so the first-time visitor's click returns a card saying an aggregate has no indicator list.
+**Why it is cheap:** the data is already published. Each pillar has a per-territory indicator list in `resilience.json`, and the aggregate pillar score is the mean of the four territory scores, so the drill-down can show both the contributing rows and the arithmetic behind the number — which also serves §1.2's objection to unaccountable figures. No new collection, no new methodology.
+**Note:** the draft client note wrongly states the aggregate *"genuinely has no one set of source rows"*. It has four. Fix when the note is finalised.
+**Files:** `docs/BT-34_BT-35_PILLAR_DRILLDOWN.md`, `src/pages/dashboard/OverviewDashboard.jsx`, `src/components/PillarDrilldownModal.jsx`, both locales.
+**Role:** FE · **Effort:** S · **Priority:** P2 · **Depends on:** BT-12
+
+### **BT-35 · District scope: pillars are not clickable, and the coverage is asymmetric** *(new, 2026-08-26)*
+**Client ask (§3.4):** same sentence. The district radar is mounted without `onPillarSelect`, so nothing is clickable at all.
+**What the data actually holds:** `districts.json` carries 987 rows over 131 districts. 56 rows are tagged `Education` and 56 `Healthcare` — exactly the 56 Kalimantan districts (BPS Indonesia, canonical, high confidence). **Sabah's 28 and Sarawak's 47 districts carry zero pillar-tagged rows.** So Kalimantan districts have real indicators behind two pillars that no one can reach, while Malaysian districts would show six empty pillars.
+**Must not do:** (1) produce a district-level Resilience Index — two of six pillars for 56 of 131 districts is the exact defect BT-11a corrected and BT-11b gates; (2) label the Malaysian gap as "no data yet" if the real reason is that it is not published at that granularity. The reason belongs on screen.
+**Blocked on investigation:** whether Malaysian agencies publish district-level pillar statistics for Sabah/Sarawak decides both the on-screen wording and what we tell the client.
+**Files:** `docs/BT-34_BT-35_PILLAR_DRILLDOWN.md`, `src/pages/dashboard/OverviewDashboard.jsx`, `src/components/HexRadar.jsx`, `src/components/PillarDrilldownModal.jsx`, both locales.
+**Role:** FE + DATA · **Effort:** S–M · **Priority:** P2 · **Depends on:** BT-12, BT-31
+
+---
+
 ## Epic 4 — Data trust & momentum (client §4) — 7 cards
 
 ### **BT-15 · Turn the freshness chip into a trust-chain popover**
@@ -372,7 +389,7 @@ BT-16b · BT-18 · BT-19 · BT-20 · BT-12 · BT-14 · BT-22 · BT-23 · BT-24 �
 | §3.1 Daily headline insight | BT-07 *(+ KIV-03)* |
 | §3.2 Natural-language search | BT-14, BT-33 *(+ KIV-01)* |
 | §3.3 Meaningful map layers | BT-08, BT-09, BT-10, BT-11a, BT-30 *(+ KIV-02)* |
-| §3.4 Clickable pillars + weakest-link explanation | BT-12, BT-13, BT-31 |
+| §3.4 Clickable pillars + weakest-link explanation | BT-12, BT-13, BT-31, BT-34, BT-35 |
 | §4.1 Trust chain | BT-15, BT-16a, BT-16b, BT-20 |
 | §4.2 Interpretation + momentum | BT-17, BT-18, BT-19, BT-32 |
 | §5 Decision layer + positioning | BT-21, BT-22, BT-23, BT-24 |
