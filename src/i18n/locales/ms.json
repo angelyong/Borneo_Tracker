@@ -271,6 +271,8 @@
     "noCanonicalIndicators": "Belum ada penunjuk kanonik untuk tunjang ini.",
     "loadingIndicatorData": "Memuatkan data penunjuk…",
     "mapLayer": "Lapisan Peta: {{layer}}",
+    "layerNotComparableUnits": "Tidak diwarnakan: wilayah-wilayah ini melaporkan lapisan ini dalam unit berbeza ({{units}}), jadi ia tidak boleh dibandingkan antara satu sama lain. Nilai disenaraikan di bawah tanpa perubahan.",
+    "layerNationalDefinitions": "Diwarnakan, tetapi tafsir dengan berhati-hati: Malaysia dan Indonesia menetapkan ukuran ini mengikut takrifan kebangsaan masing-masing, jadi angka yang lebih rendah di satu pihak sempadan tidak semestinya bermakna keputusan yang lebih baik daripada angka yang lebih tinggi di pihak yang lain.",
     "none": "Tiada",
     "loadingMapData": "Memuatkan data peta…",
     "noData": "Tiada data",

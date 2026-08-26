@@ -124,6 +124,25 @@ describe('OverviewDashboard weakest-link copy', () => {
     expect(ms.pillarDrilldown.aggregateMethod).toContain('{{territories}}');
   });
 
+  it('discloses when a map layer cannot be ranked across territories', () => {
+    const source = readFileSync(resolve(root, 'src/pages/dashboard/OverviewDashboard.jsx'), 'utf8');
+    const indicators = readFileSync(resolve(root, 'src/data/useIndicators.js'), 'utf8');
+    const en = readJson('src/i18n/locales/en.json');
+    const ms = readJson('src/i18n/locales/ms.json');
+
+    expect(source).toContain('layerComparability(layerEntries, activeLayer)');
+    expect(source).toContain("t('dashboard.layerNotComparableUnits'");
+    expect(source).toContain("t('dashboard.layerNationalDefinitions')");
+
+    // Poverty is the same unit on both sides of the border, so the mismatch
+    // has to be declared rather than detected.
+    expect(indicators).toContain('crossBorderDefinitions: true');
+
+    expect(en.dashboard.layerNotComparableUnits).toContain('{{units}}');
+    expect(ms.dashboard.layerNotComparableUnits).toContain('{{units}}');
+    expect(ms.dashboard.layerNationalDefinitions).toBeTruthy();
+  });
+
   it('passes the active artifact to the trust-chain popover', () => {
     const source = readFileSync(resolve(root, 'src/pages/dashboard/OverviewDashboard.jsx'), 'utf8');
 

@@ -2,7 +2,7 @@
 
 Everything here was **found and verified** during the Wave 3 client-review audit and the ESG/SDG feasibility research. Each entry records the evidence, why it matters, and the decision that has to be made before anyone writes code. Resolved entries are struck through and keep their original write-up, so the reasoning stays readable after the fact.
 
-**Status:** §1 and §3 closed 2026-08-26; §5 closed 2026-08-27. §4's aggregate half shipped as BT-34; its district half is BT-35, blocked on BT-36. §2 and §6 remain open; §7 is a recorded research conclusion, not a task.
+**Status:** §1 and §3 closed 2026-08-26; §5 closed and §2 partly closed 2026-08-27. §4's aggregate half shipped as BT-34; its district half is BT-35, blocked on BT-36. §2 and §6 remain open; §7 is a recorded research conclusion, not a task.
 
 **Project framing, confirmed 2026-08-26:** Borneo Tracker is a research and academic project with **no commercial direction**. NonCommercial licence terms are therefore not a blocker anywhere in this file. `docs/BUSINESS_CASE_ABCDE.md` is an ABCDE-framework thinking note ("not a signed plan", per its own header), not the project's direction; an earlier version of this document wrongly treated it as one.
 
@@ -74,7 +74,32 @@ This was closed from both ends on the same day, by different people, and the two
 
 ---
 
-## 2. Malaysian and Indonesian poverty rates are displayed side by side but are not the same measure
+## 2. ~~Malaysian and Indonesian poverty rates are displayed side by side~~ — PARTLY RESOLVED 2026-08-27
+
+**The map is fixed. The wider class is now visible and partly open.**
+
+Investigating this turned up something worse than the poverty case, on the same mechanism. **Seven `dashboard_concept` groups have territories carrying different indicator definitions**, and two of them drive map layers:
+
+| concept | what the four territories actually carry |
+|---|---|
+| `forest_cover` | Brunei `% land`; Sabah/Sarawak/Kalimantan `ha` |
+| `poverty` | Sabah/Sarawak Malaysia's absolute line; Kalimantan Indonesia's P0 line |
+| `economy` | Brunei/Kalimantan GDP growth `%`; Sabah/Sarawak GDP `RM mil` |
+| `education` | Brunei adult literacy `%`; others mean years schooling `years` |
+| `energy` | Brunei/Sabah/Sarawak electricity access; Kalimantan PLN electrification ratio |
+| `entertainment` | tourist arrivals vs domestic tourist trips |
+| `shelter` | Brunei basic sanitation `%`; others household counts |
+
+**The live defect this exposed:** the Forest Cover map layer ranked Brunei's `72.1 % land` against Kalimantan's `49,925,040 ha` on one relative colour ramp. Brunei — the most forested territory in Borneo by share — normalised to `0.0000` and painted **red, worst**. That was on screen.
+
+**Fixed with two guards in `layerColorScale` / the new `layerComparability`:**
+
+- **Unit mismatch is detected, not declared.** It is a bug class, so any layer whose territories report different units is refused a ranking ramp: everything paints neutral and the panel says which units are in play. Forest Cover is caught today; a future layer that develops the same problem is caught without anyone noticing it first.
+- **Same-unit, different-definition must be declared.** No check can tell Malaysia's absolute poverty line from Indonesia's P0 line — both are `%`. `poverty` now carries `crossBorderDefinitions: true`, which still ranks (comparing two national lines is defensible) but renders a note saying a lower figure on one side of the border does not necessarily mean a better outcome than a higher figure on the other.
+
+**Still open:** the underlying data. Brunei should carry forest extent in `ha`, or the others `% land`; the `economy`, `education`, `entertainment` and `shelter` concepts mix units in ways the map does not currently surface because no layer uses them. Kalimantan's poverty figure also remains an *"unweighted mean of 3/5 provinces, approx"* by its own `source` field, and Brunei still has no poverty row at all. Those are ingestion work and overlap BT-36 and §6.
+
+<details><summary>Original write-up, kept for the record</summary>
 
 **Severity: medium (comparability).**
 
@@ -91,6 +116,8 @@ Two separate problems in one row set:
 2. **The Kalimantan figure is a construction.** Its own `source` field reads *"BPS Indonesia (unweighted mean of 3/5 provinces, approx)"* — three of five provinces, unweighted, self-described as approximate.
 
 **Decision needed:** disclose the incomparability in the UI (a footnote or a provenance chip variant), or source a genuinely comparable series. The research identified World Data Lab's $3.00/day and $4.20/day headcount as the metric the SDG Index uses, and it covers Brunei — which would also close the Brunei gap. Licence and access unverified.
+
+</details>
 
 ---
 

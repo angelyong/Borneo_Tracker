@@ -274,6 +274,8 @@
     "noCanonicalIndicators": "No canonical indicators for this pillar yet.",
     "loadingIndicatorData": "Loading indicator data…",
     "mapLayer": "Map Layer: {{layer}}",
+    "layerNotComparableUnits": "Not shaded: these territories report this layer in different units ({{units}}), so they cannot be ranked against each other. Values are listed below unchanged.",
+    "layerNationalDefinitions": "Shaded, but read with care: Malaysia and Indonesia set this measure by their own national definitions, so a lower figure on one side of the border does not necessarily mean a better outcome than a higher figure on the other.",
     "none": "None",
     "loadingMapData": "Loading map data…",
     "noData": "No data",

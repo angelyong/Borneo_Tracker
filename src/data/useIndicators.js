@@ -163,6 +163,12 @@ export const LAYER_CONFIG = {
   },
   poverty: {
     label: 'Poverty',
+    // Sabah and Sarawak carry Malaysia's absolute poverty line; Kalimantan
+    // carries Indonesia's P0 line. Both are "%", so no unit check can catch
+    // this -- the two lines are set by different governments at different real
+    // income levels and a lower figure on one side does not mean less poverty
+    // than a higher figure on the other. Declared so the map can say so.
+    crossBorderDefinitions: true,
     labelKey: 'dashboard.layerLabels.poverty',
     captionKey: 'dashboard.layerCaptions.poverty',
     unitKey: 'dashboard.layerUnits.percent',
@@ -690,6 +696,41 @@ export function getLayerRows(rows, layerKey, resilienceData = null) {
   });
 }
 
+/**
+ * Whether a layer's values may be ranked against each other.
+ *
+ * A choropleth is a comparison device: colouring four territories on one ramp
+ * asserts that their numbers mean the same thing. Two ways that can be false:
+ *
+ *  - **Different units.** Detected here rather than declared, because it is a
+ *    bug class rather than a property. Forest cover is the live example: Brunei
+ *    reports "% land" while the other three report "ha", so a relative ramp
+ *    ranks the most-forested territory in Borneo as the worst.
+ *  - **Same unit, different definition.** Cannot be detected -- Malaysia's
+ *    absolute poverty line and Indonesia's P0 line are both "%". Layers carrying
+ *    this must declare `crossBorderDefinitions`.
+ *
+ * Unit mismatch blocks ranking outright. A declared definition mismatch still
+ * ranks, because comparing two national poverty lines is defensible when the
+ * reader is told that is what they are looking at.
+ */
+export function layerComparability(entries, layerKey) {
+  const config = LAYER_CONFIG[layerKey];
+  if (!config) return { rankable: false, reason: 'unknownLayer', units: [] };
+
+  const units = [
+    ...new Set(
+      (entries || [])
+        .map((entry) => (entry?.row?.unit || '').trim())
+        .filter(Boolean)
+    ),
+  ].sort();
+
+  if (units.length > 1) return { rankable: false, reason: 'unitMismatch', units };
+  if (config.crossBorderDefinitions) return { rankable: true, reason: 'nationalDefinitions', units };
+  return { rankable: true, reason: null, units };
+}
+
 export function layerColorScale(entries, layerKey) {
   const config = LAYER_CONFIG[layerKey];
   if (config?.scale === 'absolute') {
@@ -702,6 +743,11 @@ export function layerColorScale(entries, layerKey) {
   }
   const values = entries.map((entry) => entry.row?.value).filter((value) => Number.isFinite(value));
   if (!config || values.length === 0) {
+    return () => '#94a3b8';
+  }
+  // Values in different units share no scale, so any ranking colour would be
+  // invented. Paint them all neutral and let the caller explain.
+  if (!layerComparability(entries, layerKey).rankable) {
     return () => '#94a3b8';
   }
   const min = Math.min(...values);

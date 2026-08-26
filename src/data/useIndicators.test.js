@@ -9,6 +9,7 @@ import {
   getLayerRows,
   hasDistrictFallbackLayer,
   layerColorScale,
+  layerComparability,
   shouldPreserveMapForNoBoundary,
 } from './useIndicators';
 
@@ -214,5 +215,61 @@ describe('district boundary map focus', () => {
         parentChanged: false,
       })
     ).toBe(false);
+  });
+});
+
+describe('layerComparability', () => {
+  const entry = (territory, value, unit) => ({ territory, row: { territory, value, unit } });
+
+  it('refuses to rank a layer whose territories report different units', () => {
+    // The live defect: Brunei publishes forest cover as "% land" while the
+    // other three publish forest extent in "ha". On a relative ramp that ranks
+    // the most-forested territory in Borneo last.
+    const entries = [
+      entry('Brunei', 72.1, '% land'),
+      entry('Sabah', 6684138, 'ha'),
+      entry('Sarawak', 11643005, 'ha'),
+      entry('Kalimantan', 49925040, 'ha'),
+    ];
+
+    const verdict = layerComparability(entries, 'forestCover');
+    expect(verdict.rankable).toBe(false);
+    expect(verdict.reason).toBe('unitMismatch');
+    expect(verdict.units).toEqual(['% land', 'ha']);
+
+    // And the scale must not paint a ranking.
+    const color = layerColorScale(entries, 'forestCover');
+    const painted = entries.map((item) => color(item.row.value));
+    expect(new Set(painted).size).toBe(1);
+    expect(painted).not.toContain('#16a34a');
+    expect(painted).not.toContain('#dc2626');
+  });
+
+  it('still ranks a declared national-definition mismatch, but flags it', () => {
+    // Malaysia's absolute poverty line and Indonesia's P0 line are both "%",
+    // so no unit check can catch this — it has to be declared.
+    const entries = [
+      entry('Sabah', 17.7, '%'),
+      entry('Sarawak', 8.4, '%'),
+      entry('Kalimantan', 4.73, '%'),
+    ];
+
+    const verdict = layerComparability(entries, 'poverty');
+    expect(verdict.rankable).toBe(true);
+    expect(verdict.reason).toBe('nationalDefinitions');
+
+    const color = layerColorScale(entries, 'poverty');
+    expect(color(17.7)).not.toBe(color(4.73));
+  });
+
+  it('reports nothing to disclose for a single-unit layer', () => {
+    const entries = [entry('Sabah', 120, 'count'), entry('Sarawak', 90, 'count')];
+    const verdict = layerComparability(entries, 'fireHotspots');
+    expect(verdict).toEqual({ rankable: true, reason: null, units: ['count'] });
+  });
+
+  it('tolerates missing rows and unknown layers without inventing a verdict', () => {
+    expect(layerComparability([{ territory: 'Sabah', row: null }], 'poverty').units).toEqual([]);
+    expect(layerComparability([], 'notALayer').rankable).toBe(false);
   });
 });

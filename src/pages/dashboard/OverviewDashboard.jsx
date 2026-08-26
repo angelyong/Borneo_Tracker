@@ -8,6 +8,7 @@ import {
   CATEGORY_TO_PILLAR,
   LAYER_CONFIG,
   LAYER_GROUPS,
+  layerComparability,
   TERRITORIES,
   buildDistrictChoropleth,
   formatValue,
@@ -366,6 +367,14 @@ const OverviewDashboard = () => {
   }, [activeLayer, data]);
 
   const colorForValue = useMemo(() => layerColorScale(layerEntries, activeLayer), [activeLayer, layerEntries]);
+
+  // A choropleth asserts that the four numbers mean the same thing. When they
+  // do not, say which way they differ rather than letting the colours imply a
+  // ranking the data cannot support.
+  const layerCompare = useMemo(
+    () => (isDistrict ? null : layerComparability(layerEntries, activeLayer)),
+    [activeLayer, isDistrict, layerEntries]
+  );
 
   // Region-mode fill: colour each of the 4 territories by the active layer's value,
   // reusing the same relative RAG scale the circle markers used. Boundary polygons
@@ -1411,6 +1420,21 @@ const OverviewDashboard = () => {
             </div>
           ) : null}
 
+          {layerCompare?.reason ? (
+            <div
+              role="note"
+              style={
+                layerCompare.rankable
+                  ? styles.mapLayerDefinitionNote
+                  : styles.mapLayerBlockedNote
+              }
+            >
+              {layerCompare.reason === 'unitMismatch'
+                ? t('dashboard.layerNotComparableUnits', { units: layerCompare.units.join(', ') })
+                : t('dashboard.layerNationalDefinitions')}
+            </div>
+          ) : null}
+
           {/* Twelve flat radios stopped being scannable once the pillar score
               layers landed. The grouping is the one already defined (and
               guarded by a test) in useIndicators.js. */}
@@ -2083,6 +2107,24 @@ const styles = {
 
   mapLayerDirection: {
     whiteSpace: 'nowrap',
+  },
+
+  mapLayerDefinitionNote: {
+    fontSize: '11px',
+    lineHeight: 1.45,
+    color: 'var(--color-muted)',
+    margin: '-4px 0 10px',
+  },
+
+  mapLayerBlockedNote: {
+    fontSize: '11px',
+    lineHeight: 1.45,
+    margin: '-4px 0 10px',
+    padding: '8px 10px',
+    borderRadius: '8px',
+    border: '1px solid var(--color-border)',
+    background: 'var(--color-grey-soft)',
+    color: 'var(--color-ink)',
   },
 
   layerGroup: {
