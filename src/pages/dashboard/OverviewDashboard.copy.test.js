@@ -85,6 +85,25 @@ describe('OverviewDashboard weakest-link copy', () => {
     expect(source).toContain('(isDistrict || !resilienceHistory?.territories ? null : biggestMovers(resilienceHistory))');
   });
 
+  it('feeds the district radar coverage that distinguishes missing from zero', () => {
+    const source = readFileSync(resolve(root, 'src/pages/dashboard/OverviewDashboard.jsx'), 'utf8');
+    const en = readJson('src/i18n/locales/en.json');
+    const ms = readJson('src/i18n/locales/ms.json');
+
+    // getHexagonCoverage is a counter and returns 0 for "no rows", which is
+    // correct there; the radar must not receive those zeros as scored axes.
+    expect(source).toContain('count > 0 ? count : null');
+    expect(source).toContain('pillars={districtCoverageAxes}');
+    expect(source).toContain('max={districtCoverageMax}');
+    expect(source).not.toContain('<HexRadar pillars={hexCoverage} />');
+
+    // The accessible label must not call indicator counts "scores".
+    expect(en.dashboard.districtCoverageAria).toContain('not resilience scores');
+    expect(en.dashboard.districtCoverageAria).toContain('{{scope}}');
+    expect(ms.dashboard.districtCoverageAria).toContain('{{scope}}');
+    expect(ms.dashboard.districtCoverageIncomplete).toBeTruthy();
+  });
+
   it('passes the active artifact to the trust-chain popover', () => {
     const source = readFileSync(resolve(root, 'src/pages/dashboard/OverviewDashboard.jsx'), 'utf8');
 

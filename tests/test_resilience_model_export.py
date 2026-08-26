@@ -23,11 +23,16 @@ RESILIENCE_JSON = ROOT / "public" / "data" / "resilience.json"
 
 # Covers: a multi-indicator pillar (Sabah/Shelter), an indicator observed under
 # one pillar in one territory and never in another (exercises the
-# indicatorToPillar merge), a "cross-pillar wellbeing rate" BOUNDS entry
-# (Poverty rate (absolute), which has no fixed data_model.hexagon_pillar()
-# concept) actually observed on a row, a unit mismatch that must NOT score,
-# and a territory with zero scorable rows (Kalimantan) to exercise the
-# unscored-territory / null-baseline path.
+# indicatorToPillar merge), a single-indicator territory (Brunei), a unit
+# mismatch that must NOT score, and a territory with zero scorable rows
+# (Kalimantan) to exercise the unscored-territory / null-baseline path.
+#
+# Until 2026-08-26 the Brunei row was Poverty rate (absolute) tagged
+# hexagon_pillar="Shelter", exercising a "cross-pillar wellbeing rate" bound
+# that had no hexagon_pillar() concept of its own. Real rows never carried such
+# a tag, so that path only ever ran here; the four bounds behind it were
+# withdrawn from compute_resilience.BOUNDS and the fixture no longer pretends
+# the scenario exists. See docs/OPEN_ISSUES_2026-08-25.md §1.
 SAMPLE_ROWS = [
     {"territory": "Sabah", "indicator": "Life expectancy", "value": 75.3, "unit": "years",
      "hexagon_pillar": "Healthcare", "confidence": "manual", "source": "Test A",
@@ -51,8 +56,8 @@ SAMPLE_ROWS = [
     {"territory": "Sarawak", "indicator": "Life expectancy", "value": 75.4, "unit": "years",
      "hexagon_pillar": "Healthcare", "confidence": "manual", "source": "Test A",
      "year": "2024", "last_updated": "2026-08-05"},
-    {"territory": "Brunei", "indicator": "Poverty rate (absolute)", "value": 5.0, "unit": "%",
-     "hexagon_pillar": "Shelter", "confidence": "high", "source": "Test A",
+    {"territory": "Brunei", "indicator": "Internet use", "value": 97.0, "unit": "%",
+     "hexagon_pillar": "Entertainment", "confidence": "high", "source": "Test A",
      "year": "2024", "last_updated": "2026-08-05"},
     # Kalimantan: no canonical rows at all this run.
 ]
@@ -112,18 +117,45 @@ class ResilienceModelExportTests(unittest.TestCase):
             for indicator, detail in territory_data["inputs"].items():
                 self.assertIn(indicator, mapping, f"{indicator} scored but missing from indicatorToPillar")
                 self.assertEqual(mapping[indicator], detail["pillar"])
-        # Cross-checked against this run's actual observations: Sabah's four
-        # scored indicators plus Poverty rate (absolute), observed on Brunei's
-        # row despite having no data_model.hexagon_pillar() concept.
+        # Cross-checked against this run's actual observations.
         self.assertEqual(mapping["Life expectancy"], "Healthcare")
         self.assertEqual(mapping["Electricity access"], "Energy")
         self.assertEqual(mapping["Clean water access"], "Shelter")
         self.assertEqual(mapping["Basic sanitation access"], "Shelter")
         self.assertEqual(mapping["Paddy production per capita"], "Food")
-        self.assertEqual(mapping["Poverty rate (absolute)"], "Shelter")
+        self.assertEqual(mapping["Internet use"], "Entertainment")
         # A BOUNDS indicator with a real hexagon_pillar() concept but no row
         # this run still resolves via the static fallback.
         self.assertEqual(mapping["Adult literacy"], "Education")
+
+    # 3b. Withdrawn bounds stay withdrawn ---------------------------------------------
+    def test_declared_bounds_are_all_reachable_through_a_pillar(self):
+        """No bound may be published that the pipeline can never apply.
+
+        Every BOUNDS key must resolve to a hexagon pillar, either from its own
+        dashboard_concept or from a row observed this run. A bound that resolves
+        to neither is exported into the hash-anchored resilience_model.json as a
+        rule the Resilience Index does not execute -- which is what happened to
+        the poverty and unemployment entries withdrawn on 2026-08-26.
+        """
+        mapping = self.model["indicatorToPillar"]
+        unreachable = [
+            indicator for indicator in cr.BOUNDS
+            if not cr.hexagon_pillar(indicator) and indicator not in mapping
+        ]
+        self.assertEqual(unreachable, [], f"bounds declared but never applicable: {unreachable}")
+
+    def test_withdrawn_wellbeing_rate_bounds_are_not_reintroduced(self):
+        for indicator in (
+            "Unemployment rate",
+            "Poverty rate (absolute)",
+            "Poverty rate (P0)",
+            "Poverty headcount <$2.15/day (SDG1)",
+        ):
+            self.assertNotIn(
+                indicator, cr.BOUNDS,
+                f"{indicator} has no hexagon pillar, so a bound for it would be anchored but never applied"
+            )
 
     def test_indicator_to_pillar_never_disagrees_with_hexagon_pillar_concept(self):
         for indicator, pillar in self.model["indicatorToPillar"].items():

@@ -778,6 +778,31 @@ const OverviewDashboard = () => {
   }, []);
 
   // True when the hexagon has at least one scored pillar (districts often don't).
+  // The district radar plots indicator COUNTS on geometry built for 0-100
+  // scores. getHexagonCoverage is a counter and returning 0 for "no rows" is
+  // correct there, but feeding those zeros to HexRadar makes every axis look
+  // scored: `values.every(Number.isFinite)` becomes true, so a filled polygon
+  // is drawn, and with no `max` the scale auto-fits the largest count -- one
+  // indicator then renders at the same full radius as a score of 100.
+  // A pillar with zero indicators is missing data, not a measured zero, so it
+  // is passed as null and picks up the same "never imputed" treatment the
+  // territory radar uses.
+  const districtCoverageAxes = useMemo(() => {
+    if (!isDistrict || !hexCoverage) return null;
+    return Object.fromEntries(
+      Object.entries(hexCoverage).map(([pillar, count]) => [pillar, count > 0 ? count : null])
+    );
+  }, [hexCoverage, isDistrict]);
+
+  // Counts have no meaningful magnitude on a radar, so the axis scale is
+  // pinned to the highest count present rather than auto-fitting per district,
+  // which would otherwise make two districts with different coverage look the
+  // same.
+  const districtCoverageMax = useMemo(() => {
+    const counts = Object.values(hexCoverage || {}).filter((count) => Number.isFinite(count));
+    return counts.length ? Math.max(...counts, 1) : 1;
+  }, [hexCoverage]);
+
   const hasHexCoverage = useMemo(
     () => !!hexCoverage && Object.values(hexCoverage).some((count) => count > 0),
     [hexCoverage]
@@ -1237,7 +1262,15 @@ const OverviewDashboard = () => {
 
           {isDistrict ? (
             hasHexCoverage ? (
-              <HexRadar pillars={hexCoverage} />
+              <HexRadar
+                pillars={districtCoverageAxes}
+                max={districtCoverageMax}
+                missingLabel={t('dashboard.noComparableData')}
+                incompleteLabel={t('dashboard.districtCoverageIncomplete')}
+                ariaLabel={t('dashboard.districtCoverageAria', {
+                  scope: scopeName || t('dashboard.thisDistrict'),
+                })}
+              />
             ) : (
               <div style={styles.stateText}>
                 {t('dashboard.hexagonNotMappedDistrict', { scope: scopeName || t('dashboard.thisDistrict') })}

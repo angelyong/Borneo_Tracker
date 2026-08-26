@@ -1,12 +1,29 @@
 # Open issues — found 2026-08-25, not yet actioned
 
-Everything here was **found and verified** during the Wave 3 client-review audit and the ESG/SDG feasibility research. None of it is fixed. Each entry records the evidence, why it matters, and the decision that has to be made before anyone writes code.
+Everything here was **found and verified** during the Wave 3 client-review audit and the ESG/SDG feasibility research. Each entry records the evidence, why it matters, and the decision that has to be made before anyone writes code. Resolved entries are struck through and keep their original write-up, so the reasoning stays readable after the fact.
+
+**Status:** §1 resolved and §3 closed on 2026-08-26. §2, §4, §5, §6 remain open; §7 is a recorded research conclusion, not a task.
+
+**Project framing, confirmed 2026-08-26:** Borneo Tracker is a research and academic project with **no commercial direction**. NonCommercial licence terms are therefore not a blocker anywhere in this file. `docs/BUSINESS_CASE_ABCDE.md` is an ABCDE-framework thinking note ("not a signed plan", per its own header), not the project's direction; an earlier version of this document wrongly treated it as one.
 
 Nothing in this file is a KIV item. The three KIV cards (KIV-01 natural-language query engine, KIV-02 ESG/SDG composite layers, KIV-03 AI daily narrative) stay parked by the client's own instruction and are **out of scope** — see §7 for what the research concluded about KIV-02, recorded so the question does not get re-opened from scratch.
 
 ---
 
-## 1. Four indicators declare a scoring rule that never runs — and it is anchored on Bitcoin
+## 1. ~~Four indicators declare a scoring rule that never runs~~ — RESOLVED 2026-08-26
+
+**Resolved by option (a): the four entries were withdrawn.** No published score changed, because they never scored. Specifically:
+
+- Removed from `compute_resilience.BOUNDS`, with the values and the three reasons they were not simply re-pointed at a pillar preserved as a comment in place.
+- Removed from `supabase/functions/ai-chat/factCalculations.ts` `TARGET_BOUNDS`, the chatbot's hand-copied mirror. This mattered more than the Python side: `targetForIndicator()` matches on indicator name and unit alone with no pillar check, so a user asking BorneoBot for a "target" or "gap" on poverty or unemployment could be handed a figure the dashboard never shows, cited to `compute_resilience.py.BOUNDS`.
+- Two regression guards added in `tests/test_resilience_model_export.py`: one asserting **no bound may be declared that cannot resolve to a pillar** (the general defect), one naming these four specifically.
+- The synthetic fixture row that was the only place the "cross-pillar wellbeing rate" path ever executed was replaced with a genuinely bounded, genuinely pillar-tagged indicator.
+
+`resilience_model.json` changes (its `bounds` block is exported verbatim), so this regenerates and re-anchors through the normal BT-28 sequence on master. The feature branch carries code and tests only.
+
+**Still open, deliberately:** whether poverty and unemployment *should* be scored at all. Restoring them requires answering which hexagon pillar they belong to (the six are needs; these are economic conditions cutting across all of them), what to do about Brunei having no poverty row, and whether Malaysia's absolute line and Indonesia's P0 line can share a pillar score. That is a methodology card, not a config change.
+
+<details><summary>Original write-up, kept for the record</summary>
 
 **Severity: high.** This is the one to settle first.
 
@@ -42,6 +59,8 @@ Verified against the working tree:
 
 Recommendation: (a) now, and open (b) as a separate methodology card if we want those indicators scored.
 
+</details>
+
 ---
 
 ## 2. Malaysian and Indonesian poverty rates are displayed side by side but are not the same measure
@@ -64,7 +83,11 @@ Two separate problems in one row set:
 
 ---
 
-## 3. The stored WGI governance value may be stale
+## 3. ~~The stored WGI governance value may be stale~~ — CLOSED 2026-08-26
+
+**No action needed.** `ingest_poc.pull_governance()` queries the World Bank API live on every refresh (`GOV_WGI_CC.SC?format=json&mrv=5`) and takes the most recent date, so the 2025 methodology revision is picked up automatically. A live API pull during the research returned Brunei 71.86 / Indonesia 36.83 / Malaysia 57.94, which matches what we publish after rounding — the stored values are already the revised series.
+
+<details><summary>Original write-up, kept for the record</summary>
 
 **Severity: medium.**
 
@@ -74,7 +97,9 @@ A live API pull during the research returned Brunei 71.86, Indonesia 36.83, Mala
 
 **Decision needed:** re-run the WGI ingestion and diff, or confirm the source endpoint is the revised series. Low effort.
 
-WGI is CC-BY 4.0 and commercial use is permitted, so there is no licence obstacle here.
+WGI is CC-BY 4.0, so there is no licence obstacle here.
+
+</details>
 
 ---
 
@@ -134,11 +159,13 @@ Four research passes on 2026-08-25 settled KIV-02. Summary of the findings, with
 
 **Without G, there is no ESG composite.**
 
-**An SDG composite fails on four counts.** (1) SDSN's own inclusion rule requires data for at least 80% of indicators; we hold 29 indicators across 12 of 17 goals. (2) Published scores already exist for three of our four territories but on incompatible scales — Sabah 64.25 and Sarawak 66.81 come from the 72-indicator, 15-goal, 2022-data Malaysian States index, while Brunei's 68.9 comes from the 101-indicator, 17-goal, 2026 global index; the SDR states that comparability requires "the same basket of indicators and similar performance thresholds". Kalimantan has no score under any SDSN-methodology work. (3) The documented rule for a wholly missing goal is to impute the regional average — the EU JRC has publicly warned this makes such scores "reflect more a regional average than the particular situation of the country" — and we have no defined region, so this would violate our own never-impute commitment. (4) The SDG Index is licensed **CC BY-NC-ND 4.0**: NonCommercial conflicts with the project's stated commercial direction, and NoDerivatives makes publishing scores computed from their threshold tables legally uncertain. EPI, the equivalent for environment, is CC BY-NC-SA.
+**An SDG composite fails on four counts.** (1) SDSN's own inclusion rule requires data for at least 80% of indicators; we hold 29 indicators across 12 of 17 goals. (2) Published scores already exist for three of our four territories but on incompatible scales — Sabah 64.25 and Sarawak 66.81 come from the 72-indicator, 15-goal, 2022-data Malaysian States index, while Brunei's 68.9 comes from the 101-indicator, 17-goal, 2026 global index; the SDR states that comparability requires "the same basket of indicators and similar performance thresholds". Kalimantan has no score under any SDSN-methodology work. (3) The documented rule for a wholly missing goal is to impute the regional average — the EU JRC has publicly warned this makes such scores "reflect more a regional average than the particular situation of the country" — and we have no defined region, so this would violate our own never-impute commitment. (4) The SDG Index is licensed **CC BY-NC-ND 4.0**. *Corrected 2026-08-26:* the project is academic, so the **NonCommercial** clause is not a blocker — and EPI (CC BY-NC-SA) is therefore usable for environmental bounds after all. **NoDerivatives is a separate matter from NonCommercial** and still applies: publishing scores computed from their compiled threshold tables is arguably a derivative regardless of commercial intent. The risk is materially lower in an academic setting, and the right response is still to approach the Jeffrey Sachs Center rather than reuse the tables unilaterally. Note also that BPS Indonesia's terms are not commerce-related at all — mandatory citation with a direct link, an anti-hammering clause, and a requirement to delete content BPS withdraws — and those stand regardless.
+
+**Licensing was roughly the fourth-most important obstacle here. Removing it does not change the verdict:** blockers (1), (2) and (3) above are about data asymmetry, coverage and imputation, and are untouched.
 
 **A structural limit worth remembering:** every published index derives its "worst" bound from a percentile across ~180 countries. With four territories that calculation cannot be performed at all.
 
-**What the research says is viable instead:** goal-level status ratings with insufficient coverage shown as grey rather than scored. This is what SDSN itself publishes for units it declines to rank, and the Malaysian States methodology gives a citable threshold — *"If a country or state has data available less than 50% of the indicators for a goal, colour assigned for Goal rating is grey"*. Environmental bounds would come from treaty and regulatory targets, which are free and commercially usable, rather than from EPI's NonCommercial percentile tables.
+**What the research says is viable instead:** goal-level status ratings with insufficient coverage shown as grey rather than scored. This is what SDSN itself publishes for units it declines to rank, and the Malaysian States methodology gives a citable threshold — *"If a country or state has data available less than 50% of the indicators for a goal, colour assigned for Goal rating is grey"*. Environmental bounds can come from treaty and regulatory targets (CBD GBF Target 3, WHO annual PM2.5, zero deforestation), which are freely citable — and, now that NonCommercial is not a constraint, from EPI's published percentile tables as well, with attribution and ShareAlike honoured.
 
 **Lead worth following:** the Jeffrey Sachs Center at Sunway University already scores Sabah and Sarawak, holds Asia-Pacific thresholds it derived for indicators absent from the global table, and states on its own methodology page that it obtained the methodology in collaboration with SDSN Paris rather than reusing it unilaterally. A Malaysian university working the same region — one conversation could resolve both the licensing question and the missing thresholds.
 

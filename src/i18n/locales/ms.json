@@ -260,6 +260,8 @@
     "pillarCoverage": "Liputan Tunjang",
     "resilienceByPillar": "Daya Tahan mengikut Tunjang",
     "hexagonSubDistrict": "(Heksagon Kekayaan Sebenar · penunjuk setiap tunjang)",
+    "districtCoverageIncomplete": "Bilangan penunjuk, bukan skor — tunjang tanpa data daerah disenaraikan, tidak pernah diandaikan",
+    "districtCoverageAria": "Penunjuk yang tersedia bagi setiap tunjang Kekayaan Sebenar untuk {{scope}}. Ini ialah bilangan penunjuk yang ada, bukan skor daya tahan.",
     "hexagonSubRegion": "(Heksagon Kekayaan Sebenar · skor daya tahan 0–100)",
     "hexagonNotMappedDistrict": "Tunjang heksagon belum dipetakan pada peringkat daerah — lihat angka ESG & lapisan di bawah untuk {{scope}}.",
     "moneyVsResilience": "Wang vs Daya Tahan",

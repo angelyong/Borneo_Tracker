@@ -48,11 +48,15 @@ export const TARGET_BOUNDS: Record<string, TargetBounds> = {
   'Agricultural land': { unit: '% land', best: 25, worst: 0 },
   'Paddy production per capita': { unit: 'kg/capita', best: 100, worst: 0 },
   'Internet use': { unit: '%', best: 100, worst: 50 },
-  'Unemployment rate': { unit: '%', best: 3, worst: 15 },
-  'Poverty rate (absolute)': { unit: '%', best: 0, worst: 25 },
-  'Poverty rate (P0)': { unit: '%', best: 0, worst: 25 },
-  'Poverty headcount <$2.15/day (SDG1)': { unit: '%', best: 0, worst: 25 },
 };
+
+// Withdrawn 2026-08-26 alongside compute_resilience.BOUNDS. Unemployment rate,
+// Poverty rate (absolute), Poverty rate (P0) and Poverty headcount <$2.15/day
+// declared bounds that the Resilience Index never applied, because their rows
+// carry no hexagon pillar. This mirror had no such guard: targetForIndicator()
+// matches on indicator name and unit alone, so a "target" or "gap" question
+// about poverty or unemployment produced a number the dashboard never shows,
+// cited to compute_resilience.py.BOUNDS. See docs/OPEN_ISSUES_2026-08-25.md §1.
 
 export function roundOne(value: number): number {
   return Number(value.toFixed(1));

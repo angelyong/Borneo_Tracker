@@ -263,6 +263,8 @@
     "pillarCoverage": "Pillar Coverage",
     "resilienceByPillar": "Resilience by Pillar",
     "hexagonSubDistrict": "(True Wealth Hexagon · indicators per pillar)",
+    "districtCoverageIncomplete": "Indicator counts, not scores — pillars without district data are listed, never imputed",
+    "districtCoverageAria": "Indicators available per True Wealth pillar for {{scope}}. These are counts of available indicators, not resilience scores.",
     "hexagonSubRegion": "(True Wealth Hexagon · 0–100 resilience score)",
     "hexagonNotMappedDistrict": "Hexagon pillars aren't mapped at district level yet — see the ESG & layer figures below for {{scope}}.",
     "moneyVsResilience": "Money vs Resilience",

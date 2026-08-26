@@ -78,12 +78,35 @@ BOUNDS = {
     # Entertainment (Phase 1, C2=B): internet use %, same 100/50 band as other access
     # indicators. Multi-agency proxy — carries medium confidence.
     "Internet use":                       {"unit": "%", "best": 100, "worst": 50},
-    # Cross-pillar wellbeing rates (attach to the pillar tagged on the row)
-    "Unemployment rate":                  {"unit": "%", "best": 3,  "worst": 15},
-    "Poverty rate (absolute)":            {"unit": "%", "best": 0,  "worst": 25},
-    "Poverty rate (P0)":                  {"unit": "%", "best": 0,  "worst": 25},
-    "Poverty headcount <$2.15/day (SDG1)": {"unit": "%", "best": 0, "worst": 25},
 }
+
+# Withdrawn 2026-08-26. These four carried bounds and were commented "attach to
+# the pillar tagged on the row", but data_model.hexagon_pillar() has no mapping
+# for the `poverty` or `unemployment_rate` concepts, so those rows are tagged ""
+# and compute()'s pillar filter drops them. They have never scored anywhere:
+# `_indicator_to_pillar()` prints a NOTE rather than failing, so the gap went
+# unnoticed. The bounds were still exported verbatim into resilience_model.json,
+# which is hashed, Sigstore-attested and OpenTimestamps-anchored -- so the
+# project was anchoring a normalisation rule it does not apply. Removing them
+# changes no published score.
+#
+#   "Unemployment rate":                   {"unit": "%", "best": 3, "worst": 15}
+#   "Poverty rate (absolute)":             {"unit": "%", "best": 0, "worst": 25}
+#   "Poverty rate (P0)":                   {"unit": "%", "best": 0, "worst": 25}
+#   "Poverty headcount <$2.15/day (SDG1)": {"unit": "%", "best": 0, "worst": 25}
+#
+# Restoring them is a methodology decision, not a config change, and has to
+# answer three things first (see docs/OPEN_ISSUES_2026-08-25.md §1):
+#   1. Which hexagon pillar? The six are needs -- Food, Energy, Education,
+#      Shelter, Healthcare, Entertainment. Poverty and unemployment are
+#      economic conditions cutting across all six, not a seventh need. Forcing
+#      one in repeats the mis-tagging the 2026-07-15 hexagon reframe corrected.
+#   2. Brunei has no poverty row. Scoring poverty inside a pillar would compute
+#      Brunei's pillar from a different indicator basket than the other three
+#      -- the exact defect BT-11a corrected and BT-11b now gates against.
+#   3. Sabah/Sarawak use Malaysia's absolute poverty line and Kalimantan uses
+#      Indonesia's P0 line. They are not the same instrument, so averaging them
+#      into one pillar score would bake that incomparability into the index.
 
 # 2026-07-15 (Phase 0.5): unified on the methodology doc's 70/40 bands (was 67/34).
 RAG_GREEN = 70

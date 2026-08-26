@@ -48,6 +48,42 @@ describe('truthful hexagon score rendering', () => {
     expect(container.querySelectorAll('circle')).toHaveLength(3);
   });
 
+  // The district scope plots indicator counts on score geometry. A pillar with
+  // zero indicators is missing data, not a measured zero: if it arrives as 0
+  // the radar treats every axis as scored, fills the polygon, and (with the
+  // scale auto-fitting the largest count) draws a single indicator at the same
+  // full radius as a score of 100.
+  it('does not draw a complete polygon when a coverage axis has no data', () => {
+    render(
+      <HexRadar
+        pillars={{ Food: null, Energy: null, Education: 1, Shelter: null, Healthcare: 1, Entertainment: null }}
+        max={1}
+        missingLabel="No comparable data"
+      />
+    );
+
+    expect(container.querySelector('polygon[fill^="rgba(61,184,138"]')).toBeNull();
+    expect(container.querySelectorAll('circle[fill="#3db88a"]')).toHaveLength(2);
+    const labels = [...container.querySelectorAll('text')].map((node) => node.textContent);
+    expect(labels.filter((text) => text === 'No comparable data')).toHaveLength(4);
+    expect(labels).not.toContain('0');
+  });
+
+  it('would misrepresent the same coverage if zeros were passed instead of nulls', () => {
+    render(
+      <HexRadar
+        pillars={{ Food: 0, Energy: 0, Education: 1, Shelter: 0, Healthcare: 1, Entertainment: 0 }}
+        missingLabel="No comparable data"
+      />
+    );
+
+    // Pinned as the defect this guards against: all six axes read as scored,
+    // so a filled polygon is drawn and nothing is labelled as missing.
+    expect(container.querySelector('polygon[fill^="rgba(61,184,138"]')).not.toBeNull();
+    const labels = [...container.querySelectorAll('text')].map((node) => node.textContent);
+    expect(labels).not.toContain('No comparable data');
+  });
+
   it('draws one score polygon only when all six pillar scores are present', () => {
     render(
       <HexRadar
