@@ -42,6 +42,8 @@ Verified against the working tree:
 
 Recommendation: (a) now, and open (b) as a separate methodology card if we want those indicators scored.
 
+**BT-33 implementation boundary (2026-08-26):** the AI Chat target-gap path now reads the canonical `public/data/resilience_model.json` rather than a hand-copied TypeScript table. The four inactive bounds remain in that canonical artifact pending D4 owner approval; they must not be removed, mapped to a Hexagon pillar, or described as active Resilience Index methodology by this implementation.
+
 ---
 
 ## 2. Malaysian and Indonesian poverty rates are displayed side by side but are not the same measure

@@ -7,6 +7,10 @@ import i18n from '../../i18n';
 import AIbotButton from '../AIbotButton';
 import AIChatDialog from './AIChatDialog';
 import AIChatMessage from './AIChatMessage';
+import {
+  SUGGESTED_QUESTION_CONTRACT_VERSION,
+  SUGGESTED_QUESTIONS,
+} from '../../shared/aiChatContracts';
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -135,6 +139,34 @@ describe('AI chat dialog', () => {
 
     expect(document.querySelector('#ai-chat-input')?.value).toBe('What is the evidence for this place?');
     expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it('submits every enabled suggested question exactly as its shared contract text', async () => {
+    for (const question of SUGGESTED_QUESTIONS) {
+      fetch.mockResolvedValueOnce(successResponse(geminiFixture));
+      render(<MemoryRouter><AIChatDialog open onClose={() => {}} /></MemoryRouter>);
+
+      const button = [...document.querySelectorAll('.ai-chat-suggestion')]
+        .find((element) => element.textContent === question);
+      expect(button).toBeTruthy();
+      await act(async () => {
+        button.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+
+      expect(JSON.parse(fetch.mock.calls.at(-1)[1].body).message).toBe(question);
+      act(() => root.unmount());
+      container.remove();
+      container = document.createElement('div');
+      document.body.appendChild(container);
+      root = createRoot(container);
+    }
+  });
+
+  it('renders the suggested-question contract version used by the production bundle check', () => {
+    render(<MemoryRouter><AIChatDialog open onClose={() => {}} /></MemoryRouter>);
+
+    expect(document.querySelector('.ai-chat-suggestions')?.getAttribute('data-suggestion-contract-version'))
+      .toBe(SUGGESTED_QUESTION_CONTRACT_VERSION);
   });
 
   it('renders the user message and loading announcement while pending', () => {

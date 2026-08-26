@@ -183,6 +183,52 @@ class DeployWorkflowContractTests(unittest.TestCase):
         self.assertNotIn("Deployment SKIPPED — not yet configured", self.text)
         self.assertNotIn("This run finished green **on purpose**", self.text)
 
+    def test_ai_chat_endpoint_is_required_and_passed_only_to_frontend_builds(self):
+        gate = step_block(
+            self.text,
+            "- name: Check deployment secrets",
+            "- name: Checkout",
+        )
+        build = step_block(
+            self.text,
+            "- name: Build production bundle",
+            "- name: Assert the build is publishable",
+        )
+        self.assertIn("VITE_AI_CHAT_ENDPOINT: ${{ secrets.VITE_AI_CHAT_ENDPOINT }}", gate)
+        self.assertIn('missing="${missing} VITE_AI_CHAT_ENDPOINT"', gate)
+        self.assertIn('if [ "${RELEASE_MODE}" != "connection_test_only" ]', gate)
+        self.assertIn("matching credential-free https /ai-chat function URL", gate)
+        self.assertIn("VITE_AI_CHAT_ENDPOINT: ${{ secrets.VITE_AI_CHAT_ENDPOINT }}", build)
+        for server_only_name in (
+            "SUPABASE_SERVICE_ROLE_KEY",
+            "SUPABASE_SERVICE_KEY",
+            "GEMINI_API_KEY",
+            "AICHATBOTGEMINI_API_KEY",
+        ):
+            self.assertNotIn(f"{server_only_name}: ${{{{ secrets.", build)
+
+    def test_ai_chat_build_and_production_smoke_are_explicit_and_do_not_log_endpoint(self):
+        assertions = step_block(
+            self.text,
+            "- name: Assert the build is publishable",
+            "- name: Install lftp",
+        )
+        smoke = step_block(
+            self.text,
+            "- name: Smoke-test production",
+            "- name: Write deployment summary",
+        )
+        summary = self.text[self.text.index("- name: Write deployment summary"):]
+        self.assertIn('grep -R -F --quiet -- "$VITE_AI_CHAT_ENDPOINT" dist/assets', assertions)
+        self.assertIn("grep -R -F --quiet -- 'bt33-v1' dist/assets", assertions)
+        self.assertIn("BT-33 suggested-question contract marker", assertions)
+        self.assertIn("AI Chat Edge Function CORS reachability", smoke)
+        self.assertIn("-X OPTIONS", smoke)
+        self.assertIn('Access-Control-Request-Method: POST', smoke)
+        self.assertIn("AI Chat smoke test failed", smoke)
+        self.assertNotIn('echo "$VITE_AI_CHAT_ENDPOINT"', self.text)
+        self.assertIn("| AI Chat endpoint | ${AI_CHAT_ENDPOINT:-not run} |", summary)
+
     def test_modes_have_separate_build_and_transport_boundaries(self):
         setup_python = step_block(self.text, "- name: Set up Python", "- name: Validate dashboard data (blocking gate)")
         self.assertIn("mode != 'connection_test_only'", setup_python)

@@ -152,7 +152,7 @@ Wave 3 answers the client's 2026-08-15 review (`docs/CLIENT_FEEDBACK_2026-08-15_
 |---|---|
 | BT-25 | Plural-aware i18n parity test (`src/test/i18nParity.test.js`) — normalises `_one`/`_other` and honours each locale's `Intl.PluralRules`, because Malay correctly has only `other`. There was never any translation debt to fix. |
 | BT-24 | Positioning copy ("Measure Borneo. Understand Borneo. Strengthen Borneo.") on the About hero and the auth layout — deliberately **not** in the 20px fixed-height footer. |
-| BT-14 | Search now routes a non-place query to BorneoBot with the question pre-filled, with explicit handling for the shared Edge Function quota (`AI_CHAT_QUOTA_EXHAUSTED`, 429). |
+| BT-14 | Repository implementation routes a non-place query to BorneoBot with the question pre-filled and handles the shared Edge Function quota (`AI_CHAT_QUOTA_EXHAUSTED`, 429). Production frontend endpoint wiring and browser E2E verification remain open. |
 | BT-12 | Radar pillars are clickable (mouse + keyboard) and open `PillarDrilldownModal` with the exact indicators, values, years and confidence behind that pillar. An unscored pillar shows an honest "no comparable data" card, never a zero. |
 | BT-16b | `sources_registry.py` → `public/data/sources.json`: 16 authoritative sources with publisher, licence, official URL, cadence, territories and pillars. |
 | BT-20 | A real Sources section on `/data-sources`, kept visually and conceptually separate from the cryptographic hash ledger, with loading / error / retry / empty states. |

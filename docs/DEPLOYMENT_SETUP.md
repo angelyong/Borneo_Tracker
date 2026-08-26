@@ -124,13 +124,14 @@ carry **FTPS** values. Concrete settings for `borneotracker.rentsmartprop.com.my
 | ~~`SFTP_KNOWN_HOSTS`~~ | n/a | **Not usable** — SSH host-key pinning does not apply to FTPS. |
 | `VITE_SUPABASE_URL` | **yes** | Production Supabase project URL. ✅ already set (2026-08-01). |
 | `VITE_SUPABASE_ANON_KEY` | **yes** | Production Supabase anon key. Safe in the browser bundle — RLS restricts anon to `status = 'published'`. ✅ already set (2026-08-01). |
+| `VITE_AI_CHAT_ENDPOINT` | **yes for every frontend deployment** | The approved credential-free `https://<project-ref>.functions.supabase.co/ai-chat` endpoint. Store it as an environment-scoped Actions secret; the workflow checks it matches `VITE_SUPABASE_URL`, injects it into Vite, and never prints its value. |
 
 **And one variable is mandatory on this host** — without it the workflow tries SSH and fails:
 `DEPLOY_PROTOCOL` = `ftps` (Variables tab, see below).
 
-> The two `VITE_*` values are not optional. `src/services/supabaseClient.js` is env-gated: build
+> The three required `VITE_*` values are not optional. `src/services/supabaseClient.js` is env-gated: build
 > without them and the deployed site silently falls back to the local **mock** auth and news
-> store. That is a regression that no error message will tell you about.
+> store; without `VITE_AI_CHAT_ENDPOINT`, BorneoBot shows its explicit unavailable state. Both are release failures.
 >
 > The `service_role` key is **never** used here. It stays server-side in the news pipeline.
 

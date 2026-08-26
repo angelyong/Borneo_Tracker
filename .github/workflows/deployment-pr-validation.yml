@@ -31,6 +31,10 @@ on:
       - "witness_events.py"
       - "package.json"
       - "package-lock.json"
+      - "scripts/ai-chat-deploy-check.js"
+      - "docs/ai-chat-production-deployment.md"
+      - "docs/ai-chat-frontend-contract.md"
+      - "docs/DEPLOYMENT_SETUP.md"
   workflow_dispatch: {}
 
 permissions:

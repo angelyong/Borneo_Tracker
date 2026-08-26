@@ -2,6 +2,7 @@ import indicatorsData from '../../../public/data/indicators.json' with { type: '
 import resilienceData from '../../../public/data/resilience.json' with { type: 'json' };
 import districtsData from '../../../public/data/districts.json' with { type: 'json' };
 import manifestData from '../../../public/data/manifest.json' with { type: 'json' };
+import resilienceModelData from '../../../public/data/resilience_model.json' with { type: 'json' };
 import type { FactSource, FactValueStatus } from './contracts.ts';
 
 export type IndicatorRow = {
@@ -86,6 +87,11 @@ export type FactRepositoryData = {
     generatedAt?: string;
     files?: Record<string, { generatedAt?: string; sha256?: string; bytes?: number }>;
   };
+  resilienceModel?: {
+    bounds?: Record<string, { unit: string; best: number; worst: number }>;
+    indicatorToPillar?: Record<string, string>;
+    generatedAt?: string;
+  };
 };
 
 export type LookupResult<T> =
@@ -113,6 +119,7 @@ const RUNTIME_DATA: FactRepositoryData = {
   resilience: resilienceData,
   districts: districtsData,
   manifest: manifestData,
+  resilienceModel: resilienceModelData,
 };
 
 const SOURCE_FILES = {
@@ -120,6 +127,7 @@ const SOURCE_FILES = {
   resilience: 'public/data/resilience.json',
   districts: 'public/data/districts.json',
   manifest: 'public/data/manifest.json',
+  resilienceModel: 'public/data/resilience_model.json',
 } as const;
 
 export class FactDataRepository {
@@ -260,12 +268,21 @@ export class FactDataRepository {
     return this.data.districts?.generatedAt;
   }
 
+  getResilienceModelBounds(): Record<string, { unit: string; best: number; worst: number }> {
+    return this.data.resilienceModel?.bounds || {};
+  }
+
+  getResilienceModelPillar(indicator: string | undefined): string | undefined {
+    if (!indicator) return undefined;
+    return this.data.resilienceModel?.indicatorToPillar?.[indicator];
+  }
+
   getMethodologyNotes(): string[] {
     const method = this.data.resilience?.method;
     return [
       ...(method ? [method] : []),
       'Rounding policy: calculations preserve raw values and format answer-facing numbers to one decimal place unless the source value is an integer.',
-      'Target bounds are committed in compute_resilience.py and mirrored by Stage 4A for deterministic fact building.',
+      'Target bounds are read at runtime from public/data/resilience_model.json.',
     ];
   }
 
@@ -278,6 +295,14 @@ export class FactDataRepository {
       sourceFile: SOURCE_FILES.resilience,
       sourcePath,
       year: parseYear(this.data.resilience?.generatedAt),
+    };
+  }
+
+  getSourceForResilienceModel(sourcePath: string): FactSource {
+    return {
+      sourceFile: SOURCE_FILES.resilienceModel,
+      sourcePath,
+      year: parseYear(this.data.resilienceModel?.generatedAt),
     };
   }
 

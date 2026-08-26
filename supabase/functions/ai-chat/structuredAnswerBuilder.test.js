@@ -280,8 +280,64 @@ describe('structured answer AVAILABLE layers', () => {
 
     expect(answer.layers.gap).toMatchObject({
       status: 'AVAILABLE',
-      text: 'Clean water access for Sabah has current 80.5%, target 100%, and gap 19.5%.',
+      text: 'Clean water access for Sabah has current 80.5%; it needs to increase by 19.5% to reach the target of 100%.',
     });
+  });
+
+  it.each([
+    ['reduce', 'Unemployment rate for Sabah has current 5.7%; it needs to reduce by 2.7% to reach the target of 3%.'],
+    ['at-target', 'Clean water access for Sabah has current 100% and is already at the target of 100%.'],
+  ])('renders canonical target-gap direction %s in public structured text', (targetDirection, expectedText) => {
+    const answer = buildStructuredAnswer({
+      language: 'en',
+      factObject: baseFact({
+        indicators: ['Test indicator'],
+        values: {
+          rawValues: [{
+            territory: 'Sabah', indicator: targetDirection === 'reduce' ? 'Unemployment rate' : 'Clean water access',
+            value: targetDirection === 'reduce' ? 5.7 : 100,
+            formattedValue: targetDirection === 'reduce' ? '5.7%' : '100%', unit: '%', status: 'direct',
+          }],
+          indicatorScores: [],
+          pillarScores: [],
+          target: { value: targetDirection === 'reduce' ? 3 : 100, formattedValue: targetDirection === 'reduce' ? '3%' : '100%', unit: '%', status: 'calculated' },
+          gap: { value: targetDirection === 'reduce' ? 2.7 : 0, formattedValue: targetDirection === 'reduce' ? '2.7%' : '0%', unit: '%', status: 'calculated', targetDirection },
+        },
+        approvedNumericTokens: targetDirection === 'reduce'
+          ? ['5.7%', '3%', '2.7%', '5.7', '3', '2.7']
+          : ['100%', '0%', '100', '0'],
+      }),
+      entities: baseEntities({ operations: { targetGap: true } }),
+      comparability: baseComparability(),
+    });
+
+    expect(answer.layers.gap).toMatchObject({ status: 'AVAILABLE', text: expectedText });
+  });
+
+  it('fails closed when a target-gap direction is missing', () => {
+    const answer = buildStructuredAnswer({
+      language: 'en',
+      factObject: baseFact({
+        values: {
+          rawValues: [{ territory: 'Sabah', indicator: 'Clean water access', value: 80.5, formattedValue: '80.5%', unit: '%', status: 'direct' }],
+          indicatorScores: [],
+          pillarScores: [],
+          target: { value: 100, formattedValue: '100%', unit: '%', status: 'calculated' },
+          // Runtime data can be malformed even though the TypeScript target-gap type requires a direction.
+          gap: { value: 19.5, formattedValue: '19.5%', unit: '%', status: 'calculated' },
+        },
+        approvedNumericTokens: ['80.5%', '100%', '19.5%', '80.5', '100', '19.5'],
+      }),
+      entities: baseEntities({ operations: { targetGap: true } }),
+      comparability: baseComparability(),
+    });
+
+    expect(answer.layers.gap).toMatchObject({
+      status: 'UNAVAILABLE',
+      text: 'No verified target-gap direction is available for this requested value.',
+      codes: ['GAP_DIRECTION_UNAVAILABLE'],
+    });
+    expect(answer.summaryText).not.toMatch(/needs to increase|needs to reduce/i);
   });
 
   it('builds a dedicated SDG indicator-list answer without the resilience diagnosis template', () => {
@@ -306,6 +362,18 @@ describe('structured answer PARTIAL and unavailable layers', () => {
     expect(answer.layers.gap.status).toBe('UNAVAILABLE');
     expect(answer.layers.gap.text).toBe('No verified compatible target is available for this requested value.');
     expect(answer.layers.honesty.warnings.join(' ')).toContain('Target and gap are unavailable');
+  });
+
+  it.each(['unemployment', 'poverty'])('keeps inactive %s bounds out of public target-gap answers', (indicator) => {
+    const { answer, factObject } = buildFactAndAnswer(`What is the target gap for Sabah ${indicator}?`);
+
+    expect(factObject.warnings).toContainEqual(expect.objectContaining({ code: 'TARGET_INACTIVE' }));
+    expect(answer.availability).toBe('PARTIAL');
+    expect(answer.layers.gap).toMatchObject({
+      status: 'UNAVAILABLE',
+      text: 'No verified compatible target is available for this requested value.',
+    });
+    expect(answer.summaryText).not.toMatch(/target of 3%|target of 0%|needs to reduce/i);
   });
 
   it('downgrades SDG progress to coverage or mapping only', () => {

@@ -45,6 +45,9 @@ name: Deploy to DirectAdmin
 #   VITE_SUPABASE_ANON_KEY  is env-gated (src/services/supabaseClient.js). Ship
 #                           without these and production silently regresses to
 #                           the local mock auth/news store.
+#   VITE_AI_CHAT_ENDPOINT   Production ai-chat Edge Function endpoint. REQUIRED
+#                           for every frontend build; use the environment-scoped
+#                           Actions secret and never print its value.
 #
 # ─── VARIABLES THE OWNER MAY SET ──────────────────────────────────────────────
 #   Same screen, "Variables" tab. All optional; sane defaults below.
@@ -149,6 +152,7 @@ jobs:
           SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_AI_CHAT_ENDPOINT: ${{ secrets.VITE_AI_CHAT_ENDPOINT }}
           EVENT_NAME: ${{ github.event_name }}
           RELEASE_MODE: ${{ inputs.release_mode }}
           PROOF_COMMIT_SHA: ${{ inputs.proof_commit_sha }}
@@ -212,6 +216,7 @@ jobs:
           if [ "${RELEASE_MODE}" != "connection_test_only" ]; then
             [ -n "${VITE_SUPABASE_URL:-}" ]      || missing="${missing} VITE_SUPABASE_URL"
             [ -n "${VITE_SUPABASE_ANON_KEY:-}" ] || missing="${missing} VITE_SUPABASE_ANON_KEY"
+            [ -n "${VITE_AI_CHAT_ENDPOINT:-}" ]  || missing="${missing} VITE_AI_CHAT_ENDPOINT"
           fi
           # connection_test_only proves transport; production needs transport
           # plus build inputs. Only names are ever printed.
@@ -225,6 +230,41 @@ jobs:
           if [ -n "$missing" ]; then
             echo "::error title=Deployment prerequisites missing::Missing required secrets for ${RELEASE_MODE}:${missing}. Nothing was uploaded."
             exit 1
+          fi
+
+          if [ "${RELEASE_MODE}" != "connection_test_only" ]; then
+            # Validate the public endpoint relationship without writing either
+            # URL to logs. The function host must match the configured Supabase
+            # project rather than a different staging/production environment.
+            python - <<'PY'
+          import os
+          from urllib.parse import urlparse
+
+          def valid_https_url(value):
+              parsed = urlparse(value)
+              return (
+                  parsed.scheme == 'https'
+                  and parsed.hostname
+                  and parsed.username is None
+                  and parsed.password is None
+                  and parsed.port is None
+                  and not parsed.query
+                  and not parsed.fragment
+                  and parsed.path in ('', '/')
+              )
+
+          supabase = urlparse(os.environ['VITE_SUPABASE_URL'])
+          endpoint = urlparse(os.environ['VITE_AI_CHAT_ENDPOINT'])
+          suffix = '.supabase.co'
+          if not valid_https_url(os.environ['VITE_SUPABASE_URL']) or not supabase.hostname.endswith(suffix):
+              raise SystemExit('::error title=Invalid deployment configuration::VITE_SUPABASE_URL must be a credential-free https project URL.')
+          project_ref = supabase.hostname[:-len(suffix)]
+          if not project_ref or endpoint.scheme != 'https' or endpoint.hostname != f'{project_ref}.functions.supabase.co' or endpoint.username is not None or endpoint.password is not None or endpoint.port is not None or endpoint.query or endpoint.fragment or endpoint.path != '/ai-chat':
+              raise SystemExit('::error title=Invalid deployment configuration::VITE_AI_CHAT_ENDPOINT must be the matching credential-free https /ai-chat function URL.')
+          PY
+            echo "ai_chat_endpoint=configured" >> "$GITHUB_OUTPUT"
+          else
+            echo "ai_chat_endpoint=not_applicable" >> "$GITHUB_OUTPUT"
           fi
 
           if [ "${RELEASE_MODE}" != "dry_run" ]; then
@@ -331,6 +371,7 @@ jobs:
           # silently falls back to the local mock news/auth store.
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_AI_CHAT_ENDPOINT: ${{ secrets.VITE_AI_CHAT_ENDPOINT }}
         run: npm run build
 
       # ─────────────────────────────────────────────────────────────────────
@@ -344,6 +385,8 @@ jobs:
       - name: Assert the build is publishable
         if: steps.gate.outputs.mode != 'connection_test_only'
         id: assert
+        env:
+          VITE_AI_CHAT_ENDPOINT: ${{ secrets.VITE_AI_CHAT_ENDPOINT }}
         run: |
           set -euo pipefail
           fail=0
@@ -378,6 +421,18 @@ jobs:
           fi
           if [ -s dist/data/.htaccess ] && ! grep -qi 'Cache-Control' dist/data/.htaccess; then
             echo "::error title=Pre-upload assertion failed::dist/data/.htaccess does not contain the required data cache policy."
+            fail=1
+          fi
+          if ! grep -R -F --quiet -- "$VITE_AI_CHAT_ENDPOINT" dist/assets; then
+            echo "::error title=Pre-upload assertion failed::The built frontend does not contain the configured AI Chat endpoint."
+            fail=1
+          fi
+          if ! grep -R -F --quiet -- 'bt33-v1' dist/assets; then
+            echo "::error title=Pre-upload assertion failed::The built frontend does not contain the BT-33 suggested-question contract marker."
+            fail=1
+          fi
+          if grep -R -E --quiet '(SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SERVICE_KEY|GEMINI_API_KEY|AICHATBOTGEMINI_API_KEY)' dist/assets; then
+            echo "::error title=Pre-upload assertion failed::A server-only AI or Supabase credential name appeared in the frontend bundle."
             fail=1
           fi
 
@@ -770,6 +825,7 @@ jobs:
         id: smoke
         env:
           ALLOW_INSECURE: ${{ vars.SMOKE_ALLOW_INSECURE_TLS || 'false' }}
+          VITE_AI_CHAT_ENDPOINT: ${{ secrets.VITE_AI_CHAT_ENDPOINT }}
         run: |
           set -uo pipefail
           BASE="${PRODUCTION_URL%/}"
@@ -981,7 +1037,19 @@ jobs:
             fi
           fi
 
-          # ---- 4. Advisory: has the certificate been fixed yet? --------------
+          echo ""
+          echo "=== 4. AI Chat Edge Function CORS reachability ==="
+          chat_status="$("${CURL[@]}" -X OPTIONS -H "Origin: ${BASE}" -H 'Access-Control-Request-Method: POST' -D "$OUT/ai-chat.headers" -o /dev/null -w '%{http_code}' "$VITE_AI_CHAT_ENDPOINT" 2>>"$OUT/curl.err")" || chat_status="000"
+          chat_origin="$(awk 'BEGIN{IGNORECASE=1} /^access-control-allow-origin:/ {sub(/^[^:]*:[[:space:]]*/, ""); sub(/\r$/, ""); print; exit}' "$OUT/ai-chat.headers" 2>/dev/null || true)"
+          chat_methods="$(awk 'BEGIN{IGNORECASE=1} /^access-control-allow-methods:/ {sub(/^[^:]*:[[:space:]]*/, ""); sub(/\r$/, ""); print; exit}' "$OUT/ai-chat.headers" 2>/dev/null || true)"
+          if [ "$chat_status" != "204" ] || [ "$chat_origin" != "$BASE" ] || ! printf '%s' "$chat_methods" | grep -Eqi '(^|,|[[:space:]])POST(,|$|[[:space:]])'; then
+            echo "::error title=AI Chat smoke test failed::The configured function did not return the required production CORS preflight response."
+            fail=1
+          else
+            echo "  ok  configured AI Chat function accepted production CORS preflight."
+          fi
+
+          # ---- 5. Advisory: has the certificate been fixed yet? --------------
           # This runs regardless of the variable, so the log tells the owner the
           # day the certificate starts validating and the check can be tightened.
           echo ""
@@ -1039,6 +1107,7 @@ jobs:
           CONNECTION_OUTCOME: ${{ steps.connection.outcome }}
           PROTOCOL: ${{ steps.gate.outputs.protocol }}
           AUTH: ${{ steps.gate.outputs.auth }}
+          AI_CHAT_ENDPOINT: ${{ steps.gate.outputs.ai_chat_endpoint }}
         run: |
           set -uo pipefail
           {
@@ -1072,6 +1141,7 @@ jobs:
             fi
             echo "| Smoke test | ${SMOKE:-not run} |"
             echo "| TLS | ${TLS:-not checked} |"
+            echo "| AI Chat endpoint | ${AI_CHAT_ENDPOINT:-not run} |"
             echo
 
             if [ -f "$RUNNER_TEMP/expected.json" ]; then
