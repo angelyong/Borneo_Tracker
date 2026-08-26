@@ -1,6 +1,6 @@
 # AI Chat Frontend Contract
 
-Stage 7 prepares the React chatbot UI to consume the current Supabase Edge Function contract without configuring a live endpoint.
+The React chatbot consumes the Supabase Edge Function contract. This document describes the repository contract; it does not itself prove a production deployment.
 
 ## Request
 
@@ -95,7 +95,7 @@ The UI never parses sources from answer text, never displays `sourceFile` or `so
 
 ## Endpoint
 
-`VITE_AI_CHAT_ENDPOINT=` is intentionally blank in `.env.example`.
+`VITE_AI_CHAT_ENDPOINT=` is intentionally blank in `.env.example`. Production builds receive the approved endpoint through the protected deployment environment, never from a committed literal.
 
 No Supabase project ref, anon key, service-role key, Gemini key, or production endpoint is committed. Absence of the endpoint produces a safe configuration error.
 
@@ -123,4 +123,4 @@ The dialog has an accessible name, loading and error live regions, disabled send
 
 ## Current Limitation
 
-Production Gemini/Supabase end-to-end behavior remains unverified until a real Supabase Edge Function URL is deployed and assigned to `VITE_AI_CHAT_ENDPOINT`.
+Production browser-to-function behavior remains unverified until a protected deployment injects `VITE_AI_CHAT_ENDPOINT`, the built asset proves the endpoint was embedded, and the production CORS/auth/fallback smoke has passed. An Edge Function deployment by itself is insufficient evidence.

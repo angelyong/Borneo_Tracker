@@ -24,6 +24,20 @@ export type DifferenceResult =
       reason: string;
     };
 
+export type TargetGapResult =
+  | {
+      ok: true;
+      value: number;
+      formattedValue: string;
+      unit: string;
+      direction: 'increase' | 'reduce' | 'at-target';
+      method: string;
+    }
+  | {
+      ok: false;
+      reason: string;
+    };
+
 export type TargetBounds = {
   unit: string;
   best: number;
@@ -32,31 +46,6 @@ export type TargetBounds = {
 
 export const ROUNDING_POLICY =
   'Calculations preserve raw numeric values and format display numbers to one decimal place unless the source value is an integer.';
-
-export const TARGET_BOUNDS: Record<string, TargetBounds> = {
-  'Life expectancy': { unit: 'years', best: 80, worst: 60 },
-  'Hospital beds (per 1k)': { unit: '/1k', best: 4, worst: 1 },
-  'Clean water access': { unit: '%', best: 100, worst: 50 },
-  'Basic sanitation access': { unit: '%', best: 100, worst: 50 },
-  'Electricity access': { unit: '%', best: 100, worst: 50 },
-  'Electrification ratio': { unit: '%', best: 100, worst: 50 },
-  'Renewable electricity (% output)': { unit: '%', best: 100, worst: 0 },
-  'Adult literacy': { unit: '%', best: 100, worst: 60 },
-  'Mean years schooling (RLS)': { unit: 'years', best: 12, worst: 6 },
-  'School enrolment (primary, gross)': { unit: '%', best: 100, worst: 70 },
-  'School enrolment (secondary, gross)': { unit: '%', best: 100, worst: 70 },
-  'Agricultural land': { unit: '% land', best: 25, worst: 0 },
-  'Paddy production per capita': { unit: 'kg/capita', best: 100, worst: 0 },
-  'Internet use': { unit: '%', best: 100, worst: 50 },
-};
-
-// Withdrawn 2026-08-26 alongside compute_resilience.BOUNDS. Unemployment rate,
-// Poverty rate (absolute), Poverty rate (P0) and Poverty headcount <$2.15/day
-// declared bounds that the Resilience Index never applied, because their rows
-// carry no hexagon pillar. This mirror had no such guard: targetForIndicator()
-// matches on indicator name and unit alone, so a "target" or "gap" question
-// about poverty or unemployment produced a number the dashboard never shows,
-// cited to compute_resilience.py.BOUNDS. See docs/OPEN_ISSUES_2026-08-25.md §1.
 
 export function roundOne(value: number): number {
   return Number(value.toFixed(1));
@@ -116,27 +105,41 @@ export function calculateCompatibleDifference(left: FactValue, right: FactValue)
   };
 }
 
-export function calculateTargetGap(current: FactValue, target: FactValue): DifferenceResult {
+export function calculateTargetGap(current: FactValue, target: FactValue, bounds: TargetBounds): TargetGapResult {
   if (typeof current.value !== 'number' || typeof target.value !== 'number') {
     return { ok: false, reason: 'Current value and target must both be numeric.' };
   }
   if ((current.unit || '') !== (target.unit || '')) {
     return { ok: false, reason: `Target unit ${target.unit || 'missing'} does not match current unit ${current.unit || 'missing'}.` };
   }
-  const value = roundOne(target.value - current.value);
+  const higherIsBetter = bounds.best > bounds.worst;
+  const meetsTarget = higherIsBetter
+    ? current.value >= target.value
+    : current.value <= target.value;
+  const value = meetsTarget
+    ? 0
+    : roundOne(higherIsBetter ? target.value - current.value : current.value - target.value);
   return {
     ok: true,
     value,
     formattedValue: formatFactNumber(value, current.unit),
     unit: current.unit || '',
-    method: 'target minus current value',
+    direction: meetsTarget ? 'at-target' : higherIsBetter ? 'increase' : 'reduce',
+    method: meetsTarget
+      ? 'current value already meets or exceeds the committed target direction'
+      : higherIsBetter
+        ? 'increase by target minus current value'
+        : 'reduce by current value minus target',
   };
 }
 
-export function targetForIndicator(indicator?: string, unit?: string): TargetBounds | undefined {
+export function targetForIndicator(
+  indicator: string | undefined,
+  unit: string | undefined,
+  modelBounds: Record<string, TargetBounds>
+): TargetBounds | undefined {
   if (!indicator) return undefined;
-  const bounds = TARGET_BOUNDS[indicator];
+  const bounds = modelBounds[indicator];
   if (!bounds || bounds.unit !== unit) return undefined;
   return bounds;
 }
-

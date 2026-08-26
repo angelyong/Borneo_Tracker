@@ -15,7 +15,7 @@ Nothing in this file is a KIV item. The three KIV cards (KIV-01 natural-language
 **Resolved by option (a): the four entries were withdrawn.** No published score changed, because they never scored. Specifically:
 
 - Removed from `compute_resilience.BOUNDS`, with the values and the three reasons they were not simply re-pointed at a pillar preserved as a comment in place.
-- Removed from `supabase/functions/ai-chat/factCalculations.ts` `TARGET_BOUNDS`, the chatbot's hand-copied mirror. This mattered more than the Python side: `targetForIndicator()` matches on indicator name and unit alone with no pillar check, so a user asking BorneoBot for a "target" or "gap" on poverty or unemployment could be handed a figure the dashboard never shows, cited to `compute_resilience.py.BOUNDS`.
+- The chatbot's hand-copied `TARGET_BOUNDS` mirror in `supabase/functions/ai-chat/factCalculations.ts` is gone. This mattered more than the Python side: the old `targetForIndicator()` matched on indicator name and unit alone with no pillar check, so a user asking BorneoBot for a "target" or "gap" on poverty or unemployment could be handed a figure the dashboard never shows, cited to `compute_resilience.py.BOUNDS`. **Superseded in the merge by BT-33's stronger fix** — see "How the two fixes fit together" below.
 - Two regression guards added in `tests/test_resilience_model_export.py`: one asserting **no bound may be declared that cannot resolve to a pillar** (the general defect), one naming these four specifically.
 - The synthetic fixture row that was the only place the "cross-pillar wellbeing rate" path ever executed was replaced with a genuinely bounded, genuinely pillar-tagged indicator.
 
@@ -60,6 +60,17 @@ Verified against the working tree:
 Recommendation: (a) now, and open (b) as a separate methodology card if we want those indicators scored.
 
 </details>
+
+### How the two fixes fit together
+
+This was closed from both ends on the same day, by different people, and the two halves are complementary rather than duplicative:
+
+- **Data side (BT-34 branch):** the four entries were withdrawn from `compute_resilience.BOUNDS`, so the pipeline stops *publishing* a rule it never applies. They will leave `public/data/resilience_model.json` at the next master refresh under the BT-28 sequence.
+- **AI Chat side (BT-33):** `factCalculations.ts` no longer holds a mirror at all. `targetForIndicator()` takes bounds as a parameter and `FactDataRepository` reads them from the canonical `public/data/resilience_model.json`. On top of that, `buildTargetGapFact()` refuses any bound whose indicator is absent from `indicatorToPillar`, raising `TARGET_INACTIVE` and marking the fact `PARTIAL`.
+
+**The runtime guard is the stronger of the two**, and it stays valuable after the withdrawal lands: it rejects the whole class — *any* bound not mapped to a current pillar — rather than four indicators by name. It is also what covers the window between now and the master refresh, while the committed artifact still contains the withdrawn entries.
+
+**BT-33 implementation boundary (2026-08-26), as recorded by that ticket:** the four inactive bounds are still present in the committed canonical artifact pending D4 owner approval. **The AI Chat implementation must not itself remove them from that artifact, map them to a Hexagon pillar, or describe them as active Resilience Index methodology.** That boundary is about who may change the data contract, and it is unaffected by the data-side withdrawal above — which went through `compute_resilience.py` and the BT-28 release sequence, not through the chat implementation.
 
 ---
 

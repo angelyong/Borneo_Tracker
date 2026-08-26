@@ -206,12 +206,12 @@ Weakest-link bars · strict score + fragility gap · provenance chips · freshne
 
 ---
 
-### **BT-33 · BorneoBot seeds two of the client's three §3.2 examples** *(new, 2026-08-26)*
-**Client ask (§3.2):** the client named **three** example queries. `SUGGESTED_QUESTIONS` (`src/shared/aiChatContracts.js:12-16`) carries the first two verbatim; the third, *"Find highest-risk regions"*, was replaced by *"Explain the Forest Cover indicator."* and appears nowhere in the repo.
-**Why it needs a decision, not a patch:** `src/shared/aiChatContracts.test.js:5` asserts the current set under the name *"seeds the three client decision and drill-down examples"* — a green test vouching for client provenance the third string does not have. Substituting it may well have been deliberate (ranking territories is KIV-01's scope, and seeding a question the assistant answers badly is worse than explaining), but that reasoning is not recorded anywhere.
-**Do:** the BT-14 owner confirms whether the substitution was intentional, then either records the reason in code and corrects the test name, or seeds the client's third example after checking what BorneoBot actually answers. Either way §3.2 in the client note must state which of his three examples are live.
+### **BT-33 · BorneoBot suggested-question contract** *(partially implemented, 2026-08-26)*
+**Client ask (§3.2):** the client named **three** example queries. `SUGGESTED_QUESTION_CONTRACT` records all three with provenance, capability state and blockers. Only *"Compare Sabah and Sarawak"* is currently enabled from that list; it has a deterministic, Golden-tested answer path.
+**Current boundary:** *"Show districts with low food resilience"* is disabled pending D2 (real comparable district Food data plus an approved scoring rule). *"Find highest-risk regions"* is disabled pending D3 (an approved definition of risk). The two other enabled prompts are clearly recorded as release-safe Borneo Tracker wording, not client examples.
+**Do:** keep a prompt disabled until its exact contract, Golden case, handler, UI and production verification gates have passed. The client note must distinguish repository implementation from production availability.
 **Files:** `docs/BT-33_SEARCH_SUGGESTED_QUESTIONS.md` (full write-up), `src/shared/aiChatContracts.js`, `src/shared/aiChatContracts.test.js`, `docs/CLIENT_FEEDBACK_RESPONSE_2026-08-24.md`.
-**Role:** FE + CONTENT · **Effort:** XS · **Priority:** P2 · **Related:** BT-14 (shipped), KIV-01 (parked)
+**Role:** FE + CONTENT · **Effort:** XS · **Priority:** P2 · **Related:** BT-14 (repository implementation complete; production verification open), KIV-01 (parked)
 
 ---
 

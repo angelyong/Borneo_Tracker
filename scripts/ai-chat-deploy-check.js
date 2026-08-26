@@ -155,8 +155,16 @@ for (const name of expectedEnvNames) {
 
 check('no service credentials are exposed as VITE variables', !/^VITE_.*(?:SERVICE|SECRET|GEMINI|AICHATBOT).*=/im.test(envExample));
 check('production news repository setting is documented', contains('docs/ai-chat-production-deployment.md', 'AI_CHAT_NEWS_REPOSITORY=live'));
-check('commands are marked NOT YET EXECUTED', contains('docs/ai-chat-production-deployment.md', 'NOT YET EXECUTED'));
 check('deployment doc preserves anonymous quota limitation', contains('docs/ai-chat-production-deployment.md', /anonymous durable quota remains deferred/i));
+
+const deployWorkflow = exists('.github/workflows/deploy.yml') ? read('.github/workflows/deploy.yml') : '';
+check('deployment workflow requires the AI Chat endpoint for frontend builds',
+  deployWorkflow.includes('VITE_AI_CHAT_ENDPOINT: ${{ secrets.VITE_AI_CHAT_ENDPOINT }}') &&
+  deployWorkflow.includes('missing="${missing} VITE_AI_CHAT_ENDPOINT"'));
+check('deployment workflow passes the AI Chat endpoint to Vite',
+  /- name: Build production bundle[\s\S]*?VITE_AI_CHAT_ENDPOINT: \$\{\{ secrets\.VITE_AI_CHAT_ENDPOINT \}\}/.test(deployWorkflow));
+check('deployment workflow keeps server-only AI and Supabase credentials out of Vite',
+  !/- name: Build production bundle[\s\S]*?(?:SUPABASE_SERVICE_ROLE_KEY|SUPABASE_SERVICE_KEY|GEMINI_API_KEY|AICHATBOTGEMINI_API_KEY): \$\{\{ secrets\./.test(deployWorkflow));
 
 const configTs = exists('supabase/functions/ai-chat/config.ts') ? read('supabase/functions/ai-chat/config.ts') : '';
 check('Gemini default remains gemini-3.6-flash', configTs.includes("DEFAULT_GEMINI_MODEL = 'gemini-3.6-flash'"));
@@ -190,5 +198,5 @@ if (failed.length) {
   console.error(`\nAI chat deployment preflight failed: ${failed.length} issue(s).`);
   process.exitCode = 1;
 } else {
-  console.log('\nAI chat deployment preflight passed. Offline repository checks only; no live Supabase or Gemini calls were made.');
+  console.log('\nAI chat repository preflight passed. Offline repository checks only; no live Supabase or Gemini calls were made.');
 }

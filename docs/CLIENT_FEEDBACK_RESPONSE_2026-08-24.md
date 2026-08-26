@@ -17,7 +17,9 @@ One deliberate departure from your wording: you suggested a tooltip. We made it 
 
 ## §3.2 — "I should be able to just ask a question"
 
-Search on the Dashboard no longer dead-ends. A query that is not a place is handed to **BorneoBot** with your question already filled in, so the answer comes from the assistant that is grounded in the same data the dashboard shows.
+Search on the Dashboard no longer dead-ends in the Wave 3 repository: a query that is not a place is handed to **BorneoBot** with the question pre-filled. This is not yet a production-complete claim: the frontend-to-Edge-Function deployment wiring and browser smoke evidence are tracked separately.
+
+Of the three examples in §3.2, only **“Compare Sabah and Sarawak”** is currently enabled because it has a committed, deterministic answer path. **“Show districts with low food resilience”** remains parked until comparable district Food data and an approved scoring rule exist. **“Find highest-risk regions”** remains parked until the supervisor approves what “risk” means. The other two visible prompts are Borneo Tracker release-safe wording, not client examples.
 
 **Limitation we want to be explicit about:** BorneoBot runs on a shared daily quota. When that quota is exhausted the interface says so and falls back to a static six-pillar guide — it does not silently fail or invent an answer. A full natural-language query engine (per-query intent routing into dashboard state) needs a token budget we have not committed, and remains parked.
 

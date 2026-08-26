@@ -1,6 +1,17 @@
 # AI Chat Production Deployment Preparation
 
-Stage 8G prepares the repository and the future live-change plan only. Commands in this document are **NOT YET EXECUTED**. Do not run them until Stage 8H is explicitly started.
+The original Stage 8G preparation notes below are historical. They do not prove the current production state.
+
+## Current verification boundary (2026-08-26)
+
+| Layer | Verified status | Evidence required before a client-facing live claim |
+|---|---|---|
+| Repository preparation | Present | `npm run ai-chat:deploy:check` (offline only) |
+| Database / Edge Function | Separately deployed and CORS-reachable in the BT-33 audit | Deployment owner records function version/time |
+| Frontend wiring | Not yet production-verified | A protected deployment supplies `VITE_AI_CHAT_ENDPOINT`; the built asset assertion passes |
+| Browser-to-function E2E | Not yet verified | Production asset marker, CORS/auth/fallback smoke and signed-in browser evidence |
+
+Do not read a historical `NOT YET EXECUTED` command below as a statement about every layer. Equally, a deployed Edge Function alone is not a working BorneoBot frontend.
 
 This work serves ABCDE `A`, `D`, and `E`: the AI assistant can move toward production, but the data, quota, telemetry, news, and identity claims remain bounded by what has actually been verified.
 

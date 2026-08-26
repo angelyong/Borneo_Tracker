@@ -1,7 +1,9 @@
 # BT-33 · BorneoBot seeds two of the client's three §3.2 examples
 
-**Raised:** 2026-08-26 · **Found during:** line-by-line re-audit of the 2026-08-15 client review against the shipped product
-**Owner:** whoever shipped BT-14 · **Related:** BT-14 (shipped), KIV-01 (parked, already discussed with the client)
+> **Historical baseline (2026-08-26).** This audit records the state found before the BT-33 contract repair. The current resolved contract and its remaining D2/D3/D4/D5 boundaries are in [BT-33 AI Chat end-to-end fixing plan](BT-33_AI_CHAT_END_TO_END_FIXING_PLAN.md) and [the client response](CLIENT_FEEDBACK_RESPONSE_2026-08-24.md).
+
+**Raised:** 2026-08-26 · **Found during:** line-by-line re-audit of the 2026-08-15 client review against the then-shipped product
+**Owner:** whoever implemented BT-14 · **Related:** BT-14 (repository implementation complete; production verification open), KIV-01 (parked, already discussed with the client)
 **Role:** FE + CONTENT · **Effort:** XS · **Priority:** P2
 
 ---
@@ -35,7 +37,7 @@ export const SUGGESTED_QUESTIONS = [
 | "Show districts with low food resilience" | yes, verbatim |
 | **"Find highest-risk regions"** | **no — replaced** |
 
-`"Find highest-risk regions"` appears **nowhere** in `src/`, `supabase/` or `scripts/`. It was not moved elsewhere; it is absent.
+**Historical finding:** `"Find highest-risk regions"` appeared **nowhere** in `src/`, `supabase/` or `scripts/` at audit time. The current contract now records the exact phrase as disabled, rather than substituting or silently omitting it, until D3 approves a risk methodology. See [the current fixing plan](BT-33_AI_CHAT_END_TO_END_FIXING_PLAN.md).
 
 ## Why this needs a decision rather than a quick fix
 
@@ -98,4 +100,4 @@ Two things surfaced beside this one. They are recorded here only because the BT-
 `docs/ai-chat-production-deployment.md` opens with *"Commands in this document are **NOT YET EXECUTED**."* If that is still current, BT-14's handoff button opens a panel that cannot answer, and §3.2's delivery status needs restating to the client. If the doc is simply stale, no action — but nobody has confirmed either way. The frontend resolves its endpoint from `VITE_AI_CHAT_ENDPOINT` (`src/services/AIChatService.js:45-47`), so this is a deployment fact, not a repo fact.
 
 **2. BorneoBot keeps its own hand-copied mirror of the scoring bounds.**
-`supabase/functions/ai-chat/factCalculations.ts:36-55` (`TARGET_BOUNDS`) duplicates `compute_resilience.BOUNDS`. It has already drifted by one entry (`Domestic electrification ratio` is missing from the mirror; no values disagree yet). It also carries four bounds that the resilience index never applies — see `docs/OPEN_ISSUES_2026-08-25.md` §1 — so a user asking about a *target* or *gap* for poverty or unemployment can be given a number the dashboard does not show, cited to `compute_resilience.py.BOUNDS`. Note this directly contradicts the rule stated at the top of `src/utils/resilienceModel.js`: *"This file must NEVER hard-code its own bounds or weights — that would be a second source of truth and could silently drift."* Tracked separately in `OPEN_ISSUES_2026-08-25.md`.
+**Historical finding:** `supabase/functions/ai-chat/factCalculations.ts` previously contained a hand-copied `TARGET_BOUNDS` mirror of `compute_resilience.BOUNDS`. This is resolved: runtime target bounds now come from `public/data/resilience_model.json`, with anti-drift coverage. The four model bounds not mapped to `indicatorToPillar` remain a D4 data-methodology decision; until approved, runtime target-gap responses label them unavailable and do not present them as active Resilience Index targets. See [the current fixing plan](BT-33_AI_CHAT_END_TO_END_FIXING_PLAN.md) and [open issue D4](OPEN_ISSUES_2026-08-25.md).

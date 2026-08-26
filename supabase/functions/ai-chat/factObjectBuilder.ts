@@ -279,10 +279,23 @@ function buildTargetGapFact(fact: AIChatFactObject, repository: FactDataReposito
     fact.availability = 'UNAVAILABLE';
     return;
   }
-  const bounds = targetForIndicator(current.indicator, current.unit);
+  const bounds = targetForIndicator(current.indicator, current.unit, repository.getResilienceModelBounds());
   if (!bounds) {
     addWarning(fact, 'TARGET_UNAVAILABLE', 'No committed target bound exists for this indicator and unit.', 'warning');
     fact.requiredDisclosures.push('Target and gap are unavailable because the repository does not contain a compatible target.');
+    fact.availability = 'PARTIAL';
+    return;
+  }
+  if (!repository.getResilienceModelPillar(current.indicator)) {
+    addWarning(
+      fact,
+      'TARGET_INACTIVE',
+      'The available bound is inactive because this indicator is not mapped to a current Resilience Index pillar.',
+      'warning',
+    );
+    fact.requiredDisclosures.push(
+      'Target and gap are unavailable because this indicator is not mapped to a current Resilience Index pillar.',
+    );
     fact.availability = 'PARTIAL';
     return;
   }
@@ -294,10 +307,10 @@ function buildTargetGapFact(fact: AIChatFactObject, repository: FactDataReposito
     formattedValue: formatFactValue(bounds.best, bounds.unit),
     unit: bounds.unit,
     status: 'calculated',
-    sourcePath: 'compute_resilience.py.BOUNDS',
+    sourcePath: `bounds.${current.indicator}`,
   };
   fact.values.target = target;
-  const gap = calculateTargetGap(current, target);
+  const gap = calculateTargetGap(current, target, bounds);
   if (!gap.ok) {
     addWarning(fact, 'GAP_BLOCKED', gap.reason, 'blocking');
     fact.availability = 'BLOCKED';
@@ -311,14 +324,15 @@ function buildTargetGapFact(fact: AIChatFactObject, repository: FactDataReposito
     formattedValue: gap.formattedValue,
     unit: gap.unit,
     status: 'calculated',
-    sourcePath: 'compute_resilience.py.BOUNDS',
+    targetDirection: gap.direction,
+    sourcePath: `bounds.${current.indicator}`,
   };
-  fact.methodologyNotes.push(`Gap calculation: ${gap.method}. ${ROUNDING_POLICY}`);
+  fact.methodologyNotes.push(`Gap calculation: ${gap.method}; direction: ${gap.direction}. ${ROUNDING_POLICY}`);
   fact.conclusion = {
     code: 'TARGET_GAP_AVAILABLE',
     text: 'Target and gap were calculated from committed methodology bounds.',
   };
-  addSource(fact, { sourceFile: 'compute_resilience.py', sourcePath: 'BOUNDS' });
+  addSource(fact, repository.getSourceForResilienceModel(`bounds.${current.indicator}`));
   markAvailabilityFromValues(fact);
 }
 

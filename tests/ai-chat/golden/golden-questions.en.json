@@ -61,7 +61,7 @@
     "context": { "currentPage": "/dashboard", "language": "en" },
     "implementationStatus": "IMPLEMENTED",
     "expected": { "intent": "DASHBOARD_DATA", "territories": ["Sabah"], "operations": { "comparison": false, "ranking": false, "trend": false, "weakest": true, "strongest": false, "targetGap": false, "sdgProgress": false, "districtLevel": false, "latest": false }, "comparabilityDecision": "ALLOW", "factAvailability": "AVAILABLE", "blocked": false, "clarificationRequired": false },
-    "tags": ["dashboard"]
+    "tags": ["dashboard", "suggested_question"]
   },
   {
     "id": "golden-en-008",
@@ -402,11 +402,11 @@
   {
     "id": "golden-en-048",
     "language": "en",
-    "question": "Compare Sabah and Sarawak resilience scores.",
+    "question": "Compare Sabah and Sarawak",
     "context": { "currentPage": "/dashboard", "language": "en" },
     "implementationStatus": "IMPLEMENTED",
-    "expected": { "intent": "DASHBOARD_DATA", "territories": ["Sabah", "Sarawak"], "concepts": ["resilience"], "operations": { "comparison": true, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "sdgIndicatorList": false, "districtLevel": false, "latest": false }, "comparabilityDecision": "ALLOW", "factAvailability": "AVAILABLE", "blocked": false, "clarificationRequired": false, "comparison": { "values": { "Sabah": 63.7, "Sarawak": 72.5 }, "difference": 8.8, "direction": "Sarawak is higher", "comparability": "ALLOW", "forbidText": ["Diagnosis:", "Gap:", "Impact:", "Recommended action:"] } },
-    "tags": ["dashboard", "comparison"]
+    "expected": { "intent": "DASHBOARD_DATA", "territories": ["Sabah", "Sarawak"], "operations": { "comparison": true, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "sdgIndicatorList": false, "districtLevel": false, "latest": false }, "comparabilityDecision": "ALLOW", "factAvailability": "AVAILABLE", "blocked": false, "clarificationRequired": false, "comparison": { "values": { "Sabah": 67.6, "Sarawak": 73.6 }, "difference": 6, "direction": "Sarawak is higher", "comparability": "ALLOW", "forbidText": ["Diagnosis:", "Gap:", "Impact:", "Recommended action:"] } },
+    "tags": ["dashboard", "comparison", "suggested_question"]
   },
   {
     "id": "golden-en-049",
@@ -414,7 +414,7 @@
     "question": "Which has the higher resilience score, Sabah or Sarawak?",
     "context": { "currentPage": "/dashboard", "language": "en" },
     "implementationStatus": "IMPLEMENTED",
-    "expected": { "intent": "DASHBOARD_DATA", "territories": ["Sabah", "Sarawak"], "concepts": ["resilience"], "operations": { "comparison": true, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "sdgIndicatorList": false, "districtLevel": false, "latest": false }, "comparabilityDecision": "ALLOW", "factAvailability": "AVAILABLE", "blocked": false, "clarificationRequired": false, "comparison": { "values": { "Sabah": 63.7, "Sarawak": 72.5 }, "difference": 8.8, "direction": "Sarawak has the higher resilience score", "comparability": "ALLOW", "forbidText": ["Diagnosis:", "Gap:", "Impact:", "Recommended action:"] } },
+    "expected": { "intent": "DASHBOARD_DATA", "territories": ["Sabah", "Sarawak"], "concepts": ["resilience"], "operations": { "comparison": true, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "sdgIndicatorList": false, "districtLevel": false, "latest": false }, "comparabilityDecision": "ALLOW", "factAvailability": "AVAILABLE", "blocked": false, "clarificationRequired": false, "comparison": { "values": { "Sabah": 67.6, "Sarawak": 73.6 }, "difference": 6, "direction": "Sarawak has the higher resilience score", "comparability": "ALLOW", "forbidText": ["Diagnosis:", "Gap:", "Impact:", "Recommended action:"] } },
     "tags": ["dashboard", "comparison"]
   },
   {
@@ -423,7 +423,7 @@
     "question": "How much higher is Sarawak's resilience score than Sabah's?",
     "context": { "currentPage": "/dashboard", "language": "en" },
     "implementationStatus": "IMPLEMENTED",
-    "expected": { "intent": "DASHBOARD_DATA", "territories": ["Sarawak", "Sabah"], "concepts": ["resilience"], "operations": { "comparison": true, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "sdgIndicatorList": false, "districtLevel": false, "latest": false }, "comparabilityDecision": "ALLOW", "factAvailability": "AVAILABLE", "blocked": false, "clarificationRequired": false, "comparison": { "values": { "Sabah": 63.7, "Sarawak": 72.5 }, "difference": 8.8, "direction": "The difference is 8.8 points", "comparability": "ALLOW", "forbidText": ["Diagnosis:", "Gap:", "Impact:", "Recommended action:"] } },
+    "expected": { "intent": "DASHBOARD_DATA", "territories": ["Sarawak", "Sabah"], "concepts": ["resilience"], "operations": { "comparison": true, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "sdgIndicatorList": false, "districtLevel": false, "latest": false }, "comparabilityDecision": "ALLOW", "factAvailability": "AVAILABLE", "blocked": false, "clarificationRequired": false, "comparison": { "values": { "Sabah": 67.6, "Sarawak": 73.6 }, "difference": 6, "direction": "The difference is 6 points", "comparability": "ALLOW", "forbidText": ["Diagnosis:", "Gap:", "Impact:", "Recommended action:"] } },
     "tags": ["dashboard", "comparison"]
   },
   {
@@ -432,7 +432,7 @@
     "question": "Compare Sarawak and Brunei resilience scores.",
     "context": { "currentPage": "/dashboard", "language": "en" },
     "implementationStatus": "IMPLEMENTED",
-    "expected": { "intent": "DASHBOARD_DATA", "territories": ["Sarawak", "Brunei Darussalam"], "concepts": ["resilience"], "operations": { "comparison": true, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "sdgIndicatorList": false, "districtLevel": false, "latest": false }, "comparabilityDecision": "ALLOW", "factAvailability": "AVAILABLE", "blocked": false, "clarificationRequired": false, "comparison": { "values": { "Sarawak": 72.5, "Brunei": 79 }, "difference": 6.5, "direction": "Brunei is higher than Sarawak by 6.5 points", "comparability": "ALLOW", "forbidText": ["Diagnosis:", "Gap:", "Impact:", "Recommended action:", "-6.5"] } },
+    "expected": { "intent": "DASHBOARD_DATA", "territories": ["Sarawak", "Brunei Darussalam"], "concepts": ["resilience"], "operations": { "comparison": true, "ranking": false, "trend": false, "weakest": false, "strongest": false, "targetGap": false, "sdgProgress": false, "sdgIndicatorList": false, "districtLevel": false, "latest": false }, "comparabilityDecision": "ALLOW", "factAvailability": "AVAILABLE", "blocked": false, "clarificationRequired": false, "comparison": { "values": { "Sarawak": 73.6, "Brunei": 78 }, "difference": 4.4, "direction": "Brunei is higher than Sarawak by 4.4 points", "comparability": "ALLOW", "forbidText": ["Diagnosis:", "Gap:", "Impact:", "Recommended action:", "-4.4"] } },
     "tags": ["dashboard", "comparison"]
   },
   {

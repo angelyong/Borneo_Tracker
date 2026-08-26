@@ -127,7 +127,7 @@ graph TD
 ### 阶段一：防护网与独立交互（Day 1）
 - [x] **Step 1.1 (BT-25)**: 编写 `src/test/i18nParity.test.js`，建立英马双语复数感知校验机制。
 - [x] **Step 1.2 (BT-24)**: 在 `en.json` 与 `ms.json` 中配置 Slogan，更新 `AboutPage.jsx` 与 `AuthLayout.jsx`。
-- [x] **Step 1.3 (BT-14)**: 改造 `OverviewDashboard.jsx` 搜索框无结果态，打通 `AIChatDialog.jsx` 预填提问与 429 防护。
+- [x] **Step 1.3 (BT-14)**: 改造 `OverviewDashboard.jsx` 搜索框无结果态，打通 `AIChatDialog.jsx` 预填提问与 429 防护（repository implementation; production endpoint wiring remains separately unverified）。
 - [x] **Step 1.4 (BT-12)**: 升级 `HexRadar.jsx` 增加点击与键盘无障碍事件，开发 `PillarDrilldownModal.jsx` 指标穿透弹窗。
 
 ### 阶段二：数据底座与信任注册表（Day 2）
@@ -149,7 +149,7 @@ graph TD
 
 | 阶段 | 工单 | 交付物 | 状态 |
 |---|---|---|---|
-| 一 | BT-25 · BT-24 · BT-14 · BT-12 | `i18nParity.test.js`、Slogan、搜索 → BorneoBot、`PillarDrilldownModal` | ✅ commit `013804f` |
+| 一 | BT-25 · BT-24 · BT-14 · BT-12 | `i18nParity.test.js`、Slogan、搜索 → BorneoBot、`PillarDrilldownModal` | ✅ repository commit `013804f`; BT-14 production wiring/E2E not yet verified |
 | 二 | BT-16b · BT-20 · BT-18 | `sources_registry.py`、`SourceRegistryTable`、`build_resilience_history.py` | ✅ commit `77f2905` |
 | 三 | BT-19 · BT-22 · BT-23 | `momentum.js` + `MomentumBadge`、`answerStrip.js` + `AnswerStrip`、`useAnswerStrip.js`（Dashboard / Regional / ESG / SDG） | ✅ |
 | 四 | BT-26 · BT-27 | Vitest 56 files / 941 tests → **63 files / 996 tests**；Python **130 tests**；`PROGRESS_REPORT.md` §11、`README.md`、`docs/CLIENT_FEEDBACK_RESPONSE_2026-08-24.md` | ✅ |
