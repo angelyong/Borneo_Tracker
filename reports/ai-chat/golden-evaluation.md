@@ -17,7 +17,7 @@ Run ID: stage-6-golden-1970-01-01
 | Metric | Evaluated | Passed | Failed | Value |
 |---|---:|---:|---:|---:|
 | routingAccuracy | 93 | 93 | 0 | 1 |
-| entityResolutionAccuracy | 120 | 120 | 0 | 1 |
+| entityResolutionAccuracy | 119 | 119 | 0 | 1 |
 | operationDetectionAccuracy | 930 | 930 | 0 | 1 |
 | comparabilityAccuracy | 54 | 54 | 0 | 1 |
 | factAvailabilityAccuracy | 60 | 60 | 0 | 1 |

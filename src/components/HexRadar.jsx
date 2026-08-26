@@ -11,6 +11,7 @@
 // Theme-aware via CSS vars (src/theme.css).
 
 import { HEXAGON_PILLARS } from './hexagonPillars';
+import './HexRadar.css';
 
 function pointAt(angle, radius, cx, cy) {
   return `${cx + radius * Math.cos(angle)},${cy - radius * Math.sin(angle)}`;
@@ -24,6 +25,8 @@ export default function HexRadar({
   missingLabel = 'No data',
   incompleteLabel = 'Incomplete scores — no polygon shown',
   ariaLabel: translatedAriaLabel,
+  onPillarSelect,
+  pillarActionLabel = 'Open {{pillar}} indicator details',
 }) {
   const keys = HEXAGON_PILLARS;
   const values = keys.map((key) => pillars?.[key]);
@@ -62,11 +65,22 @@ export default function HexRadar({
       .map((key, i) => `${key} ${Number.isFinite(values[i]) ? values[i] : missingLabel}`)
       .join(', ')}`;
   const ariaLabel = translatedAriaLabel || defaultAriaLabel;
+  const interactive = typeof onPillarSelect === 'function';
+
+  const selectPillar = (axis) => {
+    if (interactive) onPillarSelect(axis.key, axis.value);
+  };
+
+  const onPillarKeyDown = (event, axis) => {
+    if (!interactive || (event.key !== 'Enter' && event.key !== ' ')) return;
+    event.preventDefault();
+    selectPillar(axis);
+  };
 
   return (
     <svg
       aria-label={ariaLabel}
-      role="img"
+      role={interactive ? 'group' : 'img'}
       viewBox="-26 -14 232 208"
       style={{ width: '100%', maxWidth, display: 'block', margin: '0 auto', overflow: 'visible' }}
     >
@@ -106,7 +120,16 @@ export default function HexRadar({
         const scored = Number.isFinite(axis.value);
         const isWeakest = scored && axis.key === weakest;
         return (
-          <g key={axis.key}>
+          <g
+            key={axis.key}
+            role={interactive ? 'button' : undefined}
+            tabIndex={interactive ? 0 : undefined}
+            aria-label={interactive ? pillarActionLabel.replace('{{pillar}}', axis.key) : undefined}
+            onClick={() => selectPillar(axis)}
+            onKeyDown={(event) => onPillarKeyDown(event, axis)}
+            className={interactive ? 'hex-radar-axis' : undefined}
+          >
+            {interactive && <circle className="hex-radar-focus-ring" cx={lx} cy={ly + 2} r="18" fill="transparent" />}
             <text
               x={lx}
               y={ly - 4}

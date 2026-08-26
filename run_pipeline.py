@@ -27,6 +27,7 @@ Schedule it (data updates yearly/quarterly, so weekly is plenty):
 
 import os
 import sys
+import build_resilience_history
 import compute_resilience
 import emit_manifest
 import export_json
@@ -35,7 +36,7 @@ import ingest_history
 import ingest_poc
 import load_db
 
-TOTAL_STEPS = 7
+TOTAL_STEPS = 8
 
 
 def ensure_success(step_name, result):
@@ -85,7 +86,17 @@ def main():
     print(f"\n>>> [5/{TOTAL_STEPS}] Computing Resilience Index")
     ensure_success("compute_resilience", compute_resilience.main())
 
-    print(f"\n>>> [6/{TOTAL_STEPS}] Building district (ADM2) drill-down JSON")
+    print(f"\n>>> [6/{TOTAL_STEPS}] Building auxiliary resilience history")
+    try:
+        ensure_success("build_resilience_history", build_resilience_history.main())
+    except (RuntimeError, OSError) as error:
+        # History is Option A auxiliary output. A shallow/local checkout must
+        # not invalidate the six anchored datasets; retain the last good series
+        # and make the degraded state explicit.
+        print(f"WARNING: resilience history build failed, keeping previous history JSON. {error}")
+        degraded.append(("build_resilience_history", f"{error} (kept previous history JSON)"))
+
+    print(f"\n>>> [7/{TOTAL_STEPS}] Building district (ADM2) drill-down JSON")
     try:
         ensure_success("ingest_districts", ingest_districts.main())
     except RuntimeError as error:
@@ -95,7 +106,7 @@ def main():
         print(f"WARNING: district pull failed, keeping previous districts.json. {error}")
         degraded.append(("ingest_districts", f"{error} (kept previous districts.json)"))
 
-    print(f"\n>>> [7/{TOTAL_STEPS}] Emitting provenance manifest")
+    print(f"\n>>> [8/{TOTAL_STEPS}] Emitting provenance manifest")
     ensure_success("emit_manifest", emit_manifest.main())
 
     report_degraded(degraded)

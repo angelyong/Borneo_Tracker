@@ -206,6 +206,15 @@ Weakest-link bars · strict score + fragility gap · provenance chips · freshne
 
 ---
 
+### **BT-33 · BorneoBot suggested-question contract** *(partially implemented, 2026-08-26)*
+**Client ask (§3.2):** the client named **three** example queries. `SUGGESTED_QUESTION_CONTRACT` records all three with provenance, capability state and blockers. Only *"Compare Sabah and Sarawak"* is currently enabled from that list; it has a deterministic, Golden-tested answer path.
+**Current boundary:** *"Show districts with low food resilience"* is disabled pending D2 (real comparable district Food data plus an approved scoring rule). *"Find highest-risk regions"* is disabled pending D3 (an approved definition of risk). The two other enabled prompts are clearly recorded as release-safe Borneo Tracker wording, not client examples.
+**Do:** keep a prompt disabled until its exact contract, Golden case, handler, UI and production verification gates have passed. The client note must distinguish repository implementation from production availability.
+**Files:** `docs/BT-33_SEARCH_SUGGESTED_QUESTIONS.md` (full write-up), `src/shared/aiChatContracts.js`, `src/shared/aiChatContracts.test.js`, `docs/CLIENT_FEEDBACK_RESPONSE_2026-08-24.md`.
+**Role:** FE + CONTENT · **Effort:** XS · **Priority:** P2 · **Related:** BT-14 (repository implementation complete; production verification open), KIV-01 (parked)
+
+---
+
 ## Epic 4 — Data trust & momentum (client §4) — 7 cards
 
 ### **BT-15 · Turn the freshness chip into a trust-chain popover**
@@ -347,8 +356,9 @@ BT-28 · BT-29 · BT-11a · BT-11b · BT-32 · BT-01 · BT-02 · BT-03 · BT-04 
 BT-07 · BT-08 · BT-09 · BT-10 · BT-31 · BT-16a · BT-15 · BT-21 · BT-30
 *BT-31 lands before BT-12/BT-13 build on the radar. BT-30 rides with the map epic — Kota Kinabalu should work before a client clicks it.*
 
-**Wave 3 — momentum, drill-down, decision framing:**
+**Wave 3 — momentum, drill-down, decision framing:** ✅ **delivered 2026-08-24**
 BT-16b · BT-18 · BT-19 · BT-20 · BT-12 · BT-14 · BT-22 · BT-23 · BT-24 · BT-25 · BT-26 · BT-27
+*All twelve closed. Execution plan and per-stage status: `docs/WAVE_3_EXECUTION_AND_FIXING_PLAN.md`. Client-facing note: `docs/CLIENT_FEEDBACK_RESPONSE_2026-08-24.md`. The two new data artifacts (`sources.json`, `resilience_history.json`) are auxiliary by contract and are published by `refresh-data.yml` on master per BT-28, not committed with the feature code.*
 
 ---
 
@@ -360,7 +370,7 @@ BT-16b · BT-18 · BT-19 · BT-20 · BT-12 · BT-14 · BT-22 · BT-23 · BT-24 �
 | §1.2 Explain Index vs Strict | BT-04 |
 | §2 EXPLORE / ANALYSE / ACT nav | BT-05 |
 | §3.1 Daily headline insight | BT-07 *(+ KIV-03)* |
-| §3.2 Natural-language search | BT-14 *(+ KIV-01)* |
+| §3.2 Natural-language search | BT-14, BT-33 *(+ KIV-01)* |
 | §3.3 Meaningful map layers | BT-08, BT-09, BT-10, BT-11a, BT-30 *(+ KIV-02)* |
 | §3.4 Clickable pillars + weakest-link explanation | BT-12, BT-13, BT-31 |
 | §4.1 Trust chain | BT-15, BT-16a, BT-16b, BT-20 |

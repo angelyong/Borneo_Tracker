@@ -14,7 +14,7 @@
     "sdg": 10,
     "security": 6,
     "site_knowledge": 11,
-    "suggested_question": 5,
+    "suggested_question": 7,
     "trend": 6
   },
   "deterministic": true,
@@ -47,9 +47,9 @@
       "value": 1
     },
     "entityResolutionAccuracy": {
-      "evaluated": 120,
+      "evaluated": 119,
       "failed": 0,
-      "passed": 120,
+      "passed": 119,
       "value": 1
     },
     "factAvailabilityAccuracy": {
@@ -1453,7 +1453,8 @@
       "safetyCritical": false,
       "status": "passed",
       "tags": [
-        "dashboard"
+        "dashboard",
+        "suggested_question"
       ]
     },
     {
@@ -7777,11 +7778,13 @@
         },
         {
           "actual": [
+            "Active fire hotspots (24h)",
             "Air quality (AQI, live)",
             "Fire alerts (VIIRS, annual)",
             "Tree cover loss (cumulative)"
           ],
           "expected": [
+            "Active fire hotspots (24h)",
             "Air quality (AQI, live)",
             "Fire alerts (VIIRS, annual)",
             "Tree cover loss (cumulative)"
@@ -8552,19 +8555,17 @@
         "clarificationRequired": false,
         "comparabilityDecision": "ALLOW",
         "comparison": {
-          "difference": 8.8,
+          "difference": 6,
           "directionFound": true,
           "forbiddenMatches": [],
-          "summaryText": "Conclusion: Sarawak's resilience score is 72.5 and Sabah's is 63.7. Sarawak: 72.5; Sabah: 63.7. Sarawak is higher than Sabah by 8.8 points. The comparison uses the Resilience Index score.\nLimitations: Important limitations and disclosures are attached to this structured answer.",
+          "summaryText": "Conclusion: Sarawak's resilience score is 73.6 and Sabah's is 67.6. Sarawak: 73.6; Sabah: 67.6. Sarawak is higher than Sabah by 6 points. The comparison uses the score/100.",
           "values": {
-            "Sabah": 63.7,
-            "Sarawak": 72.5
+            "Sabah": 67.6,
+            "Sarawak": 73.6
           }
         },
         "entities": {
-          "concepts": [
-            "resilience"
-          ],
+          "concepts": [],
           "districts": [],
           "indicators": [],
           "operations": {
@@ -8614,28 +8615,28 @@
           "pass": true
         },
         {
-          "actual": 63.7,
-          "expected": 63.7,
+          "actual": 67.6,
+          "expected": 67.6,
           "field": "value.Sabah",
           "metric": "comparisonAnswer",
           "pass": true
         },
         {
-          "actual": 72.5,
-          "expected": 72.5,
+          "actual": 73.6,
+          "expected": 73.6,
           "field": "value.Sarawak",
           "metric": "comparisonAnswer",
           "pass": true
         },
         {
-          "actual": 8.8,
-          "expected": 8.8,
+          "actual": 6,
+          "expected": 6,
           "field": "difference",
           "metric": "comparisonAnswer",
           "pass": true
         },
         {
-          "actual": "Conclusion: Sarawak's resilience score is 72.5 and Sabah's is 63.7. Sarawak: 72.5; Sabah: 63.7. Sarawak is higher than Sabah by 8.8 points. The comparison uses the Resilience Index score.\nLimitations: Important limitations and disclosures are attached to this structured answer.",
+          "actual": "Conclusion: Sarawak's resilience score is 73.6 and Sabah's is 67.6. Sarawak: 73.6; Sabah: 67.6. Sarawak is higher than Sabah by 6 points. The comparison uses the score/100.",
           "expected": "Sarawak is higher",
           "field": "direction",
           "metric": "comparisonAnswer",
@@ -8665,17 +8666,6 @@
             "Sarawak"
           ],
           "field": "territories",
-          "metric": "entity",
-          "pass": true
-        },
-        {
-          "actual": [
-            "resilience"
-          ],
-          "expected": [
-            "resilience"
-          ],
-          "field": "concepts",
           "metric": "entity",
           "pass": true
         },
@@ -8772,7 +8762,8 @@
       "status": "passed",
       "tags": [
         "comparison",
-        "dashboard"
+        "dashboard",
+        "suggested_question"
       ]
     },
     {
@@ -8781,13 +8772,13 @@
         "clarificationRequired": false,
         "comparabilityDecision": "ALLOW",
         "comparison": {
-          "difference": 8.8,
+          "difference": 6,
           "directionFound": true,
           "forbiddenMatches": [],
-          "summaryText": "Conclusion: Sarawak has the higher resilience score. Sarawak: 72.5; Sabah: 63.7. Sarawak is higher by 8.8 points. The comparison uses the Resilience Index score.\nLimitations: Important limitations and disclosures are attached to this structured answer.",
+          "summaryText": "Conclusion: Sarawak has the higher resilience score. Sarawak: 73.6; Sabah: 67.6. Sarawak is higher by 6 points. The comparison uses the Resilience Index score.\nLimitations: Important limitations and disclosures are attached to this structured answer.",
           "values": {
-            "Sabah": 63.7,
-            "Sarawak": 72.5
+            "Sabah": 67.6,
+            "Sarawak": 73.6
           }
         },
         "entities": {
@@ -8843,28 +8834,28 @@
           "pass": true
         },
         {
-          "actual": 63.7,
-          "expected": 63.7,
+          "actual": 67.6,
+          "expected": 67.6,
           "field": "value.Sabah",
           "metric": "comparisonAnswer",
           "pass": true
         },
         {
-          "actual": 72.5,
-          "expected": 72.5,
+          "actual": 73.6,
+          "expected": 73.6,
           "field": "value.Sarawak",
           "metric": "comparisonAnswer",
           "pass": true
         },
         {
-          "actual": 8.8,
-          "expected": 8.8,
+          "actual": 6,
+          "expected": 6,
           "field": "difference",
           "metric": "comparisonAnswer",
           "pass": true
         },
         {
-          "actual": "Conclusion: Sarawak has the higher resilience score. Sarawak: 72.5; Sabah: 63.7. Sarawak is higher by 8.8 points. The comparison uses the Resilience Index score.\nLimitations: Important limitations and disclosures are attached to this structured answer.",
+          "actual": "Conclusion: Sarawak has the higher resilience score. Sarawak: 73.6; Sabah: 67.6. Sarawak is higher by 6 points. The comparison uses the Resilience Index score.\nLimitations: Important limitations and disclosures are attached to this structured answer.",
           "expected": "Sarawak has the higher resilience score",
           "field": "direction",
           "metric": "comparisonAnswer",
@@ -9010,13 +9001,13 @@
         "clarificationRequired": false,
         "comparabilityDecision": "ALLOW",
         "comparison": {
-          "difference": 8.8,
+          "difference": 6,
           "directionFound": true,
           "forbiddenMatches": [],
-          "summaryText": "Conclusion: The difference is 8.8 points. Sarawak is higher than Sabah by 8.8 points. Sarawak: 72.5; Sabah: 63.7. The comparison uses the Resilience Index score.\nLimitations: Important limitations and disclosures are attached to this structured answer.",
+          "summaryText": "Conclusion: The difference is 6 points. Sarawak is higher than Sabah by 6 points. Sarawak: 73.6; Sabah: 67.6. The comparison uses the Resilience Index score.\nLimitations: Important limitations and disclosures are attached to this structured answer.",
           "values": {
-            "Sabah": 63.7,
-            "Sarawak": 72.5
+            "Sabah": 67.6,
+            "Sarawak": 73.6
           }
         },
         "entities": {
@@ -9072,29 +9063,29 @@
           "pass": true
         },
         {
-          "actual": 63.7,
-          "expected": 63.7,
+          "actual": 67.6,
+          "expected": 67.6,
           "field": "value.Sabah",
           "metric": "comparisonAnswer",
           "pass": true
         },
         {
-          "actual": 72.5,
-          "expected": 72.5,
+          "actual": 73.6,
+          "expected": 73.6,
           "field": "value.Sarawak",
           "metric": "comparisonAnswer",
           "pass": true
         },
         {
-          "actual": 8.8,
-          "expected": 8.8,
+          "actual": 6,
+          "expected": 6,
           "field": "difference",
           "metric": "comparisonAnswer",
           "pass": true
         },
         {
-          "actual": "Conclusion: The difference is 8.8 points. Sarawak is higher than Sabah by 8.8 points. Sarawak: 72.5; Sabah: 63.7. The comparison uses the Resilience Index score.\nLimitations: Important limitations and disclosures are attached to this structured answer.",
-          "expected": "The difference is 8.8 points",
+          "actual": "Conclusion: The difference is 6 points. Sarawak is higher than Sabah by 6 points. Sarawak: 73.6; Sabah: 67.6. The comparison uses the Resilience Index score.\nLimitations: Important limitations and disclosures are attached to this structured answer.",
+          "expected": "The difference is 6 points",
           "field": "direction",
           "metric": "comparisonAnswer",
           "pass": true
@@ -9239,13 +9230,13 @@
         "clarificationRequired": false,
         "comparabilityDecision": "ALLOW",
         "comparison": {
-          "difference": -6.5,
+          "difference": -4.4,
           "directionFound": true,
           "forbiddenMatches": [],
-          "summaryText": "Conclusion: Sarawak's resilience score is 72.5 and Brunei's is 79.0. Sarawak: 72.5; Brunei: 79.0. Brunei is higher than Sarawak by 6.5 points. The comparison uses the Resilience Index score.\nLimitations: Important limitations and disclosures are attached to this structured answer.",
+          "summaryText": "Conclusion: Sarawak's resilience score is 73.6 and Brunei's is 78.0. Sarawak: 73.6; Brunei: 78.0. Brunei is higher than Sarawak by 4.4 points. The comparison uses the Resilience Index score.\nLimitations: Important limitations and disclosures are attached to this structured answer.",
           "values": {
-            "Brunei": 79,
-            "Sarawak": 72.5
+            "Brunei": 78,
+            "Sarawak": 73.6
           }
         },
         "entities": {
@@ -9301,29 +9292,29 @@
           "pass": true
         },
         {
-          "actual": 72.5,
-          "expected": 72.5,
+          "actual": 73.6,
+          "expected": 73.6,
           "field": "value.Sarawak",
           "metric": "comparisonAnswer",
           "pass": true
         },
         {
-          "actual": 79,
-          "expected": 79,
+          "actual": 78,
+          "expected": 78,
           "field": "value.Brunei",
           "metric": "comparisonAnswer",
           "pass": true
         },
         {
-          "actual": 6.5,
-          "expected": 6.5,
+          "actual": 4.4,
+          "expected": 4.4,
           "field": "difference",
           "metric": "comparisonAnswer",
           "pass": true
         },
         {
-          "actual": "Conclusion: Sarawak's resilience score is 72.5 and Brunei's is 79.0. Sarawak: 72.5; Brunei: 79.0. Brunei is higher than Sarawak by 6.5 points. The comparison uses the Resilience Index score.\nLimitations: Important limitations and disclosures are attached to this structured answer.",
-          "expected": "Brunei is higher than Sarawak by 6.5 points",
+          "actual": "Conclusion: Sarawak's resilience score is 73.6 and Brunei's is 78.0. Sarawak: 73.6; Brunei: 78.0. Brunei is higher than Sarawak by 4.4 points. The comparison uses the Resilience Index score.\nLimitations: Important limitations and disclosures are attached to this structured answer.",
+          "expected": "Brunei is higher than Sarawak by 4.4 points",
           "field": "direction",
           "metric": "comparisonAnswer",
           "pass": true

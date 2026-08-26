@@ -131,6 +131,7 @@ export default function AboutPage() {
         <div className="about-hero-copy">
           <p className="about-kicker">{t('about.kicker')}</p>
           <h1 id="about-title">{t('about.heroTitle')}</h1>
+          <p className="about-positioning">{t('about.positioning')}</p>
           <p className="about-lede">
             {t('about.heroLede')}
           </p>

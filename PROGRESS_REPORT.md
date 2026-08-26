@@ -1,6 +1,6 @@
 # Borneo Tracker (T002) — Data Layer Progress Report
 
-_Last updated: 2026-07-20_
+_Last updated: 2026-08-24_
 
 **Phase 3 — Data Collection & Pipeline**
 **Status:** Substantially complete · **Report date:** 2026-06-29
@@ -141,6 +141,50 @@ _Last updated: 2026-07-20_
 - **SDG page** — `/sdg` is now a real page (the 6 client-required goals, region selector, confidence tags).
 - **Automated refresh** — `.github/workflows/refresh-data.yml` runs the pipeline daily at 05:00 MYT and commits changed data. data.gov.my calls are throttled to respect its official **4 requests/minute** limit. *(The pipeline has since grown to **6 steps** — the 6th builds the district ADM2 drill-down `public/data/districts.json`.)*
 - **Indicator coverage (current)** — the frontend JSON (`public/data/indicators.json`) now carries **~35 distinct indicators across the 4 territories** (Sabah, Sarawak, Brunei, Kalimantan), up from the 32 recorded in the late-June DB snapshot above.
+
+---
+
+## 11. Wave 3 update (2026-08-24) — momentum, drill-down, decision framing
+
+Wave 3 answers the client's 2026-08-15 review (`docs/CLIENT_FEEDBACK_2026-08-15_ACTION_PLAN.md`); the execution plan is `docs/WAVE_3_EXECUTION_AND_FIXING_PLAN.md`. Twelve cards, delivered in four stages:
+
+| Card | Delivered |
+|---|---|
+| BT-25 | Plural-aware i18n parity test (`src/test/i18nParity.test.js`) — normalises `_one`/`_other` and honours each locale's `Intl.PluralRules`, because Malay correctly has only `other`. There was never any translation debt to fix. |
+| BT-24 | Positioning copy ("Measure Borneo. Understand Borneo. Strengthen Borneo.") on the About hero and the auth layout — deliberately **not** in the 20px fixed-height footer. |
+| BT-14 | Repository implementation routes a non-place query to BorneoBot with the question pre-filled and handles the shared Edge Function quota (`AI_CHAT_QUOTA_EXHAUSTED`, 429). Production frontend endpoint wiring and browser E2E verification remain open. |
+| BT-12 | Radar pillars are clickable (mouse + keyboard) and open `PillarDrilldownModal` with the exact indicators, values, years and confidence behind that pillar. An unscored pillar shows an honest "no comparable data" card, never a zero. |
+| BT-16b | `sources_registry.py` → `public/data/sources.json`: 16 authoritative sources with publisher, licence, official URL, cadence, territories and pillars. |
+| BT-20 | A real Sources section on `/data-sources`, kept visually and conceptually separate from the cryptographic hash ledger, with loading / error / retry / empty states. |
+| BT-18 | `build_resilience_history.py` → `public/data/resilience_history.json`: the index series reconstructed from committed `resilience.json` snapshots, keyed by each artifact's own `generatedAt` (not the UTC commit date) and tagged with the methodology in force. |
+| BT-19 | `src/utils/momentum.js` + `MomentumBadge` — signed delta, biggest movers and an inline sparkline. |
+| BT-22 | `AnswerStrip` — one compact strip answering what / where / why / what next, mounted at the top of the Dashboard resilience card. |
+| BT-23 | The same strip on Regional Details, ESG and SDG, wired through one shared hook (`src/data/useAnswerStrip.js`). |
+| BT-26 | Tests for all of the above: the JS suite went 56 files / 941 tests → **63 files / 1,012 tests**; Python stayed at **130 tests**. |
+| BT-27 | This section, the README update and the client-facing note (`docs/CLIENT_FEEDBACK_RESPONSE_2026-08-24.md`). |
+
+### Three honesty rules this wave enforces in code
+
+1. **No delta across a methodology break.** The 2026-08-03 education-loss defect and its 2026-08-17 correction move the published number without anything changing in Borneo. `computeMomentum` only compares points that share a `methodologyTag`; the first reading after a break reports "first reading on the current method" and no delta at all.
+2. **A flat day is stated in words, not as `+0.0`.** Upstream macro data is annual or quarterly while the pipeline republishes daily, so most days genuinely do not move. The badge renders "No change since &lt;date&gt;" and the aggregate scope lists no movers rather than four zeroes.
+3. **The manifest still hashes exactly six files.** `sources.json` and `resilience_history.json` are auxiliary (Option A). A seventh hashed file would make every already-published client report `INVALID`. Both `tests/test_wave3_auxiliary_outputs.py` and `tests/test_workflow_contract.py` assert they stay out of `DATASET_PATHS` and inside the refresh workflow's commit list.
+
+### Client-review follow-up (2026-08-25)
+
+A line-by-line re-read of the 2026-08-15 review against the running product found four clauses answered in spirit but not in fact. All four are closed:
+
+- **§1.2** — `ScoreExplainer` was built but mounted only on Regional Details, while both scores appear together on the Dashboard. It is now mounted beside the Strict score using `scoreExplainer.strictOpenLabel`, a string that had been written and translated but never wired to anything. The popover heading now uses the client's own words, *"Why are these scores different?"*.
+- **§3.4** — the client's sentence *"Resilience is only as strong as its weakest essential pillar"* appeared nowhere a user could see it. BT-13 had been down-scoped S → XS on the claim that it "already exists as `about.resilienceByPillarBody`"; **that claim was false** — that key describes the widget, not the principle. `WeakestLinkBars` now takes a distinct `principle` prop rendered above the description.
+- **§3.3** — the layer picker rendered twelve flat radios whose labels were derived from the object keys by regex, bypassing `labelKey` entirely. `LAYER_GROUPS` (already defined, and already covered by a passing test) had never been rendered anywhere. The picker is now grouped, every surface reads the layer name from `labelKey`, and the active layer states its `captionKey` question and `directionKey`.
+- **§4.2** — `biggestMovers` ranked by absolute magnitude and sliced to three, so three rises and one fall hid the only decline. It now reserves a slot for the largest rise and the largest fall. The badge and the movers list were also mutually exclusive by scope, so the client's score → direction → movers sequence never appeared on one screen; the movers list now renders in every scoped view, and the aggregate scope shows direction counts (`movementSummary`) because no Borneo-wide delta is derivable from a per-territory history.
+
+Still not delivered, by decision: **ESG and SDG map layers** (no defensible composite score exists — the ESG panel reports indicator counts) and the **full natural-language query engine** (per-query LLM routing; the client marked token-cost items KIV).
+
+### Pipeline
+
+`run_pipeline.py` is now **8 steps** (ingest → history → load_db → export → resilience → resilience history → districts → provenance). Step 6 is degradable: a shallow checkout that cannot read the snapshot history keeps the previous history JSON and records the degradation rather than invalidating the six anchored datasets. `refresh-data.yml` checks out with `fetch-depth: 0` for exactly that reason.
+
+Per BT-28's release-sequencing contract, feature branches carry **code only** — the two auxiliary JSON files are generated on master by `refresh-data.yml` and stamped by `anchor.yml`.
 
 ---
 

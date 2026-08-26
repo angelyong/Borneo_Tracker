@@ -93,6 +93,14 @@
   font-size: 1.05rem;
 }
 
+.about-positioning {
+  margin-top: 14px !important;
+  color: #075f2a !important;
+  font-size: clamp(1rem, 1.6vw, 1.25rem) !important;
+  font-weight: 900;
+  line-height: 1.25 !important;
+}
+
 .about-actions {
   display: flex;
   flex-wrap: wrap;

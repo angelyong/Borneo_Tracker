@@ -6,6 +6,7 @@ import { generateGeminiAnswer } from './geminiClient.ts';
 import { createAiChatHandler, handleAiChatRequest, mapFallbackReason } from './index.ts';
 import { LocalNewsRepository } from './localNewsRepository.ts';
 import { FailingTelemetryAdapter, MemoryTelemetryAdapter, AIChatTelemetryService } from './telemetry.ts';
+import { SUGGESTED_QUESTION_CONTRACT } from '../../../src/shared/aiChatContracts.js';
 
 const validPayload = {
   message: 'Hello',
@@ -1002,6 +1003,9 @@ describe('ai-chat Stage 8E telemetry persistence', () => {
 describe('ai-chat Stage 3B/3C internal integration', () => {
   function safeDashboardAnswer(prompt) {
     if (!prompt) return 'Integrated response.';
+    if (prompt.groundingPayload.recordIds?.includes('indicator-forest-cover')) {
+      return 'Forest Cover measures remaining forest: the amount or share of land under forest.';
+    }
     if (prompt.groundingPayload.answer) return prompt.groundingPayload.answer;
     return [
       prompt.groundingPayload.conclusion,
@@ -1280,6 +1284,70 @@ describe('ai-chat Stage 3B/3C internal integration', () => {
     expect(prompt.groundingPayload.gap).toBe('');
     expect(prompt.groundingPayload.impact).toBe('');
     expect(prompt.groundingPayload.lever).toBe('');
+  });
+
+  it('serves the exact enabled client comparison prompt through the handler', async () => {
+    const result = await runIntegratedRequest({
+      ...validPayload,
+      message: 'Compare Sabah and Sarawak',
+      region: '',
+    });
+    const [, prompt] = result.geminiClient.mock.calls[0];
+
+    expect(result.response.status).toBe(200);
+    expect(result.completed).toMatchObject({
+      intent: 'DASHBOARD_DATA',
+      comparability: { decision: 'ALLOW' },
+      factObject: { availability: 'AVAILABLE' },
+    });
+    expect(prompt.groundingPayload.conclusion).toContain(`Sabah: ${comparisonScore('Sabah')}`);
+    expect(prompt.groundingPayload.conclusion).toContain(`Sarawak: ${comparisonScore('Sarawak')}`);
+  });
+
+  it.each(SUGGESTED_QUESTION_CONTRACT.filter((record) => record.enabled))(
+    'runs enabled suggested-question contract record through handler and response validation: $id',
+    async (record) => {
+      const result = await runIntegratedRequest({
+        ...validPayload,
+        message: record.question,
+        currentPage: '/',
+        region: '',
+      });
+      const [, prompt] = result.geminiClient.mock.calls[0];
+      const validation = result.logger.info.mock.calls
+        .find(([event]) => event === 'response_validation')?.[1];
+
+      expect(result.response.status).toBe(200);
+      expect(result.completed).toMatchObject({ intent: record.requiredIntent, mode: 'gemini-test' });
+      expect(result.fallbackLog).toBeUndefined();
+      expect(validation).toMatchObject({ responseValidated: true, valid: true, fallbackUsed: false });
+      expect(result.body).toMatchObject({
+        answer: safeDashboardAnswer(prompt),
+        mode: 'gemini-test',
+        sources: expect.any(Array),
+      });
+      expect(result.body.sources.length).toBeGreaterThan(0);
+      expect(prompt.userContent).toContain(record.question);
+      if (record.requiredIntent === 'SITE_KNOWLEDGE') {
+        expect(prompt.groundingPayload.answer).toContain(result.body.answer);
+      }
+    },
+  );
+
+  it.each(['unemployment', 'poverty'])('keeps inactive %s target queries outside public target claims', async (indicator) => {
+    const result = await runIntegratedRequest({
+      ...validPayload,
+      message: `What is the target gap for Sabah ${indicator}?`,
+      currentPage: '/',
+      region: '',
+    });
+    expect(result.response.status).toBe(200);
+    expect(result.completed).toMatchObject({
+      intent: 'OUT_OF_SCOPE',
+      modelCallSkipped: true,
+    });
+    expect(result.geminiClient).not.toHaveBeenCalled();
+    expect(result.body.answer).not.toMatch(/target of 3%|target of 0%|needs to reduce/i);
   });
 
   it('falls back to comparison-specific text on provider truncation without a second Gemini call', async () => {

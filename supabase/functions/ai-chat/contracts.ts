@@ -164,7 +164,17 @@ export type FactValue = {
   concept?: string;
   indicator?: string;
   pillar?: string;
+  /** Direction required to meet a calculated target; never inferred by presentation code. */
+  targetDirection?: 'increase' | 'reduce' | 'at-target';
   sourcePath?: string;
+};
+
+export type TargetGapDirection = 'increase' | 'reduce' | 'at-target';
+
+/** A computed target gap is not valid for public narration without its direction. */
+export type TargetGapFactValue = FactValue & {
+  status: 'calculated';
+  targetDirection: TargetGapDirection;
 };
 
 export type FactSource = {
@@ -510,7 +520,7 @@ export type AIChatFactObject = {
     pillarScores: FactValue[];
     overallResilience?: FactValue;
     target?: FactValue;
-    gap?: FactValue;
+    gap?: TargetGapFactValue;
     trends?: FactValue[];
     districtValues?: FactValue[];
   };

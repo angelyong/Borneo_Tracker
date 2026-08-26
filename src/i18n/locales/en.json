@@ -63,7 +63,7 @@
   "scoreExplainer": {
     "openLabel": "Explain Resilience Index, Strict score and fragility gap",
     "strictOpenLabel": "Explain why the Index and Strict scores differ",
-    "title": "Why the scores differ",
+    "title": "Why are these scores different?",
     "indexLabel": "Index:",
     "indexBody": " the arithmetic mean of the scored pillar scores.",
     "strictLabel": "Strict:",
@@ -145,6 +145,31 @@
     "heroLabel": "Fingerprint of this data version",
     "terminalHint": "Run these anywhere. Neither tool is ours."
   },
+  "sourceRegistry": {
+    "eyebrow": "Source transparency",
+    "title": "Authoritative data sources",
+    "hint": "This registry explains who publishes the underlying data, expected refresh timing, territorial coverage and licence. It is separate from the immutable integrity ledger below.",
+    "caption": "Source coverage and expected publication cadence",
+    "loading": "Loading source registry…",
+    "error": "The source registry could not be loaded. The integrity ledger below remains available.",
+    "empty": "No source records are available yet.",
+    "generatedAt": "Registry generated {{date}}",
+    "generatedAtUnknown": "Registry build date is unavailable",
+    "source": "Source",
+    "cadenceLabel": "Expected cadence",
+    "coverage": "Coverage",
+    "licence": "Licence",
+    "opensOfficialSite": "opens official site in a new tab",
+    "cadence": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "annual": "Annual",
+      "irregular": "Irregular",
+      "custom": "{{cadence}} · about every {{days}} days"
+    }
+  },
   "sidebar": {
     "groupExplore": "Explore",
     "groupAnalyse": "Analyse",
@@ -215,6 +240,9 @@
     "region": "Region",
     "district": "District",
     "noPlacesMatch": "No places match “{{query}}”.",
+    "askBorneoBot": "Ask BorneoBot instead",
+    "botSearchPrompt": "I could not find “{{query}}” as a Borneo place. What can you tell me about it in the context of Borneo?",
+    "overallBorneo": "Overall Borneo",
     "dragToResizePanel": "Drag to resize panel",
     "overallResilienceStatus": "Overall Resilience Status",
     "resilienceDistrictNotice": "The Resilience Index is computed at territory level (6 pillars). Switch to Region view for {{district}}'s score — district-level indicators don't yet cover all pillars.",
@@ -255,6 +283,7 @@
     "districtFallbackHealthcare": "District mode shows life expectancy as a raw healthcare indicator, not the territory Healthcare resilience score.",
     "thisDistrict": "this district",
     "weakestLinkFirst": "Weakest link first",
+    "weakestLinkPrinciple": "Resilience is only as strong as its weakest essential pillar.",
     "pillarProvenance": "Pillar provenance · {{count}}/6 scored",
     "noComparableData": "No comparable data — never imputed",
     "territoryCoverageFull": "{{scored}}/6 pillars scored.",
@@ -325,6 +354,39 @@
       "higherBetter": "higher is better",
       "lowerBetter": "lower is better"
     }
+  },
+  "momentum": {
+    "changed": "{{delta}} since {{date}}",
+    "flat": "No change since {{date}}",
+    "firstReading": "First reading on the current method ({{date}})",
+    "direction_up": "Improved",
+    "direction_down": "Declined",
+    "sparklineLabel": "Resilience index from {{start}} to {{end}}",
+    "methodologyNote": "Earlier readings used a different method and are not comparable.",
+    "moversLabel": "Biggest movers:",
+    "moversNone": "No territory moved since the last publication.",
+    "moverItem": "{{territory}} {{delta}}",
+    "summary": "Since the last publication: {{up}} up · {{down}} down · {{flat}} unchanged, of {{total}} territories.",
+    "summaryUnknown": "{{unknown}} have no comparable previous reading."
+  },
+  "answerStrip": {
+    "title": "What this means",
+    "labelWhat": "What",
+    "labelWhere": "Where",
+    "labelWhy": "Why",
+    "labelNext": "What next",
+    "whereTerritory": "{{territory}} is the weakest scored territory at {{index}}.",
+    "wherePillar": "In {{territory}}, {{pillar}} is the weakest scored pillar at {{score}}.",
+    "wherePillarNoScore": "In {{territory}}, {{pillar}} is the weakest scored pillar.",
+    "why": {
+      "Food": "Low food self-sufficiency means more of what people eat arrives from outside, so household prices follow freight and exchange rates rather than the local harvest.",
+      "Energy": "Where energy is the weakest pillar, access is not yet universal, and every service built on top of it — clinics, schools, cold storage — inherits that gap.",
+      "Education": "A weak education base limits the skilled workforce the other five needs draw on, and changes here take a generation to show up in the other pillars.",
+      "Shelter": "Weak shelter scores track gaps in clean water and sanitation at home, which decide day-to-day health long before a clinic is involved.",
+      "Healthcare": "Where healthcare is weakest, capacity is thin relative to the population, so ordinary demand strains it without any crisis.",
+      "Entertainment": "This pillar measures everyday connectivity and participation, so a weak score means fewer people can reach the online services, work and information the rest of the economy assumes."
+    },
+    "unavailable": "There is not enough scored data in this scope to frame a decision."
   },
   "esg": {
     "title": "ESG Indicators",
@@ -498,6 +560,7 @@
     "kicker": "ABOUT THE PLATFORM",
     "heroTitle": "Understanding Borneo Through Trusted Data",
     "heroLede": "Borneo Tracker brings environmental, social and sustainability indicators together in one clear and accessible platform.",
+    "positioning": "Measure Borneo. Understand Borneo. Strengthen Borneo.",
     "exploreDashboard": "Explore Dashboard",
     "viewDataSources": "View Data Sources",
     "ourPurpose": "Our Purpose",
@@ -548,6 +611,7 @@
     "scopeSourcesBody": "Clear data sources and regular updates"
   },
   "auth": {
+    "positioning": "Measure Borneo. Understand Borneo. Strengthen Borneo.",
     "loginTitle": "Login",
     "noAccountYet": "Don't have any account?",
     "registerNow": "Register now.",
@@ -671,6 +735,7 @@
     "quotaRemaining_other": "{{count}} responses remaining",
     "quotaLimit_one": "{{count}} response limit",
     "quotaLimit_other": "{{count}} responses limit",
+    "quotaFallback": "BorneoBot is temporarily at capacity. While the quota resets, use the six True Wealth pillars — Food, Energy, Education, Shelter, Healthcare and Entertainment — to explore the dashboard’s verified data and sources.",
     "errors": {
       "AI_CHAT_ERROR": "The AI assistant could not respond right now.",
       "AI_CHAT_EMPTY_MESSAGE": "Enter a message to ask BorneoBot.",
@@ -698,6 +763,18 @@
       "AI_CHAT_MALFORMED_RESPONSE": "The AI assistant returned an invalid response.",
       "AI_CHAT_REQUEST_FAILED": "The AI assistant could not respond right now."
     }
+  },
+  "pillarDrilldown": {
+    "openAxis": "Open {{pillar}} indicator details",
+    "title": "{{pillar}} indicators",
+    "score": "Resilience pillar score: {{score}} / 100",
+    "indicatorScore": "Scored contribution: {{score}} / 100",
+    "source": "Source: {{source}}",
+    "unscoredTitle": "No comparable data for this pillar",
+    "unscoredBody": "{{pillar}} is not scored for {{territory}} because no comparable data is available. A score of zero is not assumed.",
+    "roadmapCta": "View the data-completion route",
+    "aggregateTitle": "Aggregate score, no single indicator list",
+    "aggregateBody": "This All-Borneo value combines territory scores. Choose an individual territory to inspect its scored source indicators."
   },
   "pagination": {
     "prev": "< Prev",

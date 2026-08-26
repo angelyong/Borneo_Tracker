@@ -286,7 +286,13 @@ describe('indicator, target, comparison, trend, SDG, and district facts', () => 
   it('calculates a target gap when a compatible target exists', () => {
     const fact = buildFact('What is the target gap for Sabah clean water access?');
     expect(fact.values.target).toMatchObject({ value: 100, unit: '%' });
-    expect(fact.values.gap).toMatchObject({ value: 19.5, formattedValue: '19.5%' });
+    expect(fact.values.gap).toMatchObject({ value: 19.5, formattedValue: '19.5%', targetDirection: 'increase' });
+    expect(fact.values.target?.sourcePath).toBe('bounds.Clean water access');
+    expect(fact.values.gap?.sourcePath).toBe('bounds.Clean water access');
+    expect(fact.sources).toContainEqual(expect.objectContaining({
+      sourceFile: 'public/data/resilience_model.json',
+      sourcePath: 'bounds.Clean water access',
+    }));
   });
 
   it('marks missing target and gap unavailable', () => {
@@ -294,13 +300,41 @@ describe('indicator, target, comparison, trend, SDG, and district facts', () => 
     expect(fact.availability).toBe('PARTIAL');
     expect(fact.values.target).toBeUndefined();
     expect(fact.values.gap).toBeUndefined();
-    expect(fact.requiredDisclosures.join(' ')).toContain('Target and gap are unavailable');
+    expect(fact.warnings).toContainEqual(expect.objectContaining({
+      code: 'TARGET_UNAVAILABLE',
+      message: 'No committed target bound exists for this indicator and unit.',
+    }));
+    expect(fact.warnings).not.toContainEqual(expect.objectContaining({ code: 'TARGET_INACTIVE' }));
+    expect(fact.requiredDisclosures).toContain('Target and gap are unavailable because the repository does not contain a compatible target.');
+  });
+
+  it.each([
+    ['unemployment', 'Unemployment rate'],
+    ['poverty', 'Poverty rate (absolute)'],
+  ])('does not expose the inactive %s bound as a Resilience Index target', (_, indicator) => {
+    const fact = buildFact(`What is the target gap for Sabah ${indicator}?`);
+
+    expect(fact.availability).toBe('PARTIAL');
+    expect(fact.values.target).toBeUndefined();
+    expect(fact.values.gap).toBeUndefined();
+    expect(fact.warnings).toContainEqual(expect.objectContaining({ code: 'TARGET_INACTIVE' }));
+    expect(fact.requiredDisclosures.join(' ')).toContain('not mapped to a current Resilience Index pillar');
   });
 
   it('builds allowed comparisons after Stage 3C permits them', () => {
     const fact = buildFact('Compare healthcare between Sabah and Sarawak.');
     expect(fact.comparison.allowed).toBe(true);
     expect(fact.values.rawValues.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it('builds the exact enabled client comparison prompt from committed resilience data', () => {
+    const fact = buildFact('Compare Sabah and Sarawak');
+    expect(fact.availability).toBe('AVAILABLE');
+    expect(fact.comparison).toMatchObject({ requested: true, allowed: true, decision: 'ALLOW' });
+    expect(fact.values.rawValues).toEqual(expect.arrayContaining([
+      expect.objectContaining({ territory: 'Sabah', concept: 'resilience', value: territoryScore('Sabah') }),
+      expect.objectContaining({ territory: 'Sarawak', concept: 'resilience', value: territoryScore('Sarawak') }),
+    ]));
   });
 
   it('preserves both territory resilience values for comparison requests', () => {

@@ -1,0 +1,81 @@
+import { act } from 'react';
+import { createRoot } from 'react-dom/client';
+import { MemoryRouter } from 'react-router-dom';
+import { afterEach, describe, expect, it } from 'vitest';
+import i18n from '../i18n';
+import PillarDrilldownModal from './PillarDrilldownModal';
+
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
+let container;
+let root;
+
+function render(ui) {
+  container = document.createElement('div');
+  document.body.appendChild(container);
+  root = createRoot(container);
+  act(() => root.render(ui));
+}
+
+afterEach(async () => {
+  await i18n.changeLanguage('en');
+  act(() => root?.unmount());
+  container?.remove();
+  container = null;
+  root = null;
+});
+
+describe('PillarDrilldownModal', () => {
+  it('does not represent an unscored pillar as zero and points to data completion', () => {
+    render(
+      <MemoryRouter>
+        <PillarDrilldownModal open onClose={() => {}} territory="Sabah" pillar="Food" score={null} indicators={[]} />
+      </MemoryRouter>
+    );
+
+    expect(document.querySelector('[role="dialog"]')?.textContent).toContain('No comparable data for this pillar');
+    expect(document.body.textContent).toContain('A score of zero is not assumed');
+    expect(document.querySelector('a')?.getAttribute('href')).toBe('/data-sources');
+  });
+
+  it('shows the exact scored input, provenance, and source confidence', () => {
+    render(
+      <MemoryRouter>
+        <PillarDrilldownModal
+          open
+          onClose={() => {}}
+          territory="Sabah"
+          pillar="Food"
+          score={28.6}
+          indicators={[{ indicator: 'Paddy production per capita', value: 28.6, unit: 'kg/capita', score: 28.6, source: 'OpenDOSM', year: '2022', confidence: 'medium' }]}
+        />
+      </MemoryRouter>
+    );
+
+    expect(document.body.textContent).toContain('Resilience pillar score: 28.6 / 100');
+    expect(document.body.textContent).toContain('Paddy production per capita');
+    expect(document.body.textContent).toContain('OpenDOSM');
+    expect(document.body.textContent).toContain('Medium');
+    expect(document.body.textContent).toContain('2022');
+  });
+
+  it('traps Tab and Shift+Tab within its modal focusable elements', () => {
+    render(
+      <MemoryRouter>
+        <PillarDrilldownModal open onClose={() => {}} territory="Sabah" pillar="Food" score={null} indicators={[]} />
+      </MemoryRouter>
+    );
+
+    const dialog = document.querySelector('[role="dialog"]');
+    const closeButton = dialog.querySelector('button');
+    const link = dialog.querySelector('a');
+    expect(document.activeElement).toBe(closeButton);
+
+    act(() => link.focus());
+    act(() => link.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true })));
+    expect(document.activeElement).toBe(closeButton);
+
+    act(() => closeButton.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true })));
+    expect(document.activeElement).toBe(link);
+  });
+});

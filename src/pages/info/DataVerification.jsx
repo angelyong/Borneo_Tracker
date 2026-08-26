@@ -18,6 +18,8 @@
 //   the credibility of earlier blockchain sustainability projects.
 
 import { useTranslation } from 'react-i18next';
+import SourceRegistryTable from '../../components/SourceRegistryTable';
+import { useSourceRegistry } from '../../data/useIndicators';
 import { INTEGRITY_STATE, servedUrl, useAnchorHistory, useIntegrity } from '../../data/useIntegrity';
 
 const MONO = 'ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace';
@@ -143,6 +145,7 @@ export default function DataVerification() {
   // This is the only page that deliberately hashes the full six-file scope.
   const { status, loading, manifest, manifestSha256, anchor, files } = useIntegrity('full');
   const history = useAnchorHistory();
+  const registry = useSourceRegistry();
 
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
   const state = status || INTEGRITY_STATE.UNVERIFIED;
@@ -230,6 +233,13 @@ export default function DataVerification() {
           <StatTile label={t('verify.statWitnesses')} value={`${activeWitnesses}/2`} sub="OpenTimestamps · Sigstore" />
           <StatTile label={t('verify.statCost')} value="$0" sub={t('verify.noDirectWitnessFee')} />
         </div>
+
+        {/* This is deliberately separate from the cryptographic ledger below.
+            A registry tells a reviewer who published data and how often; a
+            fingerprint only tells them whether published bytes changed. */}
+        <Section eyebrow={t('sourceRegistry.eyebrow')} title={t('sourceRegistry.title')} hint={t('sourceRegistry.hint')}>
+          <SourceRegistryTable payload={registry.data} loading={registry.loading} error={registry.error} generatedAt={registry.generatedAt} onRetry={registry.retry} />
+        </Section>
 
         {/* Files ---------------------------------------------------------- */}
         <Section eyebrow={t('verify.currentTitle')} title={t('verify.filesTitle')} hint={t('verify.filesHint')} flush>

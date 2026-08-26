@@ -1,6 +1,6 @@
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import HexRadar from './HexRadar';
 import { HEXAGON_PILLARS } from './hexagonPillars';
 import WeakestLinkBars from './WeakestLinkBars';
@@ -93,5 +93,31 @@ describe('truthful hexagon score rendering', () => {
     expect(container.querySelectorAll('[title="No comparable data — never imputed"]')).toHaveLength(3);
     expect(text.indexOf('Food')).toBeLessThan(text.indexOf('Energy'));
     expect(text.indexOf('Energy')).toBeLessThan(text.indexOf('Education'));
+  });
+
+  it('opens the selected axis with mouse and keyboard while retaining missing-score honesty', () => {
+    const onPillarSelect = vi.fn();
+    render(
+      <HexRadar
+        pillars={{ Food: 0, Energy: null }}
+        max={100}
+        onPillarSelect={onPillarSelect}
+        pillarActionLabel="Open {{pillar}} details"
+      />
+    );
+
+    const food = container.querySelector('[aria-label="Open Food details"]');
+    const energy = container.querySelector('[aria-label="Open Energy details"]');
+    expect(food?.getAttribute('role')).toBe('button');
+    expect(food?.getAttribute('tabindex')).toBe('0');
+    expect(food?.classList.contains('hex-radar-axis')).toBe(true);
+    expect(food?.querySelector('.hex-radar-focus-ring')).toBeTruthy();
+    act(() => food.focus());
+    expect(document.activeElement).toBe(food);
+
+    act(() => food.dispatchEvent(new MouseEvent('click', { bubbles: true })));
+    act(() => energy.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })));
+    expect(onPillarSelect).toHaveBeenNthCalledWith(1, 'Food', 0);
+    expect(onPillarSelect).toHaveBeenNthCalledWith(2, 'Energy', null);
   });
 });

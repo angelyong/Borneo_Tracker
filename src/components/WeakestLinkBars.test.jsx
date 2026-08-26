@@ -33,6 +33,31 @@ describe('WeakestLinkBars', () => {
     root = null;
   });
 
+  // The client named this sentence as the methodology's differentiating idea,
+  // so it must reach the screen as a claim, not be paraphrased away into a
+  // description of the widget.
+  it('states the weakest-link principle separately from the widget description', () => {
+    render(
+      <WeakestLinkBars
+        territory={{ weakestPillar: 'Food', pillarScores: { Food: 30, Energy: 80 } }}
+        principle="Resilience is only as strong as its weakest essential pillar."
+        explanation="The score broken into its six essentials."
+      />
+    );
+
+    const paragraphs = [...container.querySelectorAll('p')].map((node) => node.textContent);
+    expect(paragraphs).toEqual([
+      'Resilience is only as strong as its weakest essential pillar.',
+      'The score broken into its six essentials.',
+    ]);
+  });
+
+  it('omits the principle line when none is supplied', () => {
+    render(<WeakestLinkBars territory={{ pillarScores: { Food: 30 } }} explanation="Only a description." />);
+
+    expect([...container.querySelectorAll('p')].map((node) => node.textContent)).toEqual(['Only a description.']);
+  });
+
   it('keeps real zero scores and labels unscored pillars as no data', () => {
     render(
       <WeakestLinkBars

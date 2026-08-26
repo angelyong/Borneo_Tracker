@@ -11,6 +11,7 @@ import type {
   FactWarning,
   LeverRecord,
   LeverRetrievalResult,
+  TargetGapFactValue,
 } from './contracts.ts';
 
 export type StructuredAnswerTemplates = Partial<Record<SupportedLanguage, Partial<TemplateSet>>>;
@@ -346,6 +347,17 @@ function buildGapLayer(context: BuilderContext): AnswerLayer {
   if (fact.availability === 'BLOCKED') return blockedLayer(base, ['comparison.decision']);
   if (fact.values.target && fact.values.gap) {
     const current = fact.values.rawValues[0];
+    if (!fact.values.gap.targetDirection) {
+      const warning = 'Target and gap are unavailable because no verified target-gap direction was supplied.';
+      return {
+        ...base,
+        status: 'UNAVAILABLE',
+        text: 'No verified target-gap direction is available for this requested value.',
+        codes: ['GAP_DIRECTION_UNAVAILABLE'],
+        factReferences: ['values.rawValues', 'values.target', 'values.gap'],
+        warnings: [warning],
+      };
+    }
     return {
       ...base,
       status: 'AVAILABLE',
@@ -577,11 +589,20 @@ function diagnosisText(fact: AIChatFactObject): string {
   return parts.join(' ');
 }
 
-function gapText(current: FactValue | undefined, target: FactValue, gap: FactValue): string {
+function gapText(current: FactValue | undefined, target: FactValue, gap: TargetGapFactValue): string {
   const subject = current?.indicator || target.indicator || 'The requested value';
   const territory = current?.territory || target.territory || 'the selected territory';
   const currentText = current ? `current ${current.formattedValue}` : 'current value unavailable';
-  return `${subject} for ${territory} has ${currentText}, target ${target.formattedValue}, and gap ${gap.formattedValue}.`;
+  if (gap.targetDirection === 'reduce') {
+    return `${subject} for ${territory} has ${currentText}; it needs to reduce by ${gap.formattedValue} to reach the target of ${target.formattedValue}.`;
+  }
+  if (gap.targetDirection === 'at-target') {
+    return `${subject} for ${territory} has ${currentText} and is already at the target of ${target.formattedValue}.`;
+  }
+  if (gap.targetDirection === 'increase') {
+    return `${subject} for ${territory} has ${currentText}; it needs to increase by ${gap.formattedValue} to reach the target of ${target.formattedValue}.`;
+  }
+  return `${subject} for ${territory} has ${currentText}; a target gap of ${gap.formattedValue} is available, but its direction is not verified.`;
 }
 
 function buildSummaryText(layers: AIChatStructuredAnswer['layers']): string {
