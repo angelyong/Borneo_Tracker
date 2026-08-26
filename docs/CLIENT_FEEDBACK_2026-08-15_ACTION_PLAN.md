@@ -206,6 +206,15 @@ Weakest-link bars · strict score + fragility gap · provenance chips · freshne
 
 ---
 
+### **BT-33 · BorneoBot seeds two of the client's three §3.2 examples** *(new, 2026-08-26)*
+**Client ask (§3.2):** the client named **three** example queries. `SUGGESTED_QUESTIONS` (`src/shared/aiChatContracts.js:12-16`) carries the first two verbatim; the third, *"Find highest-risk regions"*, was replaced by *"Explain the Forest Cover indicator."* and appears nowhere in the repo.
+**Why it needs a decision, not a patch:** `src/shared/aiChatContracts.test.js:5` asserts the current set under the name *"seeds the three client decision and drill-down examples"* — a green test vouching for client provenance the third string does not have. Substituting it may well have been deliberate (ranking territories is KIV-01's scope, and seeding a question the assistant answers badly is worse than explaining), but that reasoning is not recorded anywhere.
+**Do:** the BT-14 owner confirms whether the substitution was intentional, then either records the reason in code and corrects the test name, or seeds the client's third example after checking what BorneoBot actually answers. Either way §3.2 in the client note must state which of his three examples are live.
+**Files:** `docs/BT-33_SEARCH_SUGGESTED_QUESTIONS.md` (full write-up), `src/shared/aiChatContracts.js`, `src/shared/aiChatContracts.test.js`, `docs/CLIENT_FEEDBACK_RESPONSE_2026-08-24.md`.
+**Role:** FE + CONTENT · **Effort:** XS · **Priority:** P2 · **Related:** BT-14 (shipped), KIV-01 (parked)
+
+---
+
 ## Epic 4 — Data trust & momentum (client §4) — 7 cards
 
 ### **BT-15 · Turn the freshness chip into a trust-chain popover**
@@ -361,7 +370,7 @@ BT-16b · BT-18 · BT-19 · BT-20 · BT-12 · BT-14 · BT-22 · BT-23 · BT-24 �
 | §1.2 Explain Index vs Strict | BT-04 |
 | §2 EXPLORE / ANALYSE / ACT nav | BT-05 |
 | §3.1 Daily headline insight | BT-07 *(+ KIV-03)* |
-| §3.2 Natural-language search | BT-14 *(+ KIV-01)* |
+| §3.2 Natural-language search | BT-14, BT-33 *(+ KIV-01)* |
 | §3.3 Meaningful map layers | BT-08, BT-09, BT-10, BT-11a, BT-30 *(+ KIV-02)* |
 | §3.4 Clickable pillars + weakest-link explanation | BT-12, BT-13, BT-31 |
 | §4.1 Trust chain | BT-15, BT-16a, BT-16b, BT-20 |
