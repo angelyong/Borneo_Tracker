@@ -2,7 +2,7 @@
 
 Everything here was **found and verified** during the Wave 3 client-review audit and the ESG/SDG feasibility research. Each entry records the evidence, why it matters, and the decision that has to be made before anyone writes code. Resolved entries are struck through and keep their original write-up, so the reasoning stays readable after the fact.
 
-**Status:** §1 resolved and §3 closed on 2026-08-26. §2, §4, §5, §6 remain open; §7 is a recorded research conclusion, not a task.
+**Status:** §1 and §3 closed 2026-08-26; §5 closed 2026-08-27. §4's aggregate half shipped as BT-34; its district half is BT-35, blocked on BT-36. §2 and §6 remain open; §7 is a recorded research conclusion, not a task.
 
 **Project framing, confirmed 2026-08-26:** Borneo Tracker is a research and academic project with **no commercial direction**. NonCommercial licence terms are therefore not a blocker anywhere in this file. `docs/BUSINESS_CASE_ABCDE.md` is an ABCDE-framework thinking note ("not a signed plan", per its own header), not the project's direction; an earlier version of this document wrongly treated it as one.
 
@@ -128,13 +128,23 @@ Related: pillars are **not** clickable at all in District scope — that radar s
 
 ---
 
-## 5. The ESG and SDG pages have no tests
+## 5. ~~The ESG and SDG pages have no tests~~ — RESOLVED 2026-08-27
+
+**Resolved.** 16 tests added across `src/pages/ESG/esg_indicator.test.jsx` and `src/pages/SDG/sdg_progress.test.jsx`, covering the count-not-score contract, canonical filtering, territory isolation, scope switching, empty states, provenance display, the BT-23 answer strip, and both locales.
+
+**The assertion that matters was wrong on the first attempt, and was caught by mutation-testing it.** The original check was `expect(container.textContent).toContain('2')` — which passes happily against a hero figure of `62.3`. Replacing `summary.count` with a fabricated score left all 8 tests green. The check now locates the hero figure structurally (the element immediately before its own caption) and asserts exact equality against both the expected count and the number of rendered indicator cards. Re-running the same mutation now fails with `expected '62.3' to be '2'`.
+
+That is worth recording because it is the same defect this project criticised in BT-33's suggested-questions test: a green test vouching for a property it does not actually check.
+
+<details><summary>Original write-up, kept for the record</summary>
 
 **Severity: medium.**
 
 `src/pages/ESG/` and `src/pages/SDG/` contain only their `.jsx` files. Zero test files. They are the least-covered surfaces in the app, and they are exactly where any future ESG/SDG work would land. The Wave 3 answer strip is already mounted on both.
 
 **Decision needed:** none — this is just work. Worth doing before either page changes again.
+
+</details>
 
 ---
 
