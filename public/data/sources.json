@@ -1,0 +1,294 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-27",
+  "sources": [
+    {
+      "source_id": "bps",
+      "display_name": "Statistics Indonesia (BPS)",
+      "publisher": "Badan Pusat Statistik",
+      "cadence": "annual",
+      "expected_interval_days": 365,
+      "licence": "BPS Open Data Terms",
+      "official_url": "https://www.bps.go.id/",
+      "territories": [
+        "Kalimantan"
+      ],
+      "pillars": [
+        "Food",
+        "Energy",
+        "Education",
+        "Shelter",
+        "Healthcare",
+        "Entertainment"
+      ]
+    },
+    {
+      "source_id": "brunei_agriculture",
+      "display_name": "Brunei Department of Agriculture and Agrifood",
+      "publisher": "Government of Brunei Darussalam",
+      "cadence": "annual",
+      "expected_interval_days": 365,
+      "licence": "Government of Brunei Website Terms",
+      "official_url": "https://www.agriculture.gov.bn/",
+      "territories": [
+        "Brunei"
+      ],
+      "pillars": [
+        "Food"
+      ]
+    },
+    {
+      "source_id": "brunei_tourism",
+      "display_name": "Brunei Tourism Development Department",
+      "publisher": "Government of Brunei Darussalam",
+      "cadence": "annual",
+      "expected_interval_days": 365,
+      "licence": "Government of Brunei Website Terms",
+      "official_url": "https://www.tourism.gov.bn/",
+      "territories": [
+        "Brunei"
+      ],
+      "pillars": [
+        "Entertainment"
+      ]
+    },
+    {
+      "source_id": "dosm",
+      "display_name": "Department of Statistics Malaysia (DOSM / OpenDOSM)",
+      "publisher": "Government of Malaysia",
+      "cadence": "annual",
+      "expected_interval_days": 365,
+      "licence": "Open Government Licence - Malaysia",
+      "official_url": "https://open.dosm.gov.my/",
+      "territories": [
+        "Sabah",
+        "Sarawak"
+      ],
+      "pillars": [
+        "Food",
+        "Energy",
+        "Education",
+        "Shelter",
+        "Healthcare",
+        "Entertainment"
+      ]
+    },
+    {
+      "source_id": "esdm",
+      "display_name": "Indonesia Electricity Statistics",
+      "publisher": "Ministry of Energy and Mineral Resources (ESDM)",
+      "cadence": "annual",
+      "expected_interval_days": 365,
+      "licence": "Government of Indonesia Open Data",
+      "official_url": "https://gatrik.esdm.go.id/",
+      "territories": [
+        "Kalimantan"
+      ],
+      "pillars": [
+        "Energy"
+      ]
+    },
+    {
+      "source_id": "fao",
+      "display_name": "FAOSTAT",
+      "publisher": "Food and Agriculture Organization of the United Nations",
+      "cadence": "annual",
+      "expected_interval_days": 365,
+      "licence": "CC BY 4.0",
+      "official_url": "https://www.fao.org/faostat/",
+      "territories": [
+        "Sabah",
+        "Sarawak",
+        "Brunei",
+        "Kalimantan"
+      ],
+      "pillars": [
+        "Food"
+      ]
+    },
+    {
+      "source_id": "global_data_lab",
+      "display_name": "Global Data Lab Subnational HDI",
+      "publisher": "Global Data Lab",
+      "cadence": "annual",
+      "expected_interval_days": 365,
+      "licence": "Global Data Lab Terms of Use",
+      "official_url": "https://globaldatalab.org/",
+      "territories": [
+        "Sabah",
+        "Sarawak",
+        "Brunei",
+        "Kalimantan"
+      ],
+      "pillars": [
+        "Education",
+        "Healthcare"
+      ]
+    },
+    {
+      "source_id": "global_forest_watch",
+      "display_name": "Global Forest Watch",
+      "publisher": "World Resources Institute",
+      "cadence": "monthly",
+      "expected_interval_days": 30,
+      "licence": "CC BY 4.0 (platform data terms apply)",
+      "official_url": "https://www.globalforestwatch.org/",
+      "territories": [
+        "Sabah",
+        "Sarawak",
+        "Brunei",
+        "Kalimantan"
+      ],
+      "pillars": [
+        "Shelter",
+        "Energy"
+      ]
+    },
+    {
+      "source_id": "nasa_firms",
+      "display_name": "NASA FIRMS (VIIRS Active Fires)",
+      "publisher": "NASA LANCE / EOSDIS",
+      "cadence": "daily",
+      "expected_interval_days": 1,
+      "licence": "Public Domain / NASA Open Data Policy",
+      "official_url": "https://firms.modaps.eosdis.nasa.gov/",
+      "territories": [
+        "Sabah",
+        "Sarawak",
+        "Brunei",
+        "Kalimantan"
+      ],
+      "pillars": [
+        "Shelter",
+        "Energy"
+      ]
+    },
+    {
+      "source_id": "sabah_parks",
+      "display_name": "Sabah Parks",
+      "publisher": "Government of Sabah",
+      "cadence": "annual",
+      "expected_interval_days": 365,
+      "licence": "Sabah Parks Website Terms",
+      "official_url": "https://www.sabahparks.org.my/",
+      "territories": [
+        "Sabah"
+      ],
+      "pillars": [
+        "Shelter",
+        "Entertainment"
+      ]
+    },
+    {
+      "source_id": "sarawak_energy",
+      "display_name": "Sarawak Energy",
+      "publisher": "Sarawak Energy Berhad",
+      "cadence": "annual",
+      "expected_interval_days": 365,
+      "licence": "Sarawak Energy Website Terms",
+      "official_url": "https://www.sarawakenergy.com/",
+      "territories": [
+        "Sarawak"
+      ],
+      "pillars": [
+        "Energy"
+      ]
+    },
+    {
+      "source_id": "sarawak_forestry",
+      "display_name": "Forest Department Sarawak",
+      "publisher": "Government of Sarawak",
+      "cadence": "annual",
+      "expected_interval_days": 365,
+      "licence": "Sarawak Government Website Terms",
+      "official_url": "https://forestry.sarawak.gov.my/",
+      "territories": [
+        "Sarawak"
+      ],
+      "pillars": [
+        "Shelter",
+        "Entertainment"
+      ]
+    },
+    {
+      "source_id": "un_sdg",
+      "display_name": "United Nations SDG Indicators Database",
+      "publisher": "United Nations Statistics Division",
+      "cadence": "annual",
+      "expected_interval_days": 365,
+      "licence": "UN Data Terms of Use",
+      "official_url": "https://unstats.un.org/sdgs/dataportal",
+      "territories": [
+        "Sabah",
+        "Sarawak",
+        "Brunei",
+        "Kalimantan"
+      ],
+      "pillars": [
+        "Food",
+        "Shelter",
+        "Healthcare"
+      ]
+    },
+    {
+      "source_id": "unesco",
+      "display_name": "UNESCO World Heritage List",
+      "publisher": "UNESCO World Heritage Centre",
+      "cadence": "irregular",
+      "expected_interval_days": 365,
+      "licence": "UNESCO Website Terms of Use",
+      "official_url": "https://whc.unesco.org/en/list/",
+      "territories": [
+        "Sabah",
+        "Sarawak",
+        "Brunei",
+        "Kalimantan"
+      ],
+      "pillars": [
+        "Entertainment"
+      ]
+    },
+    {
+      "source_id": "waqi",
+      "display_name": "World Air Quality Index",
+      "publisher": "WAQI Project",
+      "cadence": "daily",
+      "expected_interval_days": 1,
+      "licence": "WAQI Terms of Service",
+      "official_url": "https://aqicn.org/api/",
+      "territories": [
+        "Sabah",
+        "Sarawak",
+        "Brunei",
+        "Kalimantan"
+      ],
+      "pillars": [
+        "Healthcare",
+        "Shelter"
+      ]
+    },
+    {
+      "source_id": "world_bank",
+      "display_name": "World Bank Open Data",
+      "publisher": "World Bank",
+      "cadence": "annual",
+      "expected_interval_days": 365,
+      "licence": "World Bank Terms of Use",
+      "official_url": "https://data.worldbank.org/",
+      "territories": [
+        "Sabah",
+        "Sarawak",
+        "Brunei",
+        "Kalimantan"
+      ],
+      "pillars": [
+        "Food",
+        "Energy",
+        "Education",
+        "Shelter",
+        "Healthcare",
+        "Entertainment"
+      ]
+    }
+  ]
+}

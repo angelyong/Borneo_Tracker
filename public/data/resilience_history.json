@@ -1,0 +1,1614 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-27",
+  "territories": {
+    "Sabah": [
+      {
+        "date": "2026-07-05",
+        "index": 56.9,
+        "strict": null,
+        "methodologyTag": "v0.1-initial",
+        "isMethodologyBreak": false,
+        "sourceCommit": "9c30addc50f37bdc969661c8759b4dee576f352a"
+      },
+      {
+        "date": "2026-07-06",
+        "index": 56.9,
+        "strict": null,
+        "methodologyTag": "v0.1-initial",
+        "isMethodologyBreak": false,
+        "sourceCommit": "db23d08fa4b93922993ed82fb9fcae6703dfa267"
+      },
+      {
+        "date": "2026-07-07",
+        "index": 56.9,
+        "strict": null,
+        "methodologyTag": "v0.1-initial",
+        "isMethodologyBreak": false,
+        "sourceCommit": "266ef498274e667ffc336f0634dcad0c3a7aa95f"
+      },
+      {
+        "date": "2026-07-08",
+        "index": 68.8,
+        "strict": null,
+        "methodologyTag": "v0.2-incomplete-pillar-coverage",
+        "isMethodologyBreak": true,
+        "sourceCommit": "8e726c7ffb7cd7a78acae04759c38450294174cc"
+      },
+      {
+        "date": "2026-07-09",
+        "index": 68.8,
+        "strict": null,
+        "methodologyTag": "v0.2-incomplete-pillar-coverage",
+        "isMethodologyBreak": false,
+        "sourceCommit": "10db7ecc9ad383181248567a47cd115177692032"
+      },
+      {
+        "date": "2026-07-10",
+        "index": 68.8,
+        "strict": null,
+        "methodologyTag": "v0.2-incomplete-pillar-coverage",
+        "isMethodologyBreak": false,
+        "sourceCommit": "1896d2c315491d473e490e70f5ffed89e25fd612"
+      },
+      {
+        "date": "2026-07-11",
+        "index": 68.8,
+        "strict": null,
+        "methodologyTag": "v0.2-incomplete-pillar-coverage",
+        "isMethodologyBreak": false,
+        "sourceCommit": "dafb900b10df2b41ad770d9672afb9bd8eaa7fc0"
+      },
+      {
+        "date": "2026-07-12",
+        "index": 68.8,
+        "strict": null,
+        "methodologyTag": "v0.2-incomplete-pillar-coverage",
+        "isMethodologyBreak": false,
+        "sourceCommit": "065e06ad93a910b654a168e036e5c16dd1c05ee1"
+      },
+      {
+        "date": "2026-07-13",
+        "index": 68.8,
+        "strict": null,
+        "methodologyTag": "v0.2-incomplete-pillar-coverage",
+        "isMethodologyBreak": false,
+        "sourceCommit": "ab8f19b433fc0a4f6305713fdcc2062d8bf182a2"
+      },
+      {
+        "date": "2026-07-14",
+        "index": 68.8,
+        "strict": null,
+        "methodologyTag": "v0.2-incomplete-pillar-coverage",
+        "isMethodologyBreak": false,
+        "sourceCommit": "7e7eb768044aa0ab3fdda71e656eb3e447dd4926"
+      },
+      {
+        "date": "2026-07-15",
+        "index": 63.7,
+        "strict": 59.3,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": true,
+        "sourceCommit": "40c2d895d8522e7b53a73dc6e3ea474614eb737d"
+      },
+      {
+        "date": "2026-07-16",
+        "index": 63.7,
+        "strict": 59.3,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "be030e4ee06fa8bde2ea316c7e503dadaa9b7f0a"
+      },
+      {
+        "date": "2026-07-17",
+        "index": 63.7,
+        "strict": 59.3,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "5181213448c0be1bcbe8b3add4e7273643c95136"
+      },
+      {
+        "date": "2026-07-18",
+        "index": 63.7,
+        "strict": 59.3,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "2c2a39bfacf5cfe7749b245fc9b74e89f8257b1d"
+      },
+      {
+        "date": "2026-07-19",
+        "index": 63.7,
+        "strict": 59.3,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "b72ccdb6f1a8c18ff80886880ab057ca6235789a"
+      },
+      {
+        "date": "2026-07-20",
+        "index": 63.7,
+        "strict": 59.3,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "7b0c67b50d8b752be5f5ddcd37a9fb1b429578d4"
+      },
+      {
+        "date": "2026-07-21",
+        "index": 63.7,
+        "strict": 59.3,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "b6ca8ec7104559c1b05d07840f840a0cb956e78a"
+      },
+      {
+        "date": "2026-07-22",
+        "index": 63.7,
+        "strict": 59.3,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "9ed8029a4b53e831ce5d21aed453c4b193e7f4d1"
+      },
+      {
+        "date": "2026-07-23",
+        "index": 63.7,
+        "strict": 59.3,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "6473088c5f72b8e8377826bcd55268cd1f79716e"
+      },
+      {
+        "date": "2026-07-24",
+        "index": 63.7,
+        "strict": 59.3,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "2d96cd2088c5574c1b20a4ae9170ed279c62df6b"
+      },
+      {
+        "date": "2026-07-25",
+        "index": 63.7,
+        "strict": 59.3,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "c4b8e409aa350415140dd7c61d1da947126af081"
+      },
+      {
+        "date": "2026-07-26",
+        "index": 63.7,
+        "strict": 59.3,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "7981b2e032c1d29bea71c73645b7277cfcf959fa"
+      },
+      {
+        "date": "2026-07-27",
+        "index": 63.7,
+        "strict": 59.3,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "bae4307e93c7552e6648e0e9641c34c2c1b5ad98"
+      },
+      {
+        "date": "2026-07-28",
+        "index": 63.7,
+        "strict": 59.3,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "a1a85456a9f188d27863fde8aed91e1a980d5e27"
+      },
+      {
+        "date": "2026-07-29",
+        "index": 63.7,
+        "strict": 59.3,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "c3c465d15344d3602847a4d8b7b5f86e8f668c80"
+      },
+      {
+        "date": "2026-07-30",
+        "index": 63.7,
+        "strict": 59.3,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "0bde2d9359948752fda52037a294399d8b8c3ea0"
+      },
+      {
+        "date": "2026-07-31",
+        "index": 63.7,
+        "strict": 59.3,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "80ad4492f00aa0e36ab0299b9b01c0253ebf73d5"
+      },
+      {
+        "date": "2026-08-02",
+        "index": 63.7,
+        "strict": 59.3,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "b66a900bb2bbba033442839429300edd7e0903da"
+      },
+      {
+        "date": "2026-08-03",
+        "index": 67.5,
+        "strict": 62.6,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": true,
+        "sourceCommit": "506aeefe7254ce9877bff0c7d61a1d62c20e362f"
+      },
+      {
+        "date": "2026-08-04",
+        "index": 72.1,
+        "strict": 66.1,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "80e9f9c12e514145697645dfd257687994b2ed3b"
+      },
+      {
+        "date": "2026-08-05",
+        "index": 72.1,
+        "strict": 66.1,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "a6c81ac6c053f1e9bbcddde7c46535508ee92517"
+      },
+      {
+        "date": "2026-08-06",
+        "index": 72.1,
+        "strict": 66.1,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "fdc2e254702aa76f0f1510039d41d65b3714ce03"
+      },
+      {
+        "date": "2026-08-07",
+        "index": 72.1,
+        "strict": 66.1,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "a9e18b1449222109baf020115c5ed7f4d26aaebb"
+      },
+      {
+        "date": "2026-08-08",
+        "index": 72.1,
+        "strict": 66.1,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "86825e2168f3c4f6b085f6e2708c356a0cfb194e"
+      },
+      {
+        "date": "2026-08-09",
+        "index": 72.1,
+        "strict": 66.1,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "e9561fe9c2647469c94de7d5da6970fe7e633852"
+      },
+      {
+        "date": "2026-08-10",
+        "index": 72.1,
+        "strict": 66.1,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "b9c1b53d19fda4db616d1dc3e5d3be847112c1fe"
+      },
+      {
+        "date": "2026-08-12",
+        "index": 72.1,
+        "strict": 66.1,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "2b4f204e4ab3c579efef92b06f37f732e0b2b3da"
+      },
+      {
+        "date": "2026-08-13",
+        "index": 72.1,
+        "strict": 66.1,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "d2ae68585562b537f4a5321db410e35556381bf7"
+      },
+      {
+        "date": "2026-08-15",
+        "index": 72.1,
+        "strict": 66.1,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "5bd9c483cf7f33d8dd3c8b50b76b8a435049a1b6"
+      },
+      {
+        "date": "2026-08-16",
+        "index": 72.1,
+        "strict": 66.1,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "5ba6aae98ccf69df64897cd16fb0d7ecadc0b175"
+      },
+      {
+        "date": "2026-08-17",
+        "index": 67.6,
+        "strict": 62.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": true,
+        "sourceCommit": "528a9b958f3f44a803f468b2dd42c5d57ccde7ca"
+      },
+      {
+        "date": "2026-08-19",
+        "index": 67.6,
+        "strict": 62.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "fe9d835e44a04d03602df8484462b9523ac86d3f"
+      },
+      {
+        "date": "2026-08-20",
+        "index": 67.6,
+        "strict": 62.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "e5d231dedbb0d9942e3f193f7e5139aed6111b53"
+      },
+      {
+        "date": "2026-08-21",
+        "index": 67.6,
+        "strict": 62.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "6ed375f8cd1ba97eac5b09d49d8068a4e72e663e"
+      },
+      {
+        "date": "2026-08-22",
+        "index": 67.6,
+        "strict": 62.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "094b96f1326d7f078a0e5729b1df4112202f3551"
+      },
+      {
+        "date": "2026-08-23",
+        "index": 67.6,
+        "strict": 62.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "2a32d1623a1cf20cc3288cd412fa7fd026a58b6f"
+      },
+      {
+        "date": "2026-08-24",
+        "index": 67.6,
+        "strict": 62.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "570999286d9b71335e461c902a72fbdb783d57ab"
+      },
+      {
+        "date": "2026-08-25",
+        "index": 67.6,
+        "strict": 62.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "c1cfabd0cc530482b6547d0810f986eba11aa093"
+      },
+      {
+        "date": "2026-08-26",
+        "index": 67.6,
+        "strict": 62.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "a2d540ce0face7bfaca00913214855457aaaaa0b"
+      },
+      {
+        "date": "2026-08-27",
+        "index": 67.6,
+        "strict": 62.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": null
+      }
+    ],
+    "Sarawak": [
+      {
+        "date": "2026-07-05",
+        "index": 58.6,
+        "strict": null,
+        "methodologyTag": "v0.1-initial",
+        "isMethodologyBreak": false,
+        "sourceCommit": "9c30addc50f37bdc969661c8759b4dee576f352a"
+      },
+      {
+        "date": "2026-07-06",
+        "index": 58.6,
+        "strict": null,
+        "methodologyTag": "v0.1-initial",
+        "isMethodologyBreak": false,
+        "sourceCommit": "db23d08fa4b93922993ed82fb9fcae6703dfa267"
+      },
+      {
+        "date": "2026-07-07",
+        "index": 58.6,
+        "strict": null,
+        "methodologyTag": "v0.1-initial",
+        "isMethodologyBreak": false,
+        "sourceCommit": "266ef498274e667ffc336f0634dcad0c3a7aa95f"
+      },
+      {
+        "date": "2026-07-08",
+        "index": 72.2,
+        "strict": null,
+        "methodologyTag": "v0.2-incomplete-pillar-coverage",
+        "isMethodologyBreak": true,
+        "sourceCommit": "8e726c7ffb7cd7a78acae04759c38450294174cc"
+      },
+      {
+        "date": "2026-07-09",
+        "index": 72.2,
+        "strict": null,
+        "methodologyTag": "v0.2-incomplete-pillar-coverage",
+        "isMethodologyBreak": false,
+        "sourceCommit": "10db7ecc9ad383181248567a47cd115177692032"
+      },
+      {
+        "date": "2026-07-10",
+        "index": 72.2,
+        "strict": null,
+        "methodologyTag": "v0.2-incomplete-pillar-coverage",
+        "isMethodologyBreak": false,
+        "sourceCommit": "1896d2c315491d473e490e70f5ffed89e25fd612"
+      },
+      {
+        "date": "2026-07-11",
+        "index": 72.2,
+        "strict": null,
+        "methodologyTag": "v0.2-incomplete-pillar-coverage",
+        "isMethodologyBreak": false,
+        "sourceCommit": "dafb900b10df2b41ad770d9672afb9bd8eaa7fc0"
+      },
+      {
+        "date": "2026-07-12",
+        "index": 72.2,
+        "strict": null,
+        "methodologyTag": "v0.2-incomplete-pillar-coverage",
+        "isMethodologyBreak": false,
+        "sourceCommit": "065e06ad93a910b654a168e036e5c16dd1c05ee1"
+      },
+      {
+        "date": "2026-07-13",
+        "index": 72.2,
+        "strict": null,
+        "methodologyTag": "v0.2-incomplete-pillar-coverage",
+        "isMethodologyBreak": false,
+        "sourceCommit": "ab8f19b433fc0a4f6305713fdcc2062d8bf182a2"
+      },
+      {
+        "date": "2026-07-14",
+        "index": 72.2,
+        "strict": null,
+        "methodologyTag": "v0.2-incomplete-pillar-coverage",
+        "isMethodologyBreak": false,
+        "sourceCommit": "7e7eb768044aa0ab3fdda71e656eb3e447dd4926"
+      },
+      {
+        "date": "2026-07-15",
+        "index": 72.5,
+        "strict": 69.5,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": true,
+        "sourceCommit": "40c2d895d8522e7b53a73dc6e3ea474614eb737d"
+      },
+      {
+        "date": "2026-07-16",
+        "index": 72.5,
+        "strict": 69.5,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "be030e4ee06fa8bde2ea316c7e503dadaa9b7f0a"
+      },
+      {
+        "date": "2026-07-17",
+        "index": 72.5,
+        "strict": 69.5,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "5181213448c0be1bcbe8b3add4e7273643c95136"
+      },
+      {
+        "date": "2026-07-18",
+        "index": 72.5,
+        "strict": 69.5,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "2c2a39bfacf5cfe7749b245fc9b74e89f8257b1d"
+      },
+      {
+        "date": "2026-07-19",
+        "index": 72.5,
+        "strict": 69.5,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "b72ccdb6f1a8c18ff80886880ab057ca6235789a"
+      },
+      {
+        "date": "2026-07-20",
+        "index": 72.5,
+        "strict": 69.5,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "7b0c67b50d8b752be5f5ddcd37a9fb1b429578d4"
+      },
+      {
+        "date": "2026-07-21",
+        "index": 72.5,
+        "strict": 69.5,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "b6ca8ec7104559c1b05d07840f840a0cb956e78a"
+      },
+      {
+        "date": "2026-07-22",
+        "index": 72.5,
+        "strict": 69.5,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "9ed8029a4b53e831ce5d21aed453c4b193e7f4d1"
+      },
+      {
+        "date": "2026-07-23",
+        "index": 72.5,
+        "strict": 69.5,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "6473088c5f72b8e8377826bcd55268cd1f79716e"
+      },
+      {
+        "date": "2026-07-24",
+        "index": 72.5,
+        "strict": 69.5,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "2d96cd2088c5574c1b20a4ae9170ed279c62df6b"
+      },
+      {
+        "date": "2026-07-25",
+        "index": 72.5,
+        "strict": 69.5,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "c4b8e409aa350415140dd7c61d1da947126af081"
+      },
+      {
+        "date": "2026-07-26",
+        "index": 72.5,
+        "strict": 69.5,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "7981b2e032c1d29bea71c73645b7277cfcf959fa"
+      },
+      {
+        "date": "2026-07-27",
+        "index": 72.5,
+        "strict": 69.5,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "bae4307e93c7552e6648e0e9641c34c2c1b5ad98"
+      },
+      {
+        "date": "2026-07-28",
+        "index": 72.5,
+        "strict": 69.5,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "a1a85456a9f188d27863fde8aed91e1a980d5e27"
+      },
+      {
+        "date": "2026-07-29",
+        "index": 72.5,
+        "strict": 69.5,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "c3c465d15344d3602847a4d8b7b5f86e8f668c80"
+      },
+      {
+        "date": "2026-07-30",
+        "index": 72.5,
+        "strict": 69.5,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "0bde2d9359948752fda52037a294399d8b8c3ea0"
+      },
+      {
+        "date": "2026-07-31",
+        "index": 72.5,
+        "strict": 69.5,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "80ad4492f00aa0e36ab0299b9b01c0253ebf73d5"
+      },
+      {
+        "date": "2026-08-02",
+        "index": 70.6,
+        "strict": 68.6,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "b66a900bb2bbba033442839429300edd7e0903da"
+      },
+      {
+        "date": "2026-08-03",
+        "index": 75.7,
+        "strict": 74.6,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": true,
+        "sourceCommit": "506aeefe7254ce9877bff0c7d61a1d62c20e362f"
+      },
+      {
+        "date": "2026-08-04",
+        "index": 79.3,
+        "strict": 77.7,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "80e9f9c12e514145697645dfd257687994b2ed3b"
+      },
+      {
+        "date": "2026-08-05",
+        "index": 79.3,
+        "strict": 77.7,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "a6c81ac6c053f1e9bbcddde7c46535508ee92517"
+      },
+      {
+        "date": "2026-08-06",
+        "index": 79.3,
+        "strict": 77.7,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "fdc2e254702aa76f0f1510039d41d65b3714ce03"
+      },
+      {
+        "date": "2026-08-07",
+        "index": 79.3,
+        "strict": 77.7,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "a9e18b1449222109baf020115c5ed7f4d26aaebb"
+      },
+      {
+        "date": "2026-08-08",
+        "index": 79.3,
+        "strict": 77.7,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "86825e2168f3c4f6b085f6e2708c356a0cfb194e"
+      },
+      {
+        "date": "2026-08-09",
+        "index": 79.3,
+        "strict": 77.7,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "e9561fe9c2647469c94de7d5da6970fe7e633852"
+      },
+      {
+        "date": "2026-08-10",
+        "index": 79.3,
+        "strict": 77.7,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "b9c1b53d19fda4db616d1dc3e5d3be847112c1fe"
+      },
+      {
+        "date": "2026-08-12",
+        "index": 79.3,
+        "strict": 77.7,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "2b4f204e4ab3c579efef92b06f37f732e0b2b3da"
+      },
+      {
+        "date": "2026-08-13",
+        "index": 79.3,
+        "strict": 77.7,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "d2ae68585562b537f4a5321db410e35556381bf7"
+      },
+      {
+        "date": "2026-08-15",
+        "index": 79.3,
+        "strict": 77.7,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "5bd9c483cf7f33d8dd3c8b50b76b8a435049a1b6"
+      },
+      {
+        "date": "2026-08-16",
+        "index": 79.3,
+        "strict": 77.7,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "5ba6aae98ccf69df64897cd16fb0d7ecadc0b175"
+      },
+      {
+        "date": "2026-08-17",
+        "index": 73.6,
+        "strict": 71.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": true,
+        "sourceCommit": "528a9b958f3f44a803f468b2dd42c5d57ccde7ca"
+      },
+      {
+        "date": "2026-08-19",
+        "index": 73.6,
+        "strict": 71.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "fe9d835e44a04d03602df8484462b9523ac86d3f"
+      },
+      {
+        "date": "2026-08-20",
+        "index": 73.6,
+        "strict": 71.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "e5d231dedbb0d9942e3f193f7e5139aed6111b53"
+      },
+      {
+        "date": "2026-08-21",
+        "index": 73.6,
+        "strict": 71.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "6ed375f8cd1ba97eac5b09d49d8068a4e72e663e"
+      },
+      {
+        "date": "2026-08-22",
+        "index": 73.6,
+        "strict": 71.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "094b96f1326d7f078a0e5729b1df4112202f3551"
+      },
+      {
+        "date": "2026-08-23",
+        "index": 73.6,
+        "strict": 71.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "2a32d1623a1cf20cc3288cd412fa7fd026a58b6f"
+      },
+      {
+        "date": "2026-08-24",
+        "index": 73.6,
+        "strict": 71.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "570999286d9b71335e461c902a72fbdb783d57ab"
+      },
+      {
+        "date": "2026-08-25",
+        "index": 73.6,
+        "strict": 71.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "c1cfabd0cc530482b6547d0810f986eba11aa093"
+      },
+      {
+        "date": "2026-08-26",
+        "index": 73.6,
+        "strict": 71.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "a2d540ce0face7bfaca00913214855457aaaaa0b"
+      },
+      {
+        "date": "2026-08-27",
+        "index": 73.6,
+        "strict": 71.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": null
+      }
+    ],
+    "Brunei": [
+      {
+        "date": "2026-07-05",
+        "index": 81.2,
+        "strict": null,
+        "methodologyTag": "v0.1-initial",
+        "isMethodologyBreak": false,
+        "sourceCommit": "9c30addc50f37bdc969661c8759b4dee576f352a"
+      },
+      {
+        "date": "2026-07-06",
+        "index": 81.2,
+        "strict": null,
+        "methodologyTag": "v0.1-initial",
+        "isMethodologyBreak": false,
+        "sourceCommit": "db23d08fa4b93922993ed82fb9fcae6703dfa267"
+      },
+      {
+        "date": "2026-07-07",
+        "index": 81.2,
+        "strict": null,
+        "methodologyTag": "v0.1-initial",
+        "isMethodologyBreak": false,
+        "sourceCommit": "266ef498274e667ffc336f0634dcad0c3a7aa95f"
+      },
+      {
+        "date": "2026-07-08",
+        "index": 93.0,
+        "strict": null,
+        "methodologyTag": "v0.2-incomplete-pillar-coverage",
+        "isMethodologyBreak": true,
+        "sourceCommit": "8e726c7ffb7cd7a78acae04759c38450294174cc"
+      },
+      {
+        "date": "2026-07-09",
+        "index": 93.0,
+        "strict": null,
+        "methodologyTag": "v0.2-incomplete-pillar-coverage",
+        "isMethodologyBreak": false,
+        "sourceCommit": "10db7ecc9ad383181248567a47cd115177692032"
+      },
+      {
+        "date": "2026-07-10",
+        "index": 93.0,
+        "strict": null,
+        "methodologyTag": "v0.2-incomplete-pillar-coverage",
+        "isMethodologyBreak": false,
+        "sourceCommit": "1896d2c315491d473e490e70f5ffed89e25fd612"
+      },
+      {
+        "date": "2026-07-11",
+        "index": 93.0,
+        "strict": null,
+        "methodologyTag": "v0.2-incomplete-pillar-coverage",
+        "isMethodologyBreak": false,
+        "sourceCommit": "dafb900b10df2b41ad770d9672afb9bd8eaa7fc0"
+      },
+      {
+        "date": "2026-07-12",
+        "index": 93.0,
+        "strict": null,
+        "methodologyTag": "v0.2-incomplete-pillar-coverage",
+        "isMethodologyBreak": false,
+        "sourceCommit": "065e06ad93a910b654a168e036e5c16dd1c05ee1"
+      },
+      {
+        "date": "2026-07-13",
+        "index": 89.2,
+        "strict": null,
+        "methodologyTag": "v0.2-incomplete-pillar-coverage",
+        "isMethodologyBreak": false,
+        "sourceCommit": "ab8f19b433fc0a4f6305713fdcc2062d8bf182a2"
+      },
+      {
+        "date": "2026-07-14",
+        "index": 89.2,
+        "strict": null,
+        "methodologyTag": "v0.2-incomplete-pillar-coverage",
+        "isMethodologyBreak": false,
+        "sourceCommit": "7e7eb768044aa0ab3fdda71e656eb3e447dd4926"
+      },
+      {
+        "date": "2026-07-15",
+        "index": 79.0,
+        "strict": 61.8,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": true,
+        "sourceCommit": "40c2d895d8522e7b53a73dc6e3ea474614eb737d"
+      },
+      {
+        "date": "2026-07-16",
+        "index": 79.0,
+        "strict": 61.8,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "be030e4ee06fa8bde2ea316c7e503dadaa9b7f0a"
+      },
+      {
+        "date": "2026-07-17",
+        "index": 79.0,
+        "strict": 61.8,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "5181213448c0be1bcbe8b3add4e7273643c95136"
+      },
+      {
+        "date": "2026-07-18",
+        "index": 79.0,
+        "strict": 61.8,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "2c2a39bfacf5cfe7749b245fc9b74e89f8257b1d"
+      },
+      {
+        "date": "2026-07-19",
+        "index": 79.0,
+        "strict": 61.8,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "b72ccdb6f1a8c18ff80886880ab057ca6235789a"
+      },
+      {
+        "date": "2026-07-20",
+        "index": 79.0,
+        "strict": 61.8,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "7b0c67b50d8b752be5f5ddcd37a9fb1b429578d4"
+      },
+      {
+        "date": "2026-07-21",
+        "index": 79.0,
+        "strict": 61.8,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "b6ca8ec7104559c1b05d07840f840a0cb956e78a"
+      },
+      {
+        "date": "2026-07-22",
+        "index": 79.0,
+        "strict": 61.8,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "9ed8029a4b53e831ce5d21aed453c4b193e7f4d1"
+      },
+      {
+        "date": "2026-07-23",
+        "index": 79.0,
+        "strict": 61.8,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "6473088c5f72b8e8377826bcd55268cd1f79716e"
+      },
+      {
+        "date": "2026-07-24",
+        "index": 79.0,
+        "strict": 61.8,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "2d96cd2088c5574c1b20a4ae9170ed279c62df6b"
+      },
+      {
+        "date": "2026-07-25",
+        "index": 79.0,
+        "strict": 61.8,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "c4b8e409aa350415140dd7c61d1da947126af081"
+      },
+      {
+        "date": "2026-07-26",
+        "index": 79.0,
+        "strict": 61.8,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "7981b2e032c1d29bea71c73645b7277cfcf959fa"
+      },
+      {
+        "date": "2026-07-27",
+        "index": 79.0,
+        "strict": 61.8,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "bae4307e93c7552e6648e0e9641c34c2c1b5ad98"
+      },
+      {
+        "date": "2026-07-28",
+        "index": 79.0,
+        "strict": 61.8,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "a1a85456a9f188d27863fde8aed91e1a980d5e27"
+      },
+      {
+        "date": "2026-07-29",
+        "index": 79.0,
+        "strict": 61.8,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "c3c465d15344d3602847a4d8b7b5f86e8f668c80"
+      },
+      {
+        "date": "2026-07-30",
+        "index": 79.0,
+        "strict": 61.8,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "0bde2d9359948752fda52037a294399d8b8c3ea0"
+      },
+      {
+        "date": "2026-07-31",
+        "index": 79.0,
+        "strict": 61.8,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "80ad4492f00aa0e36ab0299b9b01c0253ebf73d5"
+      },
+      {
+        "date": "2026-08-02",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "b66a900bb2bbba033442839429300edd7e0903da"
+      },
+      {
+        "date": "2026-08-03",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": true,
+        "sourceCommit": "506aeefe7254ce9877bff0c7d61a1d62c20e362f"
+      },
+      {
+        "date": "2026-08-04",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "80e9f9c12e514145697645dfd257687994b2ed3b"
+      },
+      {
+        "date": "2026-08-05",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "a6c81ac6c053f1e9bbcddde7c46535508ee92517"
+      },
+      {
+        "date": "2026-08-06",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "fdc2e254702aa76f0f1510039d41d65b3714ce03"
+      },
+      {
+        "date": "2026-08-07",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "a9e18b1449222109baf020115c5ed7f4d26aaebb"
+      },
+      {
+        "date": "2026-08-08",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "86825e2168f3c4f6b085f6e2708c356a0cfb194e"
+      },
+      {
+        "date": "2026-08-09",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "e9561fe9c2647469c94de7d5da6970fe7e633852"
+      },
+      {
+        "date": "2026-08-10",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "b9c1b53d19fda4db616d1dc3e5d3be847112c1fe"
+      },
+      {
+        "date": "2026-08-12",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "2b4f204e4ab3c579efef92b06f37f732e0b2b3da"
+      },
+      {
+        "date": "2026-08-13",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "d2ae68585562b537f4a5321db410e35556381bf7"
+      },
+      {
+        "date": "2026-08-15",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "5bd9c483cf7f33d8dd3c8b50b76b8a435049a1b6"
+      },
+      {
+        "date": "2026-08-16",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "5ba6aae98ccf69df64897cd16fb0d7ecadc0b175"
+      },
+      {
+        "date": "2026-08-17",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": true,
+        "sourceCommit": "528a9b958f3f44a803f468b2dd42c5d57ccde7ca"
+      },
+      {
+        "date": "2026-08-19",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "fe9d835e44a04d03602df8484462b9523ac86d3f"
+      },
+      {
+        "date": "2026-08-20",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "e5d231dedbb0d9942e3f193f7e5139aed6111b53"
+      },
+      {
+        "date": "2026-08-21",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "6ed375f8cd1ba97eac5b09d49d8068a4e72e663e"
+      },
+      {
+        "date": "2026-08-22",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "094b96f1326d7f078a0e5729b1df4112202f3551"
+      },
+      {
+        "date": "2026-08-23",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "2a32d1623a1cf20cc3288cd412fa7fd026a58b6f"
+      },
+      {
+        "date": "2026-08-24",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "570999286d9b71335e461c902a72fbdb783d57ab"
+      },
+      {
+        "date": "2026-08-25",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "c1cfabd0cc530482b6547d0810f986eba11aa093"
+      },
+      {
+        "date": "2026-08-26",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "a2d540ce0face7bfaca00913214855457aaaaa0b"
+      },
+      {
+        "date": "2026-08-27",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": null
+      }
+    ],
+    "Kalimantan": [
+      {
+        "date": "2026-07-05",
+        "index": 69.2,
+        "strict": null,
+        "methodologyTag": "v0.1-initial",
+        "isMethodologyBreak": false,
+        "sourceCommit": "9c30addc50f37bdc969661c8759b4dee576f352a"
+      },
+      {
+        "date": "2026-07-06",
+        "index": 69.2,
+        "strict": null,
+        "methodologyTag": "v0.1-initial",
+        "isMethodologyBreak": false,
+        "sourceCommit": "db23d08fa4b93922993ed82fb9fcae6703dfa267"
+      },
+      {
+        "date": "2026-07-07",
+        "index": 69.2,
+        "strict": null,
+        "methodologyTag": "v0.1-initial",
+        "isMethodologyBreak": false,
+        "sourceCommit": "266ef498274e667ffc336f0634dcad0c3a7aa95f"
+      },
+      {
+        "date": "2026-07-08",
+        "index": 69.2,
+        "strict": null,
+        "methodologyTag": "v0.2-incomplete-pillar-coverage",
+        "isMethodologyBreak": true,
+        "sourceCommit": "8e726c7ffb7cd7a78acae04759c38450294174cc"
+      },
+      {
+        "date": "2026-07-09",
+        "index": 69.2,
+        "strict": null,
+        "methodologyTag": "v0.2-incomplete-pillar-coverage",
+        "isMethodologyBreak": false,
+        "sourceCommit": "10db7ecc9ad383181248567a47cd115177692032"
+      },
+      {
+        "date": "2026-07-10",
+        "index": 69.2,
+        "strict": null,
+        "methodologyTag": "v0.2-incomplete-pillar-coverage",
+        "isMethodologyBreak": false,
+        "sourceCommit": "1896d2c315491d473e490e70f5ffed89e25fd612"
+      },
+      {
+        "date": "2026-07-11",
+        "index": 69.2,
+        "strict": null,
+        "methodologyTag": "v0.2-incomplete-pillar-coverage",
+        "isMethodologyBreak": false,
+        "sourceCommit": "dafb900b10df2b41ad770d9672afb9bd8eaa7fc0"
+      },
+      {
+        "date": "2026-07-12",
+        "index": 69.2,
+        "strict": null,
+        "methodologyTag": "v0.2-incomplete-pillar-coverage",
+        "isMethodologyBreak": false,
+        "sourceCommit": "065e06ad93a910b654a168e036e5c16dd1c05ee1"
+      },
+      {
+        "date": "2026-07-13",
+        "index": 69.2,
+        "strict": null,
+        "methodologyTag": "v0.2-incomplete-pillar-coverage",
+        "isMethodologyBreak": false,
+        "sourceCommit": "ab8f19b433fc0a4f6305713fdcc2062d8bf182a2"
+      },
+      {
+        "date": "2026-07-14",
+        "index": 69.2,
+        "strict": null,
+        "methodologyTag": "v0.2-incomplete-pillar-coverage",
+        "isMethodologyBreak": false,
+        "sourceCommit": "7e7eb768044aa0ab3fdda71e656eb3e447dd4926"
+      },
+      {
+        "date": "2026-07-15",
+        "index": 68.5,
+        "strict": 66.7,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": true,
+        "sourceCommit": "40c2d895d8522e7b53a73dc6e3ea474614eb737d"
+      },
+      {
+        "date": "2026-07-16",
+        "index": 68.5,
+        "strict": 66.7,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "be030e4ee06fa8bde2ea316c7e503dadaa9b7f0a"
+      },
+      {
+        "date": "2026-07-17",
+        "index": 68.5,
+        "strict": 66.7,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "5181213448c0be1bcbe8b3add4e7273643c95136"
+      },
+      {
+        "date": "2026-07-18",
+        "index": 68.5,
+        "strict": 66.7,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "2c2a39bfacf5cfe7749b245fc9b74e89f8257b1d"
+      },
+      {
+        "date": "2026-07-19",
+        "index": 68.5,
+        "strict": 66.7,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "b72ccdb6f1a8c18ff80886880ab057ca6235789a"
+      },
+      {
+        "date": "2026-07-20",
+        "index": 68.5,
+        "strict": 66.7,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "7b0c67b50d8b752be5f5ddcd37a9fb1b429578d4"
+      },
+      {
+        "date": "2026-07-21",
+        "index": 68.5,
+        "strict": 66.7,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "b6ca8ec7104559c1b05d07840f840a0cb956e78a"
+      },
+      {
+        "date": "2026-07-22",
+        "index": 68.5,
+        "strict": 66.7,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "9ed8029a4b53e831ce5d21aed453c4b193e7f4d1"
+      },
+      {
+        "date": "2026-07-23",
+        "index": 68.5,
+        "strict": 66.7,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "6473088c5f72b8e8377826bcd55268cd1f79716e"
+      },
+      {
+        "date": "2026-07-24",
+        "index": 68.5,
+        "strict": 66.7,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "2d96cd2088c5574c1b20a4ae9170ed279c62df6b"
+      },
+      {
+        "date": "2026-07-25",
+        "index": 68.5,
+        "strict": 66.7,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "c4b8e409aa350415140dd7c61d1da947126af081"
+      },
+      {
+        "date": "2026-07-26",
+        "index": 68.5,
+        "strict": 66.7,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "7981b2e032c1d29bea71c73645b7277cfcf959fa"
+      },
+      {
+        "date": "2026-07-27",
+        "index": 68.5,
+        "strict": 66.7,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "bae4307e93c7552e6648e0e9641c34c2c1b5ad98"
+      },
+      {
+        "date": "2026-07-28",
+        "index": 68.5,
+        "strict": 66.7,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "a1a85456a9f188d27863fde8aed91e1a980d5e27"
+      },
+      {
+        "date": "2026-07-29",
+        "index": 68.5,
+        "strict": 66.7,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "c3c465d15344d3602847a4d8b7b5f86e8f668c80"
+      },
+      {
+        "date": "2026-07-30",
+        "index": 68.5,
+        "strict": 66.7,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "0bde2d9359948752fda52037a294399d8b8c3ea0"
+      },
+      {
+        "date": "2026-07-31",
+        "index": 68.5,
+        "strict": 66.7,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "80ad4492f00aa0e36ab0299b9b01c0253ebf73d5"
+      },
+      {
+        "date": "2026-08-02",
+        "index": 70.1,
+        "strict": 67.9,
+        "methodologyTag": "v1.0-six-pillar",
+        "isMethodologyBreak": false,
+        "sourceCommit": "b66a900bb2bbba033442839429300edd7e0903da"
+      },
+      {
+        "date": "2026-08-03",
+        "index": 67.7,
+        "strict": 65.8,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": true,
+        "sourceCommit": "506aeefe7254ce9877bff0c7d61a1d62c20e362f"
+      },
+      {
+        "date": "2026-08-04",
+        "index": 67.7,
+        "strict": 65.8,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "80e9f9c12e514145697645dfd257687994b2ed3b"
+      },
+      {
+        "date": "2026-08-05",
+        "index": 67.7,
+        "strict": 65.8,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "a6c81ac6c053f1e9bbcddde7c46535508ee92517"
+      },
+      {
+        "date": "2026-08-06",
+        "index": 67.7,
+        "strict": 65.8,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "fdc2e254702aa76f0f1510039d41d65b3714ce03"
+      },
+      {
+        "date": "2026-08-07",
+        "index": 67.7,
+        "strict": 65.8,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "a9e18b1449222109baf020115c5ed7f4d26aaebb"
+      },
+      {
+        "date": "2026-08-08",
+        "index": 67.7,
+        "strict": 65.8,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "86825e2168f3c4f6b085f6e2708c356a0cfb194e"
+      },
+      {
+        "date": "2026-08-09",
+        "index": 67.7,
+        "strict": 65.8,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "e9561fe9c2647469c94de7d5da6970fe7e633852"
+      },
+      {
+        "date": "2026-08-10",
+        "index": 67.7,
+        "strict": 65.8,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "b9c1b53d19fda4db616d1dc3e5d3be847112c1fe"
+      },
+      {
+        "date": "2026-08-12",
+        "index": 67.7,
+        "strict": 65.8,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "2b4f204e4ab3c579efef92b06f37f732e0b2b3da"
+      },
+      {
+        "date": "2026-08-13",
+        "index": 67.7,
+        "strict": 65.8,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "d2ae68585562b537f4a5321db410e35556381bf7"
+      },
+      {
+        "date": "2026-08-15",
+        "index": 67.7,
+        "strict": 65.8,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "5bd9c483cf7f33d8dd3c8b50b76b8a435049a1b6"
+      },
+      {
+        "date": "2026-08-16",
+        "index": 67.7,
+        "strict": 65.8,
+        "methodologyTag": "v1.1-education-loss-defect",
+        "isMethodologyBreak": false,
+        "sourceCommit": "5ba6aae98ccf69df64897cd16fb0d7ecadc0b175"
+      },
+      {
+        "date": "2026-08-17",
+        "index": 67.7,
+        "strict": 65.8,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": true,
+        "sourceCommit": "528a9b958f3f44a803f468b2dd42c5d57ccde7ca"
+      },
+      {
+        "date": "2026-08-19",
+        "index": 67.7,
+        "strict": 65.8,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "fe9d835e44a04d03602df8484462b9523ac86d3f"
+      },
+      {
+        "date": "2026-08-20",
+        "index": 67.7,
+        "strict": 65.8,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "e5d231dedbb0d9942e3f193f7e5139aed6111b53"
+      },
+      {
+        "date": "2026-08-21",
+        "index": 67.7,
+        "strict": 65.8,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "6ed375f8cd1ba97eac5b09d49d8068a4e72e663e"
+      },
+      {
+        "date": "2026-08-22",
+        "index": 67.7,
+        "strict": 65.8,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "094b96f1326d7f078a0e5729b1df4112202f3551"
+      },
+      {
+        "date": "2026-08-23",
+        "index": 67.7,
+        "strict": 65.8,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "2a32d1623a1cf20cc3288cd412fa7fd026a58b6f"
+      },
+      {
+        "date": "2026-08-24",
+        "index": 67.7,
+        "strict": 65.8,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "570999286d9b71335e461c902a72fbdb783d57ab"
+      },
+      {
+        "date": "2026-08-25",
+        "index": 67.7,
+        "strict": 65.8,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "c1cfabd0cc530482b6547d0810f986eba11aa093"
+      },
+      {
+        "date": "2026-08-26",
+        "index": 67.7,
+        "strict": 65.8,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "a2d540ce0face7bfaca00913214855457aaaaa0b"
+      },
+      {
+        "date": "2026-08-27",
+        "index": 67.7,
+        "strict": 65.8,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": null
+      }
+    ]
+  }
+}
