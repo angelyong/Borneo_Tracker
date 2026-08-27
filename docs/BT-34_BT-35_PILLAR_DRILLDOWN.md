@@ -66,7 +66,11 @@ The `isScored` gate was left untouched, so BT-31's guarantee is unaffected.
 
 # BT-35 · District scope: make the pillars clickable, and be honest about the asymmetry
 
-**Role:** FE + DATA · **Effort:** S–M · **Priority:** P2 · **Status:** blocked on the BT-36 decision
+**Role:** FE + DATA · **Effort:** S–M · **Priority:** P2 · **Status:** DONE 2026-08-27 (UI half; data half is BT-36)
+
+**Shipped.** District pillars are now clickable, mouse and keyboard, and open the indicators that scope actually holds. A Kalimantan district shows its two real rows — Mean years schooling and Life expectancy, with provenance — under the line *"No resilience score is computed at district level, so these indicators are shown without one."* A Sabah or Sarawak district still gets the honest empty card, because BT-36 has not ingested their pillar rows yet.
+
+`PillarDrilldownModal` gained a third, named state (`unscoredWithIndicators`) rather than loosening `isScored`. That gate is not a display condition — it is the structural form of BT-31's "a score of zero is not assumed" guarantee, and it is the seam a district score could later leak back through. Indicators now render without a score line at all, so nothing can interpolate one.
 
 **Investigation changed this ticket's premise — see "What the research found" below.** The Malaysian gap is not a publication limit. Separately, a defect the district radar had regardless of this ticket was fixed on 2026-08-26: coverage counts were reaching `HexRadar` as zeros, so every axis read as scored, a filled polygon was drawn, and with the scale auto-fitting the largest count a single indicator rendered at the same full radius as a score of 100. Zero-count pillars are now passed as `null` and label as "No comparable data".
 

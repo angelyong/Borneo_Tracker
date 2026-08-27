@@ -175,7 +175,25 @@ That is worth recording because it is the same defect this project criticised in
 
 ---
 
-## 6. Environmental indicators measure the wrong quantity for scoring
+## 6. Environmental indicators measure the wrong quantity — DISCLOSED 2026-08-27, re-ingestion still open
+
+**The misleading half is fixed; the measurement half is deferred to BT-36.**
+
+The live consequence was on the map. `deforestation` and `fireHotspots` rank by absolute total, so Kalimantan led both — it is by far the largest territory — and the red/amber/green ramp turned a size statement into a performance judgement. Normalised against each territory's own year-2000 forest extent the order inverts:
+
+```
+absolute (what the map ranked)     per baseline forest extent
+  Kalimantan  12,059,800 ha  red     Sarawak     27.3 %
+  Sarawak      3,183,066 ha  green   Sabah       27.0 %
+  Sabah        1,803,226 ha  green   Kalimantan  24.2 %   <- lowest, not highest
+  Brunei          30,486 ha  green   (Brunei publishes % land, so no rate)
+```
+
+Both layers now carry `absoluteMagnitude: true` and render, via the §2 mechanism, *"Shaded by absolute total, not by size… Read it as 'where the most of this occurs', not as a ranking of performance."* The numbers and captions were always honest; it was the colouring that overreached.
+
+**Still open — the conversions themselves**, which need data we do not hold and belong with BT-36:
+
+<details><summary>Original write-up, kept for the record</summary>
 
 **Severity: only blocks work if we decide to score the environment pillar.**
 
@@ -194,6 +212,8 @@ None of the seven environmental indicators has a scoring bound today, and four o
 **We do not currently hold land area for any territory**, which several of these conversions need as a denominator.
 
 NASA states plainly that FIRMS detections are neither a fire count nor a basis for estimating burned area, so the current fire indicator cannot be scored under any methodology.
+
+</details>
 
 **Decision needed:** whether to invest in the re-ingestion at all. Free, commercially usable targets exist for the converted metrics (CBD GBF Target 3 = 30% protected by 2030; WHO annual PM2.5 = 5 µg/m³; zero deforestation), so the methodology is not the blocker — the data collection is.
 
@@ -230,10 +250,10 @@ Four research passes on 2026-08-25 settled KIV-02. Summary of the findings, with
 | §3 | WGI value possibly stale | **closed** 2026-08-26 — the pipeline pulls live and takes the latest |
 | §4 | Pillar drill-down empty on two scopes | **aggregate closed** as BT-34. District half is BT-35, blocked on BT-36 |
 | §5 | ESG and SDG pages untested | **closed** 2026-08-27 — 16 tests; the key assertion was mutation-tested after the first version failed to catch its own defect |
-| §6 | Environmental indicators measure the wrong quantity | **open — the next piece of work** |
+| §6 | Environmental indicators measure the wrong quantity | **map disclosure shipped** 2026-08-27; re-ingestion deferred to BT-36 |
 | §7 | ESG/SDG composite research | conclusion on record, not a task |
 
-### §6 is where to resume
+### BT-36 is where to resume
 
 Nothing in it is blocked on a decision; it is data work with a known shape:
 

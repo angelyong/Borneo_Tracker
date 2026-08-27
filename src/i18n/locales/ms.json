@@ -273,6 +273,7 @@
     "mapLayer": "Lapisan Peta: {{layer}}",
     "layerNotComparableUnits": "Tidak diwarnakan: wilayah-wilayah ini melaporkan lapisan ini dalam unit berbeza ({{units}}), jadi ia tidak boleh dibandingkan antara satu sama lain. Nilai disenaraikan di bawah tanpa perubahan.",
     "layerNationalDefinitions": "Diwarnakan, tetapi tafsir dengan berhati-hati: Malaysia dan Indonesia menetapkan ukuran ini mengikut takrifan kebangsaan masing-masing, jadi angka yang lebih rendah di satu pihak sempadan tidak semestinya bermakna keputusan yang lebih baik daripada angka yang lebih tinggi di pihak yang lain.",
+    "layerAbsoluteMagnitude": "Diwarnakan mengikut jumlah mutlak, bukan mengikut saiz: wilayah yang lebih besar akan mendahului lapisan ini semata-mata kerana ia lebih besar. Tafsirkannya sebagai \"di mana paling banyak berlaku\", bukan sebagai kedudukan prestasi.",
     "none": "Tiada",
     "loadingMapData": "Memuatkan data peta…",
     "noData": "Tiada data",
@@ -770,7 +771,8 @@
     "roadmapCta": "Lihat laluan melengkapkan data",
     "aggregateTitle": "Skor agregat, tiada senarai penunjuk tunggal",
     "aggregateBody": "Nilai seluruh Borneo ini menggabungkan skor wilayah. Pilih satu wilayah untuk melihat penunjuk sumber yang diberi skor.",
-    "aggregateMethod": "Nilai Seluruh Borneo {{score}} ialah purata {{territories}} wilayah berskor: {{parts}}."
+    "aggregateMethod": "Nilai Seluruh Borneo {{score}} ialah purata {{territories}} wilayah berskor: {{parts}}.",
+    "noScoreForScope": "Tiada skor daya tahan dikira pada peringkat daerah, jadi penunjuk ini dipaparkan tanpa skor. Skor memerlukan kesemua enam tunjang, dan daerah tidak memilikinya."
   },
   "pagination": {
     "prev": "< Sebelum",

@@ -785,6 +785,17 @@ const OverviewDashboard = () => {
   // them answers the client's "drill into the underlying indicators" on the
   // scope the Dashboard actually opens on, and shows the arithmetic behind a
   // number a reader otherwise cannot account for.
+  // BT-35. A district carries the indicators behind whichever pillars it has
+  // data for -- two of six, and only in Kalimantan, because Malaysian district
+  // pillar rows are not ingested yet (BT-36). They were unreachable because the
+  // district radar was mounted without onPillarSelect.
+  const districtDrilldownIndicators = useMemo(() => {
+    if (!isDistrict || !drilldownPillar || !scopeName) return [];
+    return (scopeRows || []).filter(
+      (row) => row.canonical === 1 && row.hexagon_pillar === drilldownPillar
+    );
+  }, [drilldownPillar, isDistrict, scopeName, scopeRows]);
+
   const drilldownIndicators = useMemo(() => {
     if (isDistrict || !drilldownPillar) return [];
     if (!isOverall) return resilience?.territories?.[panelTerritory]?.detail?.[drilldownPillar] || [];
@@ -1301,6 +1312,8 @@ const OverviewDashboard = () => {
               <HexRadar
                 pillars={districtCoverageAxes}
                 max={districtCoverageMax}
+                onPillarSelect={openPillarDrilldown}
+                pillarActionLabel={t('pillarDrilldown.openAxis', { pillar: '{{pillar}}' })}
                 missingLabel={t('dashboard.noComparableData')}
                 incompleteLabel={t('dashboard.districtCoverageIncomplete')}
                 ariaLabel={t('dashboard.districtCoverageAria', {
@@ -1431,7 +1444,9 @@ const OverviewDashboard = () => {
             >
               {layerCompare.reason === 'unitMismatch'
                 ? t('dashboard.layerNotComparableUnits', { units: layerCompare.units.join(', ') })
-                : t('dashboard.layerNationalDefinitions')}
+                : layerCompare.reason === 'absoluteMagnitude'
+                  ? t('dashboard.layerAbsoluteMagnitude')
+                  : t('dashboard.layerNationalDefinitions')}
             </div>
           ) : null}
 
@@ -1521,11 +1536,12 @@ const OverviewDashboard = () => {
       <PillarDrilldownModal
         open={Boolean(drilldownPillar)}
         onClose={() => setDrilldownPillar(null)}
-        territory={drilldownTerritory}
+        territory={isDistrict ? scopeName || drilldownTerritory : drilldownTerritory}
         pillar={drilldownPillar}
         score={hexScores?.[drilldownPillar]}
-        indicators={drilldownIndicators}
+        indicators={isDistrict ? districtDrilldownIndicators : drilldownIndicators}
         contributors={drilldownContributors}
+        unscoredWithIndicators={isDistrict}
       />
     </div>
   );

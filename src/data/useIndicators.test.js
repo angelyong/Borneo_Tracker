@@ -262,10 +262,38 @@ describe('layerComparability', () => {
     expect(color(17.7)).not.toBe(color(4.73));
   });
 
-  it('reports nothing to disclose for a single-unit layer', () => {
-    const entries = [entry('Sabah', 120, 'count'), entry('Sarawak', 90, 'count')];
-    const verdict = layerComparability(entries, 'fireHotspots');
-    expect(verdict).toEqual({ rankable: true, reason: null, units: ['count'] });
+  it('reports nothing to disclose for a single-unit, size-neutral layer', () => {
+    // Air quality is an index reading, so it is neither unit-mismatched nor
+    // driven by how large a territory is.
+    const entries = [entry('Sabah', 62, 'AQI'), entry('Sarawak', 48, 'AQI')];
+    const verdict = layerComparability(entries, 'airQuality');
+    expect(verdict).toEqual({ rankable: true, reason: null, units: ['AQI'] });
+  });
+
+  it('still ranks an absolute-magnitude layer, but flags that size drives it', () => {
+    // Cumulative hectares and annual detection counts both scale with territory
+    // area: Kalimantan leads each because it is by far the largest, while per
+    // unit of baseline forest its loss rate is the lowest of the three that
+    // publish an extent (24.2% against Sarawak 27.3% and Sabah 27.0%).
+    const entries = [
+      entry('Kalimantan', 12059800, 'ha'),
+      entry('Sarawak', 3183066, 'ha'),
+      entry('Sabah', 1803226, 'ha'),
+      entry('Brunei', 30486, 'ha'),
+    ];
+
+    const verdict = layerComparability(entries, 'deforestation');
+    expect(verdict.rankable).toBe(true);
+    expect(verdict.reason).toBe('absoluteMagnitude');
+
+    // It still shades -- the totals are real and commensurable.
+    const color = layerColorScale(entries, 'deforestation');
+    expect(color(12059800)).not.toBe(color(30486));
+
+    expect(layerComparability(
+      [entry('Kalimantan', 27652, 'count'), entry('Brunei', 128, 'count')],
+      'fireHotspots'
+    ).reason).toBe('absoluteMagnitude');
   });
 
   it('tolerates missing rows and unknown layers without inventing a verdict', () => {

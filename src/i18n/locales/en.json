@@ -276,6 +276,7 @@
     "mapLayer": "Map Layer: {{layer}}",
     "layerNotComparableUnits": "Not shaded: these territories report this layer in different units ({{units}}), so they cannot be ranked against each other. Values are listed below unchanged.",
     "layerNationalDefinitions": "Shaded, but read with care: Malaysia and Indonesia set this measure by their own national definitions, so a lower figure on one side of the border does not necessarily mean a better outcome than a higher figure on the other.",
+    "layerAbsoluteMagnitude": "Shaded by absolute total, not by size: a larger territory will lead this layer simply because it is larger. Read it as \"where the most of this occurs\", not as a ranking of performance.",
     "none": "None",
     "loadingMapData": "Loading map data…",
     "noData": "No data",
@@ -779,7 +780,8 @@
     "roadmapCta": "View the data-completion route",
     "aggregateTitle": "Aggregate score, no single indicator list",
     "aggregateBody": "This All-Borneo value combines territory scores. Choose an individual territory to inspect its scored source indicators.",
-    "aggregateMethod": "All-Borneo {{score}} is the mean of the {{territories}} scored territories: {{parts}}."
+    "aggregateMethod": "All-Borneo {{score}} is the mean of the {{territories}} scored territories: {{parts}}.",
+    "noScoreForScope": "No resilience score is computed at district level, so these indicators are shown without one. A score would need all six pillars, and districts do not have them."
   },
   "pagination": {
     "prev": "< Prev",

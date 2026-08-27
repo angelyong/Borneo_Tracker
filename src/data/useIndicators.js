@@ -130,6 +130,11 @@ export const LAYER_CONFIG = {
   },
   deforestation: {
     label: 'Deforestation',
+    // Tree cover loss is a cumulative hectare total, not normalised for territory size, so the ranking tracks
+    // area before performance. Kalimantan leads on both because it is by far the
+    // largest territory; per unit of baseline forest it is the *lowest* of the
+    // three that publish an extent. Declared so the map says so.
+    absoluteMagnitude: true,
     labelKey: 'dashboard.layerLabels.deforestation',
     captionKey: 'dashboard.layerCaptions.deforestation',
     unitKey: 'dashboard.layerUnits.hectares',
@@ -152,6 +157,11 @@ export const LAYER_CONFIG = {
   },
   fireHotspots: {
     label: 'Fire Hotspots',
+    // Fire alerts are an annual detection count, not normalised for territory size, so the ranking tracks
+    // area before performance. Kalimantan leads on both because it is by far the
+    // largest territory; per unit of baseline forest it is the *lowest* of the
+    // three that publish an extent. Declared so the map says so.
+    absoluteMagnitude: true,
     labelKey: 'dashboard.layerLabels.fireHotspots',
     captionKey: 'dashboard.layerCaptions.fireHotspots',
     unitKey: 'dashboard.layerUnits.count',
@@ -728,6 +738,7 @@ export function layerComparability(entries, layerKey) {
 
   if (units.length > 1) return { rankable: false, reason: 'unitMismatch', units };
   if (config.crossBorderDefinitions) return { rankable: true, reason: 'nationalDefinitions', units };
+  if (config.absoluteMagnitude) return { rankable: true, reason: 'absoluteMagnitude', units };
   return { rankable: true, reason: null, units };
 }
 

@@ -28,6 +28,13 @@ export default function PillarDrilldownModal({
   // Aggregate scopes only: the per-territory pillar scores this score is the
   // mean of, pre-formatted by the caller (e.g. ["Sabah 61.0", "Brunei 100.0"]).
   contributors = null,
+  // District scope. A district has real indicators behind a pillar but no
+  // pillar score, and must not be given one: two of six pillars for 56 of 131
+  // districts is the defect BT-11a corrected and BT-11b now gates against.
+  // `isScored` is not a display condition, it is the structural form of BT-31's
+  // "a score of zero is not assumed" guarantee, so rather than loosening it
+  // this adds a third, named state that carries indicators without a score.
+  unscoredWithIndicators = false,
 }) {
   const { t } = useTranslation();
   const closeRef = useRef(null);
@@ -82,7 +89,24 @@ export default function PillarDrilldownModal({
           <button ref={closeRef} type="button" onClick={onClose} aria-label={t('common.close')}>×</button>
         </header>
 
-        {!isScored ? (
+        {!isScored && unscoredWithIndicators && detail.length ? (
+          <>
+            <p className="pillar-drilldown-score">{t('pillarDrilldown.noScoreForScope')}</p>
+            <ul className="pillar-drilldown-list">
+              {detail.map((indicator) => (
+                <li key={`${indicator.indicator}-${indicator.year || ''}`}>
+                  <strong>{indicator.indicator}</strong>
+                  <span>{formatIndicatorValue(indicator)}</span>
+                  <ProvenanceChip
+                    confidence={indicator.confidence}
+                    source={indicator.source || t('common.noData')}
+                    year={indicator.year}
+                  />
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : !isScored ? (
           <div className="pillar-drilldown-empty" role="status">
             <h3>{t('pillarDrilldown.unscoredTitle')}</h3>
             <p>{t('pillarDrilldown.unscoredBody', { pillar, territory })}</p>
