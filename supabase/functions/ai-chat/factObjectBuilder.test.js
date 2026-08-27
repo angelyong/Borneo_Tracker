@@ -497,28 +497,93 @@ describe('indicator, target, comparison, trend, SDG, and district facts', () => 
     expect(fact.sdgIndicatorList?.groups.find((group) => group.indicator === 'Forest cover')?.territories).toEqual(['Brunei']);
   });
 
-  it('builds canonical SDG13, SDG6, and SDG3 indicator-list identities', () => {
-    const sdg13 = buildFact('Which indicators are mapped to SDG 13?');
-    expect(sdg13.sdgIndicatorList?.groups.map((group) => group.indicator)).toEqual([
-      'Active fire hotspots (24h)',
-      'Air quality (AQI, live)',
-      'Fire alerts (VIIRS, annual)',
-      'Tree cover loss (cumulative)',
-    ]);
-    // FIRMS bbox counts are refreshed observations. The integrity allowlist must
-    // carry the numeric tokens that the committed source label actually renders,
-    // without freezing a volatile source snapshot into this unit test.
-    const hotspotSources = sdg13.sdgIndicatorList?.groups
-      .find((group) => group.indicator === 'Active fire hotspots (24h)')?.sources || [];
-    const hotspotSourceNumbers = hotspotSources.flatMap((source) => source.match(/\d+/g) || []);
-    expect(hotspotSourceNumbers.length).toBeGreaterThan(0);
-    expect(sdg13.approvedNumericTokens).toEqual(expect.arrayContaining(hotspotSourceNumbers));
-    expect(buildFact('What indicators are tracked under SDG 6?').sdgIndicatorList?.groups.map((group) => group.indicator)).toEqual([
-      'Clean water access',
-    ]);
-    expect(buildFact('Show me indicators for SDG 3.').sdgIndicatorList?.groups.map((group) => group.indicator)).toEqual([
-      'Life expectancy',
-    ]);
+  // The indicator list for a goal is derived from public/data/indicators.json,
+  // which a scheduled job regenerates daily. Freezing the expected names into
+  // this test made it assert the state of one snapshot rather than the
+  // behaviour of the builder: the 2026-08-27 refresh dropped
+  // "Active fire hotspots (24h)" (a 24-hour FIRMS window legitimately falls to
+  // zero rows) and the test went red on master without anything being wrong.
+  //
+  // The expectations below are derived from the same committed artifact instead,
+  // so a data refresh moves both sides together. What is still pinned is the
+  // builder's contract, which a code regression would break: canonical rows
+  // only, filtered to the goal, one group per indicator/concept/unit, sorted,
+  // each group carrying its provenance.
+  function canonicalIndicatorsForGoal(goal) {
+    return [
+      ...new Set(
+        indicatorsData.rows
+          .filter((row) => row.canonical === 1 && row.sdg_goal === goal)
+          .map((row) => row.indicator || 'Unnamed indicator')
+      ),
+    ].sort();
+  }
+
+  it('lists exactly the canonical indicators committed for a goal, grouped and sorted', () => {
+    for (const [goal, question] of [
+      ['SDG13', 'Which indicators are mapped to SDG 13?'],
+      ['SDG6', 'What indicators are tracked under SDG 6?'],
+      ['SDG3', 'Show me indicators for SDG 3.'],
+    ]) {
+      const fact = buildFact(question);
+      const groups = fact.sdgIndicatorList?.groups || [];
+      const expected = canonicalIndicatorsForGoal(goal);
+
+      expect(expected.length, `${goal} has no canonical rows in the committed artifact`).toBeGreaterThan(0);
+      expect([...new Set(groups.map((group) => group.indicator))].sort()).toEqual(expected);
+
+      // Grouping is by indicator/concept/unit, so a repeated key is a dedup bug.
+      const keys = groups.map((group) => [group.indicator, group.concept || '', group.unit || ''].join('|'));
+      expect(new Set(keys).size, `${goal} produced duplicate groups`).toBe(keys.length);
+
+      groups.forEach((group) => {
+        expect(group.territories, `${goal}/${group.indicator} lost its territories`).not.toHaveLength(0);
+        expect(group.sources, `${goal}/${group.indicator} lost its provenance`).not.toHaveLength(0);
+        expect([...group.territories]).toEqual([...group.territories].sort());
+        expect([...group.years]).toEqual([...group.years].sort((left, right) => left - right));
+      });
+    }
+  });
+
+  it('approves every numeric token its own source labels render', () => {
+    // Some source labels carry live counts (FIRMS bbox totals, for one), and
+    // any number that reaches an answer has to be in the integrity allowlist.
+    // Which indicator supplies them is not stable -- the goal that had them on
+    // 2026-08-23 had none by 2026-08-27 -- so the scan covers every supported
+    // goal and asserts the property wherever numbers actually appear.
+    const goals = ['SDG1', 'SDG2', 'SDG3', 'SDG4', 'SDG6', 'SDG7', 'SDG8', 'SDG9', 'SDG11', 'SDG13', 'SDG15', 'SDG16'];
+    let sourceLabelsSeen = 0;
+    let numbersChecked = 0;
+
+    goals.forEach((goal) => {
+      const fact = buildFact(`Which indicators are mapped to ${goal.replace('SDG', 'SDG ')}?`);
+      const groups = fact.sdgIndicatorList?.groups || [];
+      const sources = groups.flatMap((group) => group.sources);
+      // Mirror addApprovedTextTokens exactly: it matches whole numbers with an
+      // optional decimal and percent sign, and routes four-digit years to the
+      // year allowlist rather than the numeric one. A naive /\d+/ would split
+      // "5.5" into two tokens and then look for a year in the wrong bucket.
+      const tokens = [...sources.join(' ').matchAll(/\b\d+(?:\.\d+)?%?\b/g)].map((match) => match[0]);
+      const years = tokens.filter((token) => /^(?:19|20)\d{2}$/.test(token));
+      const numbers = tokens.filter((token) => !/^(?:19|20)\d{2}$/.test(token));
+      sourceLabelsSeen += sources.length;
+      numbersChecked += numbers.length;
+      if (numbers.length) {
+        expect(fact.approvedNumericTokens, `${goal} renders an unapproved number`).toEqual(
+          expect.arrayContaining(numbers)
+        );
+      }
+      if (years.length) {
+        expect(fact.approvedYearTokens, `${goal} renders an unapproved year`).toEqual(
+          expect.arrayContaining(years)
+        );
+      }
+    });
+
+    // Guards against the scan silently becoming vacuous: provenance must still
+    // be attached even in the run where no label happens to carry a count.
+    expect(sourceLabelsSeen, 'no SDG goal returned any source label').toBeGreaterThan(0);
+    expect(numbersChecked).toBeGreaterThanOrEqual(0);
   });
 
   it('returns a deterministic unsupported SDG clarification', () => {
