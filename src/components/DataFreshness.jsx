@@ -227,9 +227,12 @@ export default function DataFreshness({ generatedAt, loading = false, artifact =
             padding: 12,
             border: '1px solid var(--color-border)',
             borderRadius: 8,
-            background: 'var(--color-surface)',
+            // theme.css defines --color-card, not --color-surface. An undefined
+            // custom property resolves to nothing, so this popover rendered with
+            // no background at all and its text sat unreadable over the gauge.
+            background: 'var(--color-card)',
             boxShadow: '0 16px 38px rgba(15, 23, 42, 0.18)',
-            color: 'var(--color-text)',
+            color: 'var(--color-ink)',
           }}
         >
           <div style={{ fontWeight: 700, fontSize: 13, marginBottom: 4 }}>{t('freshnessTrust.popoverTitle')}</div>
