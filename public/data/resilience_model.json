@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-17",
+  "generatedAt": "2026-08-28",
   "pillars": [
     "Food",
     "Energy",
@@ -84,26 +84,6 @@
       "unit": "%",
       "best": 100,
       "worst": 50
-    },
-    "Unemployment rate": {
-      "unit": "%",
-      "best": 3,
-      "worst": 15
-    },
-    "Poverty rate (absolute)": {
-      "unit": "%",
-      "best": 0,
-      "worst": 25
-    },
-    "Poverty rate (P0)": {
-      "unit": "%",
-      "best": 0,
-      "worst": 25
-    },
-    "Poverty headcount <$2.15/day (SDG1)": {
-      "unit": "%",
-      "best": 0,
-      "worst": 25
     }
   },
   "indicatorToPillar": {
