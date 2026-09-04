@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-04",
+  "generatedAt": "2026-09-05",
   "meta": {
     "schemaVersion": 1,
     "updateCadence": "annual",
@@ -76,7 +76,7 @@
             "confidence": "medium",
             "source": "Derived: 2022 production (data.gov.my / OpenDOSM) \u00f7 population 3,767,000 (2026; Department of Statistics Malaysia (DOSM) \u2014 population_state.csv). Production/population years may differ; this is production per current resident and stale production is tracked in docs/DATA_INTAKE_ROADMAP.md.",
             "year": "2022",
-            "last_updated": "2026-09-04"
+            "last_updated": "2026-09-05"
           }
         ],
         "Energy": [
@@ -88,7 +88,7 @@
             "confidence": "high",
             "source": "data.gov.my / OpenDOSM",
             "year": "2024",
-            "last_updated": "2026-09-04"
+            "last_updated": "2026-09-05"
           }
         ],
         "Education": [
@@ -100,7 +100,7 @@
             "confidence": "medium",
             "source": "Global Data Lab Subnational HDI (globaldatalab.org)",
             "year": "2023",
-            "last_updated": "2026-09-04"
+            "last_updated": "2026-09-05"
           }
         ],
         "Shelter": [
@@ -112,7 +112,7 @@
             "confidence": "high",
             "source": "data.gov.my / OpenDOSM",
             "year": "2022",
-            "last_updated": "2026-09-04"
+            "last_updated": "2026-09-05"
           }
         ],
         "Healthcare": [
@@ -136,7 +136,7 @@
             "confidence": "medium",
             "source": "DOSM ICT Use & Access Survey 2024 (Malaysia national 98.0%, applied to state)",
             "year": "2024",
-            "last_updated": "2026-09-04"
+            "last_updated": "2026-09-05"
           }
         ]
       }
@@ -174,7 +174,7 @@
             "confidence": "medium",
             "source": "Derived: 2022 production (data.gov.my / OpenDOSM) \u00f7 population 2,539,800 (2026; Department of Statistics Malaysia (DOSM) \u2014 population_state.csv). Production/population years may differ; this is production per current resident and stale production is tracked in docs/DATA_INTAKE_ROADMAP.md.",
             "year": "2022",
-            "last_updated": "2026-09-04"
+            "last_updated": "2026-09-05"
           }
         ],
         "Energy": [
@@ -186,7 +186,7 @@
             "confidence": "high",
             "source": "data.gov.my / OpenDOSM",
             "year": "2024",
-            "last_updated": "2026-09-04"
+            "last_updated": "2026-09-05"
           }
         ],
         "Education": [
@@ -198,7 +198,7 @@
             "confidence": "medium",
             "source": "Global Data Lab Subnational HDI (globaldatalab.org)",
             "year": "2023",
-            "last_updated": "2026-09-04"
+            "last_updated": "2026-09-05"
           }
         ],
         "Shelter": [
@@ -210,7 +210,7 @@
             "confidence": "high",
             "source": "data.gov.my / OpenDOSM",
             "year": "2022",
-            "last_updated": "2026-09-04"
+            "last_updated": "2026-09-05"
           }
         ],
         "Healthcare": [
@@ -234,7 +234,7 @@
             "confidence": "medium",
             "source": "DOSM ICT Use & Access Survey 2024 (Malaysia national 98.0%, applied to state)",
             "year": "2024",
-            "last_updated": "2026-09-04"
+            "last_updated": "2026-09-05"
           }
         ]
       }
@@ -284,7 +284,7 @@
             "confidence": "high",
             "source": "World Bank",
             "year": "2024",
-            "last_updated": "2026-09-04"
+            "last_updated": "2026-09-05"
           }
         ],
         "Education": [
@@ -296,7 +296,7 @@
             "confidence": "high",
             "source": "World Bank",
             "year": "2011",
-            "last_updated": "2026-09-04"
+            "last_updated": "2026-09-05"
           }
         ],
         "Shelter": [
@@ -308,7 +308,7 @@
             "confidence": "high",
             "source": "World Bank",
             "year": "2024",
-            "last_updated": "2026-09-04"
+            "last_updated": "2026-09-05"
           },
           {
             "indicator": "Clean water access",
@@ -318,7 +318,7 @@
             "confidence": "high",
             "source": "World Bank",
             "year": "2024",
-            "last_updated": "2026-09-04"
+            "last_updated": "2026-09-05"
           }
         ],
         "Healthcare": [
@@ -330,7 +330,7 @@
             "confidence": "high",
             "source": "World Bank",
             "year": "2024",
-            "last_updated": "2026-09-04"
+            "last_updated": "2026-09-05"
           }
         ],
         "Entertainment": [
@@ -342,7 +342,7 @@
             "confidence": "high",
             "source": "World Bank",
             "year": "2024",
-            "last_updated": "2026-09-04"
+            "last_updated": "2026-09-05"
           }
         ]
       }
@@ -380,7 +380,7 @@
             "confidence": "medium",
             "source": "Derived: 2025 production (BPS Indonesia (sum of 3/5 provinces)) \u00f7 population 17,951,300 (2025; Derived sum of all 5 provinces from Statistics Indonesia (BPS), Statistics Indonesia 2025, Table 3.1.1). Production/population years may differ; this is production per current resident and stale production is tracked in docs/DATA_INTAKE_ROADMAP.md.",
             "year": "2025",
-            "last_updated": "2026-09-04"
+            "last_updated": "2026-09-05"
           }
         ],
         "Energy": [
@@ -392,7 +392,7 @@
             "confidence": "high",
             "source": "Derived from ESDM Electricity Statistics 2024 Table 7: household-weighted (5264705 electrified / 5283206 total), official PDF https://gatrik.esdm.go.id/assets/uploads/download_index/files/91fa8-buku-statistik-ketenagalistrikan-2024.pdf",
             "year": "2024",
-            "last_updated": "2026-09-04"
+            "last_updated": "2026-09-05"
           }
         ],
         "Education": [
@@ -404,7 +404,7 @@
             "confidence": "high",
             "source": "BPS Indonesia (unweighted mean of 5/5 provinces, approx)",
             "year": "2025",
-            "last_updated": "2026-09-04"
+            "last_updated": "2026-09-05"
           }
         ],
         "Shelter": [
@@ -416,7 +416,7 @@
             "confidence": "high",
             "source": "BPS Indonesia (national by-province) (unweighted mean of 5/5 provinces, approx)",
             "year": "2025",
-            "last_updated": "2026-09-04"
+            "last_updated": "2026-09-05"
           }
         ],
         "Healthcare": [
@@ -428,7 +428,7 @@
             "confidence": "high",
             "source": "BPS Indonesia (unweighted mean of 4/5 provinces, approx)",
             "year": "2024",
-            "last_updated": "2026-09-04"
+            "last_updated": "2026-09-05"
           }
         ],
         "Entertainment": [
@@ -440,7 +440,7 @@
             "confidence": "medium",
             "source": "BPS \u2014 Kalimantan region internet access, 2024",
             "year": "2024",
-            "last_updated": "2026-09-04"
+            "last_updated": "2026-09-05"
           }
         ]
       }
