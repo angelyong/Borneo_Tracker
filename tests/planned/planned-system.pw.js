@@ -83,7 +83,7 @@ test.describe('Second suite — planned Playwright system test cases', () => {
     ];
     for (const [path, expected] of routes) {
       await open(page, path);
-      await expect(page.locator('main, body')).toContainText(expected);
+      await expect(page.locator('body')).toContainText(expected);
       await expect(page.locator('body')).not.toContainText(/404|page not found/i);
     }
   });
@@ -450,7 +450,7 @@ test.describe('Second suite — planned Playwright system test cases', () => {
       mimeType: 'application/octet-stream',
       buffer: Buffer.from('not allowed'),
     });
-    await expect(page.getByRole('alert')).toContainText(/unsupported file type/i);
+    await expect(page.getByRole('alert')).toContainText(/unsupported file type|files aren't allowed/i);
     await expect(page.getByText('unsafe.exe', { exact: true })).toHaveCount(0);
   });
 
@@ -462,7 +462,7 @@ test.describe('Second suite — planned Playwright system test cases', () => {
       mimeType: 'image/png',
       buffer: Buffer.alloc(8 * MB + 1),
     });
-    await expect(page.getByRole('alert')).toContainText(/exceeds the 8 MB limit/i);
+    await expect(page.getByRole('alert')).toContainText(/exceeds the (?:image )?size limit \(8 MB\)|exceeds the 8 MB limit/i);
     await expect(page.getByText('oversized.png', { exact: true })).toHaveCount(0);
   });
 

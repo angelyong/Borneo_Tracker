@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { readFile, stat } from 'node:fs/promises';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../../src/services/supabaseClient.js', () => ({
@@ -23,8 +23,8 @@ import { routeAiChatIntent } from '../../supabase/functions/ai-chat/intentRouter
 import { parseResilienceSimulationRequest } from '../../supabase/functions/ai-chat/resilienceSimulationRequest.ts';
 import { buildSimulationAnswer } from '../../supabase/functions/ai-chat/simulationAnswerBuilder.ts';
 
-const root = fileURLToPath(new URL('../../', import.meta.url));
-const atRoot = (path) => fileURLToPath(new URL(`../../${path}`, import.meta.url));
+const root = resolve(process.cwd());
+const atRoot = (path) => resolve(root, path);
 const sha256 = (bytes) => createHash('sha256').update(bytes).digest('hex');
 
 function response(body, { status = 200 } = {}) {
@@ -183,6 +183,6 @@ describe('Second suite — planned integration test cases', () => {
     for (const path of required) {
       expect((await stat(atRoot(path))).size, `${path} should be non-empty`).toBeGreaterThan(0);
     }
-    expect(root).toMatch(/Borneo_Tracker-js[\\/]$/);
+    expect(root).toMatch(/Borneo_Tracker-js$/);
   });
 });
