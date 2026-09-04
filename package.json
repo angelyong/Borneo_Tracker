@@ -15,6 +15,10 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:planned:unit": "vitest run tests/planned/planned-unit.test.js",
+    "test:planned:integration": "vitest run tests/planned/planned-integration.test.js",
+    "test:planned:system": "playwright test tests/planned/planned-system.pw.js",
+    "test:planned:system:headed": "playwright test tests/planned/planned-system.pw.js --headed",
     "ai-chat:golden:validate": "node scripts/evaluate-ai-chat-golden.js --validate-only",
     "ai-chat:golden": "node scripts/evaluate-ai-chat-golden.js",
     "ai-chat:deploy:check": "node scripts/ai-chat-deploy-check.js",
@@ -38,6 +42,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.62.1",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
