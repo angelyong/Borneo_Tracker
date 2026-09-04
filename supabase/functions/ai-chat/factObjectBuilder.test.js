@@ -311,14 +311,18 @@ describe('indicator, target, comparison, trend, SDG, and district facts', () => 
   it.each([
     ['unemployment', 'Unemployment rate'],
     ['poverty', 'Poverty rate (absolute)'],
-  ])('does not expose the inactive %s bound as a Resilience Index target', (_, indicator) => {
+  ])('does not invent a current Resilience Index target for unscored %s data', (_, indicator) => {
     const fact = buildFact(`What is the target gap for Sabah ${indicator}?`);
 
     expect(fact.availability).toBe('PARTIAL');
     expect(fact.values.target).toBeUndefined();
     expect(fact.values.gap).toBeUndefined();
-    expect(fact.warnings).toContainEqual(expect.objectContaining({ code: 'TARGET_INACTIVE' }));
-    expect(fact.requiredDisclosures.join(' ')).toContain('not mapped to a current Resilience Index pillar');
+    expect(fact.warnings).toContainEqual(expect.objectContaining({
+      code: 'TARGET_UNAVAILABLE',
+      message: 'No committed target bound exists for this indicator and unit.',
+    }));
+    expect(fact.warnings).not.toContainEqual(expect.objectContaining({ code: 'TARGET_INACTIVE' }));
+    expect(fact.requiredDisclosures).toContain('Target and gap are unavailable because the repository does not contain a compatible target.');
   });
 
   it('builds allowed comparisons after Stage 3C permits them', () => {

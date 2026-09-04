@@ -364,10 +364,11 @@ describe('structured answer PARTIAL and unavailable layers', () => {
     expect(answer.layers.honesty.warnings.join(' ')).toContain('Target and gap are unavailable');
   });
 
-  it.each(['unemployment', 'poverty'])('keeps inactive %s bounds out of public target-gap answers', (indicator) => {
+  it.each(['unemployment', 'poverty'])('keeps unscored %s data out of public target-gap answers', (indicator) => {
     const { answer, factObject } = buildFactAndAnswer(`What is the target gap for Sabah ${indicator}?`);
 
-    expect(factObject.warnings).toContainEqual(expect.objectContaining({ code: 'TARGET_INACTIVE' }));
+    expect(factObject.warnings).toContainEqual(expect.objectContaining({ code: 'TARGET_UNAVAILABLE' }));
+    expect(factObject.warnings).not.toContainEqual(expect.objectContaining({ code: 'TARGET_INACTIVE' }));
     expect(answer.availability).toBe('PARTIAL');
     expect(answer.layers.gap).toMatchObject({
       status: 'UNAVAILABLE',
