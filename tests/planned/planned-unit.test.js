@@ -47,13 +47,18 @@ function singleTerritoryModel(values, { best = 100, worst = 0, unit = '%' } = {}
   };
 }
 
-function translationKeys(value, prefix = '', keys = []) {
+const PLURAL_SUFFIX = /_(zero|one|two|few|many|other)$/;
+
+function translationRoots(value, prefix = '', roots = new Set()) {
   Object.entries(value || {}).forEach(([key, child]) => {
     const path = prefix ? `${prefix}.${key}` : key;
-    if (child && typeof child === 'object' && !Array.isArray(child)) translationKeys(child, path, keys);
-    else keys.push(path);
+    if (child && typeof child === 'object' && !Array.isArray(child)) {
+      translationRoots(child, path, roots);
+    } else {
+      roots.add(path.replace(PLURAL_SUFFIX, ''));
+    }
   });
-  return keys.sort();
+  return [...roots].sort();
 }
 
 function fileOf(name, type, size = 64) {
@@ -157,8 +162,8 @@ describe('Second suite — planned unit test cases', () => {
     expect(result.direction).toBe('unknown');
   });
 
-  it('UT-012 keeps required English and Malay translation keys in parity', () => {
-    expect(translationKeys(ms)).toEqual(translationKeys(en));
+  it('UT-012 keeps required English and Malay translation roots in plural-aware parity', () => {
+    expect(translationRoots(ms)).toEqual(translationRoots(en));
   });
 
   it('UT-013 routes dashboard, news, knowledge and simulation questions correctly', () => {
