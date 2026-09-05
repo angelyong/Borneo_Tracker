@@ -9,7 +9,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import merkle
-from manifest_contract import DATASET_PATHS, SCHEMA_VERSION, data_version, strict_json_loads, validate_manifest
+from manifest_contract import AUXILIARY_PATHS, DATASET_PATHS, SCHEMA_VERSION, auxiliary_in_prefix, data_version, strict_json_loads, validate_manifest
 
 ROOT = Path(__file__).parent
 DATA_DIR = ROOT / "public" / "data"
@@ -65,14 +65,34 @@ def atomic_write(path, body):
         tmp.write(body); tmp.flush(); os.fsync(tmp.fileno()); name = tmp.name
     os.replace(name, path)
 
+def descriptor_of(path):
+    return {"sha256": sha256_of(path), "bytes": path.stat().st_size, "generatedAt": generated_at_of(path)}
+
 def build_files():
     files, missing = {}, []
     for rel_path in DATASET_PATHS:
         path = ROOT / rel_path
         if not path.is_file():
             missing.append(rel_path); continue
-        files[rel_path] = {"sha256": sha256_of(path), "bytes": path.stat().st_size, "generatedAt": generated_at_of(path)}
+        files[rel_path] = descriptor_of(path)
     return files, missing
+
+def build_auxiliary():
+    """Descriptors for the auxiliary files that exist.
+
+    A missing auxiliary is skipped rather than fatal: these are optional
+    outputs, and a refresh that could not build one must still be able to
+    publish the six core datasets.
+    """
+    return {rel_path: descriptor_of(ROOT / rel_path) for rel_path in AUXILIARY_PATHS if (ROOT / rel_path).is_file()}
+
+def ledger_descriptors(files, auxiliary):
+    """Everything one ledger batch records: the Manifest's six, plus auxiliaries."""
+    return {**files, **auxiliary}
+
+def committed_auxiliary(lines, entries):
+    """What the committed ledger prefix currently claims about the auxiliaries."""
+    return auxiliary_in_prefix(lines[:entries])
 
 def load_lines():
     if not PROVENANCE.exists(): return []
@@ -101,11 +121,11 @@ def build_manifest():
     if missing: return None, missing
     return {"schemaVersion": SCHEMA_VERSION, "generatedAt": utc_now(), "runId": run_id(), "dataVersion": data_version(files), "files": files, "provenance": {"algorithm": "rfc6962-sha256-jsonl-v1", "root": "0" * 64, "entries": 1}}, missing
 
-def _events_for_version(files, version, timestamp, start):
+def _events_for_version(entries, version, timestamp, start):
     return [json.dumps({"schemaVersion": 2, "ts": timestamp, "runId": run_id(), "dataVersion": version,
-                        "entryIndex": start + offset, "entryCount": len(files), "file": path,
+                        "entryIndex": start + offset, "entryCount": len(entries), "file": path,
                         **entry}, sort_keys=True, separators=(",", ":")) .encode("utf-8")
-            for offset, (path, entry) in enumerate(sorted(files.items()), 1)]
+            for offset, (path, entry) in enumerate(sorted(entries.items()), 1)]
 
 def _validate_committed_prefix(existing, lines):
     """Refuse to extend a Manifest whose already-committed ledger prefix changed."""
@@ -116,28 +136,28 @@ def _validate_committed_prefix(existing, lines):
     if root != existing["provenance"]["root"]:
         raise ValueError("existing Manifest provenance prefix does not match ledger")
 
-def _complete_recovery_tail(tail, files, version, start):
+def _complete_recovery_tail(tail, entries, version, start):
     """Return whether *tail* is exactly the one batch the current data requires."""
-    if len(tail) != len(files):
+    if len(tail) != len(entries):
         return False
     timestamp = tail[0].get("ts")
     batch_run_id = tail[0].get("runId")
     if not isinstance(timestamp, str) or not timestamp or not isinstance(batch_run_id, str) or not batch_run_id:
         return False
-    expected_indices = set(range(start + 1, start + len(files) + 1))
+    expected_indices = set(range(start + 1, start + len(entries) + 1))
     seen_paths = set()
     for item in tail:
         path = item.get("file")
         if (item.get("schemaVersion") != SCHEMA_VERSION or item.get("dataVersion") != version
-                or item.get("entryCount") != len(files) or item.get("ts") != timestamp
+                or item.get("entryCount") != len(entries) or item.get("ts") != timestamp
                 or item.get("runId") != batch_run_id or item.get("entryIndex") not in expected_indices
-                or path in seen_paths or path not in files):
+                or path in seen_paths or path not in entries):
             return False
         seen_paths.add(path)
-        descriptor = files[path]
+        descriptor = entries[path]
         if any(item.get(field) != descriptor[field] for field in ("sha256", "bytes", "generatedAt")):
             return False
-    return seen_paths == set(files) and {item["entryIndex"] for item in tail} == expected_indices
+    return seen_paths == set(entries) and {item["entryIndex"] for item in tail} == expected_indices
 
 def _complete_legacy_tail(tail):
     """Accept only whole v1 four-file refresh batches merged after a v2 prefix."""
@@ -157,6 +177,8 @@ def _complete_legacy_tail(tail):
 def publish():
     files, missing = build_files()
     if missing: raise ValueError(f"cannot build manifest, missing data file(s): {missing}")
+    auxiliary = build_auxiliary()
+    entries = ledger_descriptors(files, auxiliary)
     version = data_version(files)
     with publication_lock():
         lines = load_lines()
@@ -166,7 +188,11 @@ def publish():
         if existing:
             _validate_committed_prefix(existing, lines)
         # Exact v2 state is a byte-for-byte no-op. This is the normal refresh path.
-        if existing and existing["dataVersion"] == version and existing["files"] == files:
+        # The auxiliaries have to match too: they are anchored only through the
+        # committed ledger root, so an auxiliary-only change must still produce a
+        # new root rather than shipping under the previous version's proof.
+        if (existing and existing["dataVersion"] == version and existing["files"] == files
+                and committed_auxiliary(lines, existing["provenance"]["entries"]) == auxiliary):
             return existing, False
         # Crash recovery: a completed v2 batch may have reached/fsynced the
         # ledger before the atomic Manifest replacement. Reconstruct it once;
@@ -174,7 +200,7 @@ def publish():
         start = existing["provenance"]["entries"] if existing else 0
         tail = [strict_json_loads(raw.decode("utf-8"), "provenance tail") for raw in lines[start:]]
         if tail:
-            if not _complete_recovery_tail(tail, files, version, start):
+            if not _complete_recovery_tail(tail, entries, version, start):
                 if not _complete_legacy_tail(tail):
                     raise ValueError("incomplete or unrelated unreferenced provenance tail; append-only recovery is required")
                 start=len(lines)
@@ -187,7 +213,7 @@ def publish():
                 atomic_write(MANIFEST, manifest_bytes(recovered))
                 return recovered, True
         timestamp = utc_now()
-        additions = _events_for_version(files, version, timestamp, len(lines))
+        additions = _events_for_version(entries, version, timestamp, len(lines))
         all_lines = lines + additions
         root = merkle.merkle_root([merkle.leaf_hash(line) for line in all_lines]).hex()
         manifest = {"schemaVersion": SCHEMA_VERSION, "generatedAt": timestamp, "runId": run_id(), "dataVersion": version,

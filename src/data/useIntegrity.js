@@ -19,6 +19,45 @@ const OTS_MAGIC = new Uint8Array([0x00, 0x4f, 0x70, 0x65, 0x6e, 0x54, 0x69, 0x6d
 export const INTEGRITY_STATE = { VERIFIED:'verified', PENDING:'pending', MISMATCH:'mismatch', UNVERIFIED:'unverified', INVALID:'invalid' };
 export function servedUrl(path) { return `/${path.replace(/^public\//, '')}`; }
 
+// Block heights our own pipeline recorded when it upgraded the proof, and the
+// GitHub attestation page for the signing identity. Both are read out of a
+// self-hosted ledger, so they are CLAIMS, not verified facts: this browser
+// cannot read Bitcoin headers or the Rekor log. They exist so a reader has
+// something concrete to look up with somebody else's tooling, and callers must
+// present them as such. Both are validated strictly — an href taken from a data
+// file is a phishing vector the moment that file is tampered with.
+const BITCOIN_CLAIM_KIND = 'bitcoin-attestation-present';
+const ATTESTATION_URL = /^https:\/\/github\.com\/[A-Za-z0-9._-]{1,100}\/[A-Za-z0-9._-]{1,100}\/attestations\/[0-9]{1,20}$/;
+
+export function claimedBitcoinBlocks(event) {
+  const claim = event?.otsAttestationClaim;
+  if (!claim || typeof claim !== 'object' || Array.isArray(claim)) return [];
+  if (claim.kind !== BITCOIN_CLAIM_KIND || !Array.isArray(claim.blocks) || !claim.blocks.length) return [];
+  // A single malformed height discards the whole claim rather than rendering a
+  // partially trustworthy list.
+  if (!claim.blocks.every((height) => Number.isInteger(height) && height > 0)) return [];
+  return [...new Set(claim.blocks)].sort((a, b) => a - b);
+}
+
+export function attestationUrlOf(anchor) {
+  const url = anchor?.sigstore?.attestationUrl;
+  return typeof url === 'string' && ATTESTATION_URL.test(url) ? url : null;
+}
+
+// The witness status stays `pending`: this browser cannot read Bitcoin headers
+// and must never claim confirmation. But once the ledger names blocks, "waiting
+// for a block to confirm" stops describing what is on the screen next to it. So
+// the COPY switches while the state and the colour do not -- the reader is told
+// what was recorded, who recorded it, and that this page did not check it.
+export function integrityCopyKey(status, blocks) {
+  return status === INTEGRITY_STATE.PENDING && blocks?.length ? 'recorded' : status;
+}
+
+export function blockExplorerUrl(height) {
+  if (!Number.isInteger(height) || height <= 0) throw new Error('invalid block height');
+  return `https://blockstream.info/block-height/${height}`;
+}
+
 class UnavailableError extends Error {}
 async function sha256Hex(buffer) { const digest = await crypto.subtle.digest('SHA-256', buffer); return [...new Uint8Array(digest)].map((value) => value.toString(16).padStart(2, '0')).join(''); }
 function canHash() { return typeof crypto !== 'undefined' && crypto.subtle && typeof window !== 'undefined' && window.isSecureContext; }

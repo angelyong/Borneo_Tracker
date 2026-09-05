@@ -6,7 +6,7 @@
 // confirmed proof keeps reporting as pending forever.
 
 import { describe, expect, it, vi } from 'vitest';
-import { checkIntegrity, hasOpenTimestampsMagic, INTEGRITY_SCOPE, INTEGRITY_STATE, latestAnchorFor, parseAnchors, servedUrl, validateManifestV2 } from './useIntegrity';
+import { checkIntegrity, hasOpenTimestampsMagic, integrityCopyKey, INTEGRITY_SCOPE, INTEGRITY_STATE, latestAnchorFor, parseAnchors, servedUrl, validateManifestV2 } from './useIntegrity';
 
 const STAMP = {
   ts: '2026-08-02T09:10:00Z',
@@ -212,5 +212,25 @@ describe('servedUrl', () => {
 
   it('only strips the leading public/, not one in the middle', () => {
     expect(servedUrl('public/data/public/x.json')).toBe('/data/public/x.json');
+  });
+});
+
+describe('integrityCopyKey', () => {
+  // Recorded blocks change the WORDING only. Letting them change the state
+  // would turn a self-hosted claim into a verification badge, which is the one
+  // thing this whole feature exists not to do.
+  it('switches the pending copy once blocks are recorded', () => {
+    expect(integrityCopyKey(INTEGRITY_STATE.PENDING, [965538, 965544])).toBe('recorded');
+  });
+
+  it('keeps the waiting copy while no block is recorded', () => {
+    expect(integrityCopyKey(INTEGRITY_STATE.PENDING, [])).toBe(INTEGRITY_STATE.PENDING);
+    expect(integrityCopyKey(INTEGRITY_STATE.PENDING, undefined)).toBe(INTEGRITY_STATE.PENDING);
+  });
+
+  it('never dresses up a failed or unverified check', () => {
+    for (const status of [INTEGRITY_STATE.MISMATCH, INTEGRITY_STATE.UNVERIFIED, INTEGRITY_STATE.INVALID, INTEGRITY_STATE.VERIFIED]) {
+      expect(integrityCopyKey(status, [965538])).toBe(status);
+    }
   });
 });
