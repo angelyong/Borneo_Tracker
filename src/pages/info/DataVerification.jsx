@@ -24,12 +24,22 @@ import { attestationUrlOf, blockExplorerUrl, claimedBitcoinBlocks, integrityCopy
 
 // Type, scoped to this page. The app declares no font-family anywhere, so
 // without this the page renders in the browser's default serif.
-//   DISPLAY carries the voice: a book face, because this page is a record.
-//   SANS carries prose. MONO carries evidence -- every hash, path and figure a
-//   reader is meant to compare character by character.
-const DISPLAY = "'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, 'Times New Roman', serif";
-const SANS = "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
-const MONO = "ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace";
+//
+// A serif carries the headings because this page is a record, not a pitch --
+// but a SCREEN serif, not a book one. Sitka ships as six optical sizes, drawn
+// separately rather than scaled, so DISPLAY and HEADING are the same voice cut
+// for two different sizes: at 38px the drawing can be delicate, at 16px it
+// cannot. Palatino-style faces were the obvious fallback and are the wrong
+// answer here; they were drawn for paper and read dated on a screen, so they
+// sit late in the stack rather than early.
+//
+// SANS carries prose. MONO carries evidence -- every hash, path, block number
+// and figure a reader is meant to compare character by character.
+const FALLBACK_SERIF = "Constantia, 'Iowan Old Style', Charter, Georgia, 'Palatino Linotype', serif";
+const DISPLAY = `'Sitka Display', 'Sitka Heading', Sitka, ${FALLBACK_SERIF}`;
+const HEADING = `'Sitka Heading', 'Sitka Subheading', 'Sitka Display', Sitka, ${FALLBACK_SERIF}`;
+const SANS = "'Segoe UI', system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif";
+const MONO = "'Cascadia Mono', 'Cascadia Code', ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace";
 
 // The one dark surface on the page. Brand teal in both themes: against the light
 // canvas it is the boldest thing here, against the dark canvas it still reads as
@@ -106,10 +116,10 @@ function Section({ eyebrow, title, hint, children, flush = false }) {
         {eyebrow ? <Eyebrow>{eyebrow}</Eyebrow> : null}
         <h2
           style={{
-            fontFamily: DISPLAY,
+            fontFamily: HEADING,
             margin: eyebrow ? '7px 0 0' : 0,
             fontSize: 19,
-            fontWeight: 500,
+            fontWeight: 600,
             letterSpacing: '-.005em',
             color: 'var(--color-ink)',
           }}
@@ -528,7 +538,7 @@ function Claim({ tone, bg, mark, title, body }) {
     <div style={{ ...card, display: 'flex', overflow: 'hidden' }}>
       <div aria-hidden="true" style={{ width: 4, background: tone, flex: 'none' }} />
       <div style={{ padding: '20px 22px' }}>
-        <h3 style={{ fontFamily: DISPLAY, margin: '0 0 10px', fontSize: 16, fontWeight: 500, color: tone, display: 'flex', alignItems: 'center', gap: 9 }}>
+        <h3 style={{ fontFamily: HEADING, margin: '0 0 10px', fontSize: 16, fontWeight: 600, color: tone, display: 'flex', alignItems: 'center', gap: 9 }}>
           <span
             aria-hidden="true"
             style={{
@@ -569,7 +579,7 @@ function WitnessCard({ name, via, status, label, rows, link, muted }) {
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'flex-start' }}>
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontFamily: DISPLAY, fontSize: 16, fontWeight: 500, color: 'var(--color-ink)', letterSpacing: '-.005em' }}>{name}</div>
+          <div style={{ fontFamily: HEADING, fontSize: 16, fontWeight: 600, color: 'var(--color-ink)', letterSpacing: '-.005em' }}>{name}</div>
           <div style={{ fontSize: 11.5, color: 'var(--color-muted)' }}>{via}</div>
         </div>
         <Pill status={status}>{label}</Pill>
@@ -670,7 +680,7 @@ function Step({ n, title, body, actions = [], empty }) {
         {n}
       </span>
       <div style={{ minWidth: 0 }}>
-        <h3 style={{ fontFamily: DISPLAY, margin: 0, fontSize: 16, fontWeight: 500, letterSpacing: '-.005em', color: 'var(--color-ink)' }}>{title}</h3>
+        <h3 style={{ fontFamily: HEADING, margin: 0, fontSize: 16, fontWeight: 600, letterSpacing: '-.005em', color: 'var(--color-ink)' }}>{title}</h3>
         <p style={{ margin: '6px 0 0', fontSize: 13, lineHeight: 1.65, color: 'var(--color-muted)', maxWidth: '70ch' }}>{body}</p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
           {actions.length === 0 ? (
