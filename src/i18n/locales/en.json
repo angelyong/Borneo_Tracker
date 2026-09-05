@@ -80,6 +80,10 @@
       "label": "Timestamping",
       "detail": "Signed and submitted; the Bitcoin timestamp takes a few hours to confirm. This is normal, not an error."
     },
+    "recorded": {
+      "label": "Timestamp recorded",
+      "detail": "Our publication log records this version's fingerprint on Bitcoin — blocks {{blocks}}. This page cannot read the Bitcoin chain, so it does not confirm that: follow a block number, or use the OpenTimestamps verifier, to check inclusion yourself."
+    },
     "mismatch": {
       "label": "Integrity mismatch",
       "detail": "These files do not match the anchored fingerprint. The deployment may be incomplete or the data altered — do not cite this version."

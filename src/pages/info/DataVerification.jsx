@@ -20,7 +20,7 @@
 import { useTranslation } from 'react-i18next';
 import SourceRegistryTable from '../../components/SourceRegistryTable';
 import { useSourceRegistry } from '../../data/useIndicators';
-import { attestationUrlOf, blockExplorerUrl, claimedBitcoinBlocks, INTEGRITY_STATE, servedUrl, useAnchorHistory, useIntegrity } from '../../data/useIntegrity';
+import { attestationUrlOf, blockExplorerUrl, claimedBitcoinBlocks, integrityCopyKey, INTEGRITY_STATE, servedUrl, useAnchorHistory, useIntegrity } from '../../data/useIntegrity';
 
 const MONO = 'ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace';
 
@@ -157,6 +157,8 @@ export default function DataVerification() {
   // concrete to look up elsewhere. They are never rendered as confirmation.
   const blocks = claimedBitcoinBlocks(otsRecord);
   const attestationUrl = attestationUrlOf(anchor);
+  // Colour still comes from `state`; only the wording follows the recorded blocks.
+  const copyKey = integrityCopyKey(state, blocks);
   // `anchor.ledgerEntries` only ever existed on three legacy rows, so this tile
   // read "—" on every current version. Count witnessed digests instead.
   const versionCount = new Set(history.events.map((event) => event.manifestSha256)).size;
@@ -196,11 +198,11 @@ export default function DataVerification() {
                   {loading ? '…' : manifestSha256 || '—'}
                 </code>
               </div>
-              {!loading ? <Pill status={state} size="lg" onInk>{t(`integrity.${state}.label`)}</Pill> : null}
+              {!loading ? <Pill status={state} size="lg" onInk>{t(`integrity.${copyKey}.label`)}</Pill> : null}
             </div>
 
             <p style={{ margin: 0, fontSize: 13.5, lineHeight: 1.6, color: ON_INK_MUTED, maxWidth: '72ch' }}>
-              {loading ? t('verify.checking') : t(`integrity.${state}.detail`)}
+              {loading ? t('verify.checking') : t(`integrity.${copyKey}.detail`, { blocks: blocks.join(', ') })}
             </p>
 
             <div

@@ -77,6 +77,10 @@
       "label": "Menunggu cap masa",
       "detail": "Sudah ditandatangani dan dihantar; cap masa Bitcoin mengambil masa beberapa jam untuk disahkan. Ini normal, bukan ralat."
     },
+    "recorded": {
+      "label": "Cap masa direkodkan",
+      "detail": "Log penerbitan kami merekodkan cap jari versi ini pada Bitcoin — blok {{blocks}}. Halaman ini tidak boleh membaca rantaian Bitcoin, jadi ia tidak mengesahkannya: ikuti nombor blok, atau gunakan pengesah OpenTimestamps, untuk menyemak kemasukan sendiri."
+    },
     "mismatch": {
       "label": "Integriti tidak sepadan",
       "detail": "Fail ini tidak sepadan dengan cap jari yang dilabuhkan. Penerbitan mungkin tidak lengkap atau data telah diubah — jangan petik versi ini."

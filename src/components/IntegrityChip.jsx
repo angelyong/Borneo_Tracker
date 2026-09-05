@@ -11,7 +11,7 @@
 
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { INTEGRITY_STATE, useIntegrity } from '../data/useIntegrity';
+import { claimedBitcoinBlocks, integrityCopyKey, INTEGRITY_STATE, useIntegrity } from '../data/useIntegrity';
 
 const STATUS_TONE = {
   [INTEGRITY_STATE.VERIFIED]: { fg: 'var(--color-green)', bg: 'var(--color-green-soft)' },
@@ -22,15 +22,19 @@ const STATUS_TONE = {
 
 export default function IntegrityChip({ scope = 'overview', style }) {
   const { t } = useTranslation();
-  const { status, loading, manifestSha256 } = useIntegrity(scope);
+  const { status, loading, manifestSha256, anchor } = useIntegrity(scope);
 
   // Nothing honest to claim while the check is still running — render nothing
   // rather than flashing a state and correcting it.
   if (loading || !status) return null;
 
   const tone = STATUS_TONE[status] || STATUS_TONE[INTEGRITY_STATE.UNVERIFIED];
-  const label = t(`integrity.${status}.label`);
-  const detail = t(`integrity.${status}.detail`);
+  // Tone stays keyed to the real state: amber until something outside this
+  // browser confirms inclusion. Only the words follow the recorded blocks.
+  const blocks = claimedBitcoinBlocks(anchor?.witnesses?.ots);
+  const copyKey = integrityCopyKey(status, blocks);
+  const label = t(`integrity.${copyKey}.label`);
+  const detail = t(`integrity.${copyKey}.detail`, { blocks: blocks.join(', ') });
   const short = manifestSha256 ? manifestSha256.slice(0, 8) : null;
 
   return (

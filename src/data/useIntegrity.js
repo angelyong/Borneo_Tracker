@@ -44,6 +44,15 @@ export function attestationUrlOf(anchor) {
   return typeof url === 'string' && ATTESTATION_URL.test(url) ? url : null;
 }
 
+// The witness status stays `pending`: this browser cannot read Bitcoin headers
+// and must never claim confirmation. But once the ledger names blocks, "waiting
+// for a block to confirm" stops describing what is on the screen next to it. So
+// the COPY switches while the state and the colour do not -- the reader is told
+// what was recorded, who recorded it, and that this page did not check it.
+export function integrityCopyKey(status, blocks) {
+  return status === INTEGRITY_STATE.PENDING && blocks?.length ? 'recorded' : status;
+}
+
 export function blockExplorerUrl(height) {
   if (!Number.isInteger(height) || height <= 0) throw new Error('invalid block height');
   return `https://blockstream.info/block-height/${height}`;
