@@ -25,6 +25,22 @@ proof is the paired `manifest.json.ots`. The latest aliases are convenience
 links only. Proof bytes may move monotonically pending → stronger proof; the
 Manifest snapshot never changes.
 
+This list is **frozen**. Widening it would invalidate every Manifest already
+anchored, because `validate_manifest` requires the file set to match exactly;
+`build_resilience_history.py` therefore states that auxiliary outputs must never
+be added to it.
+
+Auxiliary published files — `resilience_history.json` and `sources.json`
+(`manifest_contract.AUXILIARY_PATHS`) — are covered through the ledger instead.
+Each publication records them as additional `provenance.jsonl` rows inside the
+prefix the Manifest commits to, so the same OTS proof anchors them, with no
+schema change and no break to historical verification. `verify_anchor.py` checks
+them against the newest recorded batch; a prefix that names none (every
+publication before 2026-09-05) verifies exactly as it always did. The scope is
+the newest batch rather than all history so that withdrawing an auxiliary stays
+expressible. `dataVersion` is still derived from the six alone, so an
+auxiliary-only change publishes a new Manifest under the same `dataVersion`.
+
 `anchors.jsonl` is append-only witness discovery metadata. It is not an
 independent witness and must never be treated as Bitcoin verification. OTS and
 Sigstore events reduce independently; a later OTS update cannot remove

@@ -15,6 +15,17 @@ DATASET_PATHS = (
     "public/data/resilience_model.json", "public/data/districts.json",
     "public/data/borneo_districts.geojson", "public/data/brunei.geojson",
 )
+# Auxiliary published files. Deliberately NOT in DATASET_PATHS: the Manifest's
+# `files` scope is frozen at the six core datasets so that every Manifest ever
+# published keeps validating (see build_resilience_history.py). Widening it
+# would invalidate the whole anchored archive at once. These files are covered
+# through the provenance ledger instead -- the Manifest commits to that ledger's
+# Merkle root, and the OpenTimestamps proof anchors it, so a ledger row carries
+# exactly the same tamper evidence without a schema break.
+AUXILIARY_PATHS = (
+    "public/data/resilience_history.json", "public/data/sources.json",
+)
+LEDGER_PATHS = DATASET_PATHS + AUXILIARY_PATHS
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
 RFC3339_UTC = re.compile(r"^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$")
 
@@ -35,11 +46,19 @@ def strict_json_loads(raw, label="JSON"):
         raise ValueError(f"{label}: invalid JSON: {exc}") from exc
 
 
-def safe_dataset_path(path):
-    if not isinstance(path, str) or path not in DATASET_PATHS:
-        return False
+def _is_safe_relative(path):
     parsed = PurePosixPath(path)
     return not parsed.is_absolute() and ".." not in parsed.parts and "\\" not in path
+
+
+def safe_dataset_path(path):
+    """A path the Manifest's frozen `files` scope may name."""
+    return isinstance(path, str) and path in DATASET_PATHS and _is_safe_relative(path)
+
+
+def safe_ledger_path(path):
+    """A path the provenance ledger may name: core datasets plus auxiliaries."""
+    return isinstance(path, str) and path in LEDGER_PATHS and _is_safe_relative(path)
 
 
 def canonical_data_descriptors(files):
@@ -62,6 +81,44 @@ def is_rfc3339_utc_seconds(value):
         return datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc).utcoffset() == timezone.utc.utcoffset(None)
     except ValueError:
         return False
+
+
+def auxiliary_in_prefix(prefix_lines):
+    """Auxiliary descriptors recorded by the NEWEST batch of a ledger prefix.
+
+    Deliberately scoped to the last batch rather than to all of history, so that
+    dropping an auxiliary from publication stays expressible: its rows simply
+    stop appearing. Scanning all history instead would keep resurrecting a
+    removed file's last known hash, and the emitter would then republish forever
+    trying to reach a state it can no longer produce.
+
+    Legacy rows carry no ``entryCount`` and never described auxiliaries, so a
+    historical prefix yields nothing and compares equal to a tree that has no
+    auxiliary files at all.
+    """
+    if not prefix_lines:
+        return {}
+    last = strict_json_loads(prefix_lines[-1].decode("utf-8"), "provenance line")
+    count = last.get("entryCount")
+    if isinstance(count, bool) or not isinstance(count, int) or not 0 < count <= len(prefix_lines):
+        return {}
+    latest = {}
+    for raw in prefix_lines[-count:]:
+        item = strict_json_loads(raw.decode("utf-8"), "provenance line")
+        path = item.get("file")
+        if path not in AUXILIARY_PATHS:
+            continue
+        if not safe_ledger_path(path):
+            raise ValueError(f"unsafe ledger path {path!r}")
+        digest, size, generated = item.get("sha256"), item.get("bytes"), item.get("generatedAt")
+        if not isinstance(digest, str) or not HEX64.match(digest):
+            raise ValueError(f"invalid ledger sha256 for {path}")
+        if isinstance(size, bool) or not isinstance(size, int) or size < 0:
+            raise ValueError(f"invalid ledger byte count for {path}")
+        if generated is not None and not isinstance(generated, str):
+            raise ValueError(f"invalid ledger generatedAt for {path}")
+        latest[path] = {"sha256": digest, "bytes": size, "generatedAt": generated}
+    return latest
 
 
 def validate_manifest(manifest, *, require_scope=True):
