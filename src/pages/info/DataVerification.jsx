@@ -22,14 +22,21 @@ import SourceRegistryTable from '../../components/SourceRegistryTable';
 import { useSourceRegistry } from '../../data/useIndicators';
 import { attestationUrlOf, blockExplorerUrl, claimedBitcoinBlocks, integrityCopyKey, INTEGRITY_STATE, servedUrl, useAnchorHistory, useIntegrity } from '../../data/useIntegrity';
 
-const MONO = 'ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace';
+// Type, scoped to this page. The app declares no font-family anywhere, so
+// without this the page renders in the browser's default serif.
+//   DISPLAY carries the voice: a book face, because this page is a record.
+//   SANS carries prose. MONO carries evidence -- every hash, path and figure a
+//   reader is meant to compare character by character.
+const DISPLAY = "'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Palatino, Georgia, 'Times New Roman', serif";
+const SANS = "system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+const MONO = "ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace";
 
 // The one dark surface on the page. Brand teal in both themes: against the light
 // canvas it is the boldest thing here, against the dark canvas it still reads as
 // a distinct, cooler panel.
 const INK_SURFACE = {
-  background: 'linear-gradient(135deg, #003641 0%, #04252c 100%)',
-  color: '#f3f6f1',
+  background: 'linear-gradient(135deg, var(--color-teal) 0%, #04252c 100%)',
+  color: 'var(--color-on-dark)',
 };
 const ON_INK_MUTED = 'rgba(243, 246, 241, 0.62)';
 const ON_INK_RULE = 'rgba(243, 246, 241, 0.14)';
@@ -46,6 +53,7 @@ const card = {
   background: 'var(--color-card)',
   border: '1px solid var(--color-border)',
   borderRadius: 16,
+  boxShadow: '0 1px 2px rgba(16, 24, 40, .04)',
 };
 
 function Pill({ status, children, size = 'sm', onInk = false }) {
@@ -83,9 +91,9 @@ function Pill({ status, children, size = 'sm', onInk = false }) {
   );
 }
 
-function Eyebrow({ children, color = 'var(--color-faint)' }) {
+function Eyebrow({ children, color = 'var(--color-navy)' }) {
   return (
-    <span style={{ fontSize: 10.5, fontWeight: 700, letterSpacing: '.15em', textTransform: 'uppercase', color }}>
+    <span style={{ fontFamily: MONO, fontSize: 10, fontWeight: 600, letterSpacing: '.16em', textTransform: 'uppercase', color }}>
       {children}
     </span>
   );
@@ -98,10 +106,11 @@ function Section({ eyebrow, title, hint, children, flush = false }) {
         {eyebrow ? <Eyebrow>{eyebrow}</Eyebrow> : null}
         <h2
           style={{
-            margin: eyebrow ? '6px 0 0' : 0,
-            fontSize: 17,
-            fontWeight: 600,
-            letterSpacing: '-.01em',
+            fontFamily: DISPLAY,
+            margin: eyebrow ? '7px 0 0' : 0,
+            fontSize: 19,
+            fontWeight: 500,
+            letterSpacing: '-.005em',
             color: 'var(--color-ink)',
           }}
         >
@@ -124,13 +133,14 @@ function StatTile({ label, value, sub }) {
       <Eyebrow>{label}</Eyebrow>
       <div
         style={{
-          fontSize: 26,
-          fontWeight: 650,
-          letterSpacing: '-.02em',
+          fontFamily: DISPLAY,
+          fontSize: 30,
+          fontWeight: 500,
+          letterSpacing: '-.01em',
           fontVariantNumeric: 'tabular-nums',
           color: 'var(--color-ink)',
           lineHeight: 1.15,
-          marginTop: 4,
+          marginTop: 5,
         }}
       >
         {value}
@@ -164,12 +174,12 @@ export default function DataVerification() {
   const versionCount = new Set(history.events.map((event) => event.manifestSha256)).size;
 
   return (
-    <div style={{ padding: '26px 20px 56px' }}>
+    <div style={{ padding: '26px 20px 56px', minHeight: '100%', background: 'var(--color-page-bg)', fontFamily: SANS }}>
       <div style={{ maxWidth: 1080, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
         <header style={{ display: 'flex', flexDirection: 'column', gap: 8, maxWidth: '64ch' }}>
           <Eyebrow color="var(--color-muted)">{t('verify.eyebrow')}</Eyebrow>
-          <h1 style={{ margin: 0, fontSize: 34, fontWeight: 600, letterSpacing: '-.025em', lineHeight: 1.15, color: 'var(--color-ink)', textWrap: 'balance' }}>
+          <h1 style={{ fontFamily: DISPLAY, margin: 0, fontSize: 38, fontWeight: 500, letterSpacing: '-.012em', lineHeight: 1.12, color: 'var(--color-ink)', textWrap: 'balance' }}>
             {t('verify.title')}
           </h1>
           <p style={{ margin: 0, color: 'var(--color-muted)', fontSize: 15, lineHeight: 1.65 }}>
@@ -518,7 +528,7 @@ function Claim({ tone, bg, mark, title, body }) {
     <div style={{ ...card, display: 'flex', overflow: 'hidden' }}>
       <div aria-hidden="true" style={{ width: 4, background: tone, flex: 'none' }} />
       <div style={{ padding: '20px 22px' }}>
-        <h3 style={{ margin: '0 0 10px', fontSize: 14.5, fontWeight: 600, color: tone, display: 'flex', alignItems: 'center', gap: 9 }}>
+        <h3 style={{ fontFamily: DISPLAY, margin: '0 0 10px', fontSize: 16, fontWeight: 500, color: tone, display: 'flex', alignItems: 'center', gap: 9 }}>
           <span
             aria-hidden="true"
             style={{
@@ -559,7 +569,7 @@ function WitnessCard({ name, via, status, label, rows, link, muted }) {
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'flex-start' }}>
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontSize: 14.5, fontWeight: 600, color: 'var(--color-ink)', letterSpacing: '-.01em' }}>{name}</div>
+          <div style={{ fontFamily: DISPLAY, fontSize: 16, fontWeight: 500, color: 'var(--color-ink)', letterSpacing: '-.005em' }}>{name}</div>
           <div style={{ fontSize: 11.5, color: 'var(--color-muted)' }}>{via}</div>
         </div>
         <Pill status={status}>{label}</Pill>
@@ -649,18 +659,19 @@ function Step({ n, title, body, actions = [], empty }) {
           borderRadius: '50%',
           background: 'var(--color-card)',
           border: '1px solid var(--color-border)',
+          fontFamily: MONO,
           fontSize: 12.5,
           fontWeight: 700,
           fontVariantNumeric: 'tabular-nums',
-          color: 'var(--color-muted)',
+          color: 'var(--color-navy)',
           flex: 'none',
         }}
       >
         {n}
       </span>
       <div style={{ minWidth: 0 }}>
-        <h3 style={{ margin: 0, fontSize: 14.5, fontWeight: 600, letterSpacing: '-.01em', color: 'var(--color-ink)' }}>{title}</h3>
-        <p style={{ margin: '5px 0 0', fontSize: 13, lineHeight: 1.65, color: 'var(--color-muted)', maxWidth: '70ch' }}>{body}</p>
+        <h3 style={{ fontFamily: DISPLAY, margin: 0, fontSize: 16, fontWeight: 500, letterSpacing: '-.005em', color: 'var(--color-ink)' }}>{title}</h3>
+        <p style={{ margin: '6px 0 0', fontSize: 13, lineHeight: 1.65, color: 'var(--color-muted)', maxWidth: '70ch' }}>{body}</p>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
           {actions.length === 0 ? (
             <span style={{ fontSize: 12.5, color: 'var(--color-faint)' }}>{empty}</span>
