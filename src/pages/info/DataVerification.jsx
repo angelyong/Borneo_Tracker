@@ -20,7 +20,7 @@
 import { useTranslation } from 'react-i18next';
 import SourceRegistryTable from '../../components/SourceRegistryTable';
 import { useSourceRegistry } from '../../data/useIndicators';
-import { INTEGRITY_STATE, servedUrl, useAnchorHistory, useIntegrity } from '../../data/useIntegrity';
+import { attestationUrlOf, blockExplorerUrl, claimedBitcoinBlocks, INTEGRITY_STATE, servedUrl, useAnchorHistory, useIntegrity } from '../../data/useIntegrity';
 
 const MONO = 'ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace';
 
@@ -153,6 +153,13 @@ export default function DataVerification() {
   const otsRecord = anchor?.witnesses?.ots;
   const matched = files.filter((f) => f.match === true).length;
   const activeWitnesses = (anchor?.witnesses?.ots ? 1 : 0) + (anchor?.sigstore ? 1 : 0);
+  // Claims recorded by our own pipeline, surfaced so the reader has something
+  // concrete to look up elsewhere. They are never rendered as confirmation.
+  const blocks = claimedBitcoinBlocks(otsRecord);
+  const attestationUrl = attestationUrlOf(anchor);
+  // `anchor.ledgerEntries` only ever existed on three legacy rows, so this tile
+  // read "—" on every current version. Count witnessed digests instead.
+  const versionCount = new Set(history.events.map((event) => event.manifestSha256)).size;
 
   return (
     <div style={{ padding: '26px 20px 56px' }}>
@@ -229,7 +236,7 @@ export default function DataVerification() {
         {/* Summary before detail. */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14 }}>
           <StatTile label={t('verify.statFiles')} value={loading ? '—' : `${matched}/${files.length || 0}`} sub={t('verify.fileMatch')} />
-          <StatTile label={t('verify.statVersions')} value={anchor?.ledgerEntries ?? '—'} sub={t('verify.historyTitle')} />
+          <StatTile label={t('verify.statVersions')} value={history.loading || !versionCount ? '—' : versionCount} sub={t('verify.historyTitle')} />
           <StatTile label={t('verify.statWitnesses')} value={`${activeWitnesses}/2`} sub="OpenTimestamps · Sigstore" />
           <StatTile label={t('verify.statCost')} value="$0" sub={t('verify.noDirectWitnessFee')} />
         </div>
@@ -326,6 +333,7 @@ export default function DataVerification() {
               label={anchor?.proofAvailable ? 'OTS proof available — independently verify Bitcoin inclusion' : t('verify.notAnchored')}
               rows={[
                 [t('verify.proof'), anchor?.proofAvailable && otsRecord?.proof ? otsRecord.proof.split('/').pop() : '—'],
+                [t('verify.blocksClaimed'), blocks.length ? <BlockLinks blocks={blocks} /> : '—'],
               ]}
               link={null}
             />
@@ -338,6 +346,7 @@ export default function DataVerification() {
                 [t('verify.entry'), anchor?.sigstore?.logIndex || '—'],
                 [t('verify.signer'), anchor?.sigstore ? 'anchor.yml' : '—'],
               ]}
+              link={attestationUrl ? { href: attestationUrl, text: t('verify.step3Action') } : null}
             />
           </div>
         </Section>
@@ -349,56 +358,104 @@ export default function DataVerification() {
         </div>
 
         {/* Verify it yourself ---------------------------------------------- */}
-        <Section eyebrow={t('verify.eyebrow')} title={t('verify.yourselfTitle')} hint={t('verify.terminalHint')}>
-          <div style={{ ...INK_SURFACE, borderRadius: 12, overflow: 'hidden' }}>
-            <div style={{ display: 'flex', gap: 6, padding: '10px 14px', borderBottom: `1px solid ${ON_INK_RULE}` }}>
-              {['#f8827f', '#f4c542', '#5fd39b'].map((dot) => (
-                <span key={dot} aria-hidden="true" style={{ width: 9, height: 9, borderRadius: '50%', background: dot, opacity: 0.75 }} />
-              ))}
-            </div>
-            {/* Every line here must be a command that actually runs against what
-                we actually publish. The Sigstore line only appears once an
-                attestation exists — printing an instruction that fails would
-                undo the entire point of the page. */}
-            <pre
-              style={{
-                margin: 0,
-                padding: '16px 18px',
-                overflowX: 'auto',
-                fontFamily: MONO,
-                fontSize: 12.5,
-                lineHeight: 1.8,
-                color: '#f3f6f1',
-              }}
-            >
-              <span style={{ color: ON_INK_MUTED }}>{'# 1 · recompute the fingerprint yourself\n'}</span>
-              <span style={{ color: ON_INK_MUTED }}>$ </span>
-              {`curl -sO ${origin}/data/manifest.json\n`}
-              <span style={{ color: ON_INK_MUTED }}>$ </span>
-              {'sha256sum manifest.json\n'}
-              <span style={{ color: '#5fd39b' }}>{manifestSha256 || '…'}</span>
-              {'\n\n'}
-              <span style={{ color: ON_INK_MUTED }}>{'# 2 · check the published Bitcoin proof\n'}</span>
-              {anchor?.proofAvailable && otsRecord?.proof ? (
-                <>
-                  <span style={{ color: ON_INK_MUTED }}>$ </span>
-                  {`curl -sO ${origin}${servedUrl(otsRecord.proof)}\n`}
-                  <span style={{ color: ON_INK_MUTED }}>$ </span>
-                  {'ots verify manifest.json.ots'}
-                </>
-              ) : (
-                <span style={{ color: ON_INK_MUTED }}>{'# No OpenTimestamps proof has been published for this manifest.\n'}</span>
-              )}
-              {anchor?.sigstore ? (
-                <>
-                  {'\n\n'}
-                  <span style={{ color: ON_INK_MUTED }}>{'# 3 · check the transparency log\n'}</span>
-                  <span style={{ color: ON_INK_MUTED }}>$ </span>
-                  {'gh attestation verify manifest.json --repo angelyong/Borneo_Tracker --signer-workflow angelyong/Borneo_Tracker/.github/workflows/anchor.yml --source-ref refs/heads/master'}
-                </>
-              ) : null}
-            </pre>
+        {/* Every step here must be completable with nothing installed, using a
+            tool that is not ours — otherwise the page asks the reader to trust
+            us in the middle of proving that they do not have to. The terminal
+            commands are kept but demoted: `ots` and `gh` are separate installs
+            and the OpenTimestamps client does not build on every platform (see
+            ots.py), so printing them as the primary instruction stranded most
+            readers, including us. */}
+        <Section eyebrow={t('verify.eyebrow')} title={t('verify.yourselfTitle')} hint={t('verify.yourselfHint')}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <Step
+              n="1"
+              title={t('verify.step1Title')}
+              body={t('verify.step1Body')}
+              actions={[{ href: '/data/manifest.json', text: t('verify.step1Action'), download: 'manifest.json' }]}
+            />
+            <Step
+              n="2"
+              title={t('verify.step2Title')}
+              body={t('verify.step2Body')}
+              empty={t('verify.noProof')}
+              actions={
+                anchor?.proofAvailable && otsRecord?.proof
+                  ? [
+                      { href: servedUrl(otsRecord.proof), text: t('verify.step2Proof'), download: 'manifest.json.ots' },
+                      { href: 'https://opentimestamps.org', text: t('verify.step2Action'), external: true, primary: true },
+                    ]
+                  : []
+              }
+            />
+            <Step
+              n="3"
+              title={t('verify.step3Title')}
+              body={t('verify.step3Body')}
+              empty={t('verify.notEnabled')}
+              actions={attestationUrl ? [{ href: attestationUrl, text: t('verify.step3Action'), external: true, primary: true }] : []}
+            />
           </div>
+
+          <details style={{ marginTop: 16 }}>
+            <summary style={{ cursor: 'pointer', padding: '4px 0', fontSize: 12.5, fontWeight: 600, color: 'var(--color-muted)' }}>
+              {t('verify.cliToggle')}
+            </summary>
+            <p style={{ margin: '8px 0 12px', fontSize: 12.5, lineHeight: 1.65, color: 'var(--color-muted)', maxWidth: '72ch' }}>
+              {t('verify.cliNote')}
+            </p>
+            <div style={{ ...INK_SURFACE, borderRadius: 12, overflow: 'hidden' }}>
+              <div style={{ display: 'flex', gap: 6, padding: '10px 14px', borderBottom: `1px solid ${ON_INK_RULE}` }}>
+                {['#f8827f', '#f4c542', '#5fd39b'].map((dot) => (
+                  <span key={dot} aria-hidden="true" style={{ width: 9, height: 9, borderRadius: '50%', background: dot, opacity: 0.75 }} />
+                ))}
+              </div>
+              {/* Anything printed here must actually run against what we actually
+                  publish, and must say plainly when it needs an install — an
+                  instruction that fails would undo the point of the page. */}
+              <pre
+                style={{
+                  margin: 0,
+                  padding: '16px 18px',
+                  overflowX: 'auto',
+                  fontFamily: MONO,
+                  fontSize: 12.5,
+                  lineHeight: 1.8,
+                  color: '#f3f6f1',
+                }}
+              >
+                <span style={{ color: ON_INK_MUTED }}>{'# 1 · recompute the fingerprint — no install needed\n'}</span>
+                <span style={{ color: ON_INK_MUTED }}>$ </span>
+                {`curl -sO ${origin}/data/manifest.json\n`}
+                <span style={{ color: ON_INK_MUTED }}>$ </span>
+                {'sha256sum manifest.json\n'}
+                <span style={{ color: '#5fd39b' }}>{manifestSha256 || '…'}</span>
+                {'\n\n'}
+                <span style={{ color: ON_INK_MUTED }}>{'# on Windows PowerShell\n'}</span>
+                <span style={{ color: ON_INK_MUTED }}>&gt; </span>
+                {`curl.exe -sO ${origin}/data/manifest.json\n`}
+                <span style={{ color: ON_INK_MUTED }}>&gt; </span>
+                {'(Get-FileHash manifest.json -Algorithm SHA256).Hash.ToLower()'}
+                {anchor?.proofAvailable && otsRecord?.proof ? (
+                  <>
+                    {'\n\n'}
+                    <span style={{ color: ON_INK_MUTED }}>{'# 2 · check the Bitcoin proof — requires the OpenTimestamps client\n'}</span>
+                    <span style={{ color: ON_INK_MUTED }}>$ </span>
+                    {`curl -sO ${origin}${servedUrl(otsRecord.proof)}\n`}
+                    <span style={{ color: ON_INK_MUTED }}>$ </span>
+                    {'ots verify manifest.json.ots'}
+                  </>
+                ) : null}
+                {anchor?.sigstore ? (
+                  <>
+                    {'\n\n'}
+                    <span style={{ color: ON_INK_MUTED }}>{'# 3 · check the signer — requires the GitHub CLI\n'}</span>
+                    <span style={{ color: ON_INK_MUTED }}>$ </span>
+                    {'gh attestation verify manifest.json --repo angelyong/Borneo_Tracker --signer-workflow angelyong/Borneo_Tracker/.github/workflows/anchor.yml --source-ref refs/heads/master'}
+                  </>
+                ) : null}
+              </pre>
+            </div>
+          </details>
         </Section>
 
         {/* History --------------------------------------------------------- */}
@@ -535,6 +592,103 @@ function WitnessCard({ name, via, status, label, rows, link, muted }) {
           {link.text} ↗
         </a>
       ) : null}
+    </div>
+  );
+}
+
+function BlockLinks({ blocks }) {
+  return (
+    <span style={{ display: 'inline-flex', flexWrap: 'wrap', gap: 8, justifyContent: 'flex-end' }}>
+      {blocks.map((height) => (
+        <a
+          key={height}
+          href={blockExplorerUrl(height)}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            fontFamily: MONO,
+            fontSize: 11.5,
+            fontVariantNumeric: 'tabular-nums',
+            color: 'var(--color-navy)',
+            textDecoration: 'underline',
+            textDecorationStyle: 'dotted',
+            textUnderlineOffset: 3,
+          }}
+        >
+          {height.toLocaleString()}
+        </a>
+      ))}
+    </span>
+  );
+}
+
+function Step({ n, title, body, actions = [], empty }) {
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'auto 1fr',
+        gap: 14,
+        alignItems: 'start',
+        border: '1px solid var(--color-border)',
+        borderRadius: 13,
+        padding: '16px 18px',
+        background: 'var(--color-page-bg)',
+      }}
+    >
+      <span
+        aria-hidden="true"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          width: 26,
+          height: 26,
+          borderRadius: '50%',
+          background: 'var(--color-card)',
+          border: '1px solid var(--color-border)',
+          fontSize: 12.5,
+          fontWeight: 700,
+          fontVariantNumeric: 'tabular-nums',
+          color: 'var(--color-muted)',
+          flex: 'none',
+        }}
+      >
+        {n}
+      </span>
+      <div style={{ minWidth: 0 }}>
+        <h3 style={{ margin: 0, fontSize: 14.5, fontWeight: 600, letterSpacing: '-.01em', color: 'var(--color-ink)' }}>{title}</h3>
+        <p style={{ margin: '5px 0 0', fontSize: 13, lineHeight: 1.65, color: 'var(--color-muted)', maxWidth: '70ch' }}>{body}</p>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
+          {actions.length === 0 ? (
+            <span style={{ fontSize: 12.5, color: 'var(--color-faint)' }}>{empty}</span>
+          ) : (
+            actions.map((action) => (
+              <a
+                key={action.href}
+                href={action.href}
+                {...(action.download ? { download: action.download } : { target: '_blank', rel: 'noopener noreferrer' })}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  padding: '7px 13px',
+                  borderRadius: 999,
+                  fontSize: 12.5,
+                  fontWeight: 600,
+                  textDecoration: 'none',
+                  background: action.primary ? 'var(--color-navy)' : 'var(--color-card)',
+                  color: action.primary ? '#f3f6f1' : 'var(--color-ink)',
+                  border: `1px solid ${action.primary ? 'transparent' : 'var(--color-border)'}`,
+                }}
+              >
+                {action.text}
+                {action.external ? ' ↗' : ''}
+              </a>
+            ))
+          )}
+        </div>
+      </div>
     </div>
   );
 }
