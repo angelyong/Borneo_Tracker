@@ -955,6 +955,7 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
     } catch (error) {
       telemetry.errorCode = error instanceof AIChatHttpError ? error.code : 'AI_CHAT_ERROR';
       const fallbackReason = mapFallbackReason(error);
+      const geminiFinishReason = geminiFinishReasonFromError(error);
       if (fallbackReason && canBuildTemplateFallback(structuredAnswer, route)) {
         try {
           const fallback = buildTemplateFallback({
@@ -969,6 +970,7 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
           logger.info('request_fallback', {
             fallbackUsed: true,
             fallbackReason,
+            ...(geminiFinishReason ? { geminiFinishReason } : {}),
             intent: route.intent,
             structuredAnswerAvailability: structuredAnswer.availability,
             blocked: structuredAnswer.blocked,
@@ -1014,6 +1016,7 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
           logger.info('request_fallback', {
             fallbackUsed: true,
             fallbackReason: fallback.fallback.reason,
+            ...(geminiFinishReason ? { geminiFinishReason } : {}),
             intent: route?.intent,
             retrievalStatus: knowledgeAnswer.status,
             sourceCount: fallback.sources.length,
@@ -1053,6 +1056,7 @@ export function createAiChatHandler(options: HandlerOptions = {}) {
           logger.info('request_fallback', {
             fallbackUsed: true,
             fallbackReason: fallback.fallback.reason,
+            ...(geminiFinishReason ? { geminiFinishReason } : {}),
             intent: route?.intent,
             requestStatus: simulationAnswer.status,
             sourceCount: fallback.sources.length,
@@ -1273,6 +1277,27 @@ export function mapFallbackReason(error: unknown): FallbackReason | undefined {
   const status = Number(httpStatus);
   if ([500, 502, 503, 504].includes(status)) return 'GEMINI_UNAVAILABLE';
   return 'GEMINI_HTTP_ERROR';
+}
+
+export function geminiFinishReasonFromError(error: unknown): string | undefined {
+  if (!(error instanceof AIChatHttpError)) return undefined;
+  if (error.code === 'GEMINI_TRUNCATED') return 'MAX_TOKENS';
+  if (error.code === 'GEMINI_INCOMPLETE_RESPONSE') return 'MISSING';
+  const match = error.code.match(/^GEMINI_INCOMPLETE_(.+)$/);
+  if (!match) return undefined;
+  const finishReason = match[1];
+  return [
+    'SAFETY',
+    'RECITATION',
+    'OTHER',
+    'LANGUAGE',
+    'BLOCKLIST',
+    'PROHIBITED_CONTENT',
+    'SPII',
+    'MALFORMED_FUNCTION_CALL',
+  ].includes(finishReason)
+    ? finishReason
+    : 'UNKNOWN';
 }
 
 export const handleAiChatRequest = createAiChatHandler();

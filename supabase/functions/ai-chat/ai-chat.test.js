@@ -3,7 +3,7 @@ import indicatorsData from '../../../public/data/indicators.json';
 import resilienceData from '../../../public/data/resilience.json';
 import { AIChatHttpError, MAX_MESSAGE_LENGTH, validateChatRequest } from './contracts.ts';
 import { generateGeminiAnswer } from './geminiClient.ts';
-import { createAiChatHandler, handleAiChatRequest, mapFallbackReason } from './index.ts';
+import { createAiChatHandler, geminiFinishReasonFromError, handleAiChatRequest, mapFallbackReason } from './index.ts';
 import { LocalNewsRepository } from './localNewsRepository.ts';
 import { FailingTelemetryAdapter, MemoryTelemetryAdapter, AIChatTelemetryService } from './telemetry.ts';
 import { SUGGESTED_QUESTION_CONTRACT } from '../../../src/shared/aiChatContracts.js';
@@ -423,6 +423,27 @@ describe('Gemini fallback reason mapping', () => {
     expect(mapFallbackReason(new AIChatHttpError(400, 'EMPTY_MESSAGE', 'safe message'))).toBeUndefined();
     expect(mapFallbackReason(new AIChatHttpError(500, 'INVALID_AI_CHAT_CONFIG', 'safe message'))).toBeUndefined();
     expect(mapFallbackReason(new Error('bug'))).toBeUndefined();
+  });
+
+  it.each([
+    ['GEMINI_TRUNCATED', 'MAX_TOKENS'],
+    ['GEMINI_INCOMPLETE_SAFETY', 'SAFETY'],
+    ['GEMINI_INCOMPLETE_RECITATION', 'RECITATION'],
+    ['GEMINI_INCOMPLETE_OTHER', 'OTHER'],
+    ['GEMINI_INCOMPLETE_LANGUAGE', 'LANGUAGE'],
+    ['GEMINI_INCOMPLETE_BLOCKLIST', 'BLOCKLIST'],
+    ['GEMINI_INCOMPLETE_PROHIBITED_CONTENT', 'PROHIBITED_CONTENT'],
+    ['GEMINI_INCOMPLETE_SPII', 'SPII'],
+    ['GEMINI_INCOMPLETE_MALFORMED_FUNCTION_CALL', 'MALFORMED_FUNCTION_CALL'],
+    ['GEMINI_INCOMPLETE_RESPONSE', 'MISSING'],
+    ['GEMINI_INCOMPLETE_NEW_REASON', 'UNKNOWN'],
+  ])('derives safe Gemini finish reason %s as %s', (code, finishReason) => {
+    expect(geminiFinishReasonFromError(new AIChatHttpError(502, code, 'safe message'))).toBe(finishReason);
+  });
+
+  it('does not derive a Gemini finish reason for unrelated errors', () => {
+    expect(geminiFinishReasonFromError(new AIChatHttpError(504, 'GEMINI_TIMEOUT', 'timeout'))).toBeUndefined();
+    expect(geminiFinishReasonFromError(new Error('bug'))).toBeUndefined();
   });
 });
 
@@ -2031,6 +2052,37 @@ describe('ai-chat Stage 4C template fallback', () => {
     expect(Array.isArray(body.sources)).toBe(true);
     expect(body.sources.length).toBeGreaterThan(0);
     expect(logger.info.mock.calls.some(([event]) => event === 'request_fallback')).toBe(false);
+    expect(JSON.stringify(logger.info.mock.calls)).not.toContain('geminiFinishReason');
+  });
+
+  it.each([
+    ['GEMINI_TRUNCATED', 'MAX_TOKENS'],
+    ['GEMINI_INCOMPLETE_SAFETY', 'SAFETY'],
+    ['GEMINI_INCOMPLETE_RECITATION', 'RECITATION'],
+    ['GEMINI_INCOMPLETE_OTHER', 'OTHER'],
+    ['GEMINI_INCOMPLETE_LANGUAGE', 'LANGUAGE'],
+    ['GEMINI_INCOMPLETE_BLOCKLIST', 'BLOCKLIST'],
+    ['GEMINI_INCOMPLETE_PROHIBITED_CONTENT', 'PROHIBITED_CONTENT'],
+    ['GEMINI_INCOMPLETE_SPII', 'SPII'],
+    ['GEMINI_INCOMPLETE_MALFORMED_FUNCTION_CALL', 'MALFORMED_FUNCTION_CALL'],
+    ['GEMINI_INCOMPLETE_RESPONSE', 'MISSING'],
+    ['GEMINI_INCOMPLETE_NEW_REASON', 'UNKNOWN'],
+  ])('logs safe Gemini finish reason for %s', async (code, finishReason) => {
+    const result = await runFallbackRequest(
+      { ...validPayload, message: "What is Sabah's resilience score?", region: '' },
+      new AIChatHttpError(502, code, 'synthetic Gemini text should not be logged')
+    );
+
+    expect(result.body.fallback.reason).toBe('GEMINI_TRUNCATED');
+    expect(result.fallbackLog).toMatchObject({
+      fallbackReason: 'GEMINI_TRUNCATED',
+      geminiFinishReason: finishReason,
+    });
+    const logs = JSON.stringify(result.logger.info.mock.calls);
+    expect(logs).not.toContain('synthetic Gemini text should not be logged');
+    expect(logs).not.toContain("What is Sabah's resilience score?");
+    expect(logs).not.toContain('Use only the supplied verified grounding payload');
+    expect(logs).not.toContain('untrustedUserQuestion');
   });
 
   it.each([
