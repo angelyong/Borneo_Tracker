@@ -47,6 +47,45 @@ function RagStatus({ rag, t }) {
   );
 }
 
+// One before/after panel. Baseline and scenario differ only in their label and
+// their recomputed result, so they share a component: the two sides must stay
+// visually identical for the comparison to mean anything.
+function ResultPanel({ label, result, thresholds, t }) {
+  const scoredCount = Object.values(result.pillarScores).filter(Number.isFinite).length;
+  const scoredLabel = t('regional.scoredPillarsTitle', { count: scoredCount });
+  return (
+    <div style={styles.panel}>
+      <div style={styles.panelTitle}>{label}</div>
+      <div style={styles.visualRow}>
+        <div style={styles.gaugeCol}>
+          {thresholds && <RagGauge score={result.index} thresholds={thresholds} maxWidth={148} />}
+          <div style={styles.indexNumber}>{result.index ?? t('simulator.noIndex')}</div>
+          <RagStatus rag={result.rag} t={t} />
+        </div>
+        <div style={styles.radarCol}>
+          <HexRadar
+            pillars={result.pillarScores}
+            max={100}
+            weakest={result.weakestPillar}
+            maxWidth={140}
+            missingLabel={t('dashboard.noComparableData')}
+            incompleteLabel={scoredLabel}
+            ariaLabel={scoredLabel}
+          />
+        </div>
+      </div>
+      <div style={styles.weakestBarsWrap}>
+        <WeakestLinkBars
+          territory={result}
+          title={t('dashboard.weakestLinkFirst')}
+          missingLabel={t('dashboard.noComparableData')}
+        />
+      </div>
+      <div style={styles.panelDisclaimer}>{t('simulator.illustrative')}</div>
+    </div>
+  );
+}
+
 const ImpactSimulator = () => {
   const { t } = useTranslation();
   const location = useLocation();
@@ -186,61 +225,18 @@ const ImpactSimulator = () => {
           <div style={styles.illustrativeBanner}>{t('simulator.illustrative')}</div>
 
           <div style={styles.panelsRow}>
-            <div style={styles.panel}>
-              <div style={styles.panelTitle}>{t('simulator.baselineLabel')}</div>
-              {thresholds && <RagGauge score={baselineResult.index} thresholds={thresholds} maxWidth={180} />}
-              <div style={styles.indexNumber}>{baselineResult.index ?? t('simulator.noIndex')}</div>
-              <RagStatus rag={baselineResult.rag} t={t} />
-              <HexRadar
-                pillars={baselineResult.pillarScores}
-                max={100}
-                weakest={baselineResult.weakestPillar}
-                maxWidth={160}
-                missingLabel={t('dashboard.noComparableData')}
-                incompleteLabel={t('regional.scoredPillarsTitle', {
-                  count: Object.values(baselineResult.pillarScores).filter(Number.isFinite).length,
-                })}
-                ariaLabel={t('regional.scoredPillarsTitle', {
-                  count: Object.values(baselineResult.pillarScores).filter(Number.isFinite).length,
-                })}
-              />
-              <div style={styles.weakestBarsWrap}>
-                <WeakestLinkBars
-                  territory={baselineResult}
-                  title={t('dashboard.weakestLinkFirst')}
-                  missingLabel={t('dashboard.noComparableData')}
-                />
-              </div>
-              <div style={styles.panelDisclaimer}>{t('simulator.illustrative')}</div>
-            </div>
-
-            <div style={styles.panel}>
-              <div style={styles.panelTitle}>{t('simulator.scenarioLabel')}</div>
-              {thresholds && <RagGauge score={scenarioResult.index} thresholds={thresholds} maxWidth={180} />}
-              <div style={styles.indexNumber}>{scenarioResult.index ?? t('simulator.noIndex')}</div>
-              <RagStatus rag={scenarioResult.rag} t={t} />
-              <HexRadar
-                pillars={scenarioResult.pillarScores}
-                max={100}
-                weakest={scenarioResult.weakestPillar}
-                maxWidth={160}
-                missingLabel={t('dashboard.noComparableData')}
-                incompleteLabel={t('regional.scoredPillarsTitle', {
-                  count: Object.values(scenarioResult.pillarScores).filter(Number.isFinite).length,
-                })}
-                ariaLabel={t('regional.scoredPillarsTitle', {
-                  count: Object.values(scenarioResult.pillarScores).filter(Number.isFinite).length,
-                })}
-              />
-              <div style={styles.weakestBarsWrap}>
-                <WeakestLinkBars
-                  territory={scenarioResult}
-                  title={t('dashboard.weakestLinkFirst')}
-                  missingLabel={t('dashboard.noComparableData')}
-                />
-              </div>
-              <div style={styles.panelDisclaimer}>{t('simulator.illustrative')}</div>
-            </div>
+            <ResultPanel
+              label={t('simulator.baselineLabel')}
+              result={baselineResult}
+              thresholds={thresholds}
+              t={t}
+            />
+            <ResultPanel
+              label={t('simulator.scenarioLabel')}
+              result={scenarioResult}
+              thresholds={thresholds}
+              t={t}
+            />
           </div>
 
           <div style={styles.slidersBox}>
@@ -310,21 +306,23 @@ const styles = {
     display: 'flex',
     minHeight: '100%',
     width: '100%',
+    maxWidth: '100%',
+    minWidth: 0,
     backgroundColor: 'var(--color-page-bg)',
     fontFamily: 'Inter, Arial, sans-serif',
-    overflow: 'visible',
   },
   rightCol: {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
     minHeight: '100%',
-    overflow: 'visible',
+    minWidth: 0,
   },
   content: {
     flex: 1,
-    overflow: 'auto',
-    padding: '24px',
+    minWidth: 0,
+    maxWidth: '100%',
+    padding: '20px 24px 28px',
     boxSizing: 'border-box',
   },
   stateBox: {
@@ -383,19 +381,38 @@ const styles = {
   },
   panelsRow: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-    gap: '16px',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 320px), 1fr))',
+    gap: '14px',
     marginBottom: '16px',
   },
   panel: {
     backgroundColor: 'var(--color-card)',
     border: '1px solid var(--color-border)',
     borderRadius: '10px',
-    padding: '16px 18px',
+    padding: '12px 14px 14px',
+    minWidth: 0,
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  // Gauge beside radar rather than stacked: it halves the panel height, so the
+  // weakest-link bars — the point of the comparison — stay above the fold on
+  // both sides. Wraps back to stacked on its own when a panel gets narrow.
+  visualRow: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: '8px 14px',
+    width: '100%',
+  },
+  gaugeCol: {
+    flex: '1 1 150px',
+    minWidth: 0,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
   },
+  radarCol: { flex: '1 1 140px', minWidth: 0 },
   panelTitle: {
     fontSize: '11px',
     fontWeight: '700',
@@ -406,7 +423,7 @@ const styles = {
     marginBottom: '4px',
   },
   indexNumber: {
-    fontSize: '24px',
+    fontSize: '22px',
     fontWeight: '800',
     color: 'var(--color-ink)',
     fontVariantNumeric: 'tabular-nums',
@@ -423,14 +440,15 @@ const styles = {
   ragDot: { width: '8px', height: '8px', borderRadius: '50%', display: 'inline-block' },
   weakestBarsWrap: {
     width: '100%',
-    marginTop: '12px',
+    minWidth: 0,
+    marginTop: '10px',
     borderTop: '1px solid var(--color-border)',
-    paddingTop: '12px',
+    paddingTop: '10px',
   },
   panelDisclaimer: {
     width: '100%',
-    marginTop: '12px',
-    paddingTop: '10px',
+    marginTop: '10px',
+    paddingTop: '8px',
     borderTop: '1px dashed var(--color-border)',
     fontSize: '10.5px',
     color: 'var(--color-muted)',
@@ -447,7 +465,7 @@ const styles = {
   sectionSubtitle: { fontSize: '11px', color: 'var(--color-muted)', marginBottom: '12px' },
   sliderRow: { marginBottom: '16px' },
   focusedSliderRow: { outline: '3px solid var(--color-focus, #2563eb)', outlineOffset: '5px', borderRadius: '6px' },
-  sliderLabelRow: { display: 'flex', justifyContent: 'space-between', gap: '8px', marginBottom: '4px' },
+  sliderLabelRow: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '2px 8px', marginBottom: '4px', minWidth: 0 },
   sliderLabel: { fontSize: '12.5px', fontWeight: '600', color: 'var(--color-ink)' },
   yearNote: { fontWeight: '400', color: 'var(--color-muted)' },
   sliderValue: { fontSize: '12.5px', fontWeight: '700', color: 'var(--color-ink)', fontVariantNumeric: 'tabular-nums' },
