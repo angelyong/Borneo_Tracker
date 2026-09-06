@@ -1,0 +1,42 @@
+[33mcommit 99a6f4a43a3dee16a25c43a0033b85052b333a7e[m[33m ([m[1;32mimpactSimulator[m[33m)[m
+Author: angel <angelyap154@gmail.com>
+Date:   Fri Aug 7 08:12:51 2026 +0800
+
+    impactSimuator commit
+
+ compute_resilience.py                              | 149 [32m++++++[m[31m-[m
+ docs/IMPACT_SIMULATOR_PROGRESS.md                  | 288 [32m+++++++++++++[m
+ emit_manifest.py                                   |   1 [32m+[m
+ public/data/manifest.json                          |   9 [32m+[m[31m-[m
+ public/data/provenance.jsonl                       |  40 [32m++[m
+ public/data/resilience_model.json                  | 469 [32m+++++++++++++++++++++[m
+ src/App.jsx                                        |   2 [32m+[m
+ src/components/RagGauge.jsx                        |  52 [32m+++[m
+ src/components/sidebar.jsx                         |   1 [32m+[m
+ src/data/useIndicators.js                          |  44 [32m++[m
+ src/i18n/locales/en.json                           |  22 [32m+[m
+ src/i18n/locales/ms.json                           |  22 [32m+[m
+ src/pages/dashboard/OverviewDashboard.jsx          |  48 [32m+[m[31m--[m
+ src/pages/simulator/ImpactSimulator.jsx            | 394 [32m+++++++++++++++++[m
+ src/utils/resilienceModel.js                       | 163 [32m+++++++[m
+ src/utils/resilienceModel.test.js                  | 242 [32m+++++++++++[m
+ supabase/functions/ai-chat/ai-chat.test.js         | 166 [32m++++++++[m
+ supabase/functions/ai-chat/contracts.ts            |  74 [32m+++[m[31m-[m
+ supabase/functions/ai-chat/index.ts                | 182 [32m+++++++[m[31m-[m
+ supabase/functions/ai-chat/intentRouter.test.js    |  25 [32m++[m
+ supabase/functions/ai-chat/intentRouter.ts         |  19 [32m+[m
+ supabase/functions/ai-chat/promptBuilder.test.js   |  54 [32m++[m[31m-[m
+ supabase/functions/ai-chat/promptBuilder.ts        |  65 [32m+++[m
+ .../functions/ai-chat/resilienceSimulation.test.js |  66 [32m+++[m
+ supabase/functions/ai-chat/resilienceSimulation.ts | 230 [32m++++++++++[m
+ .../ai-chat/resilienceSimulationRequest.test.js    |  99 [32m+++++[m
+ .../ai-chat/resilienceSimulationRequest.ts         | 107 [32m+++++[m
+ .../functions/ai-chat/responseValidator.test.js    |  71 [32m++++[m
+ supabase/functions/ai-chat/responseValidator.ts    |  98 [32m+++++[m
+ .../ai-chat/simulationAnswerBuilder.test.js        |  88 [32m++++[m
+ .../functions/ai-chat/simulationAnswerBuilder.ts   | 156 [32m+++++++[m
+ .../functions/ai-chat/templateFallback.test.js     |  68 [32m+++[m
+ supabase/functions/ai-chat/templateFallback.ts     |  45 [32m++[m
+ tests/test_manifest_tracks_resilience_model.py     |  42 [32m++[m
+ tests/test_resilience_model_export.py              | 234 [32m++++++++++[m
+ 35 files changed, 3781 insertions(+), 54 deletions(-)
