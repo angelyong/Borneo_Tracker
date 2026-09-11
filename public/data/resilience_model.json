@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-08-28",
+  "generatedAt": "2026-09-12",
   "pillars": [
     "Food",
     "Energy",
@@ -413,9 +413,9 @@
           "pillar": "Education"
         },
         "Clean water access": {
-          "value": 82.98,
+          "value": 83.35,
           "unit": "%",
-          "score": 66.0,
+          "score": 66.7,
           "year": "2025",
           "source": "BPS Indonesia (national by-province) (unweighted mean of 5/5 provinces, approx)",
           "confidence": "high",
@@ -444,12 +444,12 @@
         "Food": 77.9,
         "Energy": 99.3,
         "Education": 51.3,
-        "Shelter": 66.0,
+        "Shelter": 66.7,
         "Healthcare": 59.5,
         "Entertainment": 52.2
       },
-      "index": 67.7,
-      "indexStrict": 65.8,
+      "index": 67.8,
+      "indexStrict": 65.9,
       "rag": "amber",
       "ragStrict": "amber",
       "weakestPillar": "Education",
