@@ -1,56 +1,111 @@
 // pages/profile/MyProfile.jsx
-// Matches screenshot: Personal Details card + Password card, each with Edit button
-// Clicking Edit opens an inline edit form. Saving shows a success toast.
+// Personal Details card + Password card, each with an inline edit form.
+// Details persist to public.profiles (own row); the password change re-checks
+// the current password first, then goes through Supabase Auth.
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../auth/useAuth';
 
-const INITIAL_USER = {
-  firstName:   'Json',
-  lastName:    'Chen',
-  email:       'json@gmail.com',
-  phone:       '1812345678',
-  phoneCode:   '+60',
-  addressLine: '15, Jalan Permas 12/10, Bandar Baru Permas Jaya',
-  city:        'Masai',
-  state:       "Johor Darul Ta'zim",
-  postal:      '81750',
+const EMPTY_USER = {
+  firstName: '', lastName: '', email: '',
+  phone: '', phoneCode: '+60',
+  addressLine: '', city: '', state: '', postal: '',
 };
+
+// Phone is stored as one string ("+60123456789"); the form shows it as a
+// country-code select + local number.
+const splitPhone = (raw) => {
+  const value = (raw || '').trim();
+  const code = ['+673', '+65', '+62', '+60'].find(c => value.startsWith(c));
+  return code ? { phoneCode: code, phone: value.slice(code.length) } : { phoneCode: '+60', phone: value };
+};
+
+const fromProfile = (profile, authUser) => ({
+  ...EMPTY_USER,
+  firstName:   profile?.first_name   || '',
+  lastName:    profile?.last_name    || '',
+  email:       authUser?.email       || '',
+  ...splitPhone(profile?.phone),
+  addressLine: profile?.address_line || '',
+  city:        profile?.city         || '',
+  state:       profile?.state        || '',
+  postal:      profile?.postal_code  || '',
+});
 
 export default function MyProfile() {
   const { t } = useTranslation();
-  const { user: authUser, profile } = useAuth();
-  const [user, setUser] = useState(() => ({
-    ...INITIAL_USER,
-    firstName: profile?.first_name || INITIAL_USER.firstName,
-    lastName: profile?.last_name || INITIAL_USER.lastName,
-    email: authUser?.email || INITIAL_USER.email,
-  }));
+  const { user: authUser, profile, updateProfile, updatePassword, reauthenticate } = useAuth();
+  // Derived, not mirrored: a successful save reloads `profile`, which re-renders this.
+  const user = useMemo(() => fromProfile(profile, authUser), [profile, authUser]);
   const [editMode, setEditMode]           = useState(null);   // 'details' | 'password' | null
   const [form, setForm]                   = useState({});
   const [toast, setToast]                 = useState(false);
   const [pwForm, setPwForm]               = useState({ current: '', next: '', confirm: '' });
+  const [error, setError]                 = useState('');
+  const [busy, setBusy]                   = useState(false);
 
   // ── Open edit panels ──────────────────────────────────────────────────────
   const openDetails = () => {
     setForm({ ...user });
+    setError('');
     setEditMode('details');
   };
   const openPassword = () => {
     setPwForm({ current: '', next: '', confirm: '' });
+    setError('');
     setEditMode('password');
+  };
+  const closeEdit = () => {
+    setEditMode(null);
+    setError('');
   };
 
   // ── Save details ──────────────────────────────────────────────────────────
-  const saveDetails = () => {
-    setUser({ ...form });
-    setEditMode(null);
-    showToast();
+  const saveDetails = async () => {
+    setBusy(true);
+    setError('');
+    try {
+      const phone = form.phone.trim() ? `${form.phoneCode}${form.phone.trim()}` : '';
+      await updateProfile({
+        first_name:   form.firstName.trim(),
+        last_name:    form.lastName.trim(),
+        phone,
+        address_line: form.addressLine.trim(),
+        city:         form.city.trim(),
+        state:        form.state.trim(),
+        postal_code:  form.postal.trim(),
+      });
+      setEditMode(null);
+      showToast();
+    } catch {
+      setError(t('profile.saveFailed'));
+    } finally {
+      setBusy(false);
+    }
   };
-  const savePassword = () => {
-    setEditMode(null);
-    showToast();
+
+  const savePassword = async () => {
+    setError('');
+    if (pwForm.next.length < 8) return setError(t('profile.passwordTooShort'));
+    if (pwForm.next !== pwForm.confirm) return setError(t('profile.passwordMismatch'));
+    setBusy(true);
+    try {
+      try {
+        await reauthenticate(pwForm.current);
+      } catch {
+        setError(t('profile.currentPasswordWrong'));
+        return;
+      }
+      await updatePassword(pwForm.next);
+      setPwForm({ current: '', next: '', confirm: '' });
+      setEditMode(null);
+      showToast();
+    } catch {
+      setError(t('profile.saveFailed'));
+    } finally {
+      setBusy(false);
+    }
   };
 
   const showToast = () => {
@@ -58,8 +113,12 @@ export default function MyProfile() {
     setTimeout(() => setToast(false), 3000);
   };
 
-  const fullName    = `${user.firstName} ${user.lastName}`;
-  const fullAddress = `${user.addressLine}, ${user.city}, ${user.postal} ${user.state}`;
+  const orNotProvided = (value) => (value && value.trim() ? value : t('profile.notProvided'));
+  const fullName    = orNotProvided([user.firstName, user.lastName].filter(Boolean).join(' '));
+  const fullPhone   = orNotProvided(user.phone ? `${user.phoneCode}${user.phone}` : '');
+  const fullAddress = orNotProvided(
+    [user.addressLine, user.city, [user.postal, user.state].filter(Boolean).join(' ')].filter(Boolean).join(', '),
+  );
 
   return (
     <div style={s.root}>
@@ -95,7 +154,8 @@ export default function MyProfile() {
                 </div>
                 <div style={s.field}>
                   <label style={s.label}>{t('profile.email')}</label>
-                  <input style={s.input} type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+                  <input style={{ ...s.input, opacity: 0.6, cursor: 'not-allowed' }} type="email" value={form.email} readOnly title={t('profile.emailLocked')} />
+                  <span style={s.hint}>{t('profile.emailLocked')}</span>
                 </div>
                 <div style={s.field}>
                   <label style={s.label}>{t('profile.phoneNumber')}</label>
@@ -125,9 +185,10 @@ export default function MyProfile() {
                   <label style={s.label}>{t('profile.postalCode')}</label>
                   <input style={s.input} value={form.postal} onChange={e => setForm({ ...form, postal: e.target.value })} />
                 </div>
+                {error && <p style={s.error} role="alert">{error}</p>}
                 <div style={s.formActions}>
-                  <button style={s.cancelBtn} onClick={() => setEditMode(null)}>{t('common.cancel')}</button>
-                  <button style={s.saveBtn} onClick={saveDetails}>{t('profile.saveChanges')}</button>
+                  <button style={s.cancelBtn} onClick={closeEdit} disabled={busy}>{t('common.cancel')}</button>
+                  <button style={s.saveBtn} onClick={saveDetails} disabled={busy}>{busy ? t('profile.saving') : t('profile.saveChanges')}</button>
                 </div>
               </div>
             ) : (
@@ -136,7 +197,7 @@ export default function MyProfile() {
                 {[
                   { label: t('profile.name'),    value: fullName },
                   { label: t('profile.email'),   value: user.email },
-                  { label: t('profile.phone'),   value: `${user.phoneCode}${user.phone}` },
+                  { label: t('profile.phone'),   value: fullPhone },
                   { label: t('profile.address'), value: fullAddress },
                 ].map(row => (
                   <div key={row.label} style={s.detailRow}>
@@ -174,9 +235,10 @@ export default function MyProfile() {
                     />
                   </div>
                 ))}
+                {error && <p style={s.error} role="alert">{error}</p>}
                 <div style={s.formActions}>
-                  <button style={s.cancelBtn} onClick={() => setEditMode(null)}>{t('common.cancel')}</button>
-                  <button style={s.saveBtn} onClick={savePassword}>{t('profile.saveChanges')}</button>
+                  <button style={s.cancelBtn} onClick={closeEdit} disabled={busy}>{t('common.cancel')}</button>
+                  <button style={s.saveBtn} onClick={savePassword} disabled={busy}>{busy ? t('profile.saving') : t('profile.saveChanges')}</button>
                 </div>
               </div>
             ) : (
@@ -277,6 +339,7 @@ const s = {
     boxSizing: 'border-box', width: '100%',
   },
   phoneRow:  { display: 'flex', gap: '8px', alignItems: 'center' },
+  error:     { fontSize: '13px', color: 'var(--color-red)', margin: '4px 0 0' },
   phoneCode: { padding: '10px 10px', borderRadius: '10px', border: '1px solid var(--color-border)', fontSize: '14px', outline: 'none', backgroundColor: 'var(--color-card)', cursor: 'pointer' },
 
   formActions: { display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '8px' },

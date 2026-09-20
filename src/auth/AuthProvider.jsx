@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }) => {
     }
     const { data } = await supabase
       .from('profiles')
-      .select('id, first_name, last_name, role, status')
+      .select('id, first_name, last_name, role, status, phone, address_line, city, state, postal_code')
       .eq('id', userId)
       .single();
     setProfile(data ?? null);
@@ -109,6 +109,36 @@ export const AuthProvider = ({ children }) => {
     if (error) throw error;
   }, []);
 
+  // Own-row write to public.profiles. Restricted server-side to the caller's
+  // row (profiles_update_own) and to non-privileged columns (role/status are
+  // revoked at the column level), so the allow-list here is a courtesy, not
+  // the security boundary.
+  const updateProfile = useCallback(async (fields) => {
+    if (!supabase) throw new Error('Authentication is not configured.');
+    const userId = session?.user?.id;
+    if (!userId) throw new Error('Not signed in.');
+    const allowed = ['first_name', 'last_name', 'phone', 'address_line', 'city', 'state', 'postal_code'];
+    const patch = Object.fromEntries(
+      Object.entries(fields)
+        .filter(([k]) => allowed.includes(k))
+        .map(([k, v]) => [k, typeof v === 'string' && v.trim() === '' ? null : v]),
+    );
+    const { error } = await supabase.from('profiles').update(patch).eq('id', userId);
+    if (error) throw error;
+    await loadProfile(userId);
+  }, [session, loadProfile]);
+
+  // Re-checks the current password before a change. Supabase's updateUser does
+  // not require it, so without this any open session could silently rotate the
+  // password.
+  const reauthenticate = useCallback(async (password) => {
+    if (!supabase) throw new Error('Authentication is not configured.');
+    const email = session?.user?.email;
+    if (!email) throw new Error('Not signed in.');
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+  }, [session]);
+
   const value = useMemo(() => {
     const user = session?.user ?? null;
     const role = MOCK ? 'admin' : profile?.role ?? 'user';
@@ -134,6 +164,8 @@ export const AuthProvider = ({ children }) => {
       resetPasswordForEmail,
       resendSignup,
       updatePassword,
+      updateProfile,
+      reauthenticate,
       refreshProfile: () => loadProfile(user?.id),
     };
   }, [
@@ -146,6 +178,8 @@ export const AuthProvider = ({ children }) => {
     resetPasswordForEmail,
     resendSignup,
     updatePassword,
+    updateProfile,
+    reauthenticate,
     loadProfile,
   ]);
 

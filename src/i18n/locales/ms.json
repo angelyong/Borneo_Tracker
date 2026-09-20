@@ -569,7 +569,14 @@
     "currentPassword": "Kata laluan semasa",
     "newPassword": "Kata laluan baharu",
     "confirmPassword": "Sahkan kata laluan",
-    "changesUpdated": "Perubahan anda telah dikemas kini."
+    "changesUpdated": "Perubahan anda telah dikemas kini.",
+    "notProvided": "Tidak diberikan",
+    "emailLocked": "E-mel anda ialah log masuk anda dan tidak boleh ditukar di sini.",
+    "passwordMismatch": "Kata laluan baharu tidak sepadan.",
+    "passwordTooShort": "Kata laluan baharu mestilah sekurang-kurangnya 8 aksara.",
+    "currentPasswordWrong": "Kata laluan semasa tidak betul.",
+    "saveFailed": "Perubahan anda tidak dapat disimpan. Sila cuba lagi.",
+    "saving": "Menyimpan…"
   },
   "about": {
     "kicker": "MENGENAI PLATFORM",

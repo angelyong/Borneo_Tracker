@@ -38,6 +38,20 @@ create table if not exists public.profiles (
 -- existing table. Against the live database this whole statement is a no-op —
 -- it is here so a rebuild from scratch lands identically.
 
+-- Contact details -------------------------------------------------------------
+-- ADDED 2026-09-20. Until now /profile displayed hard-coded placeholder contact
+-- details for every user (a leftover from the Figma mock) and its Save button
+-- only updated local state — surfaced by the client during handover
+-- acceptance. These columns make the page real. They are ordinary user-owned
+-- data: profiles_update_own (below) already permits writing them and the
+-- column-privilege revoke deliberately does not cover them.
+alter table public.profiles
+  add column if not exists phone        text,
+  add column if not exists address_line text,
+  add column if not exists city         text,
+  add column if not exists state        text,
+  add column if not exists postal_code  text;
+
 
 -- Role helper ------------------------------------------------------------------
 -- SECURITY DEFINER is load-bearing, not a shortcut. profiles' own RLS policies

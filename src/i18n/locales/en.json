@@ -576,7 +576,14 @@
     "currentPassword": "Current password",
     "newPassword": "New password",
     "confirmPassword": "Confirm password",
-    "changesUpdated": "Your changes have been updated."
+    "changesUpdated": "Your changes have been updated.",
+    "notProvided": "Not provided",
+    "emailLocked": "Your email is your login and cannot be changed here.",
+    "passwordMismatch": "The new passwords do not match.",
+    "passwordTooShort": "The new password must be at least 8 characters.",
+    "currentPasswordWrong": "The current password is incorrect.",
+    "saveFailed": "Could not save your changes. Please try again.",
+    "saving": "Saving…"
   },
   "about": {
     "kicker": "ABOUT THE PLATFORM",
