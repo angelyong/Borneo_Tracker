@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-14",
+  "generatedAt": "2026-09-20",
   "territories": {
     "Sabah": [
       {
@@ -533,6 +533,54 @@
       },
       {
         "date": "2026-09-14",
+        "index": 67.6,
+        "strict": 62.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "3f499ced456c2403c7d28f593eede8ba77b6bd79"
+      },
+      {
+        "date": "2026-09-15",
+        "index": 67.6,
+        "strict": 62.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "3c2454781aa5d9e24582dfdd310228dee7a628f2"
+      },
+      {
+        "date": "2026-09-16",
+        "index": 67.6,
+        "strict": 62.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "3d944eef0137da1c4127aa89b7e862d971765c49"
+      },
+      {
+        "date": "2026-09-17",
+        "index": 67.6,
+        "strict": 62.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "fd937e5892d182f80dd6c246878117b1d3ba2afa"
+      },
+      {
+        "date": "2026-09-18",
+        "index": 67.6,
+        "strict": 62.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "614021b402d90b03f088af86ad391ab9fa8bd3ba"
+      },
+      {
+        "date": "2026-09-19",
+        "index": 67.6,
+        "strict": 62.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "56f45c69c28412b6c422f4fba2bae26f5522740b"
+      },
+      {
+        "date": "2026-09-20",
         "index": 67.6,
         "strict": 62.0,
         "methodologyTag": "v1.2-canonical-fixed",
@@ -1075,6 +1123,54 @@
         "strict": 71.0,
         "methodologyTag": "v1.2-canonical-fixed",
         "isMethodologyBreak": false,
+        "sourceCommit": "3f499ced456c2403c7d28f593eede8ba77b6bd79"
+      },
+      {
+        "date": "2026-09-15",
+        "index": 73.6,
+        "strict": 71.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "3c2454781aa5d9e24582dfdd310228dee7a628f2"
+      },
+      {
+        "date": "2026-09-16",
+        "index": 73.6,
+        "strict": 71.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "3d944eef0137da1c4127aa89b7e862d971765c49"
+      },
+      {
+        "date": "2026-09-17",
+        "index": 73.6,
+        "strict": 71.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "fd937e5892d182f80dd6c246878117b1d3ba2afa"
+      },
+      {
+        "date": "2026-09-18",
+        "index": 73.6,
+        "strict": 71.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "614021b402d90b03f088af86ad391ab9fa8bd3ba"
+      },
+      {
+        "date": "2026-09-19",
+        "index": 73.6,
+        "strict": 71.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "56f45c69c28412b6c422f4fba2bae26f5522740b"
+      },
+      {
+        "date": "2026-09-20",
+        "index": 73.6,
+        "strict": 71.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
         "sourceCommit": null
       }
     ],
@@ -1613,6 +1709,54 @@
         "strict": 60.9,
         "methodologyTag": "v1.2-canonical-fixed",
         "isMethodologyBreak": false,
+        "sourceCommit": "3f499ced456c2403c7d28f593eede8ba77b6bd79"
+      },
+      {
+        "date": "2026-09-15",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "3c2454781aa5d9e24582dfdd310228dee7a628f2"
+      },
+      {
+        "date": "2026-09-16",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "3d944eef0137da1c4127aa89b7e862d971765c49"
+      },
+      {
+        "date": "2026-09-17",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "fd937e5892d182f80dd6c246878117b1d3ba2afa"
+      },
+      {
+        "date": "2026-09-18",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "614021b402d90b03f088af86ad391ab9fa8bd3ba"
+      },
+      {
+        "date": "2026-09-19",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "56f45c69c28412b6c422f4fba2bae26f5522740b"
+      },
+      {
+        "date": "2026-09-20",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
         "sourceCommit": null
       }
     ],
@@ -2147,6 +2291,54 @@
       },
       {
         "date": "2026-09-14",
+        "index": 67.8,
+        "strict": 65.9,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "3f499ced456c2403c7d28f593eede8ba77b6bd79"
+      },
+      {
+        "date": "2026-09-15",
+        "index": 67.8,
+        "strict": 65.9,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "3c2454781aa5d9e24582dfdd310228dee7a628f2"
+      },
+      {
+        "date": "2026-09-16",
+        "index": 67.8,
+        "strict": 65.9,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "3d944eef0137da1c4127aa89b7e862d971765c49"
+      },
+      {
+        "date": "2026-09-17",
+        "index": 67.8,
+        "strict": 65.9,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "fd937e5892d182f80dd6c246878117b1d3ba2afa"
+      },
+      {
+        "date": "2026-09-18",
+        "index": 67.8,
+        "strict": 65.9,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "614021b402d90b03f088af86ad391ab9fa8bd3ba"
+      },
+      {
+        "date": "2026-09-19",
+        "index": 67.8,
+        "strict": 65.9,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": "56f45c69c28412b6c422f4fba2bae26f5522740b"
+      },
+      {
+        "date": "2026-09-20",
         "index": 67.8,
         "strict": 65.9,
         "methodologyTag": "v1.2-canonical-fixed",
