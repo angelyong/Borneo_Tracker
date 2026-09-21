@@ -593,7 +593,7 @@
         "strict": 62.0,
         "methodologyTag": "v1.2-canonical-fixed",
         "isMethodologyBreak": false,
-        "sourceCommit": null
+        "sourceCommit": "23b91061ae3743fbae757c16ecaa15a87aa2749f"
       }
     ],
     "Sarawak": [
@@ -1187,7 +1187,7 @@
         "strict": 71.0,
         "methodologyTag": "v1.2-canonical-fixed",
         "isMethodologyBreak": false,
-        "sourceCommit": null
+        "sourceCommit": "23b91061ae3743fbae757c16ecaa15a87aa2749f"
       }
     ],
     "Brunei": [
@@ -1781,7 +1781,7 @@
         "strict": 60.9,
         "methodologyTag": "v1.2-canonical-fixed",
         "isMethodologyBreak": false,
-        "sourceCommit": null
+        "sourceCommit": "23b91061ae3743fbae757c16ecaa15a87aa2749f"
       }
     ],
     "Kalimantan": [
@@ -2375,7 +2375,7 @@
         "strict": 65.9,
         "methodologyTag": "v1.2-canonical-fixed",
         "isMethodologyBreak": false,
-        "sourceCommit": null
+        "sourceCommit": "23b91061ae3743fbae757c16ecaa15a87aa2749f"
       }
     ]
   }
