@@ -2,7 +2,15 @@ import { AIChatHttpError, type AIChatPrompt, type AIChatRequest, type AIChatSite
 import { type EnvLike, parseAiChatConfig } from './config.ts';
 
 const GEMINI_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/models';
-export const GEMINI_MAX_OUTPUT_TOKENS = 512;
+// gemini-*-flash is a thinking model: its hidden reasoning tokens count against
+// maxOutputTokens. Measured 2026-09-21 on a routine 6-line answer: ~600 thinking
+// tokens + ~100 answer tokens, so the old 512 cap hit MAX_TOKENS on almost every
+// dashboard question and every reply silently degraded to the template fallback.
+// Thinking is switched off (the answer is fully specified by the prompt's verified
+// facts, so reasoning adds latency and cost, not accuracy) and the cap is raised
+// for headroom.
+export const GEMINI_MAX_OUTPUT_TOKENS = 1024;
+export const GEMINI_THINKING_BUDGET = 0;
 
 type GeminiClientOptions = {
   env?: EnvLike;
@@ -135,6 +143,7 @@ export async function generateGeminiAnswer(
         generationConfig: {
           temperature: 0.2,
           maxOutputTokens: GEMINI_MAX_OUTPUT_TOKENS,
+          thinkingConfig: { thinkingBudget: GEMINI_THINKING_BUDGET },
         },
       }),
       signal: controller.signal,
