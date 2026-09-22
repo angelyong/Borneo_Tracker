@@ -1,18 +1,18 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-22T00:02:33Z",
-  "runId": "35669643777",
-  "dataVersion": "c19231a187048efbcc4d51418f6c7821c23dd3310d50b1c6685233eb36d4c977",
+  "generatedAt": "2026-09-22T23:42:06Z",
+  "runId": "35797808600",
+  "dataVersion": "73426230331edbbfbc5b6e22db3b360f13af8a983f032a9167e62df61953c6c0",
   "files": {
     "public/data/indicators.json": {
-      "sha256": "7c9e35cfcb2fff802f57b798d2d48408959dc0637af01b3c6650f4612f1865b3",
+      "sha256": "08e5b3f569afa2a6914f26ab3f9e2509afe5ce3d55ff76ade6f4c08e2d1a2961",
       "bytes": 111413,
-      "generatedAt": "2026-09-22"
+      "generatedAt": "2026-09-23"
     },
     "public/data/resilience.json": {
-      "sha256": "7fb41ed286fedc0aafc9eb7fd2cc57e0e3348971392ffce725c83394e75e237b",
+      "sha256": "e0ec8905ea341c385b3948cbb9ea0c81726aa023f752f701d89a92e0b793a016",
       "bytes": 13954,
-      "generatedAt": "2026-09-22"
+      "generatedAt": "2026-09-23"
     },
     "public/data/resilience_model.json": {
       "sha256": "3e79a27fe1cc84b1979ea01f18acd3fd32d357007410c2fa8f38408010d38628",
@@ -20,9 +20,9 @@
       "generatedAt": "2026-09-12"
     },
     "public/data/districts.json": {
-      "sha256": "399ac9d87eeb9f45dda1272001f6568a142f20ad9dfeb6253b634d19ecc686b3",
+      "sha256": "6a0e26444df429a756e74b48306606af4ad2e523e77e8a58742ba0574098688d",
       "bytes": 568623,
-      "generatedAt": "2026-09-22"
+      "generatedAt": "2026-09-23"
     },
     "public/data/borneo_districts.geojson": {
       "sha256": "20f76e31c0479bbc445df78cabc00430af23b924f6cc5cb3c8d29cfb91703d54",
@@ -37,7 +37,7 @@
   },
   "provenance": {
     "algorithm": "rfc6962-sha256-jsonl-v1",
-    "root": "c03b0ecabab4bcea1b01219fccd129514ff3aaf23d00a71e69278c774ff45dd9",
-    "entries": 360
+    "root": "368ca6cce2d911377cdffae3f7ad5e9f7b41f6fd64511887607702e7810df8b8",
+    "entries": 368
   }
 }
