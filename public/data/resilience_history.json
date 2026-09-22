@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-09-21",
+  "generatedAt": "2026-09-22",
   "territories": {
     "Sabah": [
       {
@@ -594,6 +594,14 @@
         "methodologyTag": "v1.2-canonical-fixed",
         "isMethodologyBreak": false,
         "sourceCommit": "23b91061ae3743fbae757c16ecaa15a87aa2749f"
+      },
+      {
+        "date": "2026-09-22",
+        "index": 67.6,
+        "strict": 62.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": null
       }
     ],
     "Sarawak": [
@@ -1188,6 +1196,14 @@
         "methodologyTag": "v1.2-canonical-fixed",
         "isMethodologyBreak": false,
         "sourceCommit": "23b91061ae3743fbae757c16ecaa15a87aa2749f"
+      },
+      {
+        "date": "2026-09-22",
+        "index": 73.6,
+        "strict": 71.0,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": null
       }
     ],
     "Brunei": [
@@ -1782,6 +1798,14 @@
         "methodologyTag": "v1.2-canonical-fixed",
         "isMethodologyBreak": false,
         "sourceCommit": "23b91061ae3743fbae757c16ecaa15a87aa2749f"
+      },
+      {
+        "date": "2026-09-22",
+        "index": 78.0,
+        "strict": 60.9,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": null
       }
     ],
     "Kalimantan": [
@@ -2376,6 +2400,14 @@
         "methodologyTag": "v1.2-canonical-fixed",
         "isMethodologyBreak": false,
         "sourceCommit": "23b91061ae3743fbae757c16ecaa15a87aa2749f"
+      },
+      {
+        "date": "2026-09-22",
+        "index": 67.8,
+        "strict": 65.9,
+        "methodologyTag": "v1.2-canonical-fixed",
+        "isMethodologyBreak": false,
+        "sourceCommit": null
       }
     ]
   }
